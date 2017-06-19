@@ -4,9 +4,9 @@ from zipline.utils.numpy_utils import float64_dtype
 from .dataset import Column, DataSet
 
 
-class USEquityPricing(DataSet):
+class CryptoPricing(DataSet):
     """
-    Dataset representing daily trading prices and volumes.
+    Dataset representing daily trading prices and volumes of crypto-assets.
     """
     open   = Column(float64_dtype)
     high   = Column(float64_dtype)

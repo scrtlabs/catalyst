@@ -289,7 +289,7 @@ class TradingAlgorithm(object):
         # If a schedule has been provided, pop it. Otherwise, use NYSE.
         self.trading_calendar = kwargs.pop(
             'trading_calendar',
-            get_calendar("NYSE")
+            get_calendar('NYSE')
         )
 
         self.sim_params = kwargs.pop('sim_params', None)
@@ -1114,6 +1114,8 @@ class TradingAlgorithm(object):
         # TradingSchedule class, so this is unlikely to be hit
         if calendar is None:
             cal = self.trading_calendar
+        elif calendar is calendars.CRYPTO_ASSETS:
+            cal = get_environment('OPEN')
         elif calendar is calendars.US_EQUITIES:
             cal = get_calendar('NYSE')
         elif calendar is calendars.US_FUTURES:
@@ -1122,7 +1124,7 @@ class TradingAlgorithm(object):
             raise ScheduleFunctionInvalidCalendar(
                 given_calendar=calendar,
                 allowed_calendars=(
-                    '[calendars.US_EQUITIES, calendars.US_FUTURES]'
+                    '[calendars.CRYPTO_ASSETS, calendars.US_EQUITIES, calendars.US_FUTURES]'
                 ),
             )
 

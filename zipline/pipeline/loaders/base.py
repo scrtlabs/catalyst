@@ -19,3 +19,7 @@ class PipelineLoader(with_metaclass(ABCMeta)):
     @abstractmethod
     def load_adjusted_array(self, columns, dates, assets, mask):
         pass
+
+    @abstractmethod
+    def columns(self):
+        pass

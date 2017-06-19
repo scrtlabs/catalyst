@@ -1,5 +1,6 @@
 # These imports are necessary to force module-scope register calls to happen.
 from . import quandl  # noqa
+from . import catalyst
 from .core import (
     UnknownBundle,
     bundles,
@@ -13,6 +14,7 @@ from .core import (
     unregister,
 )
 from .yahoo import yahoo_equities
+
 
 
 __all__ = [
