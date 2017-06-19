@@ -18,8 +18,8 @@ from zipline.algorithm import TradingAlgorithm
 from zipline.data.bundles.core import load
 from zipline.data.data_portal import DataPortal
 from zipline.finance.trading import TradingEnvironment
-from zipline.pipeline.data import USEquityPricing
-from zipline.pipeline.loaders import USEquityPricingLoader
+from zipline.pipeline.data import USEquityPricing, CryptoPricing
+from zipline.pipeline.loaders import USEquityPricingLoader, CryptoPricingLoader
 from zipline.utils.calendars import get_calendar
 from zipline.utils.factory import create_simulation_parameters
 import zipline.utils.paths as pth
@@ -113,44 +113,85 @@ def _run(handle_data,
             click.echo(algotext)
 
     if bundle is not None:
-        bundle_data = load(
-            bundle,
-            environ,
-            bundle_timestamp,
-        )
+        bundles = bundle.split(',')
+        print 'bundles: {0}'.format(bundles)
 
-        prefix, connstr = re.split(
-            r'sqlite:///',
-            str(bundle_data.asset_finder.engine.url),
-            maxsplit=1,
-        )
-        if prefix:
-            raise ValueError(
-                "invalid url %r, must begin with 'sqlite:///'" %
-                str(bundle_data.asset_finder.engine.url),
+        def get_trading_env_and_data(bundles):
+            env = data = None
+
+            b = 'catalyst'
+            if len(bundles) == 0:
+                return env, data
+            elif len(bundles) == 1:
+                b = bundles[0]
+                
+            bundle_data = load(
+                b,
+                environ,
+                bundle_timestamp,
             )
-        env = TradingEnvironment(asset_db_path=connstr, environ=environ)
-        first_trading_day =\
-            bundle_data.equity_minute_bar_reader.first_trading_day
-        data = DataPortal(
-            env.asset_finder, get_calendar("NYSE"),
-            first_trading_day=first_trading_day,
-            equity_minute_reader=bundle_data.equity_minute_bar_reader,
-            equity_daily_reader=bundle_data.equity_daily_bar_reader,
-            adjustment_reader=bundle_data.adjustment_reader,
-        )
+            
+            prefix, connstr = re.split(
+                r'sqlite:///',
+                str(bundle_data.asset_finder.engine.url),
+                maxsplit=1,
+            )
+            if prefix:
+                raise ValueError(
+                    "invalid url %r, must begin with 'sqlite:///'" %
+                    str(bundle_data.asset_finder.engine.url),
+                )
+            env = TradingEnvironment(asset_db_path=connstr, environ=environ)
+            first_trading_day =\
+                bundle_data.equity_minute_bar_reader.first_trading_day
+            data = DataPortal(
+                env.asset_finder,
+                get_calendar('NYSE'),
+                first_trading_day=first_trading_day,
+                equity_minute_reader=bundle_data.equity_minute_bar_reader,
+                equity_daily_reader=bundle_data.equity_daily_bar_reader,
+                adjustment_reader=bundle_data.adjustment_reader,
+            )
 
-        pipeline_loader = USEquityPricingLoader(
-            bundle_data.equity_daily_bar_reader,
-            bundle_data.adjustment_reader,
-        )
+            return env, data
 
-        def choose_loader(column):
-            if column in USEquityPricing.columns:
-                return pipeline_loader
+        def get_loader_for_bundle(b):
+            bundle_data = load(
+                b,
+                environ,
+                bundle_timestamp,
+            )
+
+            if b == 'catalyst':
+                print 'creating crypto pricing loader...'
+                return CryptoPricingLoader(
+                           bundle_data.equity_daily_bar_reader,
+                           CryptoPricing,
+                       )
+            elif b == 'quantopian-quandl':
+                return USEquityPricingLoader(
+                           bundle_data.equity_daily_bar_reader,
+                           bundle_data.adjustment_reader,
+                           USEquityPricing,
+                       )
             raise ValueError(
                 "No PipelineLoader registered for column %s." % column
             )
+            
+
+        loaders = [get_loader_for_bundle(b) for b in bundles]
+        env, data = get_trading_env_and_data(bundles)
+      
+        def choose_loader(column):
+            print 'finding pricing loader...'
+            for loader in loaders:
+                if column in loader.columns:
+                    return loader
+            raise ValueError(
+                "No PipelineLoader registered for column %s." % column
+            )
+
+        print 'env: {0}'.format(env)
     else:
         env = TradingEnvironment(environ=environ)
         choose_loader = None

@@ -3,6 +3,7 @@ from zipline.errors import (
     CyclicCalendarAlias,
     InvalidCalendarName,
 )
+from zipline.utils.calendars.exchange_calendar_open import OpenExchangeCalendar
 from zipline.utils.calendars.exchange_calendar_cfe import CFEExchangeCalendar
 from zipline.utils.calendars.exchange_calendar_ice import ICEExchangeCalendar
 from zipline.utils.calendars.exchange_calendar_nyse import NYSEExchangeCalendar
@@ -15,6 +16,7 @@ from zipline.utils.calendars.us_futures_calendar import (
 )
 
 _default_calendar_factories = {
+    'OPEN': OpenExchangeCalendar,
     'NYSE': NYSEExchangeCalendar,
     'CME': CMEExchangeCalendar,
     'ICE': ICEExchangeCalendar,
@@ -25,6 +27,7 @@ _default_calendar_factories = {
     'us_futures': QuantopianUSFuturesCalendar,
 }
 _default_calendar_aliases = {
+    'CATX': 'OPEN',
     'NASDAQ': 'NYSE',
     'BATS': 'NYSE',
     'CBOT': 'CME',
@@ -71,6 +74,8 @@ class TradingCalendarDispatcher(object):
             The desired calendar.
         """
         canonical_name = self.resolve_alias(name)
+
+        print 'get_calendar(\'{name}\')'.format(name=canonical_name)
 
         try:
             return self._calendars[canonical_name]

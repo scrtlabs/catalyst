@@ -29,25 +29,23 @@ from .base import PipelineLoader
 UINT32_MAX = iinfo(uint32).max
 
 
-class USEquityPricingLoader(PipelineLoader):
+class CryptoPricingLoader(PipelineLoader):
     """
-    PipelineLoader for US Equity Pricing data
+    PipelineLoader for Crypto Pricing data
 
     Delegates loading of baselines and adjustments.
     """
 
-    def __init__(self, raw_price_loader, adjustments_loader, dataset):
+    def __init__(self, raw_price_loader, dataset):
         self.raw_price_loader = raw_price_loader
-        self.adjustments_loader = adjustments_loader
         self._columns = dataset.columns
 
-        cal = self.raw_price_loader.trading_calendar or \
-            get_calendar("NYSE")
+        cal = get_calendar('NYSE')
 
         self._all_sessions = cal.all_sessions
 
     @classmethod
-    def from_files(cls, pricing_path, adjustments_path):
+    def from_files(cls, pricing_path):
         """
         Create a loader from a bcolz equity pricing dir and a SQLite
         adjustments path.
@@ -56,12 +54,9 @@ class USEquityPricingLoader(PipelineLoader):
         ----------
         pricing_path : str
             Path to a bcolz directory written by a BcolzDailyBarWriter.
-        adjusments_path : str
-            Path to an adjusments db written by a SQLiteAdjustmentWriter.
         """
         return cls(
             BcolzDailyBarReader(pricing_path),
-            SQLiteAdjustmentReader(adjustments_path)
         )
 
     def load_adjusted_array(self, columns, dates, assets, mask):
@@ -80,22 +75,17 @@ class USEquityPricingLoader(PipelineLoader):
             end_date,
             assets,
         )
-        adjustments = self.adjustments_loader.load_adjustments(
-            colnames,
-            dates,
-            assets,
-        )
 
         out = {}
-        for c, c_raw, c_adjs in zip(columns, raw_arrays, adjustments):
+        for c, c_raw in zip(columns, raw_arrays):
             out[c] = AdjustedArray(
                 c_raw.astype(c.dtype),
                 mask,
-                c_adjs,
+                {},
                 c.missing_value,
             )
         return out
-    
+
     @property
     def columns(self):
         return self._columns
