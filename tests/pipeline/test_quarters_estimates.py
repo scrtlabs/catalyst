@@ -12,23 +12,23 @@ from numpy.testing import assert_array_equal, assert_almost_equal
 import pandas as pd
 from toolz import merge
 
-from zipline.pipeline import SimplePipelineEngine, Pipeline, CustomFactor
-from zipline.pipeline.common import (
+from catalyst.pipeline import SimplePipelineEngine, Pipeline, CustomFactor
+from catalyst.pipeline.common import (
     EVENT_DATE_FIELD_NAME,
     FISCAL_QUARTER_FIELD_NAME,
     FISCAL_YEAR_FIELD_NAME,
     SID_FIELD_NAME,
     TS_FIELD_NAME,
 )
-from zipline.pipeline.data import DataSet
-from zipline.pipeline.data import Column
-from zipline.pipeline.loaders.blaze.estimates import (
+from catalyst.pipeline.data import DataSet
+from catalyst.pipeline.data import Column
+from catalyst.pipeline.loaders.blaze.estimates import (
     BlazeNextEstimatesLoader,
     BlazeNextSplitAdjustedEstimatesLoader,
     BlazePreviousEstimatesLoader,
     BlazePreviousSplitAdjustedEstimatesLoader,
 )
-from zipline.pipeline.loaders.earnings_estimates import (
+from catalyst.pipeline.loaders.earnings_estimates import (
     INVALID_NUM_QTRS_MESSAGE,
     NextEarningsEstimatesLoader,
     NextSplitAdjustedEarningsEstimatesLoader,
@@ -37,15 +37,15 @@ from zipline.pipeline.loaders.earnings_estimates import (
     PreviousSplitAdjustedEarningsEstimatesLoader,
     split_normalized_quarters,
 )
-from zipline.testing.fixtures import (
+from catalyst.testing.fixtures import (
     WithAdjustmentReader,
     WithTradingSessions,
     ZiplineTestCase,
 )
-from zipline.testing.predicates import assert_equal, assert_raises_regex
-from zipline.testing.predicates import assert_frame_equal
-from zipline.utils.numpy_utils import datetime64ns_dtype
-from zipline.utils.numpy_utils import float64_dtype
+from catalyst.testing.predicates import assert_equal, assert_raises_regex
+from catalyst.testing.predicates import assert_frame_equal
+from catalyst.utils.numpy_utils import datetime64ns_dtype
+from catalyst.utils.numpy_utils import float64_dtype
 
 
 class Estimates(DataSet):

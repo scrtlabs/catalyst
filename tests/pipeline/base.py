@@ -8,21 +8,21 @@ from numpy import arange, prod
 from pandas import DataFrame, Timestamp
 from six import iteritems
 
-from zipline.pipeline.engine import SimplePipelineEngine
-from zipline.pipeline import ExecutionPlan
-from zipline.pipeline.term import AssetExists, InputDates
-from zipline.testing import (
+from catalyst.pipeline.engine import SimplePipelineEngine
+from catalyst.pipeline import ExecutionPlan
+from catalyst.pipeline.term import AssetExists, InputDates
+from catalyst.testing import (
     check_arrays,
     ExplodingObject,
 )
-from zipline.testing.fixtures import (
+from catalyst.testing.fixtures import (
     WithAssetFinder,
     WithTradingSessions,
     ZiplineTestCase,
 )
 
-from zipline.utils.functional import dzip_exact
-from zipline.utils.pandas_utils import explode
+from catalyst.utils.functional import dzip_exact
+from catalyst.utils.pandas_utils import explode
 
 
 def with_defaults(**default_funcs):
@@ -80,7 +80,7 @@ class BasePipelineTestCase(WithTradingSessions,
 
         Parameters
         ----------
-        graph : zipline.pipeline.graph.TermGraph
+        graph : catalyst.pipeline.graph.TermGraph
             Graph to run.
         initial_workspace : dict
             Initial workspace to forward to SimplePipelineEngine.compute_chunk.

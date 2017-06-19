@@ -67,7 +67,10 @@ from catalyst.utils.input_validation import (
     preprocess,
     verify_indices_all_unique,
 )
-from catalyst.utils.sqlite_utils import group_into_chunks, coerce_string_to_conn
+from catalyst.utils.sqlite_utils import (
+    group_into_chunks,
+    coerce_string_to_conn,
+)
 from catalyst.utils.memoize import lazyval
 from catalyst.utils.cli import maybe_show_progress
 from ._equities import _compute_row_slices, _read_bcolz_data

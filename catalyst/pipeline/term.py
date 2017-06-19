@@ -428,7 +428,8 @@ class ComputableTerm(Term):
     A Term that should be computed from a tuple of inputs.
 
     This is the base class for :class:`catalyst.pipeline.Factor`,
-    :class:`catalyst.pipeline.Filter`, and :class:`catalyst.pipeline.Classifier`.
+    :class:`catalyst.pipeline.Filter`, and
+    :class:`catalyst.pipeline.Classifier`.
     """
     inputs = NotSpecified
     outputs = NotSpecified

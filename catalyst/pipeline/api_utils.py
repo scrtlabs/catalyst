@@ -10,8 +10,9 @@ def restrict_to_dtype(dtype, message_template):
     Terms with a specific dtype.
 
     This is conceptually similar to
-    catalyst.utils.input_validation.expect_dtypes, but provides more flexibility
-    for providing error messages that are specifically targeting Term methods.
+    catalyst.utils.input_validation.expect_dtypes, but provides more
+    flexibility for providing error messages that are specifically targeting
+    Term methods.
 
     Parameters
     ----------

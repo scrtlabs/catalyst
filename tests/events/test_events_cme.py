@@ -17,7 +17,7 @@ import pandas as pd
 
 from test_events import StatefulRulesTests, StatelessRulesTests, \
     minutes_for_days
-from zipline.utils.events import AfterOpen
+from catalyst.utils.events import AfterOpen
 
 
 class TestStatelessRulesCME(StatelessRulesTests, TestCase):

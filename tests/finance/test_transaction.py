@@ -15,8 +15,8 @@
 import pandas as pd
 from unittest import TestCase
 
-from zipline.assets import Equity
-from zipline.finance.transaction import Transaction
+from catalyst.assets import Equity
+from catalyst.finance.transaction import Transaction
 
 
 class TransactionTestCase(TestCase):

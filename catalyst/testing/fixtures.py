@@ -512,8 +512,8 @@ class WithTradingEnvironment(WithAssetFinder,
                 pd.DataFrame.from_csv(source_path).tz_localize('UTC')
 
             # The TradingEnvironment ordinarily uses cached benchmark returns
-            # and treasury curves data, but when running the catalyst tests this
-            # cache is not always updated to include the appropriate dates
+            # and treasury curves data, but when running the catalyst tests
+            # this cache is not always updated to include the appropriate dates
             # required by both the futures and equity calendars. In order to
             # create more reliable and consistent data throughout the entirety
             # of the tests, we read static benchmark returns and treasury curve
@@ -1331,6 +1331,7 @@ class WithEquityPricingPipelineEngine(WithAdjustmentReader,
         loader = USEquityPricingLoader(
             cls.bcolz_equity_daily_bar_reader,
             SQLiteAdjustmentReader(cls.adjustments_db_path),
+            USEquityPricing,
         )
 
         def get_loader(column):

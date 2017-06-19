@@ -3,17 +3,15 @@ from catalyst.errors import (
     CyclicCalendarAlias,
     InvalidCalendarName,
 )
-from catalyst.utils.calendars.exchange_calendar_open import OpenExchangeCalendar
-from catalyst.utils.calendars.exchange_calendar_cfe import CFEExchangeCalendar
-from catalyst.utils.calendars.exchange_calendar_ice import ICEExchangeCalendar
-from catalyst.utils.calendars.exchange_calendar_nyse import NYSEExchangeCalendar
-from catalyst.utils.calendars.exchange_calendar_cme import CMEExchangeCalendar
-from catalyst.utils.calendars.exchange_calendar_bmf import BMFExchangeCalendar
-from catalyst.utils.calendars.exchange_calendar_lse import LSEExchangeCalendar
-from catalyst.utils.calendars.exchange_calendar_tsx import TSXExchangeCalendar
-from catalyst.utils.calendars.us_futures_calendar import (
-    QuantopianUSFuturesCalendar,
-)
+from .exchange_calendar_open import OpenExchangeCalendar
+from .exchange_calendar_cfe import CFEExchangeCalendar
+from .exchange_calendar_ice import ICEExchangeCalendar
+from .exchange_calendar_nyse import NYSEExchangeCalendar
+from .exchange_calendar_cme import CMEExchangeCalendar
+from .exchange_calendar_bmf import BMFExchangeCalendar
+from .exchange_calendar_lse import LSEExchangeCalendar
+from .exchange_calendar_tsx import TSXExchangeCalendar
+from .us_futures_calendar import QuantopianUSFuturesCalendar
 
 _default_calendar_factories = {
     'OPEN': OpenExchangeCalendar,

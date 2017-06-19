@@ -141,7 +141,7 @@ class Filter(RestrictedDTypeMixin, ComputableTerm):
     construct a Factor computing 10-day VWAP and compare it to the scalar value
     20.0::
 
-        >>> from catalyst.pipeline.factors import VWAP
+        >>> from catalyst.pipeline.factors.equity import VWAP
         >>> vwap_10 = VWAP(window_length=10)
         >>> vwaps_under_20 = (vwap_10 <= 20)
 

@@ -7,7 +7,10 @@ from six import (
     with_metaclass,
 )
 
-from catalyst.pipeline.classifiers import Classifier, Latest as LatestClassifier
+from catalyst.pipeline.classifiers import (
+    Classifier,
+    Latest as LatestClassifier,
+)
 from catalyst.pipeline.factors import Factor, Latest as LatestFactor
 from catalyst.pipeline.filters import Filter, Latest as LatestFilter
 from catalyst.pipeline.sentinels import NotSpecified

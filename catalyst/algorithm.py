@@ -1115,7 +1115,7 @@ class TradingAlgorithm(object):
         if calendar is None:
             cal = self.trading_calendar
         elif calendar is calendars.CRYPTO_ASSETS:
-            cal = get_environment('OPEN')
+            cal = get_calendar('OPEN')
         elif calendar is calendars.US_EQUITIES:
             cal = get_calendar('NYSE')
         elif calendar is calendars.US_FUTURES:
@@ -1124,7 +1124,9 @@ class TradingAlgorithm(object):
             raise ScheduleFunctionInvalidCalendar(
                 given_calendar=calendar,
                 allowed_calendars=(
-                    '[calendars.CRYPTO_ASSETS, calendars.US_EQUITIES, calendars.US_FUTURES]'
+                    '[calendars.CRYPTO_ASSETS, '
+                    'calendars.US_EQUITIES, '
+                    'calendars.US_FUTURES]'
                 ),
             )
 

@@ -6,23 +6,23 @@ from unittest import TestCase
 
 from numpy import array, empty
 
-from zipline._protocol import BarData
-from zipline.finance.asset_restrictions import NoRestrictions
-from zipline.finance.order import Order
+from catalyst._protocol import BarData
+from catalyst.finance.asset_restrictions import NoRestrictions
+from catalyst.finance.order import Order
 
-from zipline.testing import (
+from catalyst.testing import (
     check_arrays,
     make_alternating_boolean_array,
     make_cascading_boolean_array,
     parameter_space,
 )
-from zipline.testing.fixtures import (
+from catalyst.testing.fixtures import (
     WithConstantEquityMinuteBarData,
     WithDataPortal,
     ZiplineTestCase,
 )
-from zipline.testing.slippage import TestingSlippage
-from zipline.utils.numpy_utils import bool_dtype
+from catalyst.testing.slippage import TestingSlippage
+from catalyst.utils.numpy_utils import bool_dtype
 
 
 class TestParameterSpace(TestCase):

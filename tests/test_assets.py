@@ -14,7 +14,7 @@
 # limitations under the License.
 
 """
-Tests for the zipline.assets package
+Tests for the catalyst.assets package
 """
 from contextlib import contextmanager
 from datetime import timedelta
@@ -33,14 +33,14 @@ from pandas.util.testing import assert_frame_equal
 from six import PY2, viewkeys
 import sqlalchemy as sa
 
-from zipline.assets import (
+from catalyst.assets import (
     Asset,
     Equity,
     Future,
     AssetDBWriter,
     AssetFinder,
 )
-from zipline.assets.synthetic import (
+from catalyst.assets.synthetic import (
     make_commodity_future_info,
     make_rotating_equity_info,
     make_simple_equity_info,
@@ -48,17 +48,17 @@ from zipline.assets.synthetic import (
 from six import itervalues, integer_types
 from toolz import valmap
 
-from zipline.assets.asset_writer import (
+from catalyst.assets.asset_writer import (
     check_version_info,
     write_version_info,
     _futures_defaults,
     SQLITE_MAX_VARIABLE_NUMBER,
 )
-from zipline.assets.asset_db_schema import ASSET_DB_VERSION
-from zipline.assets.asset_db_migrations import (
+from catalyst.assets.asset_db_schema import ASSET_DB_VERSION
+from catalyst.assets.asset_db_migrations import (
     downgrade
 )
-from zipline.errors import (
+from catalyst.errors import (
     EquitiesNotFound,
     FutureContractsNotFound,
     MultipleSymbolsFound,
@@ -71,19 +71,19 @@ from zipline.errors import (
     AssetDBImpossibleDowngrade,
     ValueNotFoundForField,
 )
-from zipline.testing import (
+from catalyst.testing import (
     all_subindices,
     empty_assets_db,
     parameter_space,
     tmp_assets_db,
 )
-from zipline.testing.predicates import assert_equal
-from zipline.testing.fixtures import (
+from catalyst.testing.predicates import assert_equal
+from catalyst.testing.fixtures import (
     WithAssetFinder,
     ZiplineTestCase,
     WithTradingCalendars,
 )
-from zipline.utils.range import range
+from catalyst.utils.range import range
 
 
 @contextmanager

@@ -4,22 +4,22 @@ Tests for Downsampled Filters/Factors/Classifiers
 import pandas as pd
 from pandas.util.testing import assert_frame_equal
 
-from zipline.pipeline import (
+from catalyst.pipeline import (
     Pipeline,
     CustomFactor,
     CustomFilter,
     CustomClassifier,
 )
-from zipline.pipeline.data.testing import TestingDataSet
-from zipline.pipeline.factors import SimpleMovingAverage
-from zipline.pipeline.filters.smoothing import All
-from zipline.testing import ZiplineTestCase, parameter_space
-from zipline.testing.fixtures import (
+from catalyst.pipeline.data.testing import TestingDataSet
+from catalyst.pipeline.factors.equity import SimpleMovingAverage
+from catalyst.pipeline.filters.smoothing import All
+from catalyst.testing import ZiplineTestCase, parameter_space
+from catalyst.testing.fixtures import (
     WithTradingSessions,
     WithSeededRandomPipelineEngine,
 )
-from zipline.utils.input_validation import _qualified_name
-from zipline.utils.numpy_utils import int64_dtype
+from catalyst.utils.input_validation import _qualified_name
+from catalyst.utils.numpy_utils import int64_dtype
 
 
 class NDaysAgoFactor(CustomFactor):

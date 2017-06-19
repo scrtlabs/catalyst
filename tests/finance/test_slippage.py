@@ -26,11 +26,11 @@ import numpy as np
 import pandas as pd
 import pytz
 
-from zipline.assets import Equity, Future
-from zipline.data.data_portal import DataPortal
-from zipline.finance.asset_restrictions import NoRestrictions
-from zipline.finance.order import Order
-from zipline.finance.slippage import (
+from catalyst.assets import Equity, Future
+from catalyst.data.data_portal import DataPortal
+from catalyst.finance.asset_restrictions import NoRestrictions
+from catalyst.finance.order import Order
+from catalyst.finance.slippage import (
     EquitySlippageModel,
     fill_price_worse_than_limit_price,
     FutureSlippageModel,
@@ -38,19 +38,19 @@ from zipline.finance.slippage import (
     VolatilityVolumeShare,
     VolumeShareSlippage,
 )
-from zipline.protocol import DATASOURCE_TYPE, BarData
-from zipline.testing import (
+from catalyst.protocol import DATASOURCE_TYPE, BarData
+from catalyst.testing import (
     create_minute_bar_data,
     tmp_bcolz_equity_minute_bar_reader,
 )
-from zipline.testing.fixtures import (
+from catalyst.testing.fixtures import (
     WithCreateBarData,
     WithDataPortal,
     WithSimParams,
     WithTradingEnvironment,
     ZiplineTestCase,
 )
-from zipline.utils.classproperty import classproperty
+from catalyst.utils.classproperty import classproperty
 
 
 TestOrder = namedtuple('TestOrder', 'limit direction')

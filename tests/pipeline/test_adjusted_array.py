@@ -18,8 +18,8 @@ from numpy import (
 from six.moves import zip_longest
 from toolz import curry
 
-from zipline.errors import WindowLengthNotPositive, WindowLengthTooLong
-from zipline.lib.adjustment import (
+from catalyst.errors import WindowLengthNotPositive, WindowLengthTooLong
+from catalyst.lib.adjustment import (
     Datetime64Overwrite,
     Datetime641DArrayOverwrite,
     Float64Multiply,
@@ -28,11 +28,11 @@ from zipline.lib.adjustment import (
     Int64Overwrite,
     ObjectOverwrite,
 )
-from zipline.lib.adjusted_array import AdjustedArray, NOMASK
-from zipline.lib.labelarray import LabelArray
-from zipline.testing import check_arrays, parameter_space
-from zipline.utils.compat import unicode
-from zipline.utils.numpy_utils import (
+from catalyst.lib.adjusted_array import AdjustedArray, NOMASK
+from catalyst.lib.labelarray import LabelArray
+from catalyst.testing import check_arrays, parameter_space
+from catalyst.utils.compat import unicode
+from catalyst.utils.numpy_utils import (
     coerce_to_dtype,
     datetime64ns_dtype,
     default_missing_value_for_dtype,

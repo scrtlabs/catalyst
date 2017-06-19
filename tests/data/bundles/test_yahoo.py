@@ -6,13 +6,13 @@ from six.moves.urllib.parse import urlparse, parse_qs
 from toolz import flip, identity
 from toolz.curried import merge_with, operator as op
 
-from zipline.data.bundles.core import _make_bundle_core
-from zipline.data.bundles import yahoo_equities
-from zipline.lib.adjustment import Float64Multiply
-from zipline.testing import test_resource_path, tmp_dir, read_compressed
-from zipline.testing.fixtures import WithResponses, ZiplineTestCase
-from zipline.testing.predicates import assert_equal
-from zipline.utils.calendars import get_calendar
+from catalyst.data.bundles.core import _make_bundle_core
+from catalyst.data.bundles import yahoo_equities
+from catalyst.lib.adjustment import Float64Multiply
+from catalyst.testing import test_resource_path, tmp_dir, read_compressed
+from catalyst.testing.fixtures import WithResponses, ZiplineTestCase
+from catalyst.testing.predicates import assert_equal
+from catalyst.utils.calendars import get_calendar
 
 
 class YahooBundleTestCase(WithResponses, ZiplineTestCase):
@@ -162,9 +162,9 @@ class YahooBundleTestCase(WithResponses, ZiplineTestCase):
             end_session=self.asset_end,
         )
 
-        zipline_root = self.enter_instance_context(tmp_dir()).path
+        catalyst_root = self.enter_instance_context(tmp_dir()).path
         environ = {
-            'ZIPLINE_ROOT': zipline_root,
+            'ZIPLINE_ROOT': catalyst_root,
         }
 
         self.ingest('bundle', environ=environ, show_progress=False)

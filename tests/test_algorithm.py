@@ -34,26 +34,26 @@ import pandas as pd
 import pytz
 from pandas.core.common import PerformanceWarning
 
-from zipline import run_algorithm
-from zipline import TradingAlgorithm
-from zipline.api import FixedSlippage
-from zipline.assets import Equity, Future, Asset
-from zipline.assets.continuous_futures import ContinuousFuture
-from zipline.assets.synthetic import (
+from catalyst import run_algorithm
+from catalyst import TradingAlgorithm
+from catalyst.api import FixedSlippage
+from catalyst.assets import Equity, Future, Asset
+from catalyst.assets.continuous_futures import ContinuousFuture
+from catalyst.assets.synthetic import (
     make_jagged_equity_info,
     make_simple_equity_info,
 )
-from zipline.data.data_portal import DataPortal
-from zipline.data.minute_bars import (
+from catalyst.data.data_portal import DataPortal
+from catalyst.data.minute_bars import (
     BcolzMinuteBarReader,
     BcolzMinuteBarWriter,
     US_EQUITIES_MINUTES_PER_DAY,
 )
-from zipline.data.us_equity_pricing import (
+from catalyst.data.us_equity_pricing import (
     BcolzDailyBarReader,
     BcolzDailyBarWriter,
 )
-from zipline.errors import (
+from catalyst.errors import (
     AccountControlViolation,
     CannotOrderDelistedAsset,
     IncompatibleSlippageModel,
@@ -67,7 +67,7 @@ from zipline.errors import (
     UnsupportedCancelPolicy,
     UnsupportedDatetimeFormat,
 )
-from zipline.api import (
+from catalyst.api import (
     order,
     order_value,
     order_percent,
@@ -76,17 +76,17 @@ from zipline.api import (
     order_target_percent
 )
 
-from zipline.finance.commission import PerShare
-from zipline.finance.execution import LimitOrder
-from zipline.finance.order import ORDER_STATUS
-from zipline.finance.trading import SimulationParameters
-from zipline.finance.asset_restrictions import (
+from catalyst.finance.commission import PerShare
+from catalyst.finance.execution import LimitOrder
+from catalyst.finance.order import ORDER_STATUS
+from catalyst.finance.trading import SimulationParameters
+from catalyst.finance.asset_restrictions import (
     Restriction,
     HistoricalRestrictions,
     StaticRestrictions,
     RESTRICTION_STATES,
 )
-from zipline.testing import (
+from catalyst.testing import (
     FakeDataPortal,
     copy_market_data,
     create_daily_df_for_asset,
@@ -102,8 +102,8 @@ from zipline.testing import (
     trades_by_sid_to_dfs,
     tmp_dir,
 )
-from zipline.testing import RecordBatchBlotter
-from zipline.testing.fixtures import (
+from catalyst.testing import RecordBatchBlotter
+from catalyst.testing.fixtures import (
     WithDataPortal,
     WithLogger,
     WithSimParams,
@@ -111,7 +111,7 @@ from zipline.testing.fixtures import (
     WithTmpDir,
     ZiplineTestCase,
 )
-from zipline.test_algorithms import (
+from catalyst.test_algorithms import (
     access_account_in_init,
     access_portfolio_in_init,
     AmbitiousStopLimitAlgorithm,
@@ -175,14 +175,14 @@ from zipline.test_algorithms import (
     set_benchmark_algo,
     no_handle_data,
 )
-from zipline.testing.predicates import assert_equal
-from zipline.utils.api_support import ZiplineAPI, set_algo_instance
-from zipline.utils.calendars import get_calendar, register_calendar
-from zipline.utils.context_tricks import CallbackManager
-from zipline.utils.control_flow import nullctx
-import zipline.utils.events
-from zipline.utils.events import date_rules, time_rules, Always
-import zipline.utils.factory as factory
+from catalyst.testing.predicates import assert_equal
+from catalyst.utils.api_support import ZiplineAPI, set_algo_instance
+from catalyst.utils.calendars import get_calendar, register_calendar
+from catalyst.utils.context_tricks import CallbackManager
+from catalyst.utils.control_flow import nullctx
+import catalyst.utils.events
+from catalyst.utils.events import date_rules, time_rules, Always
+import catalyst.utils.factory as factory
 
 # Because test cases appear to reuse some resources.
 
@@ -276,7 +276,7 @@ class TestMiscellaneousAPI(WithLogger,
 
     def test_cancel_policy_outside_init(self):
         code = """
-from zipline.api import cancel_policy, set_cancel_policy
+from catalyst.api import cancel_policy, set_cancel_policy
 
 def initialize(algo):
     pass
@@ -294,7 +294,7 @@ def handle_data(algo, data):
 
     def test_cancel_policy_invalid_param(self):
         code = """
-from zipline.api import set_cancel_policy
+from catalyst.api import set_cancel_policy
 
 def initialize(algo):
     set_cancel_policy("foo")
@@ -309,7 +309,7 @@ def handle_data(algo, data):
         with self.assertRaises(UnsupportedCancelPolicy):
             algo.run(self.data_portal)
 
-    def test_zipline_api_resolves_dynamically(self):
+    def test_catalyst_api_resolves_dynamically(self):
         # Make a dummy algo.
         algo = TradingAlgorithm(
             initialize=lambda context: None,
@@ -328,11 +328,11 @@ def handle_data(algo, data):
                 return sentinel
             setattr(algo, name, fake_method)
             with ZiplineAPI(algo):
-                self.assertIs(sentinel, getattr(zipline.api, name)())
+                self.assertIs(sentinel, getattr(catalyst.api, name)())
 
     def test_sid_datetime(self):
         algo_text = """
-from zipline.api import sid, get_datetime
+from catalyst.api import sid, get_datetime
 
 def initialize(context):
     pass
@@ -349,7 +349,7 @@ def handle_data(context, data):
 
     def test_datetime_bad_params(self):
         algo_text = """
-from zipline.api import get_datetime
+from catalyst.api import get_datetime
 from pytz import timezone
 
 def initialize(context):
@@ -371,11 +371,11 @@ def handle_data(context, data):
             'start': pd.Timestamp('2006-01-03 14:31:00+0000', tz='utc'),
             'end': pd.Timestamp('2006-01-04 21:00:00+0000', tz='utc'),
             'capital_base': 100000.0,
-            'platform': 'zipline'
+            'platform': 'catalyst'
         }
 
         def initialize(algo):
-            self.assertEqual('zipline', algo.get_environment())
+            self.assertEqual('catalyst', algo.get_environment())
             self.assertEqual(expected_env, algo.get_environment('*'))
 
         def handle_data(algo, data):
@@ -441,7 +441,7 @@ def handle_data(context, data):
         # run a simulation on the CME cal, and schedule a function
         # using the NYSE cal
         algotext = """
-from zipline.api import (
+from catalyst.api import (
     schedule_function, get_datetime, time_rules, date_rules, calendars,
 )
 
@@ -496,8 +496,8 @@ def log_nyse_close(context, data):
         # Test that passing an invalid calendar parameter raises an error.
         erroring_algotext = dedent(
             """
-            from zipline.api import schedule_function
-            from zipline.utils.calendars import get_calendar
+            from catalyst.api import schedule_function
+            from catalyst.utils.calendars import get_calendar
 
             def initialize(context):
                 schedule_function(func=my_func, calendar=get_calendar('NYSE'))
@@ -634,27 +634,27 @@ def log_nyse_close(context, data):
         )
 
         # Schedule something for NOT Always.
-        algo.schedule_function(nop, time_rule=zipline.utils.events.Never())
+        algo.schedule_function(nop, time_rule=catalyst.utils.events.Never())
 
         event_rule = algo.event_manager._events[1].rule
 
-        self.assertIsInstance(event_rule, zipline.utils.events.OncePerDay)
+        self.assertIsInstance(event_rule, catalyst.utils.events.OncePerDay)
 
         inner_rule = event_rule.rule
-        self.assertIsInstance(inner_rule, zipline.utils.events.ComposedRule)
+        self.assertIsInstance(inner_rule, catalyst.utils.events.ComposedRule)
 
         first = inner_rule.first
         second = inner_rule.second
         composer = inner_rule.composer
 
-        self.assertIsInstance(first, zipline.utils.events.Always)
+        self.assertIsInstance(first, catalyst.utils.events.Always)
 
         if mode == 'daily':
-            self.assertIsInstance(second, zipline.utils.events.Always)
+            self.assertIsInstance(second, catalyst.utils.events.Always)
         else:
-            self.assertIsInstance(second, zipline.utils.events.Never)
+            self.assertIsInstance(second, catalyst.utils.events.Never)
 
-        self.assertIs(composer, zipline.utils.events.ComposedRule.lazy_and)
+        self.assertIs(composer, catalyst.utils.events.ComposedRule.lazy_and)
 
     def test_asset_lookup(self):
         algo = TradingAlgorithm(env=self.env)
@@ -877,8 +877,8 @@ class TestTransformAlgorithm(WithLogger,
     ])
     def test_cannot_order_in_before_trading_start(self, order_method, amount):
         algotext = """
-from zipline.api import sid
-from zipline.api import {order_func}
+from catalyst.api import sid
+from catalyst.api import {order_func}
 
 def initialize(context):
      context.asset = sid(133)
@@ -1016,7 +1016,7 @@ def before_trading_start(context, data):
 
     def test_order_on_each_day_of_asset_lifetime(self):
         algo_code = dedent("""
-        from zipline.api import sid, schedule_function, date_rules, order
+        from catalyst.api import sid, schedule_function, date_rules, order
         def initialize(context):
             schedule_function(order_it, date_rule=date_rules.every_day())
 
@@ -1300,7 +1300,7 @@ class TestBeforeTradingStart(WithDataPortal,
 
     def test_data_in_bts_minute(self):
         algo_code = dedent("""
-        from zipline.api import record, sid
+        from catalyst.api import record, sid
         def initialize(context):
             context.history_values = []
 
@@ -1372,7 +1372,7 @@ class TestBeforeTradingStart(WithDataPortal,
 
     def test_data_in_bts_daily(self):
         algo_code = dedent("""
-        from zipline.api import record, sid
+        from catalyst.api import record, sid
         def initialize(context):
             context.history_values = []
 
@@ -1417,7 +1417,7 @@ class TestBeforeTradingStart(WithDataPortal,
 
     def test_portfolio_bts(self):
         algo_code = dedent("""
-        from zipline.api import order, sid, record
+        from catalyst.api import order, sid, record
 
         def initialize(context):
             context.ordered = False
@@ -1456,7 +1456,7 @@ class TestBeforeTradingStart(WithDataPortal,
 
     def test_account_bts(self):
         algo_code = dedent("""
-        from zipline.api import order, sid, record
+        from catalyst.api import order, sid, record
 
         def initialize(context):
             context.ordered = False
@@ -1496,7 +1496,7 @@ class TestBeforeTradingStart(WithDataPortal,
 
     def test_portfolio_bts_with_overnight_split(self):
         algo_code = dedent("""
-        from zipline.api import order, sid, record
+        from catalyst.api import order, sid, record
         def initialize(context):
             context.ordered = False
             context.hd_portfolio = context.portfolio
@@ -1543,7 +1543,7 @@ class TestBeforeTradingStart(WithDataPortal,
 
     def test_account_bts_with_overnight_split(self):
         algo_code = dedent("""
-        from zipline.api import order, sid, record
+        from catalyst.api import order, sid, record
         def initialize(context):
             context.ordered = False
             context.hd_account = context.account
@@ -1696,7 +1696,7 @@ class TestAlgoScript(WithLogger,
         algo.run(self.data_portal)
 
     def test_api_get_environment(self):
-        platform = 'zipline'
+        platform = 'catalyst'
         algo = TradingAlgorithm(script=api_get_environment_algo,
                                 platform=platform,
                                 env=self.env)
@@ -1714,7 +1714,7 @@ class TestAlgoScript(WithLogger,
         # --------------
         test_algo = TradingAlgorithm(
             script="""
-from zipline.api import (slippage,
+from catalyst.api import (slippage,
                          commission,
                          set_slippage,
                          set_commission,
@@ -1780,7 +1780,7 @@ def handle_data(context, data):
             # --------------
             test_algo = TradingAlgorithm(
                 script="""
-from zipline.api import *
+from catalyst.api import *
 
 def initialize(context):
     model = slippage.VolumeShareSlippage(
@@ -1846,7 +1846,7 @@ def handle_data(context, data):
     def test_incorrectly_set_futures_slippage_model(self):
         code = dedent(
             """
-            from zipline.api import set_slippage, slippage
+            from catalyst.api import set_slippage, slippage
 
             class MySlippage(slippage.FutureSlippageModel):
                 def process_order(self, data, order):
@@ -1905,7 +1905,7 @@ def handle_data(context, data):
     def test_order_methods(self):
         """
         Only test that order methods can be called without error.
-        Correct filling of orders is tested in zipline.
+        Correct filling of orders is tested in catalyst.
         """
         test_algo = TradingAlgorithm(
             script=call_all_order_methods,
@@ -1923,7 +1923,7 @@ def handle_data(context, data):
                 from collections import OrderedDict
                 from six import iteritems
 
-                from zipline.api import sid, order
+                from catalyst.api import sid, order
 
 
                 def initialize(context):
@@ -1951,7 +1951,7 @@ def handle_data(context, data):
             script=dedent("""\
                 import pandas as pd
 
-                from zipline.api import sid, batch_market_order
+                from catalyst.api import sid, batch_market_order
 
 
                 def initialize(context):
@@ -1994,7 +1994,7 @@ def handle_data(context, data):
             script=dedent("""\
                 import pandas as pd
 
-                from zipline.api import sid, batch_market_order
+                from catalyst.api import sid, batch_market_order
 
                 def initialize(context):
                     context.assets = [sid(0), sid(3)]
@@ -2030,7 +2030,7 @@ def handle_data(context, data):
         # order method shouldn't blow up
         test_algo = TradingAlgorithm(
             script="""
-from zipline.api import order, sid
+from catalyst.api import order, sid
 
 def initialize(context):
     pass
@@ -2048,7 +2048,7 @@ def handle_data(context, data):
         for order_str in ["order_value", "order_percent"]:
             test_algo = TradingAlgorithm(
                 script="""
-from zipline.api import order_percent, order_value, sid
+from catalyst.api import order_percent, order_value, sid
 
 def initialize(context):
     pass
@@ -2273,7 +2273,7 @@ def handle_data(context, data):
         )
 
         algocode = dedent("""
-        from zipline.api import time_rules, schedule_function
+        from catalyst.api import time_rules, schedule_function
 
         def do_at_open(context, data):
             context.done_at_open.append(context.get_datetime())
@@ -2397,7 +2397,7 @@ class TestCapitalChanges(WithLogger,
         }
 
         algocode = """
-from zipline.api import set_slippage, set_commission, slippage, commission, \
+from catalyst.api import set_slippage, set_commission, slippage, commission, \
     schedule_function, time_rules, order, sid
 
 def initialize(context):
@@ -2557,7 +2557,7 @@ def order_stuff(context, data):
             'type': change_type, 'value': val[1]} for val in values}
 
         algocode = """
-from zipline.api import set_slippage, set_commission, slippage, commission, \
+from catalyst.api import set_slippage, set_commission, slippage, commission, \
     schedule_function, time_rules, order, sid
 
 def initialize(context):
@@ -2724,7 +2724,7 @@ def order_stuff(context, data):
             'type': change_type, 'value': val[1]} for val in values}
 
         algocode = """
-from zipline.api import set_slippage, set_commission, slippage, commission, \
+from catalyst.api import set_slippage, set_commission, slippage, commission, \
     schedule_function, time_rules, order, sid
 
 def initialize(context):
@@ -2964,7 +2964,7 @@ class TestGetDatetime(WithLogger,
         algo = dedent(
             """
             import pandas as pd
-            from zipline.api import get_datetime
+            from catalyst.api import get_datetime
 
             def initialize(context):
                 context.tz = {tz} or 'UTC'
@@ -3637,7 +3637,7 @@ class TestFutureFlip(WithDataPortal, WithSimParams, ZiplineTestCase):
             index=cls.sim_params.sessions,
         )
 
-    @skip('broken in zipline 1.0.0')
+    @skip('broken in catalyst 1.0.0')
     def test_flip_algo(self):
         metadata = {1: {'symbol': 'TEST',
                         'start_date': self.sim_params.trading_days[0],
@@ -3708,7 +3708,7 @@ class TestFuturesAlgo(WithDataPortal, WithSimParams, ZiplineTestCase):
         algo_code = dedent(
             """
             from datetime import time
-            from zipline.api import (
+            from catalyst.api import (
                 date_rules,
                 get_datetime,
                 schedule_function,
@@ -3789,7 +3789,7 @@ class TestFuturesAlgo(WithDataPortal, WithSimParams, ZiplineTestCase):
     def algo_with_slippage(slippage_model):
         return dedent(
             """
-            from zipline.api import (
+            from catalyst.api import (
                 commission,
                 order,
                 set_commission,
@@ -3917,7 +3917,7 @@ class TestOrderCancelation(WithDataPortal,
 
     code = dedent(
         """
-        from zipline.api import (
+        from catalyst.api import (
             sid, order, set_slippage, slippage, VolumeShareSlippage,
             set_cancel_policy, cancel_policy, EODCancel
         )
@@ -4704,7 +4704,7 @@ class TestOrderAfterDelist(WithTradingEnvironment, ZiplineTestCase):
         asset = self.asset_finder.retrieve_asset(sid)
 
         algo_code = dedent("""
-        from zipline.api import (
+        from catalyst.api import (
             sid,
             order,
             order_value,

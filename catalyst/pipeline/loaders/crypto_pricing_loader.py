@@ -16,10 +16,7 @@ from numpy import (
     uint32,
 )
 
-from catalyst.data.us_equity_pricing import (
-    BcolzDailyBarReader,
-    SQLiteAdjustmentReader,
-)
+from catalyst.data.us_equity_pricing import BcolzDailyBarReader
 from catalyst.lib.adjusted_array import AdjustedArray
 from catalyst.errors import NoFurtherDataError
 from catalyst.utils.calendars import get_calendar

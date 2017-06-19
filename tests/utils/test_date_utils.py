@@ -1,9 +1,9 @@
 from pandas import Timestamp
 from nose_parameterized import parameterized
 
-from zipline.testing import ZiplineTestCase
-from zipline.utils.calendars import get_calendar
-from zipline.utils.date_utils import compute_date_range_chunks
+from catalyst.testing import ZiplineTestCase
+from catalyst.utils.calendars import get_calendar
+from catalyst.utils.date_utils import compute_date_range_chunks
 
 
 def T(s):

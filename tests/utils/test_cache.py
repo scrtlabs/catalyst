@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from pandas import Timestamp, Timedelta
 
-from zipline.utils.cache import CachedObject, Expired, ExpiringCache
+from catalyst.utils.cache import CachedObject, Expired, ExpiringCache
 
 
 class CachedObjectTestCase(TestCase):

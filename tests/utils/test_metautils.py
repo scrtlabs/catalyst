@@ -1,12 +1,12 @@
-from zipline.testing.fixtures import ZiplineTestCase
-from zipline.testing.predicates import (
+from catalyst.testing.fixtures import ZiplineTestCase
+from catalyst.testing.predicates import (
     assert_equal,
     assert_is,
     assert_is_instance,
     assert_is_subclass,
     assert_true,
 )
-from zipline.utils.metautils import compose_types, with_metaclasses
+from catalyst.utils.metautils import compose_types, with_metaclasses
 
 
 class C(object):

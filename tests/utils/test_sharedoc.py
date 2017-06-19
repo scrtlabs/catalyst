@@ -1,5 +1,5 @@
-from zipline.testing import ZiplineTestCase
-from zipline.utils.sharedoc import copydoc
+from catalyst.testing import ZiplineTestCase
+from catalyst.utils.sharedoc import copydoc
 
 
 class TestSharedoc(ZiplineTestCase):

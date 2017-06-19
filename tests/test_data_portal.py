@@ -19,21 +19,21 @@ from numpy.testing import assert_almost_equal
 import pandas as pd
 from pandas.tslib import Timedelta
 
-from zipline.assets import Equity, Future
-from zipline.data.data_portal import HISTORY_FREQUENCIES, OHLCV_FIELDS
-from zipline.data.minute_bars import (
+from catalyst.assets import Equity, Future
+from catalyst.data.data_portal import HISTORY_FREQUENCIES, OHLCV_FIELDS
+from catalyst.data.minute_bars import (
     FUTURES_MINUTES_PER_DAY,
     US_EQUITIES_MINUTES_PER_DAY,
 )
-from zipline.testing import parameter_space
-from zipline.testing.fixtures import (
+from catalyst.testing import parameter_space
+from catalyst.testing.fixtures import (
     ZiplineTestCase,
     WithTradingSessions,
     WithDataPortal,
     alias,
 )
-from zipline.testing.predicates import assert_equal
-from zipline.utils.numpy_utils import float64_dtype
+from catalyst.testing.predicates import assert_equal
+from catalyst.utils.numpy_utils import float64_dtype
 
 
 class DataPortalTestBase(WithDataPortal,

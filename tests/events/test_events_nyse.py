@@ -17,10 +17,10 @@ from datetime import timedelta
 import pandas as pd
 from nose_parameterized import parameterized
 
-from zipline.testing import parameter_space
-from zipline.utils.events import NDaysBeforeLastTradingDayOfWeek, AfterOpen, \
+from catalyst.testing import parameter_space
+from catalyst.utils.events import NDaysBeforeLastTradingDayOfWeek, AfterOpen, \
     BeforeClose
-from zipline.utils.events import NthTradingDayOfWeek
+from catalyst.utils.events import NthTradingDayOfWeek
 
 from test_events import StatelessRulesTests, StatefulRulesTests, \
     minutes_for_days

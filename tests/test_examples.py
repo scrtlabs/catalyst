@@ -19,13 +19,13 @@ import matplotlib
 from nose_parameterized import parameterized
 import pandas as pd
 
-from zipline import examples
-from zipline.data.bundles import register, unregister
-from zipline.testing import test_resource_path
-from zipline.testing.fixtures import WithTmpDir, ZiplineTestCase
-from zipline.testing.predicates import assert_equal
-from zipline.utils.cache import dataframe_cache
-from zipline.utils.paths import update_modified_time
+from catalyst import examples
+from catalyst.data.bundles import register, unregister
+from catalyst.testing import test_resource_path
+from catalyst.testing.fixtures import WithTmpDir, ZiplineTestCase
+from catalyst.testing.predicates import assert_equal
+from catalyst.utils.cache import dataframe_cache
+from catalyst.utils.paths import update_modified_time
 
 
 # Otherwise the next line sometimes complains about being run too late.
@@ -68,7 +68,7 @@ class ExamplesTests(WithTmpDir, ZiplineTestCase):
         actual_perf = examples.run_example(
             example_name,
             # This should match the invocation in
-            # zipline/tests/resources/rebuild_example_data
+            # catalyst/tests/resources/rebuild_example_data
             environ={
                 'ZIPLINE_ROOT': self.tmpdir.getpath('example_data/root'),
             },

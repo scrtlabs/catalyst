@@ -19,28 +19,28 @@ from pandas.util.testing import assert_frame_equal
 from toolz import keymap, valmap, concatv
 from toolz.curried import operator as op
 
-from zipline.assets.synthetic import make_simple_equity_info
-from zipline.errors import UnsupportedPipelineOutput
-from zipline.pipeline import Pipeline, CustomFactor
-from zipline.pipeline.data import DataSet, BoundColumn, Column
-from zipline.pipeline.engine import SimplePipelineEngine
-from zipline.pipeline.loaders.blaze import (
+from catalyst.assets.synthetic import make_simple_equity_info
+from catalyst.errors import UnsupportedPipelineOutput
+from catalyst.pipeline import Pipeline, CustomFactor
+from catalyst.pipeline.data import DataSet, BoundColumn, Column
+from catalyst.pipeline.engine import SimplePipelineEngine
+from catalyst.pipeline.loaders.blaze import (
     from_blaze,
     BlazeLoader,
     NoMetaDataWarning,
 )
-from zipline.pipeline.loaders.blaze.core import (
+from catalyst.pipeline.loaders.blaze.core import (
     ExprData,
     NonPipelineField,
 )
-from zipline.testing import (
+from catalyst.testing import (
     ZiplineTestCase,
     parameter_space,
     tmp_asset_finder,
 )
-from zipline.testing.fixtures import WithAssetFinder
-from zipline.testing.predicates import assert_equal, assert_isidentical
-from zipline.utils.numpy_utils import float64_dtype, int64_dtype
+from catalyst.testing.fixtures import WithAssetFinder
+from catalyst.testing.predicates import assert_equal, assert_isidentical
+from catalyst.utils.numpy_utils import float64_dtype, int64_dtype
 
 
 nameof = op.attrgetter('name')

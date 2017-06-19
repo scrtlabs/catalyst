@@ -19,23 +19,23 @@ from mock import patch
 
 from nose_parameterized import parameterized
 from six.moves import range
-from zipline import TradingAlgorithm
-from zipline.gens.sim_engine import BEFORE_TRADING_START_BAR
+from catalyst import TradingAlgorithm
+from catalyst.gens.sim_engine import BEFORE_TRADING_START_BAR
 
-from zipline.finance.performance import PerformanceTracker
-from zipline.finance.asset_restrictions import NoRestrictions
-from zipline.gens.tradesimulation import AlgorithmSimulator
-from zipline.sources.benchmark_source import BenchmarkSource
-from zipline.test_algorithms import NoopAlgorithm
-from zipline.testing.fixtures import (
+from catalyst.finance.performance import PerformanceTracker
+from catalyst.finance.asset_restrictions import NoRestrictions
+from catalyst.gens.tradesimulation import AlgorithmSimulator
+from catalyst.sources.benchmark_source import BenchmarkSource
+from catalyst.test_algorithms import NoopAlgorithm
+from catalyst.testing.fixtures import (
     WithDataPortal,
     WithSimParams,
     WithTradingEnvironment,
     ZiplineTestCase,
 )
-from zipline.utils import factory
-from zipline.testing.core import FakeDataPortal
-from zipline.utils.calendars.trading_calendar import days_at_time
+from catalyst.utils import factory
+from catalyst.testing.core import FakeDataPortal
+from catalyst.utils.calendars.trading_calendar import days_at_time
 
 
 class BeforeTradingAlgorithm(TradingAlgorithm):

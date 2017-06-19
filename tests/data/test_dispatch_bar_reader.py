@@ -15,18 +15,18 @@ from numpy import array, nan
 from numpy.testing import assert_almost_equal
 from pandas import DataFrame, Timestamp
 
-from zipline.assets import Equity, Future
+from catalyst.assets import Equity, Future
 
-from zipline.data.dispatch_bar_reader import (
+from catalyst.data.dispatch_bar_reader import (
     AssetDispatchMinuteBarReader,
     AssetDispatchSessionBarReader,
 )
-from zipline.data.resample import (
+from catalyst.data.resample import (
     MinuteResampleSessionBarReader,
     ReindexMinuteBarReader,
     ReindexSessionBarReader,
 )
-from zipline.testing.fixtures import (
+from catalyst.testing.fixtures import (
     WithBcolzEquityMinuteBarReader,
     WithBcolzEquityDailyBarReader,
     WithBcolzFutureMinuteBarReader,

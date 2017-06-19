@@ -130,6 +130,10 @@ class BlazeEstimatesLoader(PipelineLoader):
             mask,
         )
 
+    @property
+    def columns(self):
+        return self._columns
+
 
 class BlazeNextEstimatesLoader(BlazeEstimatesLoader):
     loader = NextEarningsEstimatesLoader

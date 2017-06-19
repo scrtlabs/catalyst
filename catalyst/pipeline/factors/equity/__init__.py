@@ -1,6 +1,9 @@
 from .statistical import (
+    RollingPearson,
+    RollingLinearRegression,
     RollingLinearRegressionOfReturns,
     RollingPearsonOfReturns,
+    RollingSpearman,
     RollingSpearmanOfReturns,
 )
 from .technical import (

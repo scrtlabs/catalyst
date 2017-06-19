@@ -1,5 +1,5 @@
 """
-Tests for zipline.utils.validate.
+Tests for catalyst.utils.validate.
 """
 from operator import attrgetter
 from types import FunctionType
@@ -10,8 +10,8 @@ from numpy import arange, array, dtype
 import pytz
 from six import PY3
 
-from zipline.utils.preprocess import call, preprocess
-from zipline.utils.input_validation import (
+from catalyst.utils.preprocess import call, preprocess
+from catalyst.utils.input_validation import (
     expect_dimensions,
     ensure_timezone,
     expect_element,

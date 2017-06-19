@@ -412,6 +412,7 @@ CATALYST_URL = (
     'https://s3.amazonaws.com/quantopian-public-zipline-data/quandl'
 )
 
+
 @bundles.register(
     'catalyst',
     calendar_name='NYSE',

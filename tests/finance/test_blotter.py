@@ -16,30 +16,30 @@ from nose_parameterized import parameterized
 
 import pandas as pd
 
-from zipline.assets import Equity
-from zipline.finance.blotter import Blotter
-from zipline.finance.cancel_policy import EODCancel, NeverCancel
-from zipline.finance.commission import PerTrade
-from zipline.finance.execution import (
+from catalyst.assets import Equity
+from catalyst.finance.blotter import Blotter
+from catalyst.finance.cancel_policy import EODCancel, NeverCancel
+from catalyst.finance.commission import PerTrade
+from catalyst.finance.execution import (
     LimitOrder,
     MarketOrder,
     StopLimitOrder,
     StopOrder,
 )
-from zipline.finance.order import ORDER_STATUS, Order
-from zipline.finance.slippage import (
+from catalyst.finance.order import ORDER_STATUS, Order
+from catalyst.finance.slippage import (
     DEFAULT_EQUITY_VOLUME_SLIPPAGE_BAR_LIMIT,
     FixedSlippage,
 )
-from zipline.gens.sim_engine import BAR, SESSION_END
-from zipline.testing.fixtures import (
+from catalyst.gens.sim_engine import BAR, SESSION_END
+from catalyst.testing.fixtures import (
     WithCreateBarData,
     WithDataPortal,
     WithLogger,
     WithSimParams,
     ZiplineTestCase,
 )
-from zipline.utils.classproperty import classproperty
+from catalyst.utils.classproperty import classproperty
 
 
 class BlotterTestCase(WithCreateBarData,

@@ -30,42 +30,42 @@ from pandas import (
 from pandas.tseries.tools import normalize_date
 from six import iteritems, itervalues
 
-from zipline.algorithm import TradingAlgorithm
-from zipline.api import (
+from catalyst.algorithm import TradingAlgorithm
+from catalyst.api import (
     attach_pipeline,
     pipeline_output,
     get_datetime,
 )
-from zipline.errors import (
+from catalyst.errors import (
     AttachPipelineAfterInitialize,
     PipelineOutputDuringInitialize,
     NoSuchPipeline,
 )
-from zipline.lib.adjustment import MULTIPLY
-from zipline.pipeline import Pipeline
-from zipline.pipeline.factors import VWAP
-from zipline.pipeline.data import USEquityPricing
-from zipline.pipeline.loaders.frame import DataFrameLoader
-from zipline.pipeline.loaders.equity_pricing_loader import (
+from catalyst.lib.adjustment import MULTIPLY
+from catalyst.pipeline import Pipeline
+from catalyst.pipeline.factors.equity import VWAP
+from catalyst.pipeline.data import USEquityPricing
+from catalyst.pipeline.loaders.frame import DataFrameLoader
+from catalyst.pipeline.loaders.equity_pricing_loader import (
     USEquityPricingLoader,
 )
-from zipline.testing import (
+from catalyst.testing import (
     str_to_seconds
 )
-from zipline.testing import (
+from catalyst.testing import (
     create_empty_splits_mergers_frame,
     FakeDataPortal,
 )
-from zipline.testing.fixtures import (
+from catalyst.testing.fixtures import (
     WithAdjustmentReader,
     WithBcolzEquityDailyBarReaderFromCSVs,
     WithDataPortal,
     ZiplineTestCase,
 )
-from zipline.utils.calendars import get_calendar
+from catalyst.utils.calendars import get_calendar
 
 TEST_RESOURCE_PATH = join(
-    dirname(dirname(realpath(__file__))),  # zipline_repo/tests
+    dirname(dirname(realpath(__file__))),  # catalyst_repo/tests
     'resources',
     'pipeline_inputs',
 )
@@ -375,7 +375,7 @@ class PipelineAlgorithmTestCase(WithBcolzEquityDailyBarReaderFromCSVs,
             asset: read_csv(path, parse_dates=['day']).set_index('day')
             for asset, path in resources.items()
         }
-        # Add 'price' column as an alias because all kinds of stuff in zipline
+        # Add 'price' column as an alias because all kinds of stuff in catalyst
         # depends on it being present. :/
         for frame in raw_data.values():
             frame['price'] = frame['close']
@@ -413,6 +413,7 @@ class PipelineAlgorithmTestCase(WithBcolzEquityDailyBarReaderFromCSVs,
         cls.pipeline_loader = USEquityPricingLoader(
             cls.bcolz_equity_daily_bar_reader,
             cls.adjustment_reader,
+            USEquityPricing,
         )
         cls.dates = cls.raw_data[cls.AAPL].index.tz_localize('UTC')
         cls.AAPL_split_date = Timestamp("2014-06-09", tz='UTC')
