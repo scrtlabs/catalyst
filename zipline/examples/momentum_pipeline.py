@@ -12,15 +12,18 @@ from zipline.api import (
     schedule_function,
 )
 from zipline.pipeline import Pipeline
-from zipline.pipeline.factors import RSI
+from zipline.pipeline.factors.crypto import RSI as cRSI
+from zipline.pipeline.factors.equity import RSI as eRSI
 
 
 def make_pipeline():
-    rsi = RSI()
+    crsi = cRSI()
+    ersi = eRSI()
     return Pipeline(
         columns={
-            'longs': rsi.top(3),
-            'shorts': rsi.bottom(3),
+            'longs': crsi.top(3),
+            'shorts': crsi.bottom(3),
+            'equity': ersi.top(3),
         },
     )
 

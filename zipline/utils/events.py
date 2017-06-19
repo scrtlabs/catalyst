@@ -606,8 +606,9 @@ class time_rules(object):
 
 
 class calendars(object):
-    US_EQUITIES = sentinel('US_EQUITIES')
-    US_FUTURES = sentinel('US_FUTURES')
+    CRYPTO_ASSETS = sentinel('CRYPTO_ASSETS')
+    US_EQUITIES   = sentinel('US_EQUITIES')
+    US_FUTURES    = sentinel('US_FUTURES')
 
 
 def make_eventrule(date_rule, time_rule, cal, half_days=True):

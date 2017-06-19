@@ -41,7 +41,7 @@ from zipline.utils.numpy_utils import (
     ignore_nanwarnings,
     rolling_window,
 )
-from .factor import CustomFactor
+from ..factor import CustomFactor
 
 
 class Returns(CustomFactor):

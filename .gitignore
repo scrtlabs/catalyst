@@ -71,4 +71,7 @@ zipline.iml
 # PyCharm custom settings
 .idea
 
+# Pickle files
+*.pickle
+
 TAGS
