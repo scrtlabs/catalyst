@@ -35,8 +35,8 @@ from pandas import (
     date_range,
 )
 
-from zipline.data.bar_reader import NoDataOnDate
-from zipline.data.minute_bars import (
+from catalyst.data.bar_reader import NoDataOnDate
+from catalyst.data.minute_bars import (
     BcolzMinuteBarMetadata,
     BcolzMinuteBarWriter,
     BcolzMinuteBarReader,
@@ -47,7 +47,7 @@ from zipline.data.minute_bars import (
     H5MinuteBarUpdateReader,
 )
 
-from zipline.testing.fixtures import (
+from catalyst.testing.fixtures import (
     WithAssetFinder,
     WithInstanceTmpDir,
     WithTradingCalendars,

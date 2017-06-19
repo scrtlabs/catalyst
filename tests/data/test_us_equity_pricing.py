@@ -30,13 +30,13 @@ from pandas import (
 )
 from pandas.util.testing import assert_index_equal
 
-from zipline.data.us_equity_pricing import (
+from catalyst.data.us_equity_pricing import (
     BcolzDailyBarReader,
     BcolzDailyBarWriter,
     NoDataBeforeDate,
     NoDataAfterDate,
 )
-from zipline.pipeline.loaders.synthetic import (
+from catalyst.pipeline.loaders.synthetic import (
     OHLCV,
     asset_start,
     asset_end,
@@ -44,15 +44,15 @@ from zipline.pipeline.loaders.synthetic import (
     expected_bar_values_2d,
     make_bar_data,
 )
-from zipline.testing import seconds_to_timestamp
-from zipline.testing.fixtures import (
+from catalyst.testing import seconds_to_timestamp
+from catalyst.testing.fixtures import (
     WithAssetFinder,
     WithBcolzEquityDailyBarReader,
     WithTmpDir,
     WithTradingCalendars,
     ZiplineTestCase,
 )
-from zipline.utils.calendars import get_calendar
+from catalyst.utils.calendars import get_calendar
 
 TEST_CALENDAR_START = Timestamp('2015-06-01', tz='UTC')
 TEST_CALENDAR_STOP = Timestamp('2015-06-30', tz='UTC')

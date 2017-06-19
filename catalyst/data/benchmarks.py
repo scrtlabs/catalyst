@@ -43,6 +43,9 @@ def get_benchmark_returns(symbol, first_date, last_date):
     first_date is **not** included because we need the close from day N - 1 to
     compute the returns for day N.
     """
+    if symbol == '^GSPC':
+        symbol = 'spy'
+
     data = pd_reader.DataReader(
         symbol,
         'google',

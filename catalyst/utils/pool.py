@@ -37,8 +37,8 @@ class ApplyAsyncResult(object):
 
         Notes
         -----
-        In the :class:`~catalyst.utils.pool.SequentialPool` case, this is always
-        ``True``.
+        In the :class:`~catalyst.utils.pool.SequentialPool` case, this is
+        always ``True``.
         """
         return True
 

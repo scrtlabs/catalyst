@@ -1,5 +1,5 @@
 """
-Tests for zipline.utils.numpy_utils.
+Tests for catalyst.utils.numpy_utils.
 """
 from datetime import datetime
 from six import itervalues
@@ -19,8 +19,8 @@ from toolz import concat, keyfilter
 from toolz import curry
 from toolz.curried.operator import ne
 
-from zipline.utils.functional import mapall as lazy_mapall
-from zipline.utils.numpy_utils import (
+from catalyst.utils.functional import mapall as lazy_mapall
+from catalyst.utils.numpy_utils import (
     is_float,
     is_int,
     is_datetime,

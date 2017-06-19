@@ -7,9 +7,9 @@ import pandas as pd
 import talib
 from numpy.random import RandomState
 
-from zipline.lib.adjusted_array import AdjustedArray
-from zipline.pipeline.data import USEquityPricing
-from zipline.pipeline.factors import (
+from catalyst.lib.adjusted_array import AdjustedArray
+from catalyst.pipeline.data import USEquityPricing
+from catalyst.pipeline.factors.equity import (
     BollingerBands,
     Aroon,
     FastStochasticOscillator,
@@ -20,9 +20,9 @@ from zipline.pipeline.factors import (
     MovingAverageConvergenceDivergenceSignal,
     AnnualizedVolatility,
 )
-from zipline.testing import parameter_space
-from zipline.testing.fixtures import ZiplineTestCase
-from zipline.testing.predicates import assert_equal
+from catalyst.testing import parameter_space
+from catalyst.testing.fixtures import ZiplineTestCase
+from catalyst.testing.predicates import assert_equal
 from .base import BasePipelineTestCase
 
 

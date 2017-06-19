@@ -14,12 +14,12 @@
 # limitations under the License.
 import pandas as pd
 
-from zipline.test_algorithms import (
+from catalyst.test_algorithms import (
     ExceptionAlgorithm,
     DivByZeroAlgorithm,
     SetPortfolioAlgorithm,
 )
-from zipline.testing.fixtures import (
+from catalyst.testing.fixtures import (
     WithDataPortal,
     WithSimParams,
     ZiplineTestCase,

@@ -24,32 +24,32 @@ from numpy.random import randn, seed
 import pandas as pd
 from scipy.stats.mstats import winsorize as scipy_winsorize
 
-from zipline.errors import BadPercentileBounds, UnknownRankMethod
-from zipline.lib.labelarray import LabelArray
-from zipline.lib.rank import masked_rankdata_2d
-from zipline.lib.normalize import naive_grouped_rowwise_apply as grouped_apply
-from zipline.pipeline import Classifier, Factor, Filter
-from zipline.pipeline.factors import (
-    CustomFactor,
+from catalyst.errors import BadPercentileBounds, UnknownRankMethod
+from catalyst.lib.labelarray import LabelArray
+from catalyst.lib.rank import masked_rankdata_2d
+from catalyst.lib.normalize import naive_grouped_rowwise_apply as grouped_apply
+from catalyst.pipeline import Classifier, Factor, Filter
+from catalyst.pipeline.factors import CustomFactor
+from catalyst.pipeline.factors.equity import (
     Returns,
     RSI,
 )
-from zipline.testing import (
+from catalyst.testing import (
     check_allclose,
     check_arrays,
     parameter_space,
     permute_rows,
 )
-from zipline.testing.fixtures import ZiplineTestCase
-from zipline.testing.predicates import assert_equal
-from zipline.utils.numpy_utils import (
+from catalyst.testing.fixtures import ZiplineTestCase
+from catalyst.testing.predicates import assert_equal
+from catalyst.utils.numpy_utils import (
     categorical_dtype,
     datetime64ns_dtype,
     float64_dtype,
     int64_dtype,
     NaTns,
 )
-from zipline.utils.math_utils import nanmean, nanstd
+from catalyst.utils.math_utils import nanmean, nanstd
 
 from .base import BasePipelineTestCase
 

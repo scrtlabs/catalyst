@@ -29,37 +29,37 @@ import pandas as pd
 import numpy as np
 from six.moves import range, zip
 
-from zipline.assets import Asset
-from zipline.assets.synthetic import make_simple_equity_info
-from zipline.data.us_equity_pricing import (
+from catalyst.assets import Asset
+from catalyst.assets.synthetic import make_simple_equity_info
+from catalyst.data.us_equity_pricing import (
     SQLiteAdjustmentWriter,
     SQLiteAdjustmentReader,
 )
-import zipline.utils.factory as factory
-import zipline.finance.performance as perf
-from zipline.finance.transaction import create_transaction
-import zipline.utils.math_utils as zp_math
+import catalyst.utils.factory as factory
+import catalyst.finance.performance as perf
+from catalyst.finance.transaction import create_transaction
+import catalyst.utils.math_utils as zp_math
 
-from zipline.finance.blotter import Order
-from zipline.finance.performance.position import Position
-from zipline.utils.factory import create_simulation_parameters
-from zipline.utils.serialization_utils import (
+from catalyst.finance.blotter import Order
+from catalyst.finance.performance.position import Position
+from catalyst.utils.factory import create_simulation_parameters
+from catalyst.utils.serialization_utils import (
     loads_with_persistent_ids, dumps_with_persistent_ids
 )
-from zipline.testing import (
+from catalyst.testing import (
     MockDailyBarReader,
     create_data_portal_from_trade_history,
     create_empty_splits_mergers_frame,
     tmp_trading_env,
 )
-from zipline.testing.fixtures import (
+from catalyst.testing.fixtures import (
     WithInstanceTmpDir,
     WithSimParams,
     WithTmpDir,
     WithTradingEnvironment,
     ZiplineTestCase,
 )
-from zipline.utils.calendars import get_calendar
+from catalyst.utils.calendars import get_calendar
 
 logger = logging.getLogger('Test Perf Tracking')
 

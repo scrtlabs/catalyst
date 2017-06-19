@@ -5,7 +5,7 @@ from functools import partial
 
 from toolz import groupby
 
-from zipline.finance.asset_restrictions import (
+from catalyst.finance.asset_restrictions import (
     RESTRICTION_STATES,
     Restriction,
     HistoricalRestrictions,
@@ -15,8 +15,8 @@ from zipline.finance.asset_restrictions import (
     _UnionRestrictions,
 )
 
-from zipline.testing import parameter_space
-from zipline.testing.fixtures import (
+from catalyst.testing import parameter_space
+from catalyst.testing.fixtures import (
     WithDataPortal,
     ZiplineTestCase,
 )
@@ -221,7 +221,7 @@ class RestrictionsTestCase(WithDataPortal, ZiplineTestCase):
     def test_security_list_restrictions(self):
         """
         Test single- and multi-asset queries on restrictions defined by
-        zipline.utils.security_list.SecurityList
+        catalyst.utils.security_list.SecurityList
         """
 
         # A mock SecurityList object filled with fake data

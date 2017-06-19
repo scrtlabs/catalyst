@@ -18,13 +18,13 @@ from itertools import permutations, product
 import numpy as np
 import pandas as pd
 
-from zipline.data.us_equity_pricing import PanelBarReader
-from zipline.testing import ExplodingObject
-from zipline.testing.fixtures import (
+from catalyst.data.us_equity_pricing import PanelBarReader
+from catalyst.testing import ExplodingObject
+from catalyst.testing.fixtures import (
     WithAssetFinder,
     ZiplineTestCase,
 )
-from zipline.utils.calendars import get_calendar
+from catalyst.utils.calendars import get_calendar
 
 
 class WithPanelBarReader(WithAssetFinder):

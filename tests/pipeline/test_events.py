@@ -10,27 +10,27 @@ from nose_parameterized import parameterized
 import numpy as np
 import pandas as pd
 
-from zipline.pipeline import Pipeline, SimplePipelineEngine
-from zipline.pipeline.common import (
+from catalyst.pipeline import Pipeline, SimplePipelineEngine
+from catalyst.pipeline.common import (
     EVENT_DATE_FIELD_NAME,
     TS_FIELD_NAME,
     SID_FIELD_NAME,
 )
-from zipline.pipeline.data import DataSet, Column
-from zipline.pipeline.loaders.events import EventsLoader
-from zipline.pipeline.loaders.blaze.events import BlazeEventsLoader
-from zipline.pipeline.loaders.utils import (
+from catalyst.pipeline.data import DataSet, Column
+from catalyst.pipeline.loaders.events import EventsLoader
+from catalyst.pipeline.loaders.blaze.events import BlazeEventsLoader
+from catalyst.pipeline.loaders.utils import (
     next_event_indexer,
     normalize_timestamp_to_query_time,
     previous_event_indexer,
 )
-from zipline.testing import check_arrays, ZiplineTestCase
-from zipline.testing.fixtures import (
+from catalyst.testing import check_arrays, ZiplineTestCase
+from catalyst.testing.fixtures import (
     WithAssetFinder,
     WithTradingSessions,
 )
-from zipline.testing.predicates import assert_equal
-from zipline.utils.numpy_utils import (
+from catalyst.testing.predicates import assert_equal
+from catalyst.utils.numpy_utils import (
     categorical_dtype,
     datetime64ns_dtype,
     float64_dtype,

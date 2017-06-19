@@ -17,8 +17,8 @@ import random
 import numpy as np
 import pandas as pd
 
-from zipline.finance.trading import TradingEnvironment
-from zipline.data.us_equity_minutes import BcolzMinuteBarWriter
+from catalyst.finance.trading import TradingEnvironment
+from catalyst.data.us_equity_minutes import BcolzMinuteBarWriter
 
 
 def generate_daily_test_data(first_day,

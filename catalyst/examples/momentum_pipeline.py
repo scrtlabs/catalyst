@@ -10,26 +10,23 @@ from catalyst.api import (
     pipeline_output,
     record,
     schedule_function,
+    symbol,
 )
 from catalyst.pipeline import Pipeline
-from catalyst.pipeline.factors.crypto import RSI as cRSI
-from catalyst.pipeline.factors.equity import RSI as eRSI
+from catalyst.pipeline.factors.equity import RSI
 
 
 def make_pipeline():
-    crsi = cRSI()
-    ersi = eRSI()
+    rsi = RSI()
     return Pipeline(
         columns={
-            'longs': crsi.top(3),
-            'shorts': crsi.bottom(3),
-            'equity': ersi.top(3),
+            'longs': rsi.top(3),
+            'shorts': rsi.bottom(3),
         },
     )
 
 
 def rebalance(context, data):
-
     # Pipeline data will be a dataframe with boolean columns named 'longs' and
     # 'shorts'.
     pipeline_data = context.pipeline_data

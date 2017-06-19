@@ -17,21 +17,21 @@ from pandas import (
 from pandas.util.testing import assert_frame_equal
 from scipy.stats import linregress, pearsonr, spearmanr
 
-from zipline.assets import Equity
-from zipline.errors import IncompatibleTerms, NonExistentAssetInTimeFrame
-from zipline.pipeline import CustomFactor, Pipeline
-from zipline.pipeline.data import USEquityPricing
-from zipline.pipeline.data.testing import TestingDataSet
-from zipline.pipeline.engine import SimplePipelineEngine
-from zipline.pipeline.factors import (
+from catalyst.assets import Equity
+from catalyst.errors import IncompatibleTerms, NonExistentAssetInTimeFrame
+from catalyst.pipeline import CustomFactor, Pipeline
+from catalyst.pipeline.data import USEquityPricing
+from catalyst.pipeline.data.testing import TestingDataSet
+from catalyst.pipeline.engine import SimplePipelineEngine
+from catalyst.pipeline.factors.equity import (
     Returns,
     RollingLinearRegressionOfReturns,
     RollingPearsonOfReturns,
     RollingSpearmanOfReturns,
 )
-from zipline.pipeline.loaders.frame import DataFrameLoader
-from zipline.pipeline.sentinels import NotSpecified
-from zipline.testing import (
+from catalyst.pipeline.loaders.frame import DataFrameLoader
+from catalyst.pipeline.sentinels import NotSpecified
+from catalyst.testing import (
     AssetID,
     AssetIDPlusDay,
     check_arrays,
@@ -39,12 +39,12 @@ from zipline.testing import (
     make_cascading_boolean_array,
     parameter_space,
 )
-from zipline.testing.fixtures import (
+from catalyst.testing.fixtures import (
     WithSeededRandomPipelineEngine,
     WithTradingEnvironment,
     ZiplineTestCase,
 )
-from zipline.utils.numpy_utils import (
+from catalyst.utils.numpy_utils import (
     bool_dtype,
     datetime64ns_dtype,
     float64_dtype,

@@ -7,11 +7,11 @@ from unittest import TestCase
 from pandas import date_range, DataFrame
 from pandas.util.testing import assert_frame_equal
 
-from zipline.lib.labelarray import LabelArray
-from zipline.pipeline import Pipeline
-from zipline.pipeline.data.testing import TestingDataSet as TDS
-from zipline.testing import chrange, temp_pipeline_engine
-from zipline.utils.pandas_utils import ignore_pandas_nan_categorical_warning
+from catalyst.lib.labelarray import LabelArray
+from catalyst.pipeline import Pipeline
+from catalyst.pipeline.data.testing import TestingDataSet as TDS
+from catalyst.testing import chrange, temp_pipeline_engine
+from catalyst.utils.pandas_utils import ignore_pandas_nan_categorical_warning
 
 
 class LatestTestCase(TestCase):

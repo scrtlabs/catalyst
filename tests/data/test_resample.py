@@ -21,7 +21,7 @@ import pandas as pd
 from pandas import DataFrame
 from six import iteritems
 
-from zipline.data.resample import (
+from catalyst.data.resample import (
     minute_frame_to_session_frame,
     DailyHistoryAggregator,
     MinuteResampleSessionBarReader,
@@ -29,8 +29,8 @@ from zipline.data.resample import (
     ReindexSessionBarReader,
 )
 
-from zipline.testing import parameter_space
-from zipline.testing.fixtures import (
+from catalyst.testing import parameter_space
+from catalyst.testing.fixtures import (
     WithEquityMinuteBarData,
     WithBcolzEquityMinuteBarReader,
     WithBcolzEquityDailyBarReader,

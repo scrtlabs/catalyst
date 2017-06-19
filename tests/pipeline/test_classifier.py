@@ -4,12 +4,12 @@ from operator import or_
 import numpy as np
 import pandas as pd
 
-from zipline.lib.labelarray import LabelArray
-from zipline.pipeline import Classifier
-from zipline.testing import parameter_space
-from zipline.testing.fixtures import ZiplineTestCase
-from zipline.testing.predicates import assert_equal
-from zipline.utils.numpy_utils import (
+from catalyst.lib.labelarray import LabelArray
+from catalyst.pipeline import Classifier
+from catalyst.testing import parameter_space
+from catalyst.testing.fixtures import ZiplineTestCase
+from catalyst.testing.predicates import assert_equal
+from catalyst.utils.numpy_utils import (
     categorical_dtype,
     int64_dtype,
 )

@@ -5,35 +5,35 @@ from numpy import where
 from pandas import Int64Index, Timestamp
 from pandas.util.testing import assert_frame_equal
 
-from zipline.assets import Asset
-from zipline.errors import (
+from catalyst.assets import Asset
+from catalyst.errors import (
     NonExistentAssetInTimeFrame,
     NonSliceableTerm,
     NonWindowSafeInput,
     UnsupportedPipelineOutput,
 )
-from zipline.pipeline import CustomFactor, Pipeline
-from zipline.pipeline.data import USEquityPricing
-from zipline.pipeline.data.testing import TestingDataSet
-from zipline.pipeline.factors import (
+from catalyst.pipeline import CustomFactor, Pipeline
+from catalyst.pipeline.data import USEquityPricing
+from catalyst.pipeline.data.testing import TestingDataSet
+from catalyst.pipeline.factors.equity import (
     Returns,
     RollingLinearRegressionOfReturns,
     RollingPearsonOfReturns,
     RollingSpearmanOfReturns,
     SimpleMovingAverage,
 )
-from zipline.testing import (
+from catalyst.testing import (
     AssetID,
     AssetIDPlusDay,
     check_arrays,
     OpenPrice,
     parameter_space,
 )
-from zipline.testing.fixtures import (
+from catalyst.testing.fixtures import (
     WithSeededRandomPipelineEngine,
     ZiplineTestCase,
 )
-from zipline.utils.numpy_utils import datetime64ns_dtype
+from catalyst.utils.numpy_utils import datetime64ns_dtype
 
 
 class SliceTestCase(WithSeededRandomPipelineEngine, ZiplineTestCase):

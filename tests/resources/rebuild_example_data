@@ -9,10 +9,10 @@ import matplotlib
 import numpy as np
 import pandas as pd
 
-from zipline import examples
-from zipline.data.bundles import clean, ingest, register, yahoo_equities
-from zipline.testing import test_resource_path, tmp_dir
-from zipline.utils.cache import dataframe_cache
+from catalyst import examples
+from catalyst.data.bundles import clean, ingest, register, yahoo_equities
+from catalyst.testing import test_resource_path, tmp_dir
+from catalyst.utils.cache import dataframe_cache
 
 
 matplotlib.use('Agg')

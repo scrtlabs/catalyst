@@ -4,22 +4,22 @@ import pandas as pd
 from testfixtures import TempDirectory
 from nose_parameterized import parameterized
 
-from zipline.algorithm import TradingAlgorithm
-from zipline.errors import TradingControlViolation
-from zipline.testing import (
+from catalyst.algorithm import TradingAlgorithm
+from catalyst.errors import TradingControlViolation
+from catalyst.testing import (
     add_security_data,
     create_data_portal,
     security_list_copy,
     tmp_trading_env,
     tmp_dir,
 )
-from zipline.testing.fixtures import (
+from catalyst.testing.fixtures import (
     WithLogger,
     WithTradingEnvironment,
     ZiplineTestCase,
 )
-from zipline.utils import factory
-from zipline.utils.security_list import (
+from catalyst.utils import factory
+from catalyst.utils.security_list import (
     SecurityListSet,
     load_from_directory,
 )

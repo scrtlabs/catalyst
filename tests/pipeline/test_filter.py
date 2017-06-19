@@ -26,21 +26,21 @@ from numpy import (
 from numpy.random import randn, seed as random_seed
 import pandas as pd
 
-from zipline.errors import BadPercentileBounds
-from zipline.pipeline import Filter, Factor, Pipeline
-from zipline.pipeline.classifiers import Classifier
-from zipline.pipeline.factors import CustomFactor
-from zipline.pipeline.filters import (
+from catalyst.errors import BadPercentileBounds
+from catalyst.pipeline import Filter, Factor, Pipeline
+from catalyst.pipeline.classifiers import Classifier
+from catalyst.pipeline.factors import CustomFactor
+from catalyst.pipeline.filters import (
     All,
     Any,
     AtLeastN,
     StaticAssets,
     StaticSids,
 )
-from zipline.testing import parameter_space, permute_rows, ZiplineTestCase
-from zipline.testing.fixtures import WithSeededRandomPipelineEngine
-from zipline.testing.predicates import assert_equal
-from zipline.utils.numpy_utils import float64_dtype, int64_dtype
+from catalyst.testing import parameter_space, permute_rows, ZiplineTestCase
+from catalyst.testing.fixtures import WithSeededRandomPipelineEngine
+from catalyst.testing.predicates import assert_equal
+from catalyst.utils.numpy_utils import float64_dtype, int64_dtype
 from .base import BasePipelineTestCase, with_default_shape
 
 

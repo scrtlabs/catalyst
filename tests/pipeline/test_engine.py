@@ -36,15 +36,15 @@ from pandas.util.testing import assert_frame_equal
 from six import iteritems, itervalues
 from toolz import merge
 
-from zipline.assets.synthetic import make_rotating_equity_info
-from zipline.errors import NoFurtherDataError
-from zipline.lib.adjustment import MULTIPLY
-from zipline.lib.labelarray import LabelArray
-from zipline.pipeline import CustomFactor, Pipeline
-from zipline.pipeline.data import Column, DataSet, USEquityPricing
-from zipline.pipeline.data.testing import TestingDataSet
-from zipline.pipeline.engine import SimplePipelineEngine
-from zipline.pipeline.factors import (
+from catalyst.assets.synthetic import make_rotating_equity_info
+from catalyst.errors import NoFurtherDataError
+from catalyst.lib.adjustment import MULTIPLY
+from catalyst.lib.labelarray import LabelArray
+from catalyst.pipeline import CustomFactor, Pipeline
+from catalyst.pipeline.data import Column, DataSet, USEquityPricing
+from catalyst.pipeline.data.testing import TestingDataSet
+from catalyst.pipeline.engine import SimplePipelineEngine
+from catalyst.pipeline.factors.equity import (
     AverageDollarVolume,
     EWMA,
     EWMSTD,
@@ -54,18 +54,18 @@ from zipline.pipeline.factors import (
     Returns,
     SimpleMovingAverage,
 )
-from zipline.pipeline.loaders.equity_pricing_loader import (
+from catalyst.pipeline.loaders.equity_pricing_loader import (
     USEquityPricingLoader,
 )
-from zipline.pipeline.loaders.frame import DataFrameLoader
-from zipline.pipeline.loaders.synthetic import (
+from catalyst.pipeline.loaders.frame import DataFrameLoader
+from catalyst.pipeline.loaders.synthetic import (
     PrecomputedLoader,
     make_bar_data,
     expected_bar_values_2d,
 )
-from zipline.pipeline.sentinels import NotSpecified
-from zipline.pipeline.term import InputDates
-from zipline.testing import (
+from catalyst.pipeline.sentinels import NotSpecified
+from catalyst.pipeline.term import InputDates
+from catalyst.testing import (
     AssetID,
     AssetIDPlusDay,
     ExplodingObject,
@@ -76,16 +76,16 @@ from zipline.testing import (
     parameter_space,
     product_upper_triangle,
 )
-from zipline.testing.fixtures import (
+from catalyst.testing.fixtures import (
     WithAdjustmentReader,
     WithEquityPricingPipelineEngine,
     WithSeededRandomPipelineEngine,
     WithTradingEnvironment,
     ZiplineTestCase,
 )
-from zipline.testing.predicates import assert_equal
-from zipline.utils.memoize import lazyval
-from zipline.utils.numpy_utils import bool_dtype, datetime64ns_dtype
+from catalyst.testing.predicates import assert_equal
+from catalyst.utils.memoize import lazyval
+from catalyst.utils.numpy_utils import bool_dtype, datetime64ns_dtype
 
 
 class RollingSumDifference(CustomFactor):
@@ -952,6 +952,7 @@ class SyntheticBcolzTestCase(WithAdjustmentReader,
         cls.pipeline_loader = USEquityPricingLoader(
             cls.bcolz_equity_daily_bar_reader,
             cls.adjustment_reader,
+            USEquityPricing,
         )
 
     def write_nans(self, df):

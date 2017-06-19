@@ -1,11 +1,11 @@
 """
-Tests for zipline.utils.memoize.
+Tests for catalyst.utils.memoize.
 """
 from collections import defaultdict
 import gc
 from unittest import TestCase
 
-from zipline.utils.memoize import remember_last
+from catalyst.utils.memoize import remember_last
 
 
 class TestRememberLast(TestCase):

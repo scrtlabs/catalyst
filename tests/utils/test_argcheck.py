@@ -14,7 +14,7 @@
 # limitations under the License.
 from unittest import TestCase
 
-from zipline.utils.argcheck import (
+from catalyst.utils.argcheck import (
     verify_callable_argspec,
     Argument,
     NoStarargs,

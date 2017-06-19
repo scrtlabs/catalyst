@@ -1,11 +1,11 @@
 """
-Tests for zipline/utils/pandas_utils.py
+Tests for catalyst/utils/pandas_utils.py
 """
 import pandas as pd
 
-from zipline.testing import parameter_space, ZiplineTestCase
-from zipline.testing.predicates import assert_equal
-from zipline.utils.pandas_utils import (
+from catalyst.testing import parameter_space, ZiplineTestCase
+from catalyst.testing.predicates import assert_equal
+from catalyst.utils.pandas_utils import (
     categorical_df_concat,
     nearest_unequal_elements
 )

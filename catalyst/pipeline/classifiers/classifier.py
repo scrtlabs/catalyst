@@ -330,7 +330,8 @@ class Classifier(RestrictedDTypeMixin, ComputableTerm):
         Called with the result of a pipeline. This needs to return an object
         which can be put into the workspace to continue doing computations.
 
-        This is the inverse of :func:`~catalyst.pipeline.term.Term.postprocess`.
+        This is the inverse of
+        :func:`~catalyst.pipeline.term.Term.postprocess`.
         """
         if self.dtype == int64_dtype:
             return super(Classifier, self).to_workspace_value(result, assets)

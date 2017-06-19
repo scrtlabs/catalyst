@@ -1,7 +1,7 @@
 from datetime import time
 from unittest import TestCase
 import pandas as pd
-from zipline.gens.sim_engine import (
+from catalyst.gens.sim_engine import (
     MinuteSimulationClock,
     SESSION_START,
     BEFORE_TRADING_START_BAR,
@@ -9,8 +9,8 @@ from zipline.gens.sim_engine import (
     SESSION_END
 )
 
-from zipline.utils.calendars import get_calendar
-from zipline.utils.calendars.trading_calendar import days_at_time
+from catalyst.utils.calendars import get_calendar
+from catalyst.utils.calendars.trading_calendar import days_at_time
 
 
 class TestClock(TestCase):

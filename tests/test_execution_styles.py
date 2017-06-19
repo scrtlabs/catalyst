@@ -15,14 +15,14 @@
 from nose_parameterized import parameterized
 from six.moves import range
 
-from zipline.errors import BadOrderParameters
-from zipline.finance.execution import (
+from catalyst.errors import BadOrderParameters
+from catalyst.finance.execution import (
     LimitOrder,
     MarketOrder,
     StopLimitOrder,
     StopOrder,
 )
-from zipline.testing.fixtures import (
+from catalyst.testing.fixtures import (
     WithLogger,
     ZiplineTestCase,
 )
@@ -30,7 +30,7 @@ from zipline.testing.fixtures import (
 
 class ExecutionStyleTestCase(WithLogger, ZiplineTestCase):
     """
-    Tests for zipline ExecutionStyle classes.
+    Tests for catalyst ExecutionStyle classes.
     """
 
     epsilon = .000001

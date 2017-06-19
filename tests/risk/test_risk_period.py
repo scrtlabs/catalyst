@@ -18,13 +18,13 @@ import calendar
 import pandas as pd
 import numpy as np
 
-import zipline.finance.risk as risk
-from zipline.utils import factory
+import catalyst.finance.risk as risk
+from catalyst.utils import factory
 
-from zipline.finance.trading import SimulationParameters
-from zipline.testing.fixtures import WithTradingEnvironment, ZiplineTestCase
+from catalyst.finance.trading import SimulationParameters
+from catalyst.testing.fixtures import WithTradingEnvironment, ZiplineTestCase
 
-from zipline.finance.risk.period import RiskMetricsPeriod
+from catalyst.finance.risk.period import RiskMetricsPeriod
 
 RETURNS_BASE = 0.01
 RETURNS = [RETURNS_BASE] * 251

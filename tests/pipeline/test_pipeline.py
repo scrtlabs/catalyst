@@ -1,15 +1,15 @@
 """
-Tests for zipline.pipeline.Pipeline
+Tests for catalyst.pipeline.Pipeline
 """
 import inspect
 from unittest import TestCase
 
 from mock import patch
 
-from zipline.pipeline import Factor, Filter, Pipeline
-from zipline.pipeline.data import USEquityPricing
-from zipline.pipeline.graph import display_graph
-from zipline.utils.numpy_utils import float64_dtype
+from catalyst.pipeline import Factor, Filter, Pipeline
+from catalyst.pipeline.data import USEquityPricing
+from catalyst.pipeline.graph import display_graph
+from catalyst.utils.numpy_utils import float64_dtype
 
 
 class SomeFactor(Factor):
@@ -159,7 +159,7 @@ class PipelineTestCase(TestCase):
         )
 
         patch_display_graph = patch(
-            'zipline.pipeline.graph.display_graph',
+            'catalyst.pipeline.graph.display_graph',
             mock_display_graph,
         )
 

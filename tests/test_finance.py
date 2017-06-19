@@ -14,7 +14,7 @@
 # limitations under the License.
 
 """
-Tests for the zipline.finance package
+Tests for the catalyst.finance package
 """
 from datetime import datetime, timedelta
 import os
@@ -27,29 +27,29 @@ from six import iteritems
 from six.moves import range
 from testfixtures import TempDirectory
 
-from zipline.assets.synthetic import make_simple_equity_info
-from zipline.finance.blotter import Blotter
-from zipline.finance.execution import MarketOrder, LimitOrder
-from zipline.finance.performance import PerformanceTracker
-from zipline.finance.trading import SimulationParameters
-from zipline.data.us_equity_pricing import BcolzDailyBarReader
-from zipline.data.minute_bars import BcolzMinuteBarReader
-from zipline.data.data_portal import DataPortal
-from zipline.data.us_equity_pricing import BcolzDailyBarWriter
-from zipline.finance.slippage import FixedSlippage
-from zipline.finance.asset_restrictions import NoRestrictions
-from zipline.protocol import BarData
-from zipline.testing import (
+from catalyst.assets.synthetic import make_simple_equity_info
+from catalyst.finance.blotter import Blotter
+from catalyst.finance.execution import MarketOrder, LimitOrder
+from catalyst.finance.performance import PerformanceTracker
+from catalyst.finance.trading import SimulationParameters
+from catalyst.data.us_equity_pricing import BcolzDailyBarReader
+from catalyst.data.minute_bars import BcolzMinuteBarReader
+from catalyst.data.data_portal import DataPortal
+from catalyst.data.us_equity_pricing import BcolzDailyBarWriter
+from catalyst.finance.slippage import FixedSlippage
+from catalyst.finance.asset_restrictions import NoRestrictions
+from catalyst.protocol import BarData
+from catalyst.testing import (
     tmp_trading_env,
     write_bcolz_minute_data,
 )
-from zipline.testing.fixtures import (
+from catalyst.testing.fixtures import (
     WithLogger,
     WithTradingEnvironment,
     ZiplineTestCase,
 )
 
-import zipline.utils.factory as factory
+import catalyst.utils.factory as factory
 
 DEFAULT_TIMEOUT = 15  # seconds
 EXTENDED_TIMEOUT = 90
@@ -66,7 +66,7 @@ class FinanceTestCase(WithLogger,
 
     def init_instance_fixtures(self):
         super(FinanceTestCase, self).init_instance_fixtures()
-        self.zipline_test_config = {'sid': 133}
+        self.catalyst_test_config = {'sid': 133}
 
     # TODO: write tests for short sales
     # TODO: write a test to do massive buying or shorting.
@@ -405,7 +405,7 @@ class TradingEnvironmentTestCase(WithLogger,
                                  WithTradingEnvironment,
                                  ZiplineTestCase):
     """
-    Tests for date management utilities in zipline.finance.trading.
+    Tests for date management utilities in catalyst.finance.trading.
     """
     def test_simulation_parameters(self):
         sp = SimulationParameters(

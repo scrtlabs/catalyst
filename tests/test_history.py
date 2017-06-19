@@ -20,21 +20,21 @@ from numpy import nan
 import pandas as pd
 from six import iteritems
 
-from zipline import TradingAlgorithm
-from zipline._protocol import handle_non_market_minutes, BarData
-from zipline.assets import Asset, Equity
-from zipline.errors import (
+from catalyst import TradingAlgorithm
+from catalyst._protocol import handle_non_market_minutes, BarData
+from catalyst.assets import Asset, Equity
+from catalyst.errors import (
     HistoryInInitialize,
     HistoryWindowStartsBeforeData,
 )
-from zipline.finance.trading import SimulationParameters
-from zipline.finance.asset_restrictions import NoRestrictions
-from zipline.testing import (
+from catalyst.finance.trading import SimulationParameters
+from catalyst.finance.asset_restrictions import NoRestrictions
+from catalyst.testing import (
     create_minute_df_for_asset,
     str_to_seconds,
     MockDailyBarReader,
 )
-from zipline.testing.fixtures import (
+from catalyst.testing.fixtures import (
     WithCreateBarData,
     WithDataPortal,
     ZiplineTestCase,
@@ -609,7 +609,7 @@ class MinuteEquityHistoryTestCase(WithHistory, ZiplineTestCase):
     def test_history_in_initialize(self):
         algo_text = dedent(
             """\
-            from zipline.api import history
+            from catalyst.api import history
 
             def initialize(context):
                 history([1], 10, '1d', 'price')
