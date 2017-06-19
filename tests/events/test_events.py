@@ -23,9 +23,9 @@ import pandas as pd
 from six import iteritems
 from six.moves import range, map
 
-import zipline.utils.events
-from zipline.utils.calendars import get_calendar
-from zipline.utils.events import (
+import catalyst.utils.events
+from catalyst.utils.calendars import get_calendar
+from catalyst.utils.events import (
     EventRule,
     StatelessRule,
     Always,
@@ -248,7 +248,7 @@ class RuleTestCase(object):
         classes_to_ignore = [TradingDayOfWeekRule, TradingDayOfMonthRule]
 
         dem = {
-            k for k, v in iteritems(vars(zipline.utils.events))
+            k for k, v in iteritems(vars(catalyst.utils.events))
             if isinstance(v, type) and
             issubclass(v, self.class_) and
             v is not self.class_ and

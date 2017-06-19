@@ -1,11 +1,11 @@
 """
-Tests for zipline.lib.adjustment
+Tests for catalyst.lib.adjustment
 """
 from unittest import TestCase
 from nose_parameterized import parameterized
 
-from zipline.lib import adjustment as adj
-from zipline.utils.numpy_utils import make_datetime64ns
+from catalyst.lib import adjustment as adj
+from catalyst.utils.numpy_utils import make_datetime64ns
 
 
 class AdjustmentTestCase(TestCase):

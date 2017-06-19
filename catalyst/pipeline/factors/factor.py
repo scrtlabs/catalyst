@@ -338,8 +338,9 @@ class Factor(RestrictedDTypeMixin, ComputableTerm):
         >>> f2 = SomeOtherFactor(...)  # doctest: +SKIP
         >>> average = (f1 + f2) / 2.0  # doctest: +SKIP
 
-    Factors can also be converted into :class:`catalyst.pipeline.Filter` objects
-    via comparison operators: (``<``, ``<=``, ``!=``, ``eq``, ``>``, ``>=``).
+    Factors can also be converted into :class:`catalyst.pipeline.Filter`
+    objects via comparison operators:
+    (``<``, ``<=``, ``!=``, ``eq``, ``>``, ``>=``).
 
     There are many natural operators defined on Factors besides the basic
     numerical operators. These include methods identifying missing or
@@ -699,7 +700,7 @@ class Factor(RestrictedDTypeMixin, ComputableTerm):
         :class:`catalyst.pipeline.factors.RollingPearsonOfReturns`
         :meth:`Factor.spearmanr`
         """
-        from .statistical import RollingPearson
+        from .equity import RollingPearson
         return RollingPearson(
             base_factor=self,
             target=target,
@@ -764,7 +765,7 @@ class Factor(RestrictedDTypeMixin, ComputableTerm):
         :class:`catalyst.pipeline.factors.RollingSpearmanOfReturns`
         :meth:`Factor.pearsonr`
         """
-        from .statistical import RollingSpearman
+        from .equity import RollingSpearman
         return RollingSpearman(
             base_factor=self,
             target=target,
@@ -826,7 +827,7 @@ class Factor(RestrictedDTypeMixin, ComputableTerm):
         :func:`scipy.stats.linregress`
         :class:`catalyst.pipeline.factors.RollingLinearRegressionOfReturns`
         """
-        from .statistical import RollingLinearRegression
+        from .equity import RollingLinearRegression
         return RollingLinearRegression(
             dependent=self,
             independent=target,

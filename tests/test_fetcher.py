@@ -18,12 +18,12 @@ import pandas as pd
 import numpy as np
 from mock import patch
 
-from zipline import TradingAlgorithm
-from zipline.errors import UnsupportedOrderParameters
-from zipline.sources.requests_csv import mask_requests_args
-from zipline.utils import factory
-from zipline.testing import FetcherDataPortal
-from zipline.testing.fixtures import (
+from catalyst import TradingAlgorithm
+from catalyst.errors import UnsupportedOrderParameters
+from catalyst.sources.requests_csv import mask_requests_args
+from catalyst.utils import factory
+from catalyst.testing import FetcherDataPortal
+from catalyst.testing.fixtures import (
     WithResponses,
     WithSimParams,
     ZiplineTestCase,
@@ -130,7 +130,7 @@ class FetcherTestCase(WithResponses,
 
         test_algo = TradingAlgorithm(
             script="""
-from zipline.api import fetch_csv, record, sid
+from catalyst.api import fetch_csv, record, sid
 
 def initialize(context):
     fetch_csv('https://fake.urls.com/aapl_minute_csv_data.csv')
@@ -184,7 +184,7 @@ def handle_data(context, data):
 
         results = self.run_algo(
             """
-from zipline.api import fetch_csv, record, sid
+from catalyst.api import fetch_csv, record, sid
 
 def initialize(context):
     fetch_csv('https://fake.urls.com/multi_signal_csv_data.csv')
@@ -208,7 +208,7 @@ def handle_data(context, data):
 
         results = self.run_algo(
             """
-from zipline.api import fetch_csv, sid, record
+from catalyst.api import fetch_csv, sid, record
 
 def clean(df):
     return df.rename(columns={'Value':'cpi', 'Date':'date'})
@@ -240,7 +240,7 @@ def handle_data(context, data):
 
         results = self.run_algo(
             """
-from zipline.api import fetch_csv, record, sid
+from catalyst.api import fetch_csv, record, sid
 
 def normalize(df):
     df['scaled'] = df['signal'] * 10
@@ -272,7 +272,7 @@ def handle_data(context, data):
 
         results = self.run_algo(
             """
-from zipline.api import fetch_csv, record, sid
+from catalyst.api import fetch_csv, record, sid
 
 def normalize(df):
     df['scaled'] = df['signal'] * 10
@@ -308,7 +308,7 @@ def handle_data(context, data):
         )
 
         code = """
-from zipline.api import fetch_csv, sid, record
+from catalyst.api import fetch_csv, sid, record
 
 def clean(df):
     return df.rename(columns={{'Value':'cpi'}})
@@ -342,11 +342,11 @@ def handle_data(context, data):
         # Patching fetch_url instead of using responses in this test so that we
         # can intercept the requests keyword arguments and confirm that they're
         # correct.
-        with patch('zipline.sources.requests_csv.PandasRequestsCSV.fetch_url',
+        with patch('catalyst.sources.requests_csv.PandasRequestsCSV.fetch_url',
                    new=capture_kwargs):
             results = self.run_algo(
                 """
-from zipline.api import fetch_csv, record, sid
+from catalyst.api import fetch_csv, record, sid
 
 def rename_col(df):
     df = df.rename(columns={'New York 15:00': 'price'})
@@ -386,7 +386,7 @@ def handle_data(context, data):
         # easier given the paramaterization, and (b) there are enough tests
         # using responses that the fetch_url code is getting a good workout so
         # we don't have to use it in every test.
-        with patch('zipline.sources.requests_csv.PandasRequestsCSV.fetch_url',
+        with patch('catalyst.sources.requests_csv.PandasRequestsCSV.fetch_url',
                    new=lambda *a, **k: data):
             sim_params = factory.create_simulation_parameters(
                 start=pd.Timestamp("2006-01-09", tz='UTC'),
@@ -396,7 +396,7 @@ def handle_data(context, data):
             algocode = """
 from pandas import Timestamp
 from pandas.tseries.tools import normalize_date
-from zipline.api import fetch_csv, record, sid, get_datetime
+from catalyst.api import fetch_csv, record, sid, get_datetime
 
 def initialize(context):
     fetch_csv(
@@ -450,7 +450,7 @@ def handle_data(context, data):
 
         self.run_algo(
             """
-from zipline.api import fetch_csv
+from catalyst.api import fetch_csv
 
 def initialize(context):
     fetch_csv(
@@ -475,7 +475,7 @@ def handle_data(context, data):
 
         with self.assertRaises(UnsupportedOrderParameters):
             self.run_algo("""
-from zipline.api import fetch_csv, order, sid
+from catalyst.api import fetch_csv, order, sid
 
 def rename_col(df):
     return df.rename(columns={'New York 15:00': 'price'})
@@ -510,7 +510,7 @@ def handle_data(context, data):
         results = self.run_algo(
             """
 from pandas import Timestamp
-from zipline.api import fetch_csv, record, get_datetime
+from catalyst.api import fetch_csv, record, get_datetime
 
 def initialize(context):
     fetch_csv(
@@ -557,7 +557,7 @@ def handle_data(context, data):
         )
 
         results = self.run_algo("""
-from zipline.api import fetch_csv, record, symbol
+from catalyst.api import fetch_csv, record, symbol
 
 def initialize(context):
     fetch_csv('https://fake.urls.com/fetcher_nflx_data.csv',
@@ -592,7 +592,7 @@ def before_trading_start(context, data):
         )
 
         results = self.run_algo("""
-from zipline.api import fetch_csv, symbol
+from catalyst.api import fetch_csv, symbol
 import numpy as np
 
 def initialize(context):

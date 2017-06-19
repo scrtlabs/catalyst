@@ -29,13 +29,13 @@ from pandas import (
     Int64Index,
 )
 
-from zipline.pipeline import Factor, Filter
-from zipline.pipeline.expression import (
+from catalyst.pipeline import Factor, Filter
+from catalyst.pipeline.expression import (
     NumericalExpression,
     NUMEXPR_MATH_FUNCS,
 )
-from zipline.testing import check_allclose
-from zipline.utils.numpy_utils import datetime64ns_dtype, float64_dtype
+from catalyst.testing import check_allclose
+from catalyst.utils.numpy_utils import datetime64ns_dtype, float64_dtype
 
 
 class F(Factor):

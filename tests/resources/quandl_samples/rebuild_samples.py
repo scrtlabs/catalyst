@@ -8,8 +8,8 @@ import pandas as pd
 import requests
 
 
-from zipline.data.quandl import format_wiki_url
-from zipline.testing import test_resource_path, write_compressed
+from catalyst.data.quandl import format_wiki_url
+from catalyst.testing import test_resource_path, write_compressed
 
 
 def zipfile_path(symbol):

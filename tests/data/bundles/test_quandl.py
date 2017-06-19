@@ -5,23 +5,23 @@ import pandas as pd
 from toolz import merge
 import toolz.curried.operator as op
 
-from zipline import get_calendar
-from zipline.data.bundles import ingest, load, bundles
-from zipline.data.bundles.quandl import (
+from catalyst import get_calendar
+from catalyst.data.bundles import ingest, load, bundles
+from catalyst.data.bundles.quandl import (
     format_wiki_url,
     format_metadata_url,
 )
-from zipline.lib.adjustment import Float64Multiply
-from zipline.testing import (
+from catalyst.lib.adjustment import Float64Multiply
+from catalyst.testing import (
     test_resource_path,
     tmp_dir,
     patch_read_csv,
 )
-from zipline.testing.fixtures import ZiplineTestCase
-from zipline.testing.predicates import (
+from catalyst.testing.fixtures import ZiplineTestCase
+from catalyst.testing.predicates import (
     assert_equal,
 )
-from zipline.utils.functional import apply
+from catalyst.utils.functional import apply
 
 
 class QuandlBundleTestCase(ZiplineTestCase):
@@ -202,9 +202,9 @@ class QuandlBundleTestCase(ZiplineTestCase):
                 for n in (1, 2)
             },
         )
-        zipline_root = self.enter_instance_context(tmp_dir()).path
+        catalyst_root = self.enter_instance_context(tmp_dir()).path
         environ = {
-            'ZIPLINE_ROOT': zipline_root,
+            'ZIPLINE_ROOT': catalyst_root,
             'QUANDL_API_KEY': self.api_key,
         }
 

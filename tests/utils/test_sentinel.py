@@ -3,7 +3,7 @@ from pickle import loads, dumps
 from unittest import TestCase
 from weakref import ref
 
-from zipline.utils.sentinel import sentinel
+from catalyst.utils.sentinel import sentinel
 
 
 class SentinelTestCase(TestCase):

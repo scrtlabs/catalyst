@@ -64,6 +64,8 @@ class DataFrameLoader(PipelineLoader):
         self.dates = baseline.index
         self.assets = baseline.columns
 
+        self._columns = self.assets
+
         if adjustments is None:
             adjustments = DataFrame(
                 index=DatetimeIndex([]),
@@ -174,3 +176,8 @@ class DataFrameLoader(PipelineLoader):
                 missing_value=column.missing_value,
             ),
         }
+
+    @property
+    def columns(self):
+        return self._columns
+

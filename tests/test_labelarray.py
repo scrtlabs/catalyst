@@ -5,10 +5,10 @@ import warnings
 import numpy as np
 from toolz import take
 
-from zipline.lib.labelarray import LabelArray
-from zipline.testing import check_arrays, parameter_space, ZiplineTestCase
-from zipline.testing.predicates import assert_equal
-from zipline.utils.compat import unicode
+from catalyst.lib.labelarray import LabelArray
+from catalyst.testing import check_arrays, parameter_space, ZiplineTestCase
+from catalyst.testing.predicates import assert_equal
+from catalyst.utils.compat import unicode
 
 
 def rotN(l, N):

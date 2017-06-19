@@ -91,6 +91,8 @@ class BlazeEventsLoader(PipelineLoader):
         self._data_query_time = data_query_time
         self._data_query_tz = data_query_tz
 
+        self._columns = next_value_columns
+
     def load_adjusted_array(self, columns, dates, assets, mask):
         raw = load_raw_data(assets,
                             dates,
@@ -109,3 +111,7 @@ class BlazeEventsLoader(PipelineLoader):
             assets,
             mask,
         )
+
+    @property
+    def columns(self):
+        return self._columns

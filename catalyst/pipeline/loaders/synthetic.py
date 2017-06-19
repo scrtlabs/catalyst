@@ -61,7 +61,9 @@ class PrecomputedLoader(PipelineLoader):
     """
     def __init__(self, constants, dates, sids):
         loaders = {}
+        columns = []
         for column, const in iteritems(constants):
+            columns.append(column)
             frame = DataFrame(
                 const,
                 index=dates,
@@ -75,6 +77,7 @@ class PrecomputedLoader(PipelineLoader):
             )
 
         self._loaders = loaders
+        self._columns = set(columns)
 
     def load_adjusted_array(self, columns, dates, assets, mask):
         """
@@ -90,6 +93,9 @@ class PrecomputedLoader(PipelineLoader):
                 loader.load_adjusted_array([col], dates, assets, mask)
             )
         return out
+
+    def columns(self):
+        return self._columns
 
 
 class EyeLoader(PrecomputedLoader):
@@ -108,11 +114,16 @@ class EyeLoader(PrecomputedLoader):
     """
     def __init__(self, columns, dates, sids):
         shape = (len(dates), len(sids))
+        self._columns = columns
         super(EyeLoader, self).__init__(
             {column: eye(shape, dtype=column.dtype) for column in columns},
             dates,
             sids,
         )
+
+    @property
+    def columns(self):
+        return self._columns
 
 
 class SeededRandomLoader(PrecomputedLoader):
@@ -133,6 +144,7 @@ class SeededRandomLoader(PrecomputedLoader):
 
     def __init__(self, seed, columns, dates, sids):
         self._seed = seed
+        self._columns = columns
         super(SeededRandomLoader, self).__init__(
             {c: self.values(c.dtype, dates, sids) for c in columns},
             dates,
@@ -151,6 +163,10 @@ class SeededRandomLoader(PrecomputedLoader):
             bool_dtype: self._bool_values,
             object_dtype: self._object_values,
         }[dtype](shape)
+    
+    @property
+    def columns(self):
+        return self._columns
 
     @property
     def state(self):

@@ -162,6 +162,7 @@ class EarningsEstimatesLoader(PipelineLoader):
         }
 
         self.name_map = name_map
+        self._columns = set(name_map.keys())
 
     @abstractmethod
     def get_zeroth_quarter_idx(self, stacked_last_per_qtr):
@@ -663,6 +664,10 @@ class EarningsEstimatesLoader(PipelineLoader):
                     col.missing_value,
                 )
         return out
+
+    @property
+    def columns(self):
+        return self._columns
 
     def get_last_data_per_qtr(self, assets_with_data, columns, dates):
         """

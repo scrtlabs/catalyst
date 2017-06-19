@@ -115,6 +115,8 @@ class EventsLoader(PipelineLoader):
         # Columns to load with self.load_previous_events.
         self.previous_value_columns = previous_value_columns
 
+        self._columns = events.columns
+
     def split_next_and_previous_event_columns(self, requested_columns):
         """
         Split requested columns into columns that should load the next known
@@ -229,3 +231,7 @@ class EventsLoader(PipelineLoader):
             self.load_next_events(n, dates, sids, mask),
             self.load_previous_events(p, dates, sids, mask),
         )
+    
+    @property
+    def columns(self):
+        return self._columns

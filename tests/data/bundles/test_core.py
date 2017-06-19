@@ -5,26 +5,26 @@ import pandas as pd
 import sqlalchemy as sa
 from toolz import valmap
 import toolz.curried.operator as op
-from zipline.assets import ASSET_DB_VERSION
+from catalyst.assets import ASSET_DB_VERSION
 
-from zipline.assets.asset_writer import check_version_info
-from zipline.assets.synthetic import make_simple_equity_info
-from zipline.data.bundles import UnknownBundle, from_bundle_ingest_dirname, \
+from catalyst.assets.asset_writer import check_version_info
+from catalyst.assets.synthetic import make_simple_equity_info
+from catalyst.data.bundles import UnknownBundle, from_bundle_ingest_dirname, \
     ingestions_for_bundle
-from zipline.data.bundles.core import _make_bundle_core, BadClean, \
+from catalyst.data.bundles.core import _make_bundle_core, BadClean, \
     to_bundle_ingest_dirname, asset_db_path
-from zipline.lib.adjustment import Float64Multiply
-from zipline.pipeline.loaders.synthetic import (
+from catalyst.lib.adjustment import Float64Multiply
+from catalyst.pipeline.loaders.synthetic import (
     make_bar_data,
     expected_bar_values_2d,
 )
-from zipline.testing import (
+from catalyst.testing import (
     subtest,
     str_to_seconds,
 )
-from zipline.testing.fixtures import WithInstanceTmpDir, ZiplineTestCase, \
+from catalyst.testing.fixtures import WithInstanceTmpDir, ZiplineTestCase, \
     WithDefaultDateBounds
-from zipline.testing.predicates import (
+from catalyst.testing.predicates import (
     assert_equal,
     assert_false,
     assert_in,
@@ -34,10 +34,10 @@ from zipline.testing.predicates import (
     assert_raises,
     assert_true,
 )
-from zipline.utils.cache import dataframe_cache
-from zipline.utils.functional import apply
-from zipline.utils.calendars import TradingCalendar, get_calendar
-import zipline.utils.paths as pth
+from catalyst.utils.cache import dataframe_cache
+from catalyst.utils.functional import apply
+from catalyst.utils.calendars import TradingCalendar, get_calendar
+import catalyst.utils.paths as pth
 
 
 _1_ns = pd.Timedelta(1, unit='ns')

@@ -16,19 +16,19 @@ import numpy as np
 import pandas as pd
 from pandas.util.testing import assert_series_equal
 
-from zipline.data.data_portal import DataPortal
-from zipline.errors import (
+from catalyst.data.data_portal import DataPortal
+from catalyst.errors import (
     BenchmarkAssetNotAvailableTooEarly,
     BenchmarkAssetNotAvailableTooLate,
     InvalidBenchmarkAsset)
 
-from zipline.sources.benchmark_source import BenchmarkSource
-from zipline.testing import (
+from catalyst.sources.benchmark_source import BenchmarkSource
+from catalyst.testing import (
     MockDailyBarReader,
     create_minute_bar_data,
     tmp_bcolz_equity_minute_bar_reader,
 )
-from zipline.testing.fixtures import (
+from catalyst.testing.fixtures import (
     WithDataPortal,
     WithSimParams,
     WithTradingCalendars,

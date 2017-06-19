@@ -1,5 +1,5 @@
 """
-Tests for zipline.pipeline.loaders.frame.DataFrameLoader.
+Tests for catalyst.pipeline.loaders.frame.DataFrameLoader.
 """
 from unittest import TestCase
 
@@ -12,7 +12,7 @@ from pandas import (
     Int64Index,
 )
 
-from zipline.lib.adjustment import (
+from catalyst.lib.adjustment import (
     ADD,
     Float64Add,
     Float64Multiply,
@@ -20,11 +20,11 @@ from zipline.lib.adjustment import (
     MULTIPLY,
     OVERWRITE,
 )
-from zipline.pipeline.data import USEquityPricing
-from zipline.pipeline.loaders.frame import (
+from catalyst.pipeline.data import USEquityPricing
+from catalyst.pipeline.loaders.frame import (
     DataFrameLoader,
 )
-from zipline.utils.calendars import get_calendar
+from catalyst.utils.calendars import get_calendar
 
 
 class DataFrameLoaderTestCase(TestCase):
@@ -228,7 +228,7 @@ class DataFrameLoaderTestCase(TestCase):
         self.assertEqual(formatted_adjustments, expected_formatted_adjustments)
 
         mask = self.mask[dates_slice, sids_slice]
-        with patch('zipline.pipeline.loaders.frame.AdjustedArray') as m:
+        with patch('catalyst.pipeline.loaders.frame.AdjustedArray') as m:
             loader.load_adjusted_array(
                 columns=[USEquityPricing.close],
                 dates=self.dates[dates_slice],

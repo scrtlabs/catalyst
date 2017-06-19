@@ -4,10 +4,10 @@ from textwrap import dedent
 from nose_parameterized import parameterized
 from pandas import DataFrame
 
-from zipline import TradingAlgorithm
-from zipline.assets import Equity, Future
-from zipline.errors import IncompatibleCommissionModel
-from zipline.finance.commission import (
+from catalyst import TradingAlgorithm
+from catalyst.assets import Equity, Future
+from catalyst.errors import IncompatibleCommissionModel
+from catalyst.finance.commission import (
     CommissionModel,
     EquityCommissionModel,
     FutureCommissionModel,
@@ -17,15 +17,15 @@ from zipline.finance.commission import (
     PerShare,
     PerTrade,
 )
-from zipline.finance.order import Order
-from zipline.finance.transaction import Transaction
-from zipline.testing import ZiplineTestCase, trades_by_sid_to_dfs
-from zipline.testing.fixtures import (
+from catalyst.finance.order import Order
+from catalyst.finance.transaction import Transaction
+from catalyst.testing import ZiplineTestCase, trades_by_sid_to_dfs
+from catalyst.testing.fixtures import (
     WithAssetFinder,
     WithSimParams,
     WithDataPortal
 )
-from zipline.utils import factory
+from catalyst.utils import factory
 
 
 class CommissionUnitTests(WithAssetFinder, ZiplineTestCase):
@@ -279,7 +279,7 @@ class CommissionAlgorithmTests(WithDataPortal, WithSimParams, ZiplineTestCase):
 
     code = dedent(
         """
-        from zipline.api import (
+        from catalyst.api import (
             sid, order, set_slippage, slippage, FixedSlippage,
             set_commission, commission
         )

@@ -95,7 +95,7 @@ class USEquityPricingLoader(PipelineLoader):
                 c.missing_value,
             )
         return out
-    
+
     @property
     def columns(self):
         return self._columns

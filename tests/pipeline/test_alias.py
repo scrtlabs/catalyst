@@ -1,9 +1,9 @@
 from nose.tools import nottest
 import numpy as np
 
-from zipline.testing.predicates import assert_equal
-from zipline.pipeline import Classifier, Factor, Filter
-from zipline.utils.numpy_utils import float64_dtype, int64_dtype
+from catalyst.testing.predicates import assert_equal
+from catalyst.pipeline import Classifier, Factor, Filter
+from catalyst.utils.numpy_utils import float64_dtype, int64_dtype
 
 from .base import BasePipelineTestCase
 

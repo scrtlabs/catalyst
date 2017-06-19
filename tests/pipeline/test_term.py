@@ -8,8 +8,8 @@ from unittest import TestCase
 from toolz import assoc
 import pandas as pd
 
-from zipline.assets import Asset
-from zipline.errors import (
+from catalyst.assets import Asset
+from catalyst.errors import (
     DTypeNotSpecified,
     InvalidOutputName,
     NonWindowSafeInput,
@@ -19,7 +19,7 @@ from zipline.errors import (
     UnsupportedDType,
     WindowLengthNotSpecified,
 )
-from zipline.pipeline import (
+from catalyst.pipeline import (
     Classifier,
     CustomClassifier,
     CustomFactor,
@@ -27,21 +27,21 @@ from zipline.pipeline import (
     Filter,
     ExecutionPlan,
 )
-from zipline.pipeline.data import Column, DataSet
-from zipline.pipeline.data.testing import TestingDataSet
-from zipline.pipeline.expression import NUMEXPR_MATH_FUNCS
-from zipline.pipeline.factors import RecarrayField
-from zipline.pipeline.sentinels import NotSpecified
-from zipline.pipeline.term import AssetExists, Slice
-from zipline.testing import parameter_space
-from zipline.testing.fixtures import WithTradingSessions, ZiplineTestCase
-from zipline.testing.predicates import (
+from catalyst.pipeline.data import Column, DataSet
+from catalyst.pipeline.data.testing import TestingDataSet
+from catalyst.pipeline.expression import NUMEXPR_MATH_FUNCS
+from catalyst.pipeline.factors import RecarrayField
+from catalyst.pipeline.sentinels import NotSpecified
+from catalyst.pipeline.term import AssetExists, Slice
+from catalyst.testing import parameter_space
+from catalyst.testing.fixtures import WithTradingSessions, ZiplineTestCase
+from catalyst.testing.predicates import (
     assert_equal,
     assert_raises,
     assert_raises_regex,
     assert_regex,
 )
-from zipline.utils.numpy_utils import (
+from catalyst.utils.numpy_utils import (
     bool_dtype,
     categorical_dtype,
     complex128_dtype,

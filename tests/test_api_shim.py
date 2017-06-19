@@ -5,24 +5,24 @@ import numpy as np
 import pandas as pd
 from pandas.core.common import PerformanceWarning
 
-from zipline import TradingAlgorithm
-from zipline.finance.trading import SimulationParameters
-from zipline.testing import (
+from catalyst import TradingAlgorithm
+from catalyst.finance.trading import SimulationParameters
+from catalyst.testing import (
     MockDailyBarReader,
     create_daily_df_for_asset,
     create_minute_df_for_asset,
     str_to_seconds,
 )
-from zipline.testing.fixtures import (
+from catalyst.testing.fixtures import (
     WithCreateBarData,
     WithDataPortal,
     WithSimParams,
     ZiplineTestCase,
 )
-from zipline.zipline_warnings import ZiplineDeprecationWarning
+from catalyst.catalyst_warnings import ZiplineDeprecationWarning
 
 simple_algo = """
-from zipline.api import sid, order
+from catalyst.api import sid, order
 def initialize(context):
     pass
 
@@ -35,7 +35,7 @@ def handle_data(context, data):
 """
 
 history_algo = """
-from zipline.api import sid, history
+from catalyst.api import sid, history
 
 def initialize(context):
     context.sid1 = sid(1)
@@ -45,7 +45,7 @@ def handle_data(context, data):
 """
 
 history_bts_algo = """
-from zipline.api import sid, history, record
+from catalyst.api import sid, history, record
 
 def initialize(context):
     context.sid3 = sid(3)
@@ -63,7 +63,7 @@ def handle_data(context, data):
 """
 
 simple_transforms_algo = """
-from zipline.api import sid
+from catalyst.api import sid
 def initialize(context):
     context.count = 0
 
@@ -90,7 +90,7 @@ def handle_data(context, data):
 """
 
 sid_accessor_algo = """
-from zipline.api import sid
+from catalyst.api import sid
 
 def initialize(context):
     context.asset1 = sid(1)
@@ -101,7 +101,7 @@ def handle_data(context,data):
 """
 
 data_items_algo = """
-from zipline.api import sid
+from catalyst.api import sid
 
 def initialize(context):
     context.asset1 = sid(1)
@@ -217,7 +217,7 @@ class TestAPIShim(WithCreateBarData,
             "volume",
             "price",
         ]
-        spot_value_meth = 'zipline.data.data_portal.DataPortal.get_spot_value'
+        spot_value_meth = 'catalyst.data.data_portal.DataPortal.get_spot_value'
 
         def assert_get_spot_value_called(fun, field):
             """
@@ -245,7 +245,8 @@ class TestAPIShim(WithCreateBarData,
                 field,
             )
 
-        history_meth = 'zipline.data.data_portal.DataPortal.get_history_window'
+        history_meth =\
+            'catalyst.data.data_portal.DataPortal.get_history_window'
 
         def assert_get_history_window_called(fun, is_legacy):
             """

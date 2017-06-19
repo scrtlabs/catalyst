@@ -28,14 +28,14 @@ from numpy.testing import assert_almost_equal
 import pandas as pd
 from pandas import Timestamp, DataFrame
 
-from zipline import TradingAlgorithm
-from zipline.assets.continuous_futures import (
+from catalyst import TradingAlgorithm
+from catalyst.assets.continuous_futures import (
     OrderedContracts,
     delivery_predicate
 )
-from zipline.data.minute_bars import FUTURES_MINUTES_PER_DAY
-from zipline.errors import SymbolNotFound
-from zipline.testing.fixtures import (
+from catalyst.data.minute_bars import FUTURES_MINUTES_PER_DAY
+from catalyst.errors import SymbolNotFound
+from catalyst.testing.fixtures import (
     WithAssetFinder,
     WithCreateBarData,
     WithDataPortal,
@@ -512,7 +512,7 @@ class ContinuousFuturesTestCase(WithCreateBarData,
 
     def test_current_contract_in_algo(self):
         code = dedent("""
-from zipline.api import (
+from catalyst.api import (
     record,
     continuous_future,
     schedule_function,
@@ -565,7 +565,7 @@ def record_current_contract(algo, data):
 
     def test_current_chain_in_algo(self):
         code = dedent("""
-from zipline.api import (
+from catalyst.api import (
     record,
     continuous_future,
     schedule_function,

@@ -3,11 +3,11 @@ from unittest import TestCase
 
 from six import with_metaclass
 
-from zipline.utils.final import (
+from catalyst.utils.final import (
     FinalMeta,
     final,
 )
-from zipline.utils.metautils import compose_types
+from catalyst.utils.metautils import compose_types
 
 
 class FinalMetaTestCase(TestCase):

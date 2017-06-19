@@ -36,24 +36,24 @@ from pandas import (
 from pandas.util.testing import assert_frame_equal
 from toolz.curried.operator import getitem
 
-from zipline.lib.adjustment import Float64Multiply
-from zipline.pipeline.loaders.synthetic import (
+from catalyst.lib.adjustment import Float64Multiply
+from catalyst.pipeline.loaders.synthetic import (
     NullAdjustmentReader,
     make_bar_data,
     expected_bar_values_2d,
 )
-from zipline.pipeline.loaders.equity_pricing_loader import (
+from catalyst.pipeline.loaders.equity_pricing_loader import (
     USEquityPricingLoader,
 )
 
-from zipline.errors import WindowLengthTooLong
-from zipline.pipeline.data import USEquityPricing
-from zipline.testing import (
+from catalyst.errors import WindowLengthTooLong
+from catalyst.pipeline.data import USEquityPricing
+from catalyst.testing import (
     seconds_to_timestamp,
     str_to_seconds,
     MockDailyBarReader,
 )
-from zipline.testing.fixtures import (
+from catalyst.testing.fixtures import (
     WithAdjustmentReader,
     ZiplineTestCase,
 )
@@ -473,6 +473,7 @@ class USEquityPricingLoaderTestCase(WithAdjustmentReader,
         pricing_loader = USEquityPricingLoader(
             self.bcolz_equity_daily_bar_reader,
             adjustment_reader,
+            USEquityPricing,
         )
 
         results = pricing_loader.load_adjusted_array(
@@ -550,6 +551,7 @@ class USEquityPricingLoaderTestCase(WithAdjustmentReader,
         pricing_loader = USEquityPricingLoader(
             self.bcolz_equity_daily_bar_reader,
             self.adjustment_reader,
+            USEquityPricing,
         )
 
         results = pricing_loader.load_adjusted_array(

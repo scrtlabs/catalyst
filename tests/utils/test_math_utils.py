@@ -1,7 +1,7 @@
 
 from unittest import TestCase
 
-from zipline.utils.math_utils import number_of_decimal_places
+from catalyst.utils.math_utils import number_of_decimal_places
 
 
 class MathUtilsTestCase(TestCase):

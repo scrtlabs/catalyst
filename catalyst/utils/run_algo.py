@@ -19,7 +19,10 @@ from catalyst.data.bundles.core import load
 from catalyst.data.data_portal import DataPortal
 from catalyst.finance.trading import TradingEnvironment
 from catalyst.pipeline.data import USEquityPricing, CryptoPricing
-from catalyst.pipeline.loaders import USEquityPricingLoader, CryptoPricingLoader
+from catalyst.pipeline.loaders import (
+    USEquityPricingLoader,
+    CryptoPricingLoader,
+)
 from catalyst.utils.calendars import get_calendar
 from catalyst.utils.factory import create_simulation_parameters
 import catalyst.utils.paths as pth
@@ -123,13 +126,13 @@ def _run(handle_data,
                 return env, data
             elif len(bundles) == 1:
                 b = bundles[0]
-                
+
             bundle_data = load(
                 b,
                 environ,
                 bundle_timestamp,
             )
-            
+
             prefix, connstr = re.split(
                 r'sqlite:///',
                 str(bundle_data.asset_finder.engine.url),
@@ -173,13 +176,12 @@ def _run(handle_data,
                            USEquityPricing,
                        )
             raise ValueError(
-                "No PipelineLoader registered for column %s." % column
+                "No PipelineLoader registered for bundle %s." % b
             )
-            
 
         loaders = [get_loader_for_bundle(b) for b in bundles]
         env, data = get_trading_env_and_data(bundles)
-      
+
         def choose_loader(column):
             for loader in loaders:
                 if column in loader.columns:
