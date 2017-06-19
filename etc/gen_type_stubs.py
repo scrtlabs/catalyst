@@ -2,7 +2,7 @@ import inspect
 from operator import attrgetter
 from textwrap import dedent
 
-from zipline import api, TradingAlgorithm
+from catalyst import api, TradingAlgorithm
 
 
 def main():
@@ -12,14 +12,14 @@ def main():
         # explicitly importing.
         stub.write(dedent("""\
         import collections
-        from zipline.assets import Asset, Equity, Future
-        from zipline.assets.futures import FutureChain
-        from zipline.finance.asset_restrictions import Restrictions
-        from zipline.finance.cancel_policy import CancelPolicy
-        from zipline.pipeline import Pipeline
-        from zipline.protocol import Order
-        from zipline.utils.events import EventRule
-        from zipline.utils.security_list import SecurityList
+        from catalyst.assets import Asset, Equity, Future
+        from catalyst.assets.futures import FutureChain
+        from catalyst.finance.asset_restrictions import Restrictions
+        from catalyst.finance.cancel_policy import CancelPolicy
+        from catalyst.pipeline import Pipeline
+        from catalyst.protocol import Order
+        from catalyst.utils.events import EventRule
+        from catalyst.utils.security_list import SecurityList
 
 
         """))

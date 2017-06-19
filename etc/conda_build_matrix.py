@@ -6,11 +6,11 @@ import click
 
 py_versions = ('2.7', '3.4', '3.5')
 npy_versions = ('1.9', '1.10')
-zipline_path = os.path.join(
+catalyst_path = os.path.join(
     os.path.dirname(__file__),
     '..',
     'conda',
-    'zipline',
+    'catalyst',
 )
 
 
@@ -19,7 +19,7 @@ def mkargs(py_version, npy_version, output=False):
         'args': [
             'conda',
             'build',
-            zipline_path,
+            catalyst_path,
             '-c', 'quantopian',
             '--python=%s' % py_version,
             '--numpy=%s' % npy_version,

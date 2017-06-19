@@ -1,9 +1,9 @@
 include LICENSE
 
 include etc/requirements*.txt
-recursive-include zipline *.pyi
-recursive-include zipline *.pxi
+recursive-include catalyst *.pyi
+recursive-include catalyst *.pxi
 
-recursive-include zipline/resources *.*
+recursive-include catalyst/resources *.*
 include versioneer.py
-include zipline/_version.py
+include catalyst/_version.py

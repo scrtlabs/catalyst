@@ -81,39 +81,39 @@ class LazyBuildExtCommandClass(dict):
 def window_specialization(typename):
     """Make an extension for an AdjustedArrayWindow specialization."""
     return Extension(
-        'zipline.lib._{name}window'.format(name=typename),
-        ['zipline/lib/_{name}window.pyx'.format(name=typename)],
-        depends=['zipline/lib/_windowtemplate.pxi'],
+        'catalyst.lib._{name}window'.format(name=typename),
+        ['catalyst/lib/_{name}window.pyx'.format(name=typename)],
+        depends=['catalyst/lib/_windowtemplate.pxi'],
     )
 
 
 ext_modules = [
-    Extension('zipline.assets._assets', ['zipline/assets/_assets.pyx']),
-    Extension('zipline.assets.continuous_futures',
-              ['zipline/assets/continuous_futures.pyx']),
-    Extension('zipline.lib.adjustment', ['zipline/lib/adjustment.pyx']),
-    Extension('zipline.lib._factorize', ['zipline/lib/_factorize.pyx']),
+    Extension('catalyst.assets._assets', ['catalyst/assets/_assets.pyx']),
+    Extension('catalyst.assets.continuous_futures',
+              ['catalyst/assets/continuous_futures.pyx']),
+    Extension('catalyst.lib.adjustment', ['catalyst/lib/adjustment.pyx']),
+    Extension('catalyst.lib._factorize', ['catalyst/lib/_factorize.pyx']),
     window_specialization('float64'),
     window_specialization('int64'),
     window_specialization('int64'),
     window_specialization('uint8'),
     window_specialization('label'),
-    Extension('zipline.lib.rank', ['zipline/lib/rank.pyx']),
-    Extension('zipline.data._equities', ['zipline/data/_equities.pyx']),
-    Extension('zipline.data._adjustments', ['zipline/data/_adjustments.pyx']),
-    Extension('zipline._protocol', ['zipline/_protocol.pyx']),
-    Extension('zipline.gens.sim_engine', ['zipline/gens/sim_engine.pyx']),
+    Extension('catalyst.lib.rank', ['catalyst/lib/rank.pyx']),
+    Extension('catalyst.data._equities', ['catalyst/data/_equities.pyx']),
+    Extension('catalyst.data._adjustments', ['catalyst/data/_adjustments.pyx']),
+    Extension('catalyst._protocol', ['catalyst/_protocol.pyx']),
+    Extension('catalyst.gens.sim_engine', ['catalyst/gens/sim_engine.pyx']),
     Extension(
-        'zipline.data._minute_bar_internal',
-        ['zipline/data/_minute_bar_internal.pyx']
+        'catalyst.data._minute_bar_internal',
+        ['catalyst/data/_minute_bar_internal.pyx']
     ),
     Extension(
-        'zipline.utils.calendars._calendar_helpers',
-        ['zipline/utils/calendars/_calendar_helpers.pyx']
+        'catalyst.utils.calendars._calendar_helpers',
+        ['catalyst/utils/calendars/_calendar_helpers.pyx']
     ),
     Extension(
-        'zipline.data._resample',
-        ['zipline/data/_resample.pyx']
+        'catalyst.data._resample',
+        ['catalyst/data/_resample.pyx']
     ),
 ]
 
@@ -278,24 +278,24 @@ conditional_arguments = {
 }
 
 setup(
-    name='zipline',
-    url="http://zipline.io",
+    name='catalyst',
+    url='https://enigma.co',
     version=versioneer.get_version(),
     cmdclass=LazyBuildExtCommandClass(versioneer.get_cmdclass()),
     description='A backtester for financial algorithms.',
     entry_points={
         'console_scripts': [
-            'zipline = zipline.__main__:main',
+            'catalyst = catalyst.__main__:main',
         ],
     },
-    author='Quantopian Inc.',
-    author_email='opensource@quantopian.com',
-    packages=find_packages(include=['zipline', 'zipline.*']),
+    author='Enigma MPC, Inc.',
+    author_email='dev@enigma.co',
+    packages=find_packages(include=['catalyst', 'catalyst.*']),
     ext_modules=ext_modules,
     include_package_data=True,
     package_data={root.replace(os.sep, '.'):
                   ['*.pyi', '*.pyx', '*.pxi', '*.pxd']
-                  for root, dirnames, filenames in os.walk('zipline')
+                  for root, dirnames, filenames in os.walk('catalyst')
                   if '__pycache__' not in root},
     license='Apache 2.0',
     classifiers=[

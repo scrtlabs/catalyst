@@ -42,7 +42,7 @@ contextlib2==0.4.0
 # networkx requires decorator
 decorator==4.0.0
 
-# Graph algorithms used by zipline.pipeline
+# Graph algorithms used by catalyst.pipeline
 networkx==1.9.1
 
 # NumericalExpression pipeline terms.

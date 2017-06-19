@@ -18,7 +18,7 @@ set -e
 stash_result=$(git stash --keep-index)
 
 # Run flake8 linting
-flake8 zipline tests
+flake8 catalyst tests
 # Run unit tests
 nosetests -x
 

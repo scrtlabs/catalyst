@@ -3,7 +3,7 @@
 #
 # generate configuration, cert, and password if this is the first run
 #
-if [ ! -f /var/tmp/zipline_init ] ; then
+if [ ! -f /var/tmp/catalyst_init ] ; then
     jupyter notebook --generate-config
     if [ ! -f ${SSL_CERT_PEM} ] ; then
         openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
@@ -11,7 +11,7 @@ if [ ! -f /var/tmp/zipline_init ] ; then
             -keyout ${SSL_CERT_KEY} -out ${SSL_CERT_PEM}
     fi
     echo "c.NotebookApp.password = ${PW_HASH}" >> ${CONFIG_PATH}
-    touch /var/tmp/zipline_init
+    touch /var/tmp/catalyst_init
 fi
 
 jupyter notebook -y --no-browser --notebook-dir=${PROJECT_DIR} \
