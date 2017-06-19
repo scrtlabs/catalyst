@@ -190,6 +190,10 @@ class PoloniexDataGenerator(object):
     	df.columns = ['date', 'open', 'high', 'low', 'close', 'volume']
     	return df.loc[(df['date'] > start) & (df['date'] <= end)]
 
+if __name__ == '__main__':
+    pdg = PoloniexDataGenerator()
+    pdg.append_data()
+
 
 # from zipline.utils.calendars import get_calendar
 # from zipline.data.us_equity_pricing import (
