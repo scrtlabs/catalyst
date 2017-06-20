@@ -13,6 +13,7 @@ from .core import (
     unregister,
 )
 from .yahoo import yahoo_equities
+from .poloniex import poloniex_cryptoassets
 
 __all__ = [
     'UnknownBundle',
@@ -26,4 +27,5 @@ __all__ = [
     'to_bundle_ingest_dirname',
     'unregister',
     'yahoo_equities',
+    'poloniex_cryptoassets',
 ]

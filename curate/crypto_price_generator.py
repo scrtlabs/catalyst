@@ -6,6 +6,8 @@ import time
 import requests
 import logbook
 
+import catalyst.data.bundles.core as bundles
+
 DT_START        = time.mktime(datetime(2010, 01, 01, 0, 0).timetuple())
 # DT_START = time.mktime(datetime(2017, 06, 13, 0, 0).timetuple()) # TODO: remove temp
 CSV_OUT_FOLDER  = 'data/'
@@ -125,13 +127,19 @@ class PoloniexDataGenerator(object):
 
     	# CSV holds the latest snapshot
     	df = pd.read_csv(csv_fn,  names=['date', 'open', 'high', 'low', 'close', 'volume'])
-    	df.columns = ['date', 'open', 'high', 'low', 'close', 'volume']
-    	return df.loc[(df['date'] > start) & (df['date'] <= end)]
+    	df['date']=pd.to_datetime(df['date'],unit='s')
+        df.set_index('date', inplace=True)
+
+    	#return df.loc[(df.index > start) & (df.index <= end)]
+        return df[datetime.fromtimestamp(start):datetime.fromtimestamp(end-1)]
 
 if __name__ == '__main__':
     pdg = PoloniexDataGenerator()
-    pdg.get_currency_pairs()
-    pdg.append_data()
+#    pdg.get_currency_pairs()
+#    pdg.append_data()
+    df = pdg.to_dataframe(time.mktime(datetime(2017, 6, 01, 0, 0).timetuple()),time.mktime(datetime(2017, 6, 02, 0, 0).timetuple()),'USDT_BTC')
+    print(df)
+
 
 
 # from zipline.utils.calendars import get_calendar
