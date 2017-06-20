@@ -1,185 +1,123 @@
-import urllib, json, time, csv
+import json, time, csv
 from datetime import datetime
 import pandas as pd
 import os
 import time
+import requests
+import logbook
 
-# Pulled from https://github.com/absortium/poloniex-api/blob/master/poloniex/constants.py
-CURRENCY_PAIRS = [
-    "BTC_AMP",
-    "BTC_ARDR",
-    "BTC_BCN",
-    "BTC_BCY",
-    "BTC_BELA",
-    "BTC_BLK",
-    "BTC_BTCD",
-    "BTC_BTM",
-    "BTC_BTS",
-    "BTC_BURST",
-    "BTC_CLAM",
-    "BTC_DASH",
-    "BTC_DCR",
-    "BTC_DGB",
-    "BTC_DOGE",
-    "BTC_EMC2",
-    "BTC_ETC",
-    "BTC_ETH",
-    "BTC_EXP",
-    "BTC_FCT",
-    "BTC_FLDC",
-    "BTC_FLO",
-    "BTC_GAME",
-    "BTC_GNO",
-    "BTC_GNT",
-    "BTC_GRC",
-    "BTC_HUC",
-    "BTC_LBC",
-    "BTC_LSK",
-    "BTC_LTC",
-    "BTC_MAID",
-    "BTC_NAUT",
-    "BTC_NAV",
-    "BTC_NEOS",
-    "BTC_NMC",
-    "BTC_NOTE",
-    "BTC_NXC",
-    "BTC_NXT",
-    "BTC_OMNI",
-    "BTC_PASC",
-    "BTC_PINK",
-    "BTC_POT",
-    "BTC_PPC",
-    "BTC_RADS",
-    "BTC_REP",
-    "BTC_RIC",
-    "BTC_SBD",
-    "BTC_SC",
-    "BTC_SJCX",
-    "BTC_STEEM",
-    "BTC_STR",
-    "BTC_STRAT",
-    "BTC_SYS",
-    "BTC_VIA",
-    "BTC_VRC",
-    "BTC_VTC",
-    "BTC_XBC",
-    "BTC_XCP",
-    "BTC_XEM",
-    "BTC_XMR",
-    "BTC_XPM",
-    "BTC_XRP",
-    "BTC_XVC",
-    "BTC_ZEC",
-    "ETH_ETC",
-    "ETH_GNO",
-    "ETH_GNT",
-    "ETH_LSK",
-    "ETH_REP",
-    "ETH_STEEM",
-    "ETH_ZEC",
-    "USDT_BTC",
-    "USDT_DASH",
-    "USDT_ETC",
-    "USDT_ETH",
-    "USDT_LTC",
-    "USDT_NXT",
-    "USDT_REP",
-    "USDT_STR",
-    "USDT_XMR",
-    "USDT_XRP",
-    "USDT_ZEC",
-    "XMR_BCN",
-    "XMR_BLK",
-    "XMR_BTCD",
-    "XMR_DASH",
-    "XMR_LTC",
-    "XMR_MAID",
-    "XMR_NXT",
-    "XMR_ZEC"
-]
-
-
-# CURRENCY_PAIRS = [
-#     "BTC_AMP",
-#     "BTC_ARDR"
-# ]
-
-DT_START = time.mktime(datetime(2010, 01, 01, 0, 0).timetuple())
+DT_START        = time.mktime(datetime(2010, 01, 01, 0, 0).timetuple())
 # DT_START = time.mktime(datetime(2017, 06, 13, 0, 0).timetuple()) # TODO: remove temp
-CSV_OUT = 'data/crypto_prices.csv'
+CSV_OUT_FOLDER  = 'data/'
+CONN_RETRIES    = 2
+
+logbook.StderrHandler().push_application()
+log = logbook.Logger(__name__)
 
 class PoloniexDataGenerator(object):
     """
     OHLCV data feed generator for crypto data. Based on Poloniex market data
     """
 
-    def __init__(self):
-    	self._api_path = 'https://poloniex.com/public?command=returnChartData'
-    	# &currencyPair=BTC_ETH&start=1435699200&end=9999999999&period=300'
+    _api_path       = 'https://poloniex.com/public?'
+    currency_pairs  = []
 
-    # TODO: return latest appended date
+    def __init__(self):
+        if not os.path.exists(CSV_OUT_FOLDER):
+            try:
+                os.makedirs(CSV_OUT_FOLDER)
+            except Exception as e:
+                log.error('Failed to create data folder: %s' % CSV_OUT_FOLDER)
+                log.exception(e)
+
+    def get_currency_pairs(self):
+        url = self._api_path + 'command=returnTicker'
+
+        try:
+            response = requests.get(url)
+        except Exception as e:
+            log.error('Failed to retrieve list of currency pairs')
+            log.exception(e)
+            return None
+
+        data = response.json()
+        self.currency_pairs  = []
+        for ticker in data:
+            self.currency_pairs.append(ticker)
+        self.currency_pairs.sort()
+
+        log.debug('Currency pairs retrieved successfully: %d' % (len(self.currency_pairs)))
+
     def _get_start_date(self, csv_fn):
-    	try:
-    		with open(csv_fn, 'rb') as csvfile:
-    			# read last line
-        		lastrow = None
-        		for lastrow in csv.reader(csvfile): pass
-        		# print 'lastrow is %s' % lastrow
-        		return long(lastrow[0]) + 300
-        except:
-        	pass
+        ''' Function returns latest appended date, if the file has been previously written
+            the last line is an empty one, so we have to read the second to last line 
+        '''
+        try:
+            with open(csv_fn, 'ab+') as f: 
+                f.seek(0, os.SEEK_END)              # First check file is not zero size
+                if(f.tell() > 2):
+                    f.seek(-2, os.SEEK_END)         # Jump to the second last byte.
+                    while f.read(1) != b"\n":       # Until EOL is found...
+                        f.seek(-2, os.SEEK_CUR)     # ...jump back the read byte plus one more.
+                    lastrow = f.readline() 
+                    return int(lastrow.split(',')[0]) + 300
+
+        except Exception as e:
+            log.error('Error opening file: %s' % csv_fn)
+            log.exception(e)
 
         return DT_START
 
-
     def get_data(self, currencyPair, start, end=9999999999, period=300):
-    	url = self._api_path + '&currencyPair=' + currencyPair + '&start=' + str(start) + '&end=' + str(end) + '&period=' + str(period)
-    	response = urllib.urlopen(url)
-    	data = json.loads(response.read())
-    	return data
+    	url = self._api_path + 'command=returnChartData&currencyPair=' + currencyPair + '&start=' + str(start) + '&end=' + str(end) + '&period=' + str(period)
+        
+        try:
+            response = requests.get(url)
+        except Exception as e:
+            log.error('Failed to retrieve candlestick chart data for %s' % currencyPair)
+            log.exception(e)
+            return None
 
+    	return response.json()
 
     '''
     Pulls latest data for a single pair
     '''
-    def append_data_single_pair(self, currencyPair):
-    	print 'Getting data for %s' % currencyPair
-
-    	def run_append(currencyPair):
-	    	csv_fn = CSV_OUT + '-' + currencyPair + '.csv'
-	    	start = self._get_start_date(csv_fn)
-	    	data = self.get_data(currencyPair, start)
-	    	with open(csv_fn, 'ab') as csvfile:
-	    		csvwriter = csv.writer(csvfile)
-	    		for item in data:
-	    			if item['date'] == 0:
-	    				continue
-	    			csvwriter.writerow([item['date'], item['open'], item['high'], item['low'], item['close'], item['volume']])
-
-    	try:
-    		run_append(currencyPair)
-    	except:
-    		print 'Failed getting %s. Retrying ...' % currencyPair
-    		try:
-    			run_append(currencyPair)
-    		except:
-    			print 'Faile twice getting %s. Giving up ...' % currencyPair
+    def append_data_single_pair(self, currencyPair, repeat=0):
+    	log.debug('Getting data for %s' % currencyPair)
+        csv_fn = CSV_OUT_FOLDER + 'crypto_prices-' + currencyPair + '.csv'
+        start  = self._get_start_date(csv_fn)
+        if (time.time() > start):                   # Only fetch data if more than 5min have passed since last fetch
+            data   = self.get_data(currencyPair, start)
+            if data is not None:
+                try: 
+                    with open(csv_fn, 'ab') as csvfile:
+                        csvwriter = csv.writer(csvfile)
+                        for item in data:
+                            if item['date'] == 0:
+                                continue
+                            csvwriter.writerow([item['date'], item['open'], item['high'], item['low'], item['close'], item['volume']])
+                except Exception as e:
+                    log.error('Error opening %s' % csv_fn)
+                    log.exception(e)
+            elif (repeat < CONN_RETRIES):
+                    log.debug('Retrying: attemt %d' % (repeat+1) )
+                    self.append_data_single_pair(currencyPair, repeat + 1)    
 
     '''
     Pulls latest data for all currency pairs
     '''
     def append_data(self):
-    	for currencyPair in CURRENCY_PAIRS:
+    	for currencyPair in self.currency_pairs:
     		self.append_data_single_pair(currencyPair)
-    		time.sleep(10)
-
+    		time.sleep(0.17)                              # Rate limit is 6 calls per second, sleep 1sec/6 to be safe
 
     '''
     Returns a data frame for all pairs, or for the requests currency pair.
     Makes sure data is up to date
     '''
     def to_dataframe(self, start, end, currencyPair=None):
-    	csv_fn = CSV_OUT + '-' + currencyPair + '.csv'
+    	csv_fn = CSV_OUT_FOLDER + 'crypto_prices-' + currencyPair + '.csv'
     	last_date = self._get_start_date(csv_fn)
     	if last_date + 300 < end or not os.path.exists(csv_fn):
     		# get latest data
@@ -192,6 +130,7 @@ class PoloniexDataGenerator(object):
 
 if __name__ == '__main__':
     pdg = PoloniexDataGenerator()
+    pdg.get_currency_pairs()
     pdg.append_data()
 
 
