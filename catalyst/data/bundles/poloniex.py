@@ -100,14 +100,7 @@ def poloniex_cryptoassets(symbols, start=None, end=None):
                 df.set_index('date', inplace=True)
 
                 df = df.resample('D').mean()
-
-                # ToDo: we assume that the source is always up to date and complete, otherwise fetch
-                if(pd.to_datetime(start).tz_convert(None) < df.index[0]): df_start = df.index[0]
-                else:                                                     df_start = pd.to_datetime(start).tz_convert(None)
-                if(pd.to_datetime(end).tz_convert(None) >  df.index[-1]): df_end   = df.index[-1]
-                else:                                                     df_end   = pd.to_datetime(end).tz_convert(None)
-
-                df = df.loc[ df_start : df_end ]
+                df = df.loc[df.index.isin(calendar.schedule.index)]
 
                 # the start date is the date of the first trade and
                 # the end date is the date of the last trade
@@ -164,11 +157,13 @@ def poloniex_cryptoassets(symbols, start=None, end=None):
 
         symbol_map = pd.Series(metadata.symbol.index, metadata.symbol)
 
-        # Hardcode the exchange to "POLONIEX" for all assets and (elsewhere)
+        # Hardcode the exchange to "POLO" for all assets and (elsewhere)
         # register "YAHOO" to resolve to the OPEN calendar, because these are
         # all cryptoassets and thus use the OPEN calendar.
         metadata['exchange'] = 'POLO'
         asset_db_writer.write(equities=metadata)
+
+        adjustment_writer.write()
 
     return ingest
 
