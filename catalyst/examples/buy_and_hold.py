@@ -15,7 +15,7 @@
 # limitations under the License.
 from catalyst.api import order, symbol
 
-stocks = ['AAPL', 'MSFT']
+stocks = ['USDT_BTC']
 
 
 def initialize(context):

@@ -148,7 +148,7 @@ def _run(handle_data,
                 bundle_data.equity_minute_bar_reader.first_trading_day
             data = DataPortal(
                 env.asset_finder,
-                get_calendar('NYSE'),
+                get_calendar('OPEN'),
                 first_trading_day=first_trading_day,
                 equity_minute_reader=bundle_data.equity_minute_bar_reader,
                 equity_daily_reader=bundle_data.equity_daily_bar_reader,
