@@ -167,7 +167,7 @@ def poloniex_cryptoassets(symbols, start=None, end=None):
         # Hardcode the exchange to "POLONIEX" for all assets and (elsewhere)
         # register "YAHOO" to resolve to the OPEN calendar, because these are
         # all cryptoassets and thus use the OPEN calendar.
-        metadata['exchange'] = "POLONIEX"
+        metadata['exchange'] = 'POLO'
         asset_db_writer.write(equities=metadata)
 
     return ingest
@@ -185,6 +185,6 @@ register(
         pd.Timestamp('2010-01-01', tz='utc'),
         pd.Timestamp('2015-01-01', tz='utc'),
     ),
+    calendar_name='OPEN',
+    minutes_per_day=1440,
 )
-
-register_calendar_alias("POLONIEX", "OPEN")
