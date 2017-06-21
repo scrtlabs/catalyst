@@ -164,7 +164,7 @@ def _run(handle_data,
                 bundle_timestamp,
             )
 
-            if b == 'catalyst':
+            if b == 'poloniex':
                 return CryptoPricingLoader(
                            bundle_data.equity_daily_bar_reader,
                            CryptoPricing,
