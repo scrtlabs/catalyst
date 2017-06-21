@@ -100,15 +100,9 @@ def rebalance(context, data):
         if data.can_trade(context.asset):
             # adjust portfolio based on moving averages
             if short_mavg > long_mavg:
-                order_target_percent(
-                    context.asset,
-                    TARGET_INVESTMENT_RATIO,
-                )
+                order_target_percent(context.asset, TARGET_INVESTMENT_RATIO)
             elif short_mavg < long_mavg:
-                order_target_percent(
-                    context.asset, 
-                    0.0,
-                )
+                order_target_percent(context.asset, 0.0)
 
     record(
         USDT_BTC=price,
@@ -179,7 +173,6 @@ def analyze(context=None, results=None):
         'benchmark',
     ]].plot(ax=ax5)
     ax5.set_ylabel('Dollars (USD)')
-
 
     plt.legend(loc=3)
 
