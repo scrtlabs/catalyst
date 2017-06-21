@@ -10,7 +10,7 @@ import catalyst.data.bundles.core as bundles
 
 DT_START        = time.mktime(datetime(2010, 01, 01, 0, 0).timetuple())
 # DT_START = time.mktime(datetime(2017, 06, 13, 0, 0).timetuple()) # TODO: remove temp
-CSV_OUT_FOLDER  = 'data/'
+CSV_OUT_FOLDER  = '/var/tmp/catalyst/data/'
 CONN_RETRIES    = 2
 
 logbook.StderrHandler().push_application()
@@ -135,8 +135,8 @@ class PoloniexDataGenerator(object):
 
 if __name__ == '__main__':
     pdg = PoloniexDataGenerator()
-#    pdg.get_currency_pairs()
-#    pdg.append_data()
+    pdg.get_currency_pairs()
+    pdg.append_data()
     df = pdg.to_dataframe(time.mktime(datetime(2017, 6, 01, 0, 0).timetuple()),time.mktime(datetime(2017, 6, 02, 0, 0).timetuple()),'USDT_BTC')
     print(df)
 
