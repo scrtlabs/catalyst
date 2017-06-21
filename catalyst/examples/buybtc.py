@@ -14,7 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from catalyst.api import order, record, symbol
+from catalyst.api import (
+    order_target_percent,
+    record,
+    symbol,
+    get_open_orders,
+)
 
 
 def initialize(context):
@@ -22,8 +27,13 @@ def initialize(context):
 
 
 def handle_data(context, data):
-    order(context.asset, 10)
-    record(USDT_BTC=data.current(context.asset, 'price'))
+    if context.asset not in get_open_orders() and data.can_trade(context.asset):
+        order_target_percent(context.asset, 1.0)
+
+    record(
+        USDT_BTC=data.current(context.asset, 'price'),
+        leverage=context.account.leverage,
+    )
 
 
 # Note: this function can be removed if running
@@ -31,12 +41,15 @@ def handle_data(context, data):
 def analyze(context=None, results=None):
     import matplotlib.pyplot as plt
     # Plot the portfolio and asset data.
-    ax1 = plt.subplot(211)
+    ax1 = plt.subplot(311)
     results.portfolio_value.plot(ax=ax1)
     ax1.set_ylabel('Portfolio value (USD)')
-    ax2 = plt.subplot(212, sharex=ax1)
+    ax2 = plt.subplot(312, sharex=ax1)
     results.USDT_BTC.plot(ax=ax2)
     ax2.set_ylabel('USDT_BTC price (USD)')
+    ax3 = plt.subplot(313, sharex=ax1)
+    results.leverage.plot(ax=ax3)
+    ax3.set_ylabel('Leverage (USD)')
 
     # Show the plot.
     plt.gcf().set_size_inches(18, 8)

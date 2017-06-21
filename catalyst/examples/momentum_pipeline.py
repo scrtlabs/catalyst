@@ -13,7 +13,7 @@ from catalyst.api import (
     symbol,
 )
 from catalyst.pipeline import Pipeline
-from catalyst.pipeline.factors.equity import RSI
+from catalyst.pipeline.factors.crypto import RSI
 
 
 def make_pipeline():
@@ -35,7 +35,10 @@ def rebalance(context, data):
     longs = all_assets[pipeline_data.longs]
     shorts = all_assets[pipeline_data.shorts]
 
-    record(universe_size=len(all_assets))
+    record(
+        universe_size=len(all_assets),
+        leverage=context.account.leverage,
+    )
 
     # Build a 2x-leveraged, equal-weight, long-short portfolio.
     one_third = 1.0 / 3.0
@@ -67,6 +70,21 @@ def initialize(context):
 def before_trading_start(context, data):
     context.pipeline_data = pipeline_output('my_pipeline')
 
+def analyze(context=None, results=None):
+    import matplotlib.pyplot as plt
+
+    ax1 = plt.subplot(311)
+    results.portfolio_value.plot(ax=ax1)
+    ax1.set_ylabel('Portfolio value (USD)')
+    ax2 = plt.subplot(312, sharex=ax1)
+    results.universe_size.plot(ax=ax2)
+    ax2.set_ylabel('Universe Size')
+    ax3 = plt.subplot(313, sharex=ax1)
+    results.leverage.plot(ax=ax3)
+    ax3.set_ylabel('Leverage (USD)')
+
+    plt.gcf().set_size_inches(18, 8)
+    plt.show()
 
 def _test_args():
     """

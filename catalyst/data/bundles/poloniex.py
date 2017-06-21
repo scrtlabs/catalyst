@@ -99,7 +99,7 @@ def poloniex_cryptoassets(symbols, start=None, end=None):
                 df['date']=pd.to_datetime(df['date'], utc=True, unit='s')
                 df.set_index('date', inplace=True)
 
-                df = df.resample('D').mean()
+                #df = df.resample('D').mean()
                 df = df.loc[df.index.isin(calendar.schedule.index)]
 
                 # the start date is the date of the first trade and

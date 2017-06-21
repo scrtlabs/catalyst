@@ -138,7 +138,7 @@ def ipython_only(option):
 @click.option(
     '-b',
     '--bundle',
-    default='quantopian-quandl',
+    default='poloniex',
     metavar='BUNDLE-NAME',
     show_default=True,
     help='The data bundle to use for the simulation.',
@@ -285,7 +285,7 @@ def catalyst_magic(line, cell=None):
 @click.option(
     '-b',
     '--bundle',
-    default='quantopian-quandl',
+    default='poloniex',
     metavar='BUNDLE-NAME',
     show_default=True,
     help='The data bundle to ingest.',
@@ -317,7 +317,7 @@ def ingest(bundle, assets_version, show_progress):
 @click.option(
     '-b',
     '--bundle',
-    default='quantopian-quandl',
+    default='poloniex',
     metavar='BUNDLE-NAME',
     show_default=True,
     help='The data bundle to clean.',
