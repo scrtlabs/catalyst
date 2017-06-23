@@ -10,7 +10,7 @@ import catalyst.data.bundles.core as bundles
 
 DT_START        = time.mktime(datetime(2010, 01, 01, 0, 0).timetuple())
 # DT_START = time.mktime(datetime(2017, 06, 13, 0, 0).timetuple()) # TODO: remove temp
-CSV_OUT_FOLDER  = '/var/tmp/catalyst/data/'
+CSV_OUT_FOLDER  = '/var/tmp/catalyst/data/poloniex/'
 CONN_RETRIES    = 2
 
 logbook.StderrHandler().push_application()
@@ -119,26 +119,24 @@ class PoloniexDataGenerator(object):
     Makes sure data is up to date
     '''
     def to_dataframe(self, start, end, currencyPair=None):
-    	csv_fn = CSV_OUT_FOLDER + 'crypto_prices-' + currencyPair + '.csv'
-    	last_date = self._get_start_date(csv_fn)
-    	if last_date + 300 < end or not os.path.exists(csv_fn):
-    		# get latest data
-    		self.append_data_single_pair(currencyPair)
+        csv_fn = CSV_OUT_FOLDER + 'crypto_prices-' + currencyPair + '.csv'
+        last_date = self._get_start_date(csv_fn)
+        if last_date + 300 < end or not os.path.exists(csv_fn):
+            # get latest data
+            self.append_data_single_pair(currencyPair)
 
-    	# CSV holds the latest snapshot
-    	df = pd.read_csv(csv_fn,  names=['date', 'open', 'high', 'low', 'close', 'volume'])
-    	df['date']=pd.to_datetime(df['date'],unit='s')
+        # CSV holds the latest snapshot
+        df = pd.read_csv(csv_fn, names=['date', 'open', 'high', 'low', 'close', 'volume'])
+        df['date']=pd.to_datetime(df['date'],unit='s')
         df.set_index('date', inplace=True)
 
-    	#return df.loc[(df.index > start) & (df.index <= end)]
+        #return df.loc[(df.index > start) & (df.index <= end)]
         return df[datetime.fromtimestamp(start):datetime.fromtimestamp(end-1)]
 
 if __name__ == '__main__':
     pdg = PoloniexDataGenerator()
     pdg.get_currency_pairs()
     pdg.append_data()
-    df = pdg.to_dataframe(time.mktime(datetime(2017, 6, 01, 0, 0).timetuple()),time.mktime(datetime(2017, 6, 02, 0, 0).timetuple()),'USDT_BTC')
-    print(df)
 
 
 

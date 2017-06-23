@@ -18,6 +18,7 @@ from collections import OrderedDict
 import logbook
 import pandas as pd
 from pandas_datareader.data import DataReader
+import datetime
 import pytz
 from six import iteritems
 from six.moves.urllib_error import HTTPError
@@ -90,6 +91,56 @@ def has_data_for_dates(series_or_df, first_date, last_date):
         raise TypeError("Expected a DatetimeIndex, but got %s." % type(dts))
     first, last = dts[[0, -1]]
     return (first <= first_date) and (last >= last_date)
+
+def load_crypto_market_data(trading_day=None,
+                            trading_days=None,
+                            bm_symbol='USDT_BTC',
+                            environ=None):
+    if trading_day is None:
+        trading_day = get_calendar('OPEN').trading_day
+    if trading_days is None:
+        trading_days = get_calendar('OPEN').all_sessions
+
+    first_date = trading_days[0]
+    now = pd.Timestamp.utcnow()
+
+    # We expect to have benchmark and treasury data that's current up until
+    # **two** full trading days prior to the most recently completed trading
+    # day.
+    # Example:
+    # On Thu Oct 22 2015, the previous completed trading day is Wed Oct 21.
+    # However, data for Oct 21 doesn't become available until the early morning
+    # hours of Oct 22.  This means that there are times on the 22nd at which we
+    # cannot reasonably expect to have data for the 21st available.  To be
+    # conservative, we instead expect that at any time on the 22nd, we can
+    # download data for Tuesday the 20th, which is two full trading days prior
+    # to the date on which we're running a test.
+
+    # We'll attempt to download new data if the latest entry in our cache is
+    # before this date.
+    last_date = trading_days[trading_days.get_loc(now, method='ffill') - 2]
+
+    br = ensure_crypto_benchmark_data(
+        bm_symbol,
+        first_date,
+        last_date,
+        now,
+        # We need the trading_day to figure out the close prior to the first
+        # date so that we can compute returns for the first date.
+        trading_day,
+        environ,
+    )
+    tc = ensure_treasury_data(
+        bm_symbol,
+        first_date,
+        last_date,
+        now,
+        environ,
+    )
+    benchmark_returns = br[br.index.slice_indexer(first_date, last_date)]
+    treasury_curves = tc[tc.index.slice_indexer(first_date, last_date)]
+    return benchmark_returns, treasury_curves
+    
 
 
 def load_market_data(trading_day=None, trading_days=None, bm_symbol='SPY',
@@ -177,6 +228,135 @@ def load_market_data(trading_day=None, trading_days=None, bm_symbol='SPY',
     treasury_curves = tc[tc.index.slice_indexer(first_date, last_date)]
     return benchmark_returns, treasury_curves
 
+def ensure_crypto_benchmark_data(symbol, first_date, last_date, now,
+                                trading_day, environ=None):
+    filename = get_benchmark_filename(symbol)
+    source_filename = '/var/tmp/catalyst/data/poloniex/crypto_prices-{0}.csv'.\
+        format(symbol)
+
+    logger.info(
+        ('Loading benchmark data for {symbol!r} '
+            'from {first_date} to {last_date}'),
+        symbol=symbol,
+        first_date=first_date - trading_day,
+        last_date=last_date
+    )
+
+    data = _load_cached_data(
+        filename,
+        first_date,
+        last_date,
+        now,
+        'benchmark',
+        environ,
+    )
+
+
+    if data is not None:
+        print 'benchmark data:\n', data.head()
+        return data
+
+    # If no cached data was found or it was missing any dates then download the
+    # necessary data.
+    logger.info(
+        ('Downloading benchmark data for {symbol!r} '
+            'from {first_date} to {last_date}'),
+        symbol=symbol,
+        first_date=first_date - trading_day,
+        last_date=last_date
+    )
+
+    def dateparse(time_in_secs):
+        return datetime.datetime.fromtimestamp(float(time_in_secs), pytz.utc)
+
+    try:
+        data = pd.read_csv(
+            source_filename,
+            names=['date', 'open', 'high', 'low', 'close', 'volume'],
+            index_col=[0],
+            parse_dates=True,
+            date_parser=dateparse,
+        )
+        data = data[['close']]
+
+        print 'loaded benchmark data:\n', data.index
+
+        data = data[
+            (data.index >= (first_date-trading_day)) &
+            (data.index <= last_date)
+        ]
+        data = data.pct_change(1).iloc[1:]
+
+        print 'writing benchmark data:\n', data.head()
+
+        data.to_csv(get_data_filepath(filename, environ))
+    except (OSError, IOError, HTTPError):
+        logger.exception('Failed to cache the new benchmark returns')
+        raise
+    if not has_data_for_dates(data, first_date, last_date):
+        logger.warn("Still don't have expected data after redownload!")
+    return data
+
+
+def ensure_benchmark_data(symbol, first_date, last_date, now, trading_day,
+                          environ=None):
+    """
+    Ensure we have benchmark data for `symbol` from `first_date` to `last_date`
+
+    Parameters
+    ----------
+    symbol : str
+        The symbol for the benchmark to load.
+    first_date : pd.Timestamp
+        First required date for the cache.
+    last_date : pd.Timestamp
+        Last required date for the cache.
+    now : pd.Timestamp
+        The current time.  This is used to prevent repeated attempts to
+        re-download data that isn't available due to scheduling quirks or other
+        failures.
+    trading_day : pd.CustomBusinessDay
+        A trading day delta.  Used to find the day before first_date so we can
+        get the close of the day prior to first_date.
+
+    We attempt to download data unless we already have data stored at the data
+    cache for `symbol` whose first entry is before or on `first_date` and whose
+    last entry is on or after `last_date`.
+
+    If we perform a download and the cache criteria are not satisfied, we wait
+    at least one hour before attempting a redownload.  This is determined by
+    comparing the current time to the result of os.path.getmtime on the cache
+    path.
+    """
+    filename = get_benchmark_filename(symbol)
+    data = _load_cached_data(filename, first_date, last_date, now, 'benchmark',
+                             environ)
+    if data is not None:
+        return data
+
+    # If no cached data was found or it was missing any dates then download the
+    # necessary data.
+    logger.info(
+        ('Downloading benchmark data for {symbol!r} '
+            'from {first_date} to {last_date}'),
+        symbol=symbol,
+        first_date=first_date - trading_day,
+        last_date=last_date
+    )
+
+    try:
+        data = get_benchmark_returns(
+            symbol,
+            first_date - trading_day,
+            last_date,
+        )
+        data.to_csv(get_data_filepath(filename, environ))
+    except (OSError, IOError, HTTPError):
+        logger.exception('Failed to cache the new benchmark returns')
+        raise
+    if not has_data_for_dates(data, first_date, last_date):
+        logger.warn("Still don't have expected data after redownload!")
+    return data
 
 def ensure_benchmark_data(symbol, first_date, last_date, now, trading_day,
                           environ=None):
