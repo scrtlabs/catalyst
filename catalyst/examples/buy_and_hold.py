@@ -13,21 +13,102 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from catalyst.api import order, symbol
+
+import numpy as np
+
+from catalyst.api import (
+    order,
+    symbol,
+    record,
+)
 
 stocks = ['USDT_BTC']
 
+TARGET_INVESTMENT_RATIO = 0.1
 
 def initialize(context):
     context.has_ordered = False
-    context.stocks = stocks
+    context.asset = symbol('USDT_BTC')
 
 
 def handle_data(context, data):
     if not context.has_ordered:
-        for stock in context.stocks:
-            order(symbol(stock), 100)
-        context.has_ordered = True
+        price = data[context.asset].price
+        amt = TARGET_INVESTMENT_RATIO * (context.portfolio.cash / price)
+        if not np.isnan(amt):
+            print 'amt:', amt
+            order(context.asset, amt, limit_price=price*1.5)
+            context.has_ordered = True
+
+    record(
+        USDT_BTC=data[context.asset].price,
+        cash=context.portfolio.cash,
+        leverage=context.account.leverage,
+    )
+
+def analyze(context=None, results=None):
+    import matplotlib.pyplot as plt
+    # Plot the portfolio and asset data.
+    ax1 = plt.subplot(511)
+    results[['portfolio_value']].plot(ax=ax1)
+    ax1.set_ylabel('Portfolio value (USD)')
+
+    ax2 = plt.subplot(512, sharex=ax1)
+    ax2.set_ylabel('USDT_BTC (USD)')
+    results[['USDT_BTC']].plot(ax=ax2)
+
+    trans = results.ix[[t != [] for t in results.transactions]]
+    buys = trans.ix[
+        [t[0]['amount'] > 0 for t in trans.transactions]
+    ]
+    sells = trans.ix[
+        [t[0]['amount'] < 0 for t in trans.transactions]
+    ]
+    print 'buys:', buys.head()
+    ax2.plot(
+        buys.index, results.USDT_BTC[buys.index],
+        '^',
+        markersize=10,
+        color='m',
+    )
+    ax2.plot(
+        sells.index, results.USDT_BTC[sells.index],
+        'v',
+        markersize=10,
+        color='k',
+    )
+
+    ax3 = plt.subplot(513, sharex=ax1)
+    results[['leverage', 'alpha', 'beta']].plot(ax=ax3)
+    ax3.set_ylabel('Leverage (USD)')
+
+    ax4 = plt.subplot(514, sharex=ax1)
+    results[['cash']].plot(ax=ax4)
+    ax4.set_ylabel('Cash (USD)')
+
+    results[[
+        'treasury',
+        'algorithm',
+        'benchmark',
+    ]] = results[[
+        'treasury_period_return',
+        'algorithm_period_return',
+        'benchmark_period_return',
+    ]]
+
+    ax5 = plt.subplot(515, sharex=ax1)
+    results[[
+        'treasury',
+        'algorithm',
+        'benchmark',
+    ]].plot(ax=ax5)
+    ax5.set_ylabel('Dollars (USD)')
+
+    plt.legend(loc=3)
+
+    # Show the plot.
+    plt.gcf().set_size_inches(18, 8)
+    plt.show()
 
 
 def _test_args():

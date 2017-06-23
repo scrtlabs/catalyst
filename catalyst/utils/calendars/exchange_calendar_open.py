@@ -1,9 +1,11 @@
 from datetime import time
 from pytz import timezone
 
-from .trading_calendar import TradingCalendar
+from pandas.tseries.offsets import DateOffset
 
 from catalyst.utils.memoize import lazyval
+
+from .trading_calendar import TradingCalendar
 
 
 class OpenExchangeCalendar(TradingCalendar):
@@ -25,4 +27,4 @@ class OpenExchangeCalendar(TradingCalendar):
 
     @lazyval
     def day(self):
-        return 'D'
+        return DateOffset(days=1)

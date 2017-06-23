@@ -4,6 +4,7 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 from pandas_datareader.data import DataReader
+from pandas.tseries.offsets import DateOffset
 import requests
 
 from catalyst.utils.calendars import register_calendar_alias
@@ -88,19 +89,30 @@ def poloniex_cryptoassets(symbols, start=None, end=None):
 
             for symbol in symbols:
                 #def to_dataframe(self, start, end, currencyPair=None):
-                csv_fn = '/var/tmp/' + 'crypto_prices-' + symbol + '.csv'  # TODO: DIR as parameter
+                csv_fn = '/var/tmp/catalyst/data/poloniex/crypto_prices-' + symbol + '.csv'  # TODO: DIR as parameter
                 #last_date = self._get_start_date(csv_fn)
                 #if last_date + 300 < end or not os.path.exists(csv_fn):
                     # get latest data
                     #self.append_data_single_pair(currencyPair)
 
                 # CSV holds the latest snapshot
-                df = pd.read_csv(csv_fn,  names=['date', 'open', 'high', 'low', 'close', 'volume'])
-                df['date']=pd.to_datetime(df['date'], utc=True, unit='s')
-                df.set_index('date', inplace=True)
+                data = pd.read_csv(csv_fn,  names=['date', 'open', 'high', 'low', 'close', 'volume'])
+                data['date'] = pd.to_datetime(data['date'], utc=True, unit='s')
+                data.set_index('date', inplace=True)
 
                 #df = df.resample('D').mean()
-                df = df.loc[df.index.isin(calendar.schedule.index)]
+                df = data.loc[data.index.isin(calendar.schedule.index)]
+
+                offset = DateOffset(days=1)
+                for start_date in df.index:
+                  end_date = start_date + offset
+                  day_data = data[start_date:end_date]
+                  
+                  df[start_date]['open'] = day_data[0]['open']
+                  df[start_date]['high'] = day_data['high'].max()
+                  df[start_date]['low'] = day_data['low'].min()
+                  df[start_date]['close'] = day_data[-1]['close']
+                  df[start_date]['volume'] = day_data['volume'].sum()
 
                 # the start date is the date of the first trade and
                 # the end date is the date of the last trade
@@ -158,7 +170,7 @@ def poloniex_cryptoassets(symbols, start=None, end=None):
         symbol_map = pd.Series(metadata.symbol.index, metadata.symbol)
 
         # Hardcode the exchange to "POLO" for all assets and (elsewhere)
-        # register "YAHOO" to resolve to the OPEN calendar, because these are
+        # register "POLO" to resolve to the OPEN calendar, because these are
         # all cryptoassets and thus use the OPEN calendar.
         metadata['exchange'] = 'POLO'
         asset_db_writer.write(equities=metadata)

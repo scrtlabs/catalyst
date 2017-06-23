@@ -13,10 +13,12 @@ try:
 except:
     PYGMENTS = False
 from toolz import valfilter, concatv
+from functools import partial
 
 from catalyst.algorithm import TradingAlgorithm
 from catalyst.data.bundles.core import load
 from catalyst.data.data_portal import DataPortal
+from catalyst.data.loader import load_crypto_market_data
 from catalyst.finance.trading import TradingEnvironment
 from catalyst.pipeline.data import USEquityPricing, CryptoPricing
 from catalyst.pipeline.loaders import (
@@ -143,9 +145,17 @@ def _run(handle_data,
                     "invalid url %r, must begin with 'sqlite:///'" %
                     str(bundle_data.asset_finder.engine.url),
                 )
-            env = TradingEnvironment(asset_db_path=connstr, environ=environ)
+
+            env = TradingEnvironment(
+                #load=partial(load_crypto_market_data, environ=environ),
+                #bm_symbol='USDT_BTC',
+                asset_db_path=connstr,
+                environ=environ,
+            )
+
             first_trading_day =\
                 bundle_data.equity_minute_bar_reader.first_trading_day
+
             data = DataPortal(
                 env.asset_finder,
                 get_calendar('NYSE'),

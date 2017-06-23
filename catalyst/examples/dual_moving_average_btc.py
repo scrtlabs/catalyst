@@ -46,7 +46,7 @@ SHORT_WINDOW = 30
 LONG_WINDOW = 100
 
 def initialize(context):
-    context.asset = symbol('USDT_BTC')
+    context.asset = symbol('USDT_LTC')
     context.i = 0
 
     set_commission(PerDollar(cost=0.001))
@@ -105,7 +105,7 @@ def rebalance(context, data):
                 order_target_percent(context.asset, 0.0)
 
     record(
-        USDT_BTC=price,
+        USDT_LTC=price,
         cash=context.portfolio.cash,
         leverage=context.account.leverage,
         short_mavg=short_mavg,
@@ -124,8 +124,8 @@ def analyze(context=None, results=None):
     ax1.set_ylabel('Portfolio value (USD)')
 
     ax2 = plt.subplot(512, sharex=ax1)
-    ax2.set_ylabel('USDT_BTC (USD)')
-    results[['USDT_BTC', 'short_mavg', 'long_mavg']].plot(ax=ax2)
+    ax2.set_ylabel('USDT_LTC (USD)')
+    results[['USDT_LTC', 'short_mavg', 'long_mavg']].plot(ax=ax2)
 
     trans = results.ix[[t != [] for t in results.transactions]]
     buys = trans.ix[
@@ -136,13 +136,13 @@ def analyze(context=None, results=None):
     ]
     print 'buys:', buys.head()
     ax2.plot(
-        buys.index, results.USDT_BTC[buys.index],
+        buys.index, results.USDT_LTC[buys.index],
         '^',
         markersize=10,
         color='m',
     )
     ax2.plot(
-        sells.index, results.USDT_BTC[sells.index],
+        sells.index, results.USDT_LTC[sells.index],
         'v',
         markersize=10,
         color='k',
