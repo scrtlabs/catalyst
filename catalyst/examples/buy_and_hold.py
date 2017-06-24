@@ -22,9 +22,7 @@ from catalyst.api import (
     record,
 )
 
-stocks = ['USDT_BTC']
-
-TARGET_INVESTMENT_RATIO = 0.1
+TARGET_INVESTMENT_RATIO = 0.5
 
 def initialize(context):
     context.has_ordered = False

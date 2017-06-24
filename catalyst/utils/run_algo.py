@@ -123,7 +123,7 @@ def _run(handle_data,
         def get_trading_env_and_data(bundles):
             env = data = None
 
-            b = 'catalyst'
+            b = 'poloniex'
             if len(bundles) == 0:
                 return env, data
             elif len(bundles) == 1:
@@ -146,9 +146,12 @@ def _run(handle_data,
                     str(bundle_data.asset_finder.engine.url),
                 )
 
+            open_calendar = get_calendar('OPEN')
+
             env = TradingEnvironment(
-                #load=partial(load_crypto_market_data, environ=environ),
-                #bm_symbol='USDT_BTC',
+                load=partial(load_crypto_market_data, environ=environ),
+                bm_symbol='USDT_BTC',
+                trading_calendar=open_calendar,
                 asset_db_path=connstr,
                 environ=environ,
             )
@@ -158,7 +161,7 @@ def _run(handle_data,
 
             data = DataPortal(
                 env.asset_finder,
-                get_calendar('NYSE'),
+                open_calendar,
                 first_trading_day=first_trading_day,
                 equity_minute_reader=bundle_data.equity_minute_bar_reader,
                 equity_daily_reader=bundle_data.equity_daily_bar_reader,

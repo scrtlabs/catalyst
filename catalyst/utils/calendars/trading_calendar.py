@@ -100,7 +100,7 @@ class TradingCalendar(with_metaclass(ABCMeta)):
                 'market_open': self._opens,
                 'market_close': self._closes,
             },
-            dtype='datetime64[ns]',
+            dtype='datetime64[ns, UTC]',
         )
 
         # Simple cache to avoid recalculating the same minute -> session in

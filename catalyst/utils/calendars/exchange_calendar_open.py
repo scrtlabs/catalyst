@@ -15,7 +15,7 @@ class OpenExchangeCalendar(TradingCalendar):
 
     @property
     def tz(self):
-        return timezone('US/Eastern')
+        return timezone('UTC')
 
     @property
     def open_time(self):
