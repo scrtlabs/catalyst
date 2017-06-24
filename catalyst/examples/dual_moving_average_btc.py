@@ -46,7 +46,7 @@ SHORT_WINDOW = 30
 LONG_WINDOW = 100
 
 def initialize(context):
-    context.asset = symbol('USDT_LTC')
+    context.asset = symbol('USDT_BTC')
     context.i = 0
 
     set_commission(PerDollar(cost=0.001))
@@ -100,12 +100,22 @@ def rebalance(context, data):
         if data.can_trade(context.asset):
             # adjust portfolio based on moving averages
             if short_mavg > long_mavg:
-                order_target_percent(context.asset, TARGET_INVESTMENT_RATIO)
+                order_target_percent(
+                    context.asset,
+                    TARGET_INVESTMENT_RATIO,
+                    #limit_price=(2 * price),
+                    #stop_price=(0.5 * price),
+                )
             elif short_mavg < long_mavg:
-                order_target_percent(context.asset, 0.0)
+                order_target_percent(
+                    context.asset,
+                    0.0,
+                    #limit_price=(2 * price),
+                    #stop_price=(0.5 * price),
+                )
 
     record(
-        USDT_LTC=price,
+        USDT_BTC=price,
         cash=context.portfolio.cash,
         leverage=context.account.leverage,
         short_mavg=short_mavg,
@@ -124,10 +134,12 @@ def analyze(context=None, results=None):
     ax1.set_ylabel('Portfolio value (USD)')
 
     ax2 = plt.subplot(512, sharex=ax1)
-    ax2.set_ylabel('USDT_LTC (USD)')
-    results[['USDT_LTC', 'short_mavg', 'long_mavg']].plot(ax=ax2)
+    ax2.set_ylabel('USDT_BTC (USD)')
+    results[['USDT_BTC', 'short_mavg', 'long_mavg']].plot(ax=ax2)
 
     trans = results.ix[[t != [] for t in results.transactions]]
+    amounts = [t[0]['amount'] for t in trans.transactions]
+    print 'amounts:\n', amounts
     buys = trans.ix[
         [t[0]['amount'] > 0 for t in trans.transactions]
     ]
@@ -136,13 +148,13 @@ def analyze(context=None, results=None):
     ]
     print 'buys:', buys.head()
     ax2.plot(
-        buys.index, results.USDT_LTC[buys.index],
+        buys.index, results.USDT_BTC[buys.index],
         '^',
         markersize=10,
         color='m',
     )
     ax2.plot(
-        sells.index, results.USDT_LTC[sells.index],
+        sells.index, results.USDT_BTC[sells.index],
         'v',
         markersize=10,
         color='k',

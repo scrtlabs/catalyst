@@ -37,7 +37,7 @@ class CryptoPricingLoader(PipelineLoader):
         self.raw_price_loader = raw_price_loader
         self._columns = dataset.columns
 
-        cal = get_calendar('NYSE')
+        cal = get_calendar('OPEN')
 
         self._all_sessions = cal.all_sessions
 

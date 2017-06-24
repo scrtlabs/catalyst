@@ -17,6 +17,7 @@ from collections import OrderedDict
 
 import logbook
 import pandas as pd
+import numpy as np
 from pandas_datareader.data import DataReader
 import datetime
 import pytz
@@ -253,7 +254,6 @@ def ensure_crypto_benchmark_data(symbol, first_date, last_date, now,
 
 
     if data is not None:
-        print 'benchmark data:\n', data.head()
         return data
 
     # If no cached data was found or it was missing any dates then download the
@@ -269,33 +269,82 @@ def ensure_crypto_benchmark_data(symbol, first_date, last_date, now,
     def dateparse(time_in_secs):
         return datetime.datetime.fromtimestamp(float(time_in_secs), pytz.utc)
 
+    def compute_daily_bars(five_min_bars, schedule):
+        # filter and copy the entry at the beginning of each session
+        daily_bars = five_min_bars[
+            five_min_bars.index.isin(schedule)
+        ].copy()
+
+        day_offset = pd.Timedelta(days=1)
+
+        # iterate through session starts doing:
+        # 1. filter five_min_bars to get all entries in one day
+        # 2. compute daily bar entry
+        # 3. record in rid-th row of daily_bars
+        for rid, start_date in enumerate(daily_bars.index):
+            # compute beginning of next session
+            end_date = start_date + day_offset
+
+            # filter for entries session entries
+            day_data = five_min_bars[
+                (five_min_bars.index >= start_date) &
+                (five_min_bars.index < end_date)
+            ]
+
+            # compute and record daily bar
+            daily_bars.iloc[rid] = (
+                day_data.open.iloc[0],   # first open price
+                day_data.high.max(),     # max of high prices
+                day_data.low.min(),      # min of low prices
+                day_data.close.iloc[-1], # last close prices
+                day_data.volume.sum(),   # sum of all volumes
+            )
+
+        # scale to allow trading 100-ths of a coin
+        daily_bars.loc[:, 'open'] /= 100.0
+        daily_bars.loc[:, 'high'] /= 100.0
+        daily_bars.loc[:, 'low'] /= 100.0
+        daily_bars.loc[:, 'close'] /= 100.0
+        daily_bars.loc[:, 'volume'] *= 100.0
+        
+        return daily_bars
+
     try:
-        data = pd.read_csv(
+        # load five minute bars from csv cache
+        five_min_bars = pd.read_csv(
             source_filename,
             names=['date', 'open', 'high', 'low', 'close', 'volume'],
             index_col=[0],
             parse_dates=True,
             date_parser=dateparse,
         )
-        data = data[['close']]
+        five_min_bars.index = pd.to_datetime(five_min_bars.index, utc=True, unit='s')
 
-        print 'loaded benchmark data:\n', data.index
+        # compute daily bars for open calendar
+        open_calendar = get_calendar('OPEN')
+        daily_bars = compute_daily_bars(
+            five_min_bars,
+            open_calendar.all_sessions,
+        )
 
-        data = data[
-            (data.index >= (first_date-trading_day)) &
-            (data.index <= last_date)
+        # filter daily bars to include first_date and last_date
+        daily_bars = daily_bars[
+            (daily_bars.index >= (first_date - trading_day)) &
+            (daily_bars.index <= last_date)
         ]
-        data = data.pct_change(1).iloc[1:]
 
-        print 'writing benchmark data:\n', data.head()
+        # select close column and compute percent change between days
+        daily_close = daily_bars[['close']]
+        daily_close = daily_close.pct_change(1).iloc[1:]
 
-        data.to_csv(get_data_filepath(filename, environ))
+        # write to benchmark csv cache
+        daily_close.to_csv(get_data_filepath(filename, environ))
     except (OSError, IOError, HTTPError):
         logger.exception('Failed to cache the new benchmark returns')
         raise
-    if not has_data_for_dates(data, first_date, last_date):
+    if not has_data_for_dates(daily_close, first_date, last_date):
         logger.warn("Still don't have expected data after redownload!")
-    return data
+    return daily_close
 
 
 def ensure_benchmark_data(symbol, first_date, last_date, now, trading_day,

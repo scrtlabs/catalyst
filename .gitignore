@@ -75,6 +75,6 @@ zipline.iml
 *.pickle
 
 # data
-data
+./data
 
 TAGS
