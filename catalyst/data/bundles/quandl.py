@@ -5,6 +5,7 @@ from io import BytesIO
 from itertools import count
 import tarfile
 from time import time, sleep
+from datetime import datetime
 
 from click import progressbar
 from logbook import Logger
@@ -36,10 +37,17 @@ def _fetch_raw_metadata(api_key, cache, retries, environ):
                 try:
                     raw = pd.read_csv(
                         format_metadata_url(api_key, page_number),
+                        date_parser=pd.tseries.tools.to_datetime,
                         parse_dates=[
                             'oldest_available_date',
                             'newest_available_date',
                         ],
+                        dtypes={
+                            'dataset_code': 'int',
+                            'name': 'str',
+                            'oldest_available_date': 'str',
+                            'newest_available_date': 'str',
+                        },
                         usecols=[
                             'dataset_code',
                             'name',
@@ -126,6 +134,10 @@ def fetch_symbol_metadata_frame(api_key,
     # we need to escape the paren because it is actually splitting on a regex
     data.asset_name = data.asset_name.str.split(r' \(', 1).str.get(0)
     data['exchange'] = 'QUANDL'
+
+    data['start_date'] = data['start_date'].astype(datetime)
+    data['end_date'] = data['end_date'].astype(datetime)
+
     data['auto_close_date'] = data['end_date'] + pd.Timedelta(days=1)
     return data
 
@@ -313,6 +325,7 @@ def quandl_bundle(environ,
             dividends,
             environ.get('QUANDL_DOWNLOAD_ATTEMPTS', 5),
         ),
+        assets=metadata.index,
         show_progress=show_progress,
     )
     adjustment_writer.write(

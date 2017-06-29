@@ -17,7 +17,7 @@ requests-file==1.4.1
 # scipy and pandas are required for statsmodels,
 # statsmodels in turn is required for some pandas packages
 scipy==0.17.1
-pandas==0.18.1
+pandas==0.19.2
 pandas-datareader==0.2.1
 # Needed for parts of pandas.stats
 patsy==0.4.0
@@ -74,6 +74,6 @@ intervaltree==2.1.0
 lru-dict==1.1.4
 
 # For financial risk calculations
-empyrical==0.2.2
+empyrical==0.2.1
 
 tables==3.3.0

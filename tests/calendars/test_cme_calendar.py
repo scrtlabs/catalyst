@@ -35,7 +35,5 @@ class CMECalendarTestCase(ExchangeCalendarTestBase, TestCase):
             market_close = self.calendar.schedule.loc[dt].market_close
             self.assertEqual(
                 12,
-                market_close.tz_localize('UTC').tz_convert(
-                    self.calendar.tz
-                ).hour
+                market_close.tz_convert(self.calendar.tz).hour,
             )

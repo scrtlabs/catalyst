@@ -35,9 +35,8 @@ class CFECalendarTestCase(ExchangeCalendarTestBase, TestCase):
         self.assertTrue(dt in self.calendar.early_closes)
 
         market_close = self.calendar.schedule.loc[dt].market_close
-        market_close = market_close.tz_localize("UTC").tz_convert(
-            self.calendar.tz
-        )
+        market_close = market_close.tz_convert(self.calendar.tz)
+
         self.assertEqual(12, market_close.hour)
         self.assertEqual(15, market_close.minute)
 

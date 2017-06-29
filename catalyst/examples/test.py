@@ -36,18 +36,21 @@ from catalyst.pipeline.data import CryptoPricing
 from catalyst.pipeline.factors.crypto import (
     VWAP,
     SimpleMovingAverage,
+    MACDSignal,
 )
 
 from catalyst.finance.commission import PerDollar
 from catalyst.finance.slippage import VolumeShareSlippage
 
-TARGET_INVESTMENT_RATIO = 0.8
+TARGET_INVESTMENT_RATIO = 0.2
 SHORT_WINDOW = 30
 LONG_WINDOW = 100
 
 def initialize(context):
     context.asset = symbol('USDT_BTC')
     context.i = 0
+    context.macd_cur = None
+    context.macd_last = None
 
     set_commission(PerDollar(cost=0.001))
     set_slippage(VolumeShareSlippage())
@@ -70,7 +73,12 @@ def make_pipeline():
             'price': CryptoPricing.close.latest,
             'short_mavg': VWAP(window_length=SHORT_WINDOW),
             'long_mavg': VWAP(window_length=LONG_WINDOW),
-        }
+            'macd': MACDSignal(
+                fast_period=24,
+                slow_period=52,
+                signal_period=18,
+            ),
+        },
     )
 
 
@@ -80,13 +88,16 @@ def handle_data(context, data):
 def rebalance(context, data):
     context.i += 1
 
-    # skip first LONG_WINDOW bars to fill windows
-    if context.i < LONG_WINDOW:
-        return
-
     # get pipeline data for asset of interest
     pipeline_data = context.pipeline_data
     pipeline_data = pipeline_data[pipeline_data.index == context.asset].iloc[0]
+
+    context.macd_last = context.macd_cur
+    context.macd_cur = pipeline_data.macd
+
+    # skip first LONG_WINDOW bars to fill windows
+    if context.i < 2:
+        return
 
     # retrieve long and short moving averages from pipeline
     short_mavg = pipeline_data.short_mavg
@@ -98,6 +109,22 @@ def rebalance(context, data):
     if context.asset not in open_orders:
         # check that the asset of interest can currently be traded
         if data.can_trade(context.asset):
+            if context.macd_cur < (0.98 * context.macd_last):
+                order_target_percent(
+                    context.asset,
+                    TARGET_INVESTMENT_RATIO,
+                    #limit_price=(2 * price),
+                    #stop_price=(0.5 * price),
+                )
+            elif context.macd_cur > (1.02 * context.macd_last):
+                order_target_percent(
+                    context.asset,
+                    0.0,
+                    #limit_price=(2 * price),
+                    #stop_price=(0.5 * price),
+                )
+                
+            """
             # adjust portfolio based on moving averages
             if short_mavg > long_mavg:
                 order_target_percent(
@@ -113,6 +140,7 @@ def rebalance(context, data):
                     #limit_price=(2 * price),
                     #stop_price=(0.5 * price),
                 )
+            """
 
     record(
         USDT_BTC=price,
@@ -128,7 +156,6 @@ def rebalance(context, data):
 # this algorithm on quantopian.com
 def analyze(context=None, results=None):
     import matplotlib.pyplot as plt
-
     # Plot the portfolio and asset data.
     ax1 = plt.subplot(511)
     results[['portfolio_value']].plot(ax=ax1)

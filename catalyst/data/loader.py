@@ -300,12 +300,13 @@ def ensure_crypto_benchmark_data(symbol, first_date, last_date, now,
                 day_data.volume.sum(),   # sum of all volumes
             )
 
-        # scale to allow trading 100-ths of a coin
-        daily_bars.loc[:, 'open'] /= 100.0
-        daily_bars.loc[:, 'high'] /= 100.0
-        daily_bars.loc[:, 'low'] /= 100.0
-        daily_bars.loc[:, 'close'] /= 100.0
-        daily_bars.loc[:, 'volume'] *= 100.0
+        # scale to allow trading 10-ths of a coin
+        scale = 10.0
+        daily_bars.loc[:, 'open'] /= scale
+        daily_bars.loc[:, 'high'] /= scale
+        daily_bars.loc[:, 'low'] /= scale
+        daily_bars.loc[:, 'close'] /= scale
+        daily_bars.loc[:, 'volume'] *= scale
         
         return daily_bars
 
