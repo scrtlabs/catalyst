@@ -1,6 +1,6 @@
 package:
   name: empyrical
-  version: "0.2.2"
+  version: "0.2.1"
 
 source:
   fn: empyrical-0.2.2.tar.gz

@@ -22,11 +22,11 @@ from catalyst.api import (
     record,
 )
 
-TARGET_INVESTMENT_RATIO = 0.5
+TARGET_INVESTMENT_RATIO = 0.8
 
 def initialize(context):
     context.has_ordered = False
-    context.asset = symbol('USDT_BTC')
+    context.asset = symbol('USDT_ETH')
 
 
 def handle_data(context, data):
@@ -39,7 +39,7 @@ def handle_data(context, data):
             context.has_ordered = True
 
     record(
-        USDT_BTC=data[context.asset].price,
+        USDT_ETH=data[context.asset].price,
         cash=context.portfolio.cash,
         leverage=context.account.leverage,
     )
@@ -52,8 +52,8 @@ def analyze(context=None, results=None):
     ax1.set_ylabel('Portfolio value (USD)')
 
     ax2 = plt.subplot(512, sharex=ax1)
-    ax2.set_ylabel('USDT_BTC (USD)')
-    results[['USDT_BTC']].plot(ax=ax2)
+    ax2.set_ylabel('USDT_ETH (USD)')
+    results[['USDT_ETH']].plot(ax=ax2)
 
     trans = results.ix[[t != [] for t in results.transactions]]
     buys = trans.ix[
@@ -64,13 +64,13 @@ def analyze(context=None, results=None):
     ]
     print 'buys:', buys.head()
     ax2.plot(
-        buys.index, results.USDT_BTC[buys.index],
+        buys.index, results.USDT_ETH[buys.index],
         '^',
         markersize=10,
         color='m',
     )
     ax2.plot(
-        sells.index, results.USDT_BTC[sells.index],
+        sells.index, results.USDT_ETH[sells.index],
         'v',
         markersize=10,
         color='k',

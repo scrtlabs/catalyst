@@ -48,7 +48,5 @@ class ICECalendarTestCase(ExchangeCalendarTestBase, TestCase):
             market_close = self.calendar.schedule.loc[dt].market_close
             self.assertEqual(
                 13,     # all ICE early closes are 1 pm local
-                market_close.tz_localize("UTC").tz_convert(
-                    self.calendar.tz
-                ).hour
+                market_close.tz_convert(self.calendar.tz).hour,
             )

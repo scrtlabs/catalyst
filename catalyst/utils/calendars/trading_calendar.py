@@ -664,13 +664,13 @@ class TradingCalendar(with_metaclass(ABCMeta)):
         return self.schedule.loc[
             start_session_label:end_session_label,
             'market_open',
-        ].dt.tz_localize('UTC')
+        ].dt.tz_convert('UTC')
 
     def session_closes_in_range(self, start_session_label, end_session_label):
         return self.schedule.loc[
             start_session_label:end_session_label,
             'market_close',
-        ].dt.tz_localize('UTC')
+        ].dt.tz_convert('UTC')
 
     @property
     def all_sessions(self):

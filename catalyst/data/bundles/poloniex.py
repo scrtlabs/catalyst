@@ -115,12 +115,13 @@ def poloniex_cryptoassets(symbols, start=None, end=None):
                     day_data.volume.sum(),   # sum of all volumes
                 )
 
-            # scale to allow trading 100-ths of a coin
-            daily_bars.loc[:, 'open'] /= 100.0
-            daily_bars.loc[:, 'high'] /= 100.0
-            daily_bars.loc[:, 'low'] /= 100.0
-            daily_bars.loc[:, 'close'] /= 100.0
-            daily_bars.loc[:, 'volume'] *= 100.0
+            # scale to allow trading 10-ths of a coin
+            scale = 10.0
+            daily_bars.loc[:, 'open'] /= scale
+            daily_bars.loc[:, 'high'] /= scale
+            daily_bars.loc[:, 'low'] /= scale
+            daily_bars.loc[:, 'close'] /= scale
+            daily_bars.loc[:, 'volume'] *= scale
             
             return daily_bars
 
@@ -171,8 +172,10 @@ def poloniex_cryptoassets(symbols, start=None, end=None):
                     yield sid, daily_bars
                     sid += 1
 
-
-        daily_bar_writer.write(_pricing_iter())
+        daily_bar_writer.write(
+            _pricing_iter(),
+            assets=metadata.symbol.index,
+        )
 
         symbol_map = pd.Series(metadata.symbol.index, metadata.symbol)
 

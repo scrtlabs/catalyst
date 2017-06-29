@@ -713,7 +713,7 @@ class ExchangeCalendarTestBase(object):
 
             the_open = self.calendar.schedule.loc[next_day].market_open
 
-            localized_open = the_open.tz_localize("UTC").tz_convert(
+            localized_open = the_open.tz_convert(
                 self.calendar.tz
             )
 
