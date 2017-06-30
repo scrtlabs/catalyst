@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
-
 from catalyst.api import (
     order_target_value,
     symbol,
@@ -30,7 +28,7 @@ TARGET_HODL_RATIO = 0.8
 RESERVE_RATIO = 1.0 - TARGET_HODL_RATIO
 
 def initialize(context):
-    context.is_hodling = True
+    context.is_buying = True
     context.asset = symbol(ASSET)
 
 def handle_data(context, data):
@@ -43,15 +41,15 @@ def handle_data(context, data):
     for order in orders:
         cancel_order(order)
     
-    # Stop hodling after passing the reserve threshold
+    # Stop buying after passing the reserve threshold
     if cash <= reserve_value:
-        context.is_hodling = False
+        context.is_buying = False
 
     # Retrieve current asset price from pricing data
     price = data[context.asset].price
 
-    # Check if still hodling and could (approximately) afford another purchase
-    if context.is_hodling and cash > price:
+    # Check if still buying and could (approximately) afford another purchase
+    if context.is_buying and cash > price:
         # Place order to make position in asset equal to target_hodl_value
         order_target_value(
             context.asset,

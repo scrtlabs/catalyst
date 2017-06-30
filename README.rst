@@ -69,7 +69,7 @@ The following code implements a simple buy and hodl algorithm.  The full source 
     RESERVE_RATIO = 1.0 - TARGET_HODL_RATIO
 
     def initialize(context):
-        context.is_hodling = True
+        context.is_buying = True
         context.asset = symbol(ASSET)
 
     def handle_data(context, data):
@@ -82,15 +82,15 @@ The following code implements a simple buy and hodl algorithm.  The full source 
         for order in orders:
             cancel_order(order)
         
-        # Stop hodling after passing reserve threshold
+        # Stop buying after passing reserve threshold
         if cash <= reserve_value:
-            context.is_hodling = False
+            context.is_buying = False
         
         # Retrieve current price from pricing data
         price = data[context.asset].price
         
-        # Check if still hodling and could (approximately) afford another purchase                    
-        if context.is_hodling and cash > price:
+        # Check if still buying and could (approximately) afford another purchase                    
+        if context.is_buying and cash > price:
             # Place order to make position in asset equal to target_hodl_value
             order_target_value(
                 context.asset,
