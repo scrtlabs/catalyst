@@ -1,6 +1,7 @@
 from collections import namedtuple
 import errno
 import os
+import requests
 import shutil
 import warnings
 
@@ -32,6 +33,7 @@ import catalyst.utils.paths as pth
 from catalyst.utils.preprocess import preprocess
 from catalyst.utils.calendars import get_calendar
 
+ONE_MEGABYTE = 1024 * 1024
 
 def asset_db_path(bundle_name, timestr, environ=None, db_version=None):
     return pth.data_path(
@@ -130,6 +132,57 @@ def ingestions_for_bundle(bundle, environ=None):
          if not pth.hidden(ing)),
         reverse=True,
     )
+
+def download_with_progress(url, chunk_size, **progress_kwargs):
+    """
+    Download streaming data from a URL, printing progress information to the
+    terminal.
+
+    Parameters
+    ----------
+    url : str
+        A URL that can be understood by ``requests.get``.
+    chunk_size : int
+        Number of bytes to read at a time from requests.
+    **progress_kwargs
+        Forwarded to click.progressbar.
+
+    Returns
+    -------
+    data : BytesIO
+        A BytesIO containing the downloaded data.
+    """
+    resp = requests.get(url, stream=True)
+    resp.raise_for_status()
+
+    total_size = int(resp.headers['content-length'])
+    data = BytesIO()
+    with click.progressbar(length=total_size, **progress_kwargs) as pbar:
+        for chunk in resp.iter_content(chunk_size=chunk_size):
+            data.write(chunk)
+            pbar.update(len(chunk))
+
+    data.seek(0)
+    return data
+
+
+def download_without_progress(url):
+    """
+    Download data from a URL, returning a BytesIO containing the loaded data.
+
+    Parameters
+    ----------
+    url : str
+        A URL that can be understood by ``requests.get``.
+
+    Returns
+    -------
+    data : BytesIO
+        A BytesIO containing the downloaded data.
+    """
+    resp = requests.get(url)
+    resp.raise_for_status()
+    return BytesIO(resp.content)
 
 
 RegisteredBundle = namedtuple(
