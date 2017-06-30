@@ -73,8 +73,6 @@ class TradingCalendarDispatcher(object):
         """
         canonical_name = self.resolve_alias(name)
 
-        print 'get_calendar:', canonical_name
-
         try:
             return self._calendars[canonical_name]
         except KeyError:
