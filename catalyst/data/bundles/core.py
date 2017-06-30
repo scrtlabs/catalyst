@@ -1,5 +1,6 @@
 from collections import namedtuple
 import errno
+from io import BytesIO
 import os
 import requests
 import shutil
