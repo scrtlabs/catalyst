@@ -1,3 +1,4 @@
+========
 Catalyst
 ========
 
@@ -6,7 +7,7 @@ Catalyst
 Catalyst is an algorithmic trading library for crypto-assets written in Python.
 It allows trading strategies to be easily expressed and backtested against historical data, providing analytics and insights regarding a particular strategy's performance.
 Catalyst will be expanded to support live-trading of crypto-assets in the coming months.
-Please visit `<enigma.co/catalyst>`_ to learn about Catalyst, or refer to the 
+Please visit `<enigma.co>`_ to learn about Catalyst, or refer to the 
 `whitepaper <http://www.enigma.co/enigma_catalyst.pdf>`_ for further technical details.
 
 Interested in getting involved?
@@ -45,51 +46,10 @@ If you wish to run any examples or use matplotlib during development, it can be 
 
     $ pip install matplotlib
 
-Virtual Environments
---------------------
+Getting Started
+===============
 
-Here we will provide a brief tutorial for installing ``virtualenv`` and its basic usage.
-For more information regarding ``virtualenv``, please refer to this `virtualenv guide <http://python-guide-pt-br.readthedocs.io/en/latest/dev/virtualenvs/>`_.
-
-The ``virtualenv`` command can be installed using:
-
-.. code-block:: bash
-
-    $ pip install virtualenv
-
-To create a new virtual environment, choose a directory, e.g. ``/path/to/venv-dir``, where project-specific packages and files will be stored.  The environment is created by running:
-
-.. code-block:: bash
-
-    $ virtualenv /path/to/venv-dir
-
-To enter an environment, run the ``bin/activate`` script located in ``/path/to/venv-dir`` using:
-
-.. code-block:: bash
-
-    $ source /path/to/venv-dir/bin/activate
-
-Exiting an environment is accomplished using ``deactivate``, and removing it entirely is done by deleting ``/path/to/venv-dir``.
-
-Using virtualenv & matplotlib on OS X
--------------------------------------
-
-A note about using matplotlib in virtual enviroments on OS X: it may be necessary to add
-
-.. code-block:: python
-
-    backend : TkAgg
-
-to your ``~/.matplotlib/matplotlibrc`` file, in order to override the default ``macosx`` backend for your system, which may not be accessible from inside the virtual environment.
-This will allow Catalyst to open matplotlib charts from within a virtual environment, which is useful for displaying the performance of your backtests.  To learn more about matplotlib backends, please refer to the
-`matplotlib backend documentation <https://matplotlib.org/faq/usage_faq.html#what-is-a-backend>`_.
-
-Quickstart
-==========
-
-See our `getting started tutorial <http://www.zipline.io/#quickstart>`_.
-
-The following code implements a simple buy and hodl algorithm.
+The following code implements a simple buy and hodl algorithm.  The full source can be found in ``catalyst/examples/buy_and_hodl.py``.
 
 .. code:: python
 
@@ -129,8 +89,9 @@ The following code implements a simple buy and hodl algorithm.
         # Retrieve current price from pricing data
         price = data[context.asset].price
         
-        # Check if still hodling and could afford another purchase
+        # Check if still hodling and could (approximately) afford another purchase                    
         if context.is_hodling and cash > price:
+            # Place order to make position in asset equal to target_hodl_value
             order_target_value(
                 context.asset,
                 target_hodl_value,
@@ -152,13 +113,53 @@ line, run:
 .. code:: bash
 
     $ catalyst ingest
-    $ catalyst run -f buy_and_hodl.py --start 2015-1-1 --end 2016-6-25 --captial-base 100000
+    $ catalyst run -f buy_and_hodl.py --start 2015-1-1 --end 2016-6-25 --captial-base 100000 -o dvwap.pickle
 
 This will download the crypto-asset price data from a poloniex bundle
 curated by Enigma in the specified time range and stream it through
 the algorithm and plot the resulting performance using matplotlib.
 
 You can find other examples in the ``catalyst/examples`` directory.
+
+
+Virtual Environments
+====================
+
+Here we will provide a brief tutorial for installing ``virtualenv`` and its basic usage.
+For more information regarding ``virtualenv``, please refer to this `virtualenv guide <http://python-guide-pt-br.readthedocs.io/en/latest/dev/virtualenvs/>`_.
+
+The ``virtualenv`` command can be installed using:
+
+.. code-block:: bash
+
+    $ pip install virtualenv
+
+To create a new virtual environment, choose a directory, e.g. ``/path/to/venv-dir``, where project-specific packages and files will be stored.  The environment is created by running:
+
+.. code-block:: bash
+
+    $ virtualenv /path/to/venv-dir
+
+To enter an environment, run the ``bin/activate`` script located in ``/path/to/venv-dir`` using:
+
+.. code-block:: bash
+
+    $ source /path/to/venv-dir/bin/activate
+
+Exiting an environment is accomplished using ``deactivate``, and removing it entirely is done by deleting ``/path/to/venv-dir``.
+
+OS X + virtualenv + matplotlib
+-------------------------------------
+
+A note about using matplotlib in virtual enviroments on OS X: it may be necessary to add
+
+.. code-block:: python
+
+    backend : TkAgg
+
+to your ``~/.matplotlib/matplotlibrc`` file, in order to override the default ``macosx`` backend for your system, which may not be accessible from inside the virtual environment.
+This will allow Catalyst to open matplotlib charts from within a virtual environment, which is useful for displaying the performance of your backtests.  To learn more about matplotlib backends, please refer to the
+`matplotlib backend documentation <https://matplotlib.org/faq/usage_faq.html#what-is-a-backend>`_.
 
 Disclaimer
 ==========
@@ -171,7 +172,5 @@ Hello World,
 
 The Enigma Team
 
-.. |version status| image:: https://img.shields.io/pypi/pyversions/catalyst-hf.svg
-   :target: https://testpypi.python.org/pypi/catalyst-hf
-
-.. _`Catalyst Install Documentation` : https://enigma.co/catalyst/install.html
+.. |version status| image:: https://img.shields.io/pypi/pyversions/enigma-catalyst.svg
+   :target: https://pypi.python.org/pypi/enigma-catalyst
