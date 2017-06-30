@@ -279,11 +279,11 @@ conditional_arguments = {
 }
 
 setup(
-    name='catalyst-hf',
+    name='enigma-catalyst',
     url='https://enigma.co',
     version=versioneer.get_version(),
     cmdclass=LazyBuildExtCommandClass(versioneer.get_cmdclass()),
-    description='A backtester for financial algorithms.',
+    description='A algorithmic trading backtester for crypto-assets.',
     entry_points={
         'console_scripts': [
             'catalyst = catalyst.__main__:main',
@@ -300,7 +300,7 @@ setup(
                   if '__pycache__' not in root},
     license='Apache 2.0',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 2 - Pre-Alpha',
         'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
         'Programming Language :: Python',
