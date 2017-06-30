@@ -19,12 +19,9 @@ from catalyst.api import (
     record,
     symbol,
     get_open_orders,
-    set_commission,
-    set_slippage,
     set_max_leverage,
     schedule_function,
     date_rules,
-    time_rules,
     attach_pipeline,
     pipeline_output,
 )
