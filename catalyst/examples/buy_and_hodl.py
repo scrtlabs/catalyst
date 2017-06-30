@@ -17,30 +17,53 @@
 import numpy as np
 
 from catalyst.api import (
-    order,
+    order_target_value,
     symbol,
     record,
+    cancel_order,
+    get_open_orders,
 )
 
-TARGET_INVESTMENT_RATIO = 0.8
+ASSET = 'USDT_BTC'
+
+TARGET_HODL_RATIO = 0.8
+RESERVE_RATIO = 1.0 - TARGET_HODL_RATIO
 
 def initialize(context):
-    context.has_ordered = False
-    context.asset = symbol('USDT_ETH')
-
+    context.is_hodling = True
+    context.asset = symbol(ASSET)
 
 def handle_data(context, data):
-    if not context.has_ordered:
-        price = data[context.asset].price
-        amt = TARGET_INVESTMENT_RATIO * (context.portfolio.cash / price)
-        if not np.isnan(amt):
-            print 'amt:', amt
-            order(context.asset, amt, limit_price=price*1.5)
-            context.has_ordered = True
+    cash = context.portfolio.cash
+    target_hodl_value = TARGET_HODL_RATIO * context.portfolio.starting_cash
+    reserve_value = RESERVE_RATIO * context.portfolio.starting_cash
+
+    # Cancel any outstanding orders
+    orders = get_open_orders(context.asset) or []
+    for order in orders:
+        cancel_order(order)
+    
+    # Stop hodling after passing the reserve threshold
+    if cash <= reserve_value:
+        context.is_hodling = False
+
+    # Retrieve current asset price from pricing data
+    price = data[context.asset].price
+
+    # Check if still hodling and could (approximately) afford another purchase
+    if context.is_hodling and cash > price:
+        # Place order to make position in asset equal to target_hodl_value
+        order_target_value(
+            context.asset,
+            target_hodl_value,
+            limit_price=price*1.1,
+            stop_price=price*0.9,
+        )
 
     record(
-        USDT_ETH=data[context.asset].price,
-        cash=context.portfolio.cash,
+        price=price,
+        cash=cash,
+        starting_cash=context.portfolio.starting_cash,
         leverage=context.account.leverage,
     )
 
@@ -49,11 +72,11 @@ def analyze(context=None, results=None):
     # Plot the portfolio and asset data.
     ax1 = plt.subplot(511)
     results[['portfolio_value']].plot(ax=ax1)
-    ax1.set_ylabel('Portfolio value (USD)')
+    ax1.set_ylabel('Portfolio Value (USD)')
 
     ax2 = plt.subplot(512, sharex=ax1)
-    ax2.set_ylabel('USDT_ETH (USD)')
-    results[['USDT_ETH']].plot(ax=ax2)
+    ax2.set_ylabel('{asset} (USD)'.format(asset=ASSET))
+    results[['price']].plot(ax=ax2)
 
     trans = results.ix[[t != [] for t in results.transactions]]
     buys = trans.ix[
@@ -64,13 +87,13 @@ def analyze(context=None, results=None):
     ]
     print 'buys:', buys.head()
     ax2.plot(
-        buys.index, results.USDT_ETH[buys.index],
+        buys.index, results.price[buys.index],
         '^',
         markersize=10,
         color='m',
     )
     ax2.plot(
-        sells.index, results.USDT_ETH[sells.index],
+        sells.index, results.price[sells.index],
         'v',
         markersize=10,
         color='k',
@@ -81,7 +104,7 @@ def analyze(context=None, results=None):
     ax3.set_ylabel('Leverage (USD)')
 
     ax4 = plt.subplot(514, sharex=ax1)
-    results[['cash']].plot(ax=ax4)
+    results[['starting_cash', 'cash']].plot(ax=ax4)
     ax4.set_ylabel('Cash (USD)')
 
     results[[
