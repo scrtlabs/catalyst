@@ -1,14 +1,5 @@
-import os
-from datetime import datetime
-
-import numpy as np
-import pandas as pd
-from pandas_datareader.data import DataReader
-from pandas.tseries.offsets import DateOffset
-import requests
-
-from catalyst.utils.calendars import register_calendar_alias
-from catalyst.utils.cli import maybe_show_progress
+from io import BytesIO
+import tarfile
 
 from . import core as bundles
 

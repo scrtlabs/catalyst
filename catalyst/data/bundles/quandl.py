@@ -1,7 +1,6 @@
 """
 Module for building a complete daily dataset from Quandl's WIKI dataset.
 """
-from io import BytesIO
 from itertools import count
 import tarfile
 from time import time, sleep
