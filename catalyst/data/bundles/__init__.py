@@ -1,5 +1,6 @@
 # These imports are necessary to force module-scope register calls to happen.
 from . import quandl  # noqa
+from . import poloniex
 from .core import (
     UnknownBundle,
     bundles,
@@ -13,7 +14,6 @@ from .core import (
     unregister,
 )
 from .yahoo import yahoo_equities
-from .poloniex import poloniex_cryptoassets
 
 __all__ = [
     'UnknownBundle',
