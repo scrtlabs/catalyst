@@ -101,7 +101,7 @@ def analyze(context=None, results=None):
 
     ax3 = plt.subplot(513, sharex=ax1)
     results[['leverage', 'alpha', 'beta']].plot(ax=ax3)
-    ax3.set_ylabel('Leverage (USD)')
+    ax3.set_ylabel('Leverage ')
 
     ax4 = plt.subplot(514, sharex=ax1)
     results[['starting_cash', 'cash']].plot(ax=ax4)
@@ -123,7 +123,7 @@ def analyze(context=None, results=None):
         'algorithm',
         'benchmark',
     ]].plot(ax=ax5)
-    ax5.set_ylabel('Dollars (USD)')
+    ax5.set_ylabel('Percent Change')
 
     plt.legend(loc=3)
 
