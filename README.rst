@@ -121,6 +121,15 @@ the algorithm and plot the resulting performance using matplotlib.
 
 You can find other examples in the ``catalyst/examples`` directory.
 
+Supported Assets
+----------------
+
+Currently the poloniex bundle comes prepopulated with data for all 90 registered trading pairs.
+However, due to limitations in how portfolios are currently modeled, we recommend sticking to ``USDT_*`` trading pairs.
+USDT is an independent currency listed on Poloniex whose price is pegged to the US dollar.
+Currently, this list includes: ``USDT_BTC``, ``USDT_DASH``, ``USDT_ETC``, ``USDT_ETH``, ``USDT_LTC``, ``USDT_NXT``, ``USDT_REP``, ``USDT_STR``, ``USDT_XMR``, ``USDT_XRP``, and ``USDT_ZEC``.
+We plan to add support for basing your portfolio in arbitrary currencies and provide native support for modeling ForEx trades in the near future!
+
 
 Virtual Environments
 ====================
