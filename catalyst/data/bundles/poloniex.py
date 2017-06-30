@@ -13,7 +13,7 @@ from catalyst.utils.cli import maybe_show_progress
 from . import core as bundles
 
 POLONIEX_BUNDLE_URL = (
-    'https://enigma.co/api/poloniex_bundle.tar',
+    'https://www.dropbox.com/s/9naqffawnq8o4r2/poloniex-bundle.tar?dl=1'
 )
 
 @bundles.register(
