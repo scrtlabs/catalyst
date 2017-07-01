@@ -331,8 +331,8 @@ def ensure_crypto_benchmark_data(symbol, first_date, last_date, now,
             pc.append_data_single_pair(symbol)
 
             five_min_bars = pc.to_dataframe(
-                first_date,
-                last_date,
+                time.mktime(first_date.timetuple()),
+                time.mktime(last_date.timetuple()),
                 currencyPair=symbol,
             )
         except (OSError, IOError, HTTPError):
