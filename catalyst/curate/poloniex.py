@@ -6,17 +6,14 @@ import time
 import requests
 import logbook
 
-import catalyst.data.bundles.core as bundles
-
 DT_START        = time.mktime(datetime(2010, 01, 01, 0, 0).timetuple())
-# DT_START = time.mktime(datetime(2017, 06, 13, 0, 0).timetuple()) # TODO: remove temp
 CSV_OUT_FOLDER  = '/var/tmp/catalyst/data/poloniex/'
 CONN_RETRIES    = 2
 
 logbook.StderrHandler().push_application()
 log = logbook.Logger(__name__)
 
-class PoloniexDataGenerator(object):
+class PoloniexCurator(object):
     """
     OHLCV data feed generator for crypto data. Based on Poloniex market data
     """
@@ -89,7 +86,8 @@ class PoloniexDataGenerator(object):
     	log.debug('Getting data for %s' % currencyPair)
         csv_fn = CSV_OUT_FOLDER + 'crypto_prices-' + currencyPair + '.csv'
         start  = self._get_start_date(csv_fn)
-        if (time.time() > start):                   # Only fetch data if more than 5min have passed since last fetch
+        # Only fetch data if more than 5min have passed since last fetch
+        if (time.time() > start):
             data   = self.get_data(currencyPair, start)
             if data is not None:
                 try: 
@@ -98,7 +96,14 @@ class PoloniexDataGenerator(object):
                         for item in data:
                             if item['date'] == 0:
                                 continue
-                            csvwriter.writerow([item['date'], item['open'], item['high'], item['low'], item['close'], item['volume']])
+                            csvwriter.writerow([
+                                item['date'],
+                                item['open'],
+                                item['high'],
+                                item['low'],
+                                item['close'],
+                                item['volume'],
+                            ])
                 except Exception as e:
                     log.error('Error opening %s' % csv_fn)
                     log.exception(e)
@@ -112,7 +117,8 @@ class PoloniexDataGenerator(object):
     def append_data(self):
     	for currencyPair in self.currency_pairs:
     		self.append_data_single_pair(currencyPair)
-    		time.sleep(0.17)                              # Rate limit is 6 calls per second, sleep 1sec/6 to be safe
+        # Rate limit is 6 calls per second, sleep 1sec/6 to be safe
+    		time.sleep(0.17)
 
     '''
     Returns a data frame for all pairs, or for the requests currency pair.
@@ -130,57 +136,9 @@ class PoloniexDataGenerator(object):
         df['date']=pd.to_datetime(df['date'],unit='s')
         df.set_index('date', inplace=True)
 
-        #return df.loc[(df.index > start) & (df.index <= end)]
         return df[datetime.fromtimestamp(start):datetime.fromtimestamp(end-1)]
 
 if __name__ == '__main__':
-    pdg = PoloniexDataGenerator()
-    pdg.get_currency_pairs()
-    pdg.append_data()
-
-
-
-# from zipline.utils.calendars import get_calendar
-# from zipline.data.us_equity_pricing import (
-#     BcolzDailyBarWriter,
-#     BcolzDailyBarReader,
-# )
-
-# open_calendar = get_calendar('OPEN')
-
-# start_session = pd.Timestamp('2012-12-31', tz='UTC')
-# end_session = pd.Timestamp('2015-01-01', tz='UTC')
-
-# file_path = 'test.bcolz'
-
-# writer = BcolzDailyBarWriter(
-#     file_path,
-#     open_calendar,
-#     start_session,
-#     end_session
-# )
-
-# index = open_calendar.schedule.index
-# index = index[
-#     (index.date >= start_session.date()) &
-#     (index.date <= end_session.date())
-# ]
-
-# data = pd.DataFrame(
-#     0,
-#     index=index,
-#     columns=['open', 'high', 'low', 'close', 'volume'],
-# )
-
-# writer.write(
-#     [(0, data)],
-#     assets=[0],
-#     show_progress=True
-# )
-
-# print 'len(index):', len(index)
-
-# reader = BcolzDailyBarReader(file_path)
-
-# print 'first_rows:', reader._first_rows
-# print 'last_rows:',  reader._last_rows
+    pc = PoloniexCurator()
+    pc.get_currency_pairs()
+    pc.append_data()
