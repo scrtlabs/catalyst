@@ -31,6 +31,8 @@ from ..utils.paths import (
     data_root,
 )
 from ..utils.deprecate import deprecated
+
+from catalyst.curate.poloniex import PoloniexCurator
 from catalyst.utils.calendars import get_calendar
 
 
@@ -310,6 +312,8 @@ def ensure_crypto_benchmark_data(symbol, first_date, last_date, now,
         
         return daily_bars
 
+    
+    five_min_bars = None
     try:
         # load five minute bars from csv cache
         five_min_bars = pd.read_csv(
@@ -320,31 +324,48 @@ def ensure_crypto_benchmark_data(symbol, first_date, last_date, now,
             date_parser=dateparse,
         )
         five_min_bars.index = pd.to_datetime(five_min_bars.index, utc=True, unit='s')
+    except (OSError, IOError):
+        # Otherwise load from Poloniex API
+        try:
+            pc = PoloniexCurator()
+            pc.append_data_single_pair(symbol)
 
-        # compute daily bars for open calendar
-        open_calendar = get_calendar('OPEN')
-        daily_bars = compute_daily_bars(
-            five_min_bars,
-            open_calendar.all_sessions,
-        )
+            five_min_bars = pc.to_dataframe(
+                first_date,
+                last_date,
+                currencyPair=symbol,
+            )
+        except (OSError, IOError, HTTPError):
+            logger.exception('Failed to new crypto benchmark returns')
+            raise
 
-        # filter daily bars to include first_date and last_date
-        daily_bars = daily_bars[
-            (daily_bars.index >= (first_date - trading_day)) &
-            (daily_bars.index <= last_date)
-        ]
+    # compute daily bars for open calendar
+    open_calendar = get_calendar('OPEN')
+    daily_bars = compute_daily_bars(
+        five_min_bars,
+        open_calendar.all_sessions,
+    )
 
-        # select close column and compute percent change between days
-        daily_close = daily_bars[['close']]
-        daily_close = daily_close.pct_change(1).iloc[1:]
+    # filter daily bars to include first_date and last_date
+    daily_bars = daily_bars[
+        (daily_bars.index >= (first_date - trading_day)) &
+        (daily_bars.index <= last_date)
+    ]
 
+    # select close column and compute percent change between days
+    daily_close = daily_bars[['close']]
+    daily_close = daily_close.pct_change(1).iloc[1:]
+
+    try:
         # write to benchmark csv cache
         daily_close.to_csv(get_data_filepath(filename, environ))
     except (OSError, IOError, HTTPError):
         logger.exception('Failed to cache the new benchmark returns')
         raise
+
     if not has_data_for_dates(daily_close, first_date, last_date):
         logger.warn("Still don't have expected data after redownload!")
+
     return daily_close
 
 
@@ -535,7 +556,7 @@ def _load_cached_data(filename, first_date, last_date, now, resource_name,
     if os.path.exists(path):
         try:
             data = from_csv(path)
-            data.index = data.index.to_datetime().tz_localize('UTC')
+            data.index = pd.to_datetime(data.index).tz_localize('UTC')
             if has_data_for_dates(data, first_date, last_date):
                 return data
 
