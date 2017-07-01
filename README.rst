@@ -8,10 +8,21 @@ Catalyst is an algorithmic trading library for crypto-assets written in Python.
 It allows trading strategies to be easily expressed and backtested against historical data, providing analytics and insights regarding a particular strategy's performance.
 Catalyst will be expanded to support live-trading of crypto-assets in the coming months.
 Please visit `<enigma.co>`_ to learn about Catalyst, or refer to the 
-`whitepaper <http://www.enigma.co/enigma_catalyst.pdf>`_ for further technical details.
+`whitepaper <https://www.enigma.co/enigma_catalyst.pdf>`_ for further technical details.
+
+Catalyst builds on top of the well-established `Zipline <https://github.com/quantopian/zipline>`_ project.
+We did our best to minimize structural changes to the general API to maximize compatibility with existing trading algorithms, developer knowledge, and tutorials.
+For now, please refer to the `Zipline API Docs <https://zipline.io>`_ as a general reference and bring any other questions you have to our #dev channel on `Slack <https://join.slack.com/enigmacatalyst/shared_invite/MTkzMjQ0MTg1NTczLTE0OTY3MjE3MDEtZGZmMTI5YzI3ZA>`_.
+
+Our primary contributions include the:
+
+- Intruction of an open trading calendar, that permits simulation to allow trades on weekends, holidays, and outside of normal business hours.
+- Curation of OHLCV data bundle from `Poloniex's API <https://poloniex.com/support/api/>`_, which contains data in five-minute intervals as early as 2/19/2015.
+- Support for backtesting for daily trading strategies, support for five-minute backtesting is in development.
+- Addition Bitcoin price (USDT_BTC) as a benchmark asset for comparing performance.
 
 Interested in getting involved?
-`Join our slack! <https://join.slack.com/enigmacatalyst/shared_invite/MTkzMjQ0MTg1NTczLTE0OTY3MjE3MDEtZGZmMTI5YzI3ZA>`_
+`Join us on Slack! <https://join.slack.com/enigmacatalyst/shared_invite/MTkzMjQ0MTg1NTczLTE0OTY3MjE3MDEtZGZmMTI5YzI3ZA>`_
 
 
 Installation
@@ -45,6 +56,8 @@ If you wish to run any examples or use matplotlib during development, it can be 
 .. code-block:: bash
 
     $ pip install matplotlib
+
+**Note:** If you plan to use matplotlib and virtualenv on Mac OS X, see our later section for additional setup instructions.
 
 Getting Started
 ===============
@@ -113,7 +126,7 @@ line, run:
 .. code:: bash
 
     $ catalyst ingest
-    $ catalyst run -f buy_and_hodl.py --start 2015-1-1 --end 2016-6-25 --captial-base 100000 -o dvwap.pickle
+    $ catalyst run -f buy_and_hodl.py --start 2015-3-1 --end 2017-6-28 --capital-base 100000 -o bah.pickle
 
 This will download the crypto-asset price data from a poloniex bundle
 curated by Enigma in the specified time range and stream it through
