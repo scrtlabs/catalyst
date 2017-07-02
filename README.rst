@@ -173,13 +173,13 @@ Exiting an environment is accomplished using ``deactivate``, and removing it ent
 OS X + virtualenv + matplotlib
 -------------------------------------
 
-A note about using matplotlib in virtual enviroments on OS X: it may be necessary to add
+A note about using matplotlib in virtual enviroments on OS X: it may be necessary to run
 
 .. code-block:: python
 
-    backend : TkAgg
+    echo "backend: TkAgg" > ~/.matplotlib/matplotlibrc
 
-to your ``~/.matplotlib/matplotlibrc`` file, in order to override the default ``macosx`` backend for your system, which may not be accessible from inside the virtual environment.
+in order to override the default ``macosx`` backend for your system, which may not be accessible from inside the virtual environment.
 This will allow Catalyst to open matplotlib charts from within a virtual environment, which is useful for displaying the performance of your backtests.  To learn more about matplotlib backends, please refer to the
 `matplotlib backend documentation <https://matplotlib.org/faq/usage_faq.html#what-is-a-backend>`_.
 
