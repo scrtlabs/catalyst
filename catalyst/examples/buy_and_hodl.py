@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 #
+# Copyright 2017 Enigma MPC, Inc.
 # Copyright 2015 Quantopian, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -80,21 +81,12 @@ def analyze(context=None, results=None):
     buys = trans.ix[
         [t[0]['amount'] > 0 for t in trans.transactions]
     ]
-    sells = trans.ix[
-        [t[0]['amount'] < 0 for t in trans.transactions]
-    ]
-    print 'buys:', buys.head()
     ax2.plot(
-        buys.index, results.price[buys.index],
+        buys.index,
+        results.price[buys.index],
         '^',
         markersize=10,
-        color='m',
-    )
-    ax2.plot(
-        sells.index, results.price[sells.index],
-        'v',
-        markersize=10,
-        color='k',
+        color='g',
     )
 
     ax3 = plt.subplot(513, sharex=ax1)
