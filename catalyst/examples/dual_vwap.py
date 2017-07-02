@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 #
+# Copyright 2017 Enigma MPC, Inc.
 # Copyright 2014 Quantopian, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -128,14 +129,14 @@ def analyze(context=None, results=None):
         results.price[buys.index],
         '^',
         markersize=10,
-        color='m',
+        color='g',
     )
     ax2.plot(
         sells.index,
         results.price[sells.index],
         'v',
         markersize=10,
-        color='k',
+        color='r',
     )
 
     ax3 = plt.subplot(513, sharex=ax1)
