@@ -28,6 +28,8 @@ ASSET = 'USDT_BTC'
 TARGET_HODL_RATIO = 0.8
 RESERVE_RATIO = 1.0 - TARGET_HODL_RATIO
 
+UNITS_PER_COIN = 10.0
+
 def initialize(context):
     context.is_buying = True
     context.asset = symbol(ASSET)
@@ -75,7 +77,7 @@ def analyze(context=None, results=None):
 
     ax2 = plt.subplot(512, sharex=ax1)
     ax2.set_ylabel('{asset} (USD)'.format(asset=ASSET))
-    results[['price']].plot(ax=ax2)
+    (UNITS_PER_COIN * results[['price']]).plot(ax=ax2)
 
     trans = results.ix[[t != [] for t in results.transactions]]
     buys = trans.ix[
@@ -83,7 +85,7 @@ def analyze(context=None, results=None):
     ]
     ax2.plot(
         buys.index,
-        results.price[buys.index],
+        UNITS_PER_COIN * results.price[buys.index],
         '^',
         markersize=10,
         color='g',

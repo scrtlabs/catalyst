@@ -37,6 +37,8 @@ TARGET_INVESTMENT_RATIO = 0.8
 SHORT_WINDOW = 30
 LONG_WINDOW = 100
 
+UNITS_PER_COIN = 10.0
+
 def initialize(context):
     context.i = 0
     context.asset = symbol(ASSET)
@@ -112,7 +114,7 @@ def analyze(context=None, results=None):
 
     ax2 = plt.subplot(512, sharex=ax1)
     ax2.set_ylabel('{asset} (USD)'.format(asset=ASSET))
-    results[['price', 'short_mavg', 'long_mavg']].plot(ax=ax2)
+    (UNITS_PER_COIN*results[['price', 'short_mavg', 'long_mavg']]).plot(ax=ax2)
 
     trans = results.ix[[t != [] for t in results.transactions]]
     amounts = [t[0]['amount'] for t in trans.transactions]
@@ -126,14 +128,14 @@ def analyze(context=None, results=None):
 
     ax2.plot(
         buys.index,
-        results.price[buys.index],
+        UNITS_PER_COIN * results.price[buys.index],
         '^',
         markersize=10,
         color='g',
     )
     ax2.plot(
         sells.index,
-        results.price[sells.index],
+        UNITS_PER_COIN * results.price[sells.index],
         'v',
         markersize=10,
         color='r',
