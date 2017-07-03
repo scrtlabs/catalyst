@@ -37,6 +37,9 @@ TARGET_INVESTMENT_RATIO = 0.8
 SHORT_WINDOW = 30
 LONG_WINDOW = 100
 
+# For all trading pairs in the poloniex bundle, the default denomination
+# currently supported by Catalyst is 1/10th of a full coin. Use this constant 
+# to scale the price of up to that of a full coin if desired.
 UNITS_PER_COIN = 10.0
 
 def initialize(context):

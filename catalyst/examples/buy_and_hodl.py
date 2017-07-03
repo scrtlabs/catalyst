@@ -28,6 +28,9 @@ ASSET = 'USDT_BTC'
 TARGET_HODL_RATIO = 0.8
 RESERVE_RATIO = 1.0 - TARGET_HODL_RATIO
 
+# For all trading pairs in the poloniex bundle, the default denomination
+# currently supported by Catalyst is 1/10th of a full coin. Use this constant 
+# to scale the price of up to that of a full coin if desired.
 UNITS_PER_COIN = 10.0
 
 def initialize(context):
