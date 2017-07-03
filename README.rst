@@ -12,7 +12,7 @@ Please visit `<enigma.co>`_ to learn about Catalyst, or refer to the
 
 Catalyst builds on top of the well-established `Zipline <https://github.com/quantopian/zipline>`_ project.
 We did our best to minimize structural changes to the general API to maximize compatibility with existing trading algorithms, developer knowledge, and tutorials.
-For now, please refer to the `Zipline API Docs <https://zipline.io>`_ as a general reference and bring any other questions you have to our #dev channel on `Slack <https://join.slack.com/enigmacatalyst/shared_invite/MTkzMjQ0MTg1NTczLTE0OTY3MjE3MDEtZGZmMTI5YzI3ZA>`_.
+For now, please refer to the `Zipline API Docs <http://zipline.io>`_ as a general reference and bring any other questions you have to our #dev channel on `Slack <https://join.slack.com/enigmacatalyst/shared_invite/MTkzMjQ0MTg1NTczLTE0OTY3MjE3MDEtZGZmMTI5YzI3ZA>`_.
 
 Our primary contributions include the:
 
