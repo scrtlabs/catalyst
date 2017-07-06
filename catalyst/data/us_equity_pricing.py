@@ -34,6 +34,7 @@ from numpy import (
     issubdtype,
     nan,
     uint32,
+    uint64,
 )
 from pandas import (
     DataFrame,
@@ -80,6 +81,7 @@ from ._adjustments import load_adjustments_from_sqlite
 logger = logbook.Logger('UsEquityPricing')
 
 OHLC = frozenset(['open', 'high', 'low', 'close'])
+OHLCV = frozenset(['open', 'high', 'low', 'close', 'volume'])
 US_EQUITY_PRICING_BCOLZ_COLUMNS = (
     'open', 'high', 'low', 'close', 'volume', 'day', 'id'
 )
@@ -109,6 +111,7 @@ SQLITE_STOCK_DIVIDEND_PAYOUT_COLUMN_DTYPES = {
     'ratio': float,
 }
 UINT32_MAX = iinfo(uint32).max
+UINT64_MAX = iinfo(uint64).max
 
 
 def check_uint32_safe(value, colname):
@@ -119,25 +122,25 @@ def check_uint32_safe(value, colname):
 
 
 @expect_element(invalid_data_behavior={'warn', 'raise', 'ignore'})
-def winsorise_uint32(df, invalid_data_behavior, column, *columns):
-    """Drops any record where a value would not fit into a uint32.
+def winsorise_uint64(df, invalid_data_behavior, column, *columns):
+    """Drops any record where a value would not fit into a uint64.
 
     Parameters
     ----------
     df : pd.DataFrame
         The dataframe to winsorise.
     invalid_data_behavior : {'warn', 'raise', 'ignore'}
-        What to do when data is outside the bounds of a uint32.
+        What to do when data is outside the bounds of a uint64.
     *columns : iterable[str]
         The names of the columns to check.
 
     Returns
     -------
     truncated : pd.DataFrame
-        ``df`` with values that do not fit into a uint32 zeroed out.
+        ``df`` with values that do not fit into a uint64 zeroed out.
     """
     columns = list((column,) + columns)
-    mask = df[columns] > UINT32_MAX
+    mask = df[columns] > UINT64_MAX
 
     if invalid_data_behavior != 'ignore':
         mask |= df[columns].isnull()
@@ -150,14 +153,14 @@ def winsorise_uint32(df, invalid_data_behavior, column, *columns):
     if mv.any():
         if invalid_data_behavior == 'raise':
             raise ValueError(
-                '%d values out of bounds for uint32: %r' % (
+                '%d values out of bounds for uint64: %r' % (
                     mv.sum(), df[mask.any(axis=1)],
                 ),
             )
         if invalid_data_behavior == 'warn':
             warnings.warn(
                 'Ignoring %d values because they are out of bounds for'
-                ' uint32: %r' % (
+                ' uint64: %r' % (
                     mv.sum(), df[mask.any(axis=1)],
                 ),
                 stacklevel=3,  # one extra frame for `expect_element`
@@ -239,7 +242,7 @@ class BcolzDailyBarWriter(object):
             Whether or not to show a progress bar while writing.
         invalid_data_behavior : {'warn', 'raise', 'ignore'}, optional
             What to do when data is encountered that is outside the range of
-            a uint32.
+            a uint64.
 
         Returns
         -------
@@ -274,7 +277,7 @@ class BcolzDailyBarWriter(object):
             Whether or not to show a progress bar while writing.
         invalid_data_behavior : {'warn', 'raise', 'ignore'}
             What to do when data is encountered that is outside the range of
-            a uint32.
+            a uint64.
         """
         read = partial(
             read_csv,
@@ -302,7 +305,9 @@ class BcolzDailyBarWriter(object):
 
         # Maps column name -> output carray.
         columns = {
-            k: carray(array([], dtype=uint32))
+            k: carray(array([], dtype=uint64))
+               if k in OHLCV
+               else carray(array([], dtype=uint32))
             for k in US_EQUITY_PRICING_BCOLZ_COLUMNS
         }
 
@@ -417,12 +422,12 @@ class BcolzDailyBarWriter(object):
             # we already have a ctable so do nothing
             return raw_data
 
-        winsorise_uint32(raw_data, invalid_data_behavior, 'volume', *OHLC)
-        processed = (raw_data[list(OHLC)] * 1000).astype('uint32')
+        winsorise_uint64(raw_data, invalid_data_behavior, 'volume', *OHLC)
+        processed = (raw_data[list(OHLC)] * 1000000).astype('uint64')
         dates = raw_data.index.values.astype('datetime64[s]')
         check_uint32_safe(dates.max().view(np.int64), 'day')
         processed['day'] = dates.astype('uint32')
-        processed['volume'] = raw_data.volume.astype('uint32')
+        processed['volume'] = raw_data.volume.astype('uint64')
         return ctable.fromdataframe(processed)
 
 
