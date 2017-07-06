@@ -23,24 +23,24 @@ from catalyst.api import (
     get_open_orders,
 )
 
-ASSET = 'USDT_BTC'
-
-TARGET_HODL_RATIO = 0.8
-RESERVE_RATIO = 1.0 - TARGET_HODL_RATIO
-
-# For all trading pairs in the poloniex bundle, the default denomination
-# currently supported by Catalyst is 1/10th of a full coin. Use this constant 
-# to scale the price of up to that of a full coin if desired.
-UNITS_PER_COIN = 10.0
 
 def initialize(context):
+    context.ASSET_NAME = 'USDT_ETH'
+    context.TARGET_HODL_RATIO = 0.8
+    context.RESERVE_RATIO = 1.0 - context.TARGET_HODL_RATIO
+
+    # For all trading pairs in the poloniex bundle, the default denomination
+    # currently supported by Catalyst is 1/1000th of a full coin. Use this
+    # constant to scale the price of up to that of a full coin if desired.
+    context.TICK_SIZE = 1000.0
+
     context.is_buying = True
-    context.asset = symbol(ASSET)
+    context.asset = symbol(context.ASSET_NAME)
 
 def handle_data(context, data):
-    cash = context.portfolio.cash
-    target_hodl_value = TARGET_HODL_RATIO * context.portfolio.starting_cash
-    reserve_value = RESERVE_RATIO * context.portfolio.starting_cash
+    starting_cash = context.portfolio.starting_cash
+    target_hodl_value = context.TARGET_HODL_RATIO * starting_cash
+    reserve_value = context.RESERVE_RATIO * starting_cash
 
     # Cancel any outstanding orders
     orders = get_open_orders(context.asset) or []
@@ -48,6 +48,7 @@ def handle_data(context, data):
         cancel_order(order)
     
     # Stop buying after passing the reserve threshold
+    cash = context.portfolio.cash
     if cash <= reserve_value:
         context.is_buying = False
 
@@ -79,8 +80,8 @@ def analyze(context=None, results=None):
     ax1.set_ylabel('Portfolio Value (USD)')
 
     ax2 = plt.subplot(512, sharex=ax1)
-    ax2.set_ylabel('{asset} (USD)'.format(asset=ASSET))
-    (UNITS_PER_COIN * results[['price']]).plot(ax=ax2)
+    ax2.set_ylabel('{asset} (USD)'.format(asset=context.ASSET_NAME))
+    (context.TICK_SIZE * results[['price']]).plot(ax=ax2)
 
     trans = results.ix[[t != [] for t in results.transactions]]
     buys = trans.ix[
@@ -88,7 +89,7 @@ def analyze(context=None, results=None):
     ]
     ax2.plot(
         buys.index,
-        UNITS_PER_COIN * results.price[buys.index],
+        context.TICK_SIZE * results.price[buys.index],
         '^',
         markersize=10,
         color='g',
@@ -125,14 +126,3 @@ def analyze(context=None, results=None):
     # Show the plot.
     plt.gcf().set_size_inches(18, 8)
     plt.show()
-
-
-def _test_args():
-    """Extra arguments to use when catalyst's automated tests run this example.
-    """
-    import pandas as pd
-
-    return {
-        'start': pd.Timestamp('2008', tz='utc'),
-        'end': pd.Timestamp('2013', tz='utc'),
-    }
