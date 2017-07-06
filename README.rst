@@ -139,7 +139,7 @@ Limitations
 
 This project is currently in a pre-alpha state and has some limitations we'd like to address:
 
-- *Minimum Denomination:* The smallest tradable unit in Catalyst is equal to 1/10 of a full coin. We plan to enable more granular increments, but have capped it at 1/10  to prevent integer overflows at various stages of the backtesting process.
+- *Minimum Denomination:* The smallest tradable unit in Catalyst is equal to 1/1000th of a full coin. We plan to enable more granular increments, but have capped it at 1/1000th for the time being.
 - *Supported Assets:* Currently the poloniex bundle comes prepopulated with data for all 90 registered trading pairs. However, due to limitations in how portfolios are currently modeled, we recommend sticking to ``USDT_*`` trading pairs. USDT is an independent currency listed on Poloniex whose price is pegged to the US dollar. Currently, this list includes: ``USDT_BTC``, ``USDT_DASH``, ``USDT_ETC``, ``USDT_ETH``, ``USDT_LTC``, ``USDT_NXT``, ``USDT_REP``, ``USDT_STR``, ``USDT_XMR``, ``USDT_XRP``, and ``USDT_ZEC``. We plan to add support for basing your portfolio in arbitrary currencies and provide native support for modeling ForEx trades in the near future!
 
 Virtual Environments
