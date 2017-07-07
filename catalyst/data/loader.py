@@ -20,6 +20,7 @@ import pandas as pd
 import numpy as np
 from pandas_datareader.data import DataReader
 import datetime
+import time
 import pytz
 from six import iteritems
 from six.moves.urllib_error import HTTPError
