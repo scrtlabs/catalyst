@@ -6,7 +6,7 @@ import time
 import requests
 import logbook
 
-DT_START        = time.mktime(datetime(2010, 01, 01, 0, 0).timetuple())
+DT_START        = time.mktime(datetime(2010, 1, 1, 0, 0).timetuple())
 CSV_OUT_FOLDER  = '/var/tmp/catalyst/data/poloniex/'
 CONN_RETRIES    = 2
 
@@ -68,8 +68,8 @@ class PoloniexCurator(object):
         return DT_START
 
     def get_data(self, currencyPair, start, end=9999999999, period=300):
-    	url = self._api_path + 'command=returnChartData&currencyPair=' + currencyPair + '&start=' + str(start) + '&end=' + str(end) + '&period=' + str(period)
-        
+        url = self._api_path + 'command=returnChartData&currencyPair=' + currencyPair + '&start=' + str(start) + '&end=' + str(end) + '&period=' + str(period)
+
         try:
             response = requests.get(url)
         except Exception as e:
@@ -77,13 +77,13 @@ class PoloniexCurator(object):
             log.exception(e)
             return None
 
-    	return response.json()
+        return response.json()
 
     '''
     Pulls latest data for a single pair
     '''
     def append_data_single_pair(self, currencyPair, repeat=0):
-    	log.debug('Getting data for %s' % currencyPair)
+        log.debug('Getting data for %s' % currencyPair)
         csv_fn = CSV_OUT_FOLDER + 'crypto_prices-' + currencyPair + '.csv'
         start  = self._get_start_date(csv_fn)
         # Only fetch data if more than 5min have passed since last fetch
@@ -115,10 +115,10 @@ class PoloniexCurator(object):
     Pulls latest data for all currency pairs
     '''
     def append_data(self):
-    	for currencyPair in self.currency_pairs:
-    		self.append_data_single_pair(currencyPair)
-        # Rate limit is 6 calls per second, sleep 1sec/6 to be safe
-    		time.sleep(0.17)
+        for currencyPair in self.currency_pairs:
+            self.append_data_single_pair(currencyPair)
+            # Rate limit is 6 calls per second, sleep 1sec/6 to be safe
+            time.sleep(0.17)
 
     '''
     Returns a data frame for all pairs, or for the requests currency pair.
