@@ -24,6 +24,10 @@ from bcolz import ctable
 from intervaltree import IntervalTree
 import logbook
 import numpy as np
+from numpy import (
+    iinfo,
+    uint64,
+)
 import pandas as pd
 from pandas import HDFStore
 import tables
@@ -39,23 +43,28 @@ from catalyst.data._minute_bar_internal import (
 from catalyst.gens.sim_engine import NANOS_IN_MINUTE
 
 from catalyst.data.bar_reader import BarReader, NoDataOnDate
-from catalyst.data.us_equity_pricing import check_uint32_safe
+from catalyst.data.us_equity_pricing import (
+    winsorise_uint64,
+    check_uint64_safe,
+)
 from catalyst.utils.calendars import get_calendar
 from catalyst.utils.cli import maybe_show_progress
 from catalyst.utils.memoize import lazyval
 
-
 logger = logbook.Logger('FiveMinuteBars')
 
-CRYPTO_ASSETS_FIVE_MINUTES_PER_DAY = 288
+OPEN_FIVE_MINUTES_PER_DAY = 288
 US_EQUITIES_MINUTES_PER_DAY = 390
-FUTURES_MINUTES_PER_DAY = 1440
 
 DEFAULT_EXPECTEDLEN = US_EQUITIES_MINUTES_PER_DAY * 252 * 15
-DEFAULT_EXPECTED_CRYPTO_LEN = CRYPTO_ASSETS_FIVE_MINUTES_PER_DAY * 366 * 15
+DEFAULT_EXPECTEDLEN_CRYPTO = OPEN_FIVE_MINUTES_PER_DAY * 366 * 15
 
-OHLC_RATIO = 1000
+OHLC_RATIO = 1000000
 
+OHLC = frozenset(['open', 'high', 'low', 'close'])
+OHLCV = frozenset(['open', 'high', 'low', 'close', 'volume'])
+
+UINT64_MAX = iinfo(uint64).max
 
 class BcolzFiveMinuteOverlappingData(Exception):
     pass
@@ -68,7 +77,7 @@ class BcolzFiveMinuteWriterColumnMismatch(Exception):
 class FiveMinuteBarReader(BarReader):
     @property
     def data_frequency(self):
-        return "five-minute"
+        return "5-minute"
 
 
 def _calc_five_minute_index(market_opens, five_minutes_per_day):
@@ -116,19 +125,19 @@ def _sid_subdir_path(sid):
 
 
 def convert_cols(cols, scale_factor, sid, invalid_data_behavior):
-    """Adapt OHLCV columns into uint32 columns.
+    """Adapt OHLCV columns into uint64 columns.
 
     Parameters
     ----------
     cols : dict
         A dict mapping each column name (open, high, low, close, volume)
-        to a float column to convert to uint32.
+        to a float column to convert to uint64.
     scale_factor : int
-        Factor to use to scale float values before converting to uint32.
+        Factor to use to scale float values before converting to uint64.
     sid : int
         Sid of the relevant asset, for logging.
     invalid_data_behavior : str
-        Specifies behavior when data cannot be converted to uint32.
+        Specifies behavior when data cannot be converted to uint64.
         If 'raise', raises an exception.
         If 'warn', logs a warning and filters out incompatible values.
         If 'ignore', silently filters out incompatible values.
@@ -137,6 +146,7 @@ def convert_cols(cols, scale_factor, sid, invalid_data_behavior):
     scaled_highs = np.nan_to_num(cols['high']) * scale_factor
     scaled_lows = np.nan_to_num(cols['low']) * scale_factor
     scaled_closes = np.nan_to_num(cols['close']) * scale_factor
+    volumes = np.nan_to_num(cols['volume'])
 
     exclude_mask = np.zeros_like(scaled_opens, dtype=bool)
 
@@ -145,11 +155,12 @@ def convert_cols(cols, scale_factor, sid, invalid_data_behavior):
         ('high', scaled_highs),
         ('low', scaled_lows),
         ('close', scaled_closes),
+        ('volume', volumes),
     ]:
         max_val = scaled_col.max()
 
         try:
-            check_uint32_safe(max_val, col_name)
+            check_uint64_safe(max_val, col_name)
         except ValueError:
             if invalid_data_behavior == 'raise':
                 raise
@@ -157,20 +168,20 @@ def convert_cols(cols, scale_factor, sid, invalid_data_behavior):
             if invalid_data_behavior == 'warn':
                 logger.warn(
                     'Values for sid={}, col={} contain some too large for '
-                    'uint32 (max={}), filtering them out',
+                    'uint64 (max={}), filtering them out',
                     sid, col_name, max_val,
                 )
 
             # We want to exclude all rows that have an unsafe value in
             # this column.
-            exclude_mask &= (scaled_col >= np.iinfo(np.uint32).max)
+            exclude_mask &= (scaled_col >= iinfo(uint64).max)
 
-    # Convert all cols to uint32.
-    opens = scaled_opens.astype(np.uint32)
-    highs = scaled_highs.astype(np.uint32)
-    lows = scaled_lows.astype(np.uint32)
-    closes = scaled_closes.astype(np.uint32)
-    volumes = cols['volume'].astype(np.uint32)
+    # Convert all cols to uint64.
+    opens = scaled_opens.astype(uint64)
+    highs = scaled_highs.astype(uint64)
+    lows = scaled_lows.astype(uint64)
+    closes = scaled_closes.astype(uint64)
+    volumes = volumes.astype(uint64)
 
     # Exclude rows with unsafe values by setting to zero.
     opens[exclude_mask] = 0
@@ -290,7 +301,7 @@ class BcolzFiveMinuteBarMetadata(object):
         ohlc_ratio : int
             The default ratio by which to multiply the pricing data to
             convert the floats from floats to an integer to fit within
-            the np.uint32. If ohlc_ratios_per_sid is None or does not
+            the np.uint64. If ohlc_ratios_per_sid is None or does not
             contain a mapping for a given sid, this ratio is used.
         ohlc_ratios_per_sid : dict
              A dict mapping each sid in the output to the factor by
@@ -374,13 +385,13 @@ class BcolzFiveMinuteBarWriter(object):
         The last trading session in the data set.
     default_ohlc_ratio : int, optional
         The default ratio by which to multiply the pricing data to
-        convert from floats to integers that fit within np.uint32. If
+        convert from floats to integers that fit within np.uint64. If
         ohlc_ratios_per_sid is None or does not contain a mapping for a
         given sid, this ratio is used. Default is OHLC_RATIO (1000).
     ohlc_ratios_per_sid : dict, optional
         A dict mapping each sid in the output to the ratio by which to
         multiply the pricing data to convert the floats from floats to
-        an integer to fit within the np.uint32.
+        an integer to fit within the np.uint64.
     expectedlen : int, optional
         The expected length of the dataset, used when creating the initial
         bcolz ctable.
@@ -405,9 +416,9 @@ class BcolzFiveMinuteBarWriter(object):
 
     The open, high, low, and close columns are integers which are 1000 times
     the quoted price, so that the data can represented and stored as an
-    np.uint32, supporting market prices quoted up to the thousands place.
+    np.uint64, supporting market prices quoted up to the thousands place.
 
-    volume is a np.uint32 with no mutation of the tens place.
+    volume is a np.uint64 with no mutation of the tens place.
 
     The 'index' for each individual asset are a repeating period of minutes of
     length `minutes_per_day` starting from each market open.
@@ -575,7 +586,7 @@ class BcolzFiveMinuteBarWriter(object):
         if not os.path.exists(sid_containing_dirname):
             # Other sids may have already created the containing directory.
             os.makedirs(sid_containing_dirname)
-        initial_array = np.empty(0, np.uint32)
+        initial_array = np.empty(0, np.uint64)
         table = ctable(
             rootdir=path,
             columns=[
@@ -612,7 +623,7 @@ class BcolzFiveMinuteBarWriter(object):
         five_minute_offset = len(table) % self._five_minutes_per_day
         num_to_prepend = numdays * self._five_minutes_per_day - five_minute_offset
 
-        prepend_array = np.zeros(num_to_prepend, np.uint32)
+        prepend_array = np.zeros(num_to_prepend, np.uint64)
         # Fill all OHLCV with zeros.
         table.append([prepend_array] * 5)
         table.flush()
@@ -817,11 +828,11 @@ class BcolzFiveMinuteBarWriter(object):
 
         minutes_count = all_minutes_in_window.size
 
-        open_col = np.zeros(minutes_count, dtype=np.uint32)
-        high_col = np.zeros(minutes_count, dtype=np.uint32)
-        low_col = np.zeros(minutes_count, dtype=np.uint32)
-        close_col = np.zeros(minutes_count, dtype=np.uint32)
-        vol_col = np.zeros(minutes_count, dtype=np.uint32)
+        open_col = np.zeros(minutes_count, dtype=uint64)
+        high_col = np.zeros(minutes_count, dtype=uint64)
+        low_col = np.zeros(minutes_count, dtype=uint64)
+        close_col = np.zeros(minutes_count, dtype=uint64)
+        vol_col = np.zeros(minutes_count, dtype=uint64)
 
         dt_ixs = np.searchsorted(all_minutes_in_window.values,
                                  dts.astype('datetime64[ns]'))
@@ -1250,7 +1261,7 @@ class BcolzFiveMinuteBarReader(FiveMinuteBarReader):
             if field != 'volume':
                 out = np.full(shape, np.nan)
             else:
-                out = np.zeros(shape, dtype=np.uint32)
+                out = np.zeros(shape, dtype=int64)
 
             for i, sid in enumerate(sids):
                 carray = self._open_minute_file(field, sid)

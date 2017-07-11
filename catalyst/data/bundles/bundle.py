@@ -117,24 +117,8 @@ class AbstractBundle(object):
 
             symbol_map = raw_metadata.symbol
 
-            daily_bar_writer.write(
-                self._fetch_symbol_iter(
-                    api_key,
-                    cache,
-                    symbol_map,
-                    calendar,
-                    start_session,
-                    end_session,
-                    'daily',
-                    retries,
-                ),
-                assets=raw_metadata.index,
-                show_progress=show_progress,
-            )
-
-            """
-            for data_frequency in self.frequencies:
-                self._write_symbol_for_freq(
+            if 'daily' in self.frequencies:
+                daily_bar_writer.write(
                     self._fetch_symbol_iter(
                         api_key,
                         cache,
@@ -142,21 +126,30 @@ class AbstractBundle(object):
                         calendar,
                         start_session,
                         end_session,
-                        data_frequency,
+                        'daily',
                         retries,
                     ),
-                    data_frequency,
-                    daily_bar_writer,
-                    minute_bar_writer,
                     assets=raw_metadata.index,
                     show_progress=show_progress,
                 )
-            """
-                
-                    
 
             metadata = self._post_process_metadata(raw_metadata, cache)
             asset_db_writer.write(metadata)
+
+            if '5-minute' in self.frequencies:
+                minute_bar_writer.write(
+                    self._fetch_symbol_iter(
+                        api_key,
+                        cache,
+                        symbol_map,
+                        calendar,
+                        start_session,
+                        end_session,
+                        '5-minute',
+                        retries,
+                    ),
+                    show_progress=show_progress,
+                )
 
             adjustment_writer.write()
         else:
@@ -188,7 +181,7 @@ class AbstractBundle(object):
         raw_iter = self._fetch_metadata_iter(api_key, cache, retries, environ)
         
         def item_show_func(_, _it=iter(count())):
-            return 'Downloading metadata page: {0}'.format(next(_it))
+            return 'Downloading metadata: {0}'.format('.' * next(_it))
 
         with maybe_show_progress(
             raw_iter,
@@ -263,64 +256,107 @@ class AbstractBundle(object):
                            calendar,
                            start_session,
                            end_session,
-                           frequency,
+                           data_frequency,
                            retries):
 
         for asset_id, symbol in symbol_map.iteritems():
+            # Record start time of iteration, compare at end of iteration to
+            # adhere to the datas source's rate limit policy.
             start_time = pd.Timestamp.utcnow()
-            try:
-                raw_data = cache[symbol]
-            except KeyError:
-                raw_data = None
-            
-            if raw_data is not None and not raw_data.empty:
-                last = raw_data.index[-1].tz_localize('UTC')
-            else:
-                last = start_session
 
-            next_start_time = last + pd.Timedelta(minutes=5)
-            if start_time > next_start_time:
-                raw_diff = self.fetch_raw_symbol_frame(
-                    api_key,
-                    symbol,
-                    last,
-                    end_session,
-                    frequency,
-                )
-                raw_diff = raw_diff[
-                    (raw_diff.index >= last) &
-                    (raw_diff.index <= end_session)
-                ]
+            # Fetch new data if cached data is absent or stale, otherwise
+            # returns the cached data unaltered.  The `should_sleep` flag
+            # indicates that an API call was attempted, and that we should be
+            # ensure aren't exceeding our rate limit before proceeding to the
+            # next symbol. If the raw_data is updated, it is cached before being
+            # returned.
+            raw_data, should_sleep = self._maybe_update_symbol_frame(
+                start_time,
+                api_key,
+                cache,
+                symbol,
+                start_session,
+                end_session,
+                data_frequency,
+            )
 
-                raw_data = cache[symbol] = (
-                    raw_data.append(raw_diff)
-                    if raw_data is not None else
-                    raw_diff
-                )
+            # TODO(cfromknecht) further data validation?
 
-                raw_data = raw_data[~raw_data.index.duplicated(keep='last')]
-
-                should_sleep = True
-            else:
-                should_sleep = False      
-
-            """
-            sessions = calendar.sessions_in_range(start_session, end_session)
-
-            print 'raw_data before:\n', raw_data.head()
-            raw_data = raw_data.reindex(
-                sessions,
-                copy=False,
-            ).fillna(0.0)
-            print 'raw_data after:\n', raw_data.head()
-            """
-
+            # Pass asset_id and symbol data to writer.
             yield asset_id, raw_data
 
+            # If an API call was made during this iteration and the time to
+            # reach this point was less than the inter-request `wait_time`,
+            # sleep until after enough time has elapsed to prevent getting rate
+            # limited.
             if should_sleep:
                 remaining = pd.Timestamp.utcnow() - start_time + self.wait_time
                 if remaining.value > 0:
                     sleep(remaining.value / 10**9)
+
+    def _maybe_update_symbol_frame(self,
+                                   start_time,
+                                   api_key,
+                                   cache,
+                                   symbol,
+                                   start_session,
+                                   end_session,
+                                   data_frequency):
+        try:
+            raw_data = cache[symbol]
+        except KeyError:
+            raw_data = None
+
+        # Select the most recent date in cached dataset if it exists,
+        # otherwise use the provided `start_session`.
+        last = (
+            raw_data.index[-1].tz_localize('UTC')
+            if raw_data is not None and not raw_data.empty else
+            start_session
+        )
+
+        # Determine time at which cached data will be considered stale.
+        cache_expiration = last + pd.Timedelta(minutes=5)
+        if start_time <= cache_expiration:
+            # Data is fresh enough to reuse, no need to update. Iterator can
+            # proceed to next symbol directly since no API call was required.
+            should_sleep = False
+        else:
+            # Data for symbol is old enough to attempt an update or is not
+            # present in the cache.  Fetch raw data for a single symbol 
+            # with requested intervals and frequency.
+            raw_diff = self.fetch_raw_symbol_frame(
+                api_key,
+                symbol,
+                last,
+                end_session,
+                data_frequency,
+            )
+
+            # Filter incoming data to minimize overlap.
+            raw_diff = raw_diff[
+                (raw_diff.index >= last) &
+                (raw_diff.index <= end_session)
+            ]
+
+            # Append incoming data to cached data if it exists,
+            # otherwise treat incoming data as the entire raw dataset.
+            raw_data = cache[symbol] = (
+                raw_data.append(raw_diff)
+                if raw_data is not None else
+                raw_diff
+            )
+
+            # Filter out any duplicates entries, keep last one as previous
+            # one was probably an incomplete frame.
+            raw_data = raw_data[~raw_data.index.duplicated(keep='last')]
+
+            # If we arrive here, we must have attempted an API call.
+            # This flag tells the iterator to pause before starting the next
+            # asset, that we don't exceed the data source's rate limit.
+            should_sleep = True
+
+        return raw_data, should_sleep
 
     def _write_symbol_for_freq(self,
                                pricing_iter,
@@ -338,13 +374,11 @@ class AbstractBundle(object):
         elif data_frequency == '5-minute':
             minute_bar_writer.write(
                 pricing_iter,
-                assets=assets,
                 show_progress=show_progress,
             )
         elif data_frequency == 'minute':
             minute_bar_writer.write(
                 pricing_iter,
-                assets=assets,
                 show_progress=show_progress,
             )
         else:

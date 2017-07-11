@@ -1,4 +1,4 @@
-Dear Zipline Maintainers,
+Dear Catalyst Maintainers,
 
 Before I tell you about my issue, let me describe my environment:
 
@@ -7,7 +7,7 @@ Before I tell you about my issue, let me describe my environment:
 * Operating System: (Windows Version or `$ uname --all`)
 * Python Version: `$ python --version`
 * Python Bitness: `$ python -c 'import math, sys;print(int(math.log(sys.maxsize + 1, 2) + 1))'`
-* How did you install Zipline: (`pip`, `conda`, or `other (please explain)`)
+* How did you install Catalyst: (`pip`, `conda`, or `other (please explain)`)
 * Python packages: `$ pip freeze` or `$ conda list`
 
 Now that you know a little about me, let me tell you about the issue I am
