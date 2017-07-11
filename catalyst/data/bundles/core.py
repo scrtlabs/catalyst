@@ -204,7 +204,7 @@ BundleData = namedtuple(
 
 BundleCore = namedtuple(
     'BundleCore',
-    'bundles register unregister ingest load clean',
+    'bundles register_bundle register unregister ingest load clean',
 )
 
 
@@ -258,6 +258,8 @@ def _make_bundle_core():
     -------
     bundles : mappingproxy
         The mapping of bundles to bundle payloads.
+    register_bundle : Bundle
+        A bundle instance to add to the ``bundles`` mapping.
     register : callable
         The function which registers new bundles in the ``bundles`` mapping.
     unregister : callable
@@ -274,6 +276,21 @@ def _make_bundle_core():
     # accidentally. Users may go through `register` to update this which will
     # warn when trampling another bundle.
     bundles = mappingproxy(_bundles)
+
+    def register_bundle(bundle_cls,
+                        start_session=None,
+                        end_session=None,
+                        create_writers=True):
+        bundle = bundle_cls()
+        return register(
+            bundle.name,
+            bundle.ingest,
+            calendar_name=bundle.calendar_name,
+            minutes_per_day=bundle.minutes_per_day,
+            start_session=start_session,
+            end_session=end_session,
+            create_writers=create_writers,
+        )
 
     @curry
     def register(name,
@@ -670,7 +687,15 @@ def _make_bundle_core():
 
         return cleaned
 
-    return BundleCore(bundles, register, unregister, ingest, load, clean)
+    return BundleCore(
+        bundles,
+        register_bundle,
+        register,
+        unregister,
+        ingest,
+        load,
+        clean,
+    )
 
 
-bundles, register, unregister, ingest, load, clean = _make_bundle_core()
+bundles, register_bundle, register, unregister, ingest, load, clean = _make_bundle_core()
