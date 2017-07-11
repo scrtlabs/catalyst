@@ -123,7 +123,7 @@ def ipython_only(option):
 )
 @click.option(
     '--data-frequency',
-    type=click.Choice({'daily', 'minute'}),
+    type=click.Choice({'daily', '5-minute', 'minute'}),
     default='daily',
     show_default=True,
     help='The data frequency of the simulation.',
