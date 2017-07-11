@@ -115,10 +115,10 @@ class PoloniexCurator(object):
     Pulls latest data for all currency pairs
     '''
     def append_data(self):
-    	for currencyPair in self.currency_pairs:
-    		self.append_data_single_pair(currencyPair)
-        # Rate limit is 6 calls per second, sleep 1sec/6 to be safe
-    		time.sleep(0.17)
+        for currencyPair in self.currency_pairs:
+            self.append_data_single_pair(currencyPair)
+            # Rate limit is 6 calls per second, sleep 1sec/6 to be safe
+            time.sleep(0.17)
 
     '''
     Returns a data frame for all pairs, or for the requests currency pair.
