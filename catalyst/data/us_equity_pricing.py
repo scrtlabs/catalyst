@@ -117,7 +117,15 @@ UINT64_MAX = iinfo(uint64).max
 def check_uint32_safe(value, colname):
     if value >= UINT32_MAX:
         raise ValueError(
-            "Value %s from column '%s' is too large" % (value, colname)
+            "Value %s from column '%s' is too large "
+            "for uint32" % (value, colname)
+        )
+
+def check_uint64_safe(value, colname):
+    if value >= UINT64_MAX:
+        raise ValueError(
+            "Value %s from column '%s' is too large "
+            "for uint64" % (value, colname)
         )
 
 
