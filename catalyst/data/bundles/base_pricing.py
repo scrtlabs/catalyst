@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from catalyst.data.bundles.bundle import BaseBundle
+from catalyst.data.bundles.base import BaseBundle
 from catalyst.utils.memoize import lazyval
 
 class BasePricingBundle(BaseBundle):

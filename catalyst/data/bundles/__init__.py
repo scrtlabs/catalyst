@@ -1,6 +1,6 @@
 # These imports are necessary to force module-scope register calls to happen.
 from . import quandl  # noqa
-from . import poloniex_bundle
+from . import poloniex
 from .core import (
     UnknownBundle,
     bundles,
