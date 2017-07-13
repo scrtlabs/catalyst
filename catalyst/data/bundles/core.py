@@ -33,6 +33,7 @@ from catalyst.utils.input_validation import ensure_timestamp, optionally
 import catalyst.utils.paths as pth
 from catalyst.utils.preprocess import preprocess
 from catalyst.utils.calendars import get_calendar
+from catalyst.utils.cli import maybe_show_progress
 
 ONE_MEGABYTE = 1024 * 1024
 
@@ -158,7 +159,9 @@ def download_with_progress(url, chunk_size, **progress_kwargs):
 
     total_size = int(resp.headers['content-length'])
     data = BytesIO()
-    with click.progressbar(length=total_size, **progress_kwargs) as pbar:
+
+    progress_kwargs['length'] = total_size
+    with maybe_show_progress(None, True, **progress_kwargs) as pbar:
         for chunk in resp.iter_content(chunk_size=chunk_size):
             data.write(chunk)
             pbar.update(len(chunk))
