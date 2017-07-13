@@ -24,7 +24,10 @@ import pandas as pd
 
 from . import core as bundles
 
-from catalyst.utils.cli import maybe_show_progress
+from catalyst.utils.cli import (
+    item_show_count,
+    maybe_show_progress
+)
 from catalyst.utils.memoize import lazyval
 
 logbook.StderrHandler().push_application()
@@ -130,7 +133,11 @@ class BaseBundle(object):
                     show_progress=show_progress,
                 )
 
-            metadata = self._post_process_metadata(raw_metadata, cache)
+            metadata = self._post_process_metadata(
+                raw_metadata,
+                cache,
+                show_progress=show_progress,
+            )
             asset_db_writer.write(metadata)
 
             if '5-minute' in self.frequencies:
@@ -176,42 +183,49 @@ class BaseBundle(object):
                              show_progress=False):
         
         raw_iter = self._fetch_metadata_iter(api_key, cache, retries, environ)
-        
-        def item_show_func(_, _it=iter(count())):
-            return 'Downloading metadata: {0}'.format('.' * next(_it))
 
         with maybe_show_progress(
             raw_iter,
             show_progress,
-            item_show_func=item_show_func,
-            label='Fetching {bundle} metadata:'.format(bundle=self.name),
+            label='Fetching symbol metadata',
+            item_show_func=item_show_count(),
+            length=3,
+            show_percent=False,
         ) as blocks:
             metadata = pd.concat(blocks, ignore_index=True)
         
         return metadata
 
-    def _post_process_metadata(self, metadata, cache):
+    def _post_process_metadata(self, metadata, cache, show_progress=False):
         final_metadata = pd.DataFrame(
             columns=self.md_column_names,
             index=metadata.index,
         )
+        
+        with maybe_show_progress(
+            metadata.symbol.iteritems(),
+            show_progress,
+            label='Post-processing symbol metadata',
+            item_show_func=item_show_count(len(metadata)),
+            length=len(metadata),
+            show_percent=False,
+        ) as symbols_map:
+            for asset_id, symbol in symbols_map:
+                try:
+                    raw_data = cache[symbol]
+                except KeyError:
+                    raise ValueError(
+                      'Unable to find cached data for symbol: {0}'.format(symbol)
+                    )
 
-        for asset_id, symbol in metadata.symbol.iteritems():
-            try:
-                raw_data = cache[symbol]
-            except KeyError:
-                raise ValueError(
-                  'Unable to find cached data for symbol: {0}'.format(symbol)
+                final_symbol_metadata = self.post_process_symbol_metadata(
+                    metadata.iloc[asset_id],
+                    raw_data,        
                 )
 
-            final_symbol_metadata = self.post_process_symbol_metadata(
-                metadata.iloc[asset_id],
-                raw_data,        
-            )
+                final_metadata.iloc[asset_id] = final_symbol_metadata
 
-            final_metadata.iloc[asset_id] = final_symbol_metadata
-
-        final_metadata['exchange'] = self.exchange
+            final_metadata['exchange'] = self.exchange
 
         return final_metadata
         
@@ -237,12 +251,13 @@ class BaseBundle(object):
                         'attempts.'.format(page_number, retries),
                     )
 
-                # update cached value for key
-                cache[key] = raw
 
             if raw.empty:
                 # empty DataFrame signals completion
                 break
+
+            # update cached value for key
+            cache[key] = raw
 
             yield raw
 
