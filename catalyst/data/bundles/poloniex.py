@@ -20,7 +20,7 @@ import pandas as pd
 from six.moves.urllib.parse import urlencode
 
 from catalyst.data.bundles.core import register_bundle
-from catalyst.data.bundles.pricing_bundle import BaseCryptoPricingBundle
+from catalyst.data.bundles.base_pricing import BaseCryptoPricingBundle
 from catalyst.utils.memoize import lazyval
 
 class PoloniexBundle(BaseCryptoPricingBundle):
