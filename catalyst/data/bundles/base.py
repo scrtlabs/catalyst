@@ -30,10 +30,7 @@ from catalyst.utils.memoize import lazyval
 logbook.StderrHandler().push_application()
 log = logbook.Logger(__name__)
 
-class AbstractBundle(object):
-    def __init__(self):
-        pass
-        
+class BaseBundle(object):
     @lazyval
     def name(self):
         raise NotImplementedError()
