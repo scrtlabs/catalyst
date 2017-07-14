@@ -67,15 +67,17 @@ class PoloniexBundle(BaseCryptoPricingBundle):
             inplace=True,
         )
 
+        raw = raw[raw['isFrozen'] == 0]
+
         return raw
 
-    def post_process_symbol_metadata(self, metadata, data):
-        start_date = data.index[0].tz_localize(None)
-        end_date = data.index[-1].tz_localize(None)
+    def post_process_symbol_metadata(self, asset_id, sym_md, sym_data):
+        start_date = sym_data.index[0].tz_localize(None)
+        end_date = sym_data.index[-1].tz_localize(None)
         ac_date = end_date + pd.Timedelta(days=1)
 
         return (
-            metadata.symbol,
+            sym_md.symbol,
             start_date,
             end_date,
             ac_date,
@@ -84,6 +86,7 @@ class PoloniexBundle(BaseCryptoPricingBundle):
     def fetch_raw_symbol_frame(self,
                                api_key,
                                symbol,
+                               calendar,
                                start_date,
                                end_date,
                                frequency):
@@ -130,7 +133,6 @@ class PoloniexBundle(BaseCryptoPricingBundle):
         period_map = {
             'daily': 86400,
             '5-minute': 300,
-            'minute': 60,
         }
 
         try:

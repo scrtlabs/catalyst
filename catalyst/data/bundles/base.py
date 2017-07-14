@@ -18,7 +18,7 @@ from itertools import count
 import tarfile
 from time import time, sleep
 
-from abc import abstractmethod
+from abc import abstractmethod, abstractproperty
 import logbook
 import pandas as pd
 
@@ -76,6 +76,14 @@ class BaseBundle(object):
 
     @lazyval
     def wait_time(self):
+        raise NotImplementedError()
+
+    @abstractproperty
+    def splits(self):
+        raise NotImplementedError()
+
+    @abstractproperty
+    def dividends(self):
         raise NotImplementedError()
 
     @abstractmethod
@@ -185,7 +193,21 @@ class BaseBundle(object):
             # contains an appropriately initialized file structure.  We don't
             # forsee a usecase for adjustments at this time, but may later
             # choose to expose this functionality in the future.
-            adjustment_writer.write()
+            if len(self.splits) > 0 or len(self.dividends) > 0:
+                adjustment_writer.write(
+                    splits=(
+                        pd.concat(self.splits, ignore_index=True)
+                        #if self.splits is not None \
+                        #and len(self.splits) > 0 else
+                        #None
+                    ),
+                    dividends=(
+                        pd.concat(self.dividends, ignore_index=True)
+                        #if self.dividends is not None \
+                        #and len(dividends) > 0 else
+                        #None
+                    ),
+                )
         else:
             # Otherwise, user has instructed to download and untar bundle
             # directly from the bundles `tar_url`.
@@ -246,9 +268,16 @@ class BaseBundle(object):
                             page_number,
                         )
                         break
-                    except ValueError:
+                    except ValueError as e:
                         raw = pd.DataFrame([])
                         break
+                    except Exception as e:
+                        log.exception(
+                            'Failed to load metadata from {}. '
+                            'Retrying.'.format(
+                                name=self.name,
+                            )
+                        ) 
                 else:
                     raise ValueError(
                         'Failed to download metadata page %d after %d '
@@ -297,6 +326,7 @@ class BaseBundle(object):
 
                 # Perform and require post-processing of metadata.
                 final_symbol_metadata = self.post_process_symbol_metadata(
+                    asset_id,
                     metadata.iloc[asset_id],
                     raw_data,        
                 )
@@ -335,9 +365,11 @@ class BaseBundle(object):
                 api_key,
                 cache,
                 symbol,
+                calendar,
                 start_session,
                 end_session,
                 data_frequency,
+                retries,
             )
 
             # TODO(cfromknecht) further data validation?
@@ -359,9 +391,11 @@ class BaseBundle(object):
                                    api_key,
                                    cache,
                                    symbol,
+                                   calendar,
                                    start_session,
                                    end_session,
-                                   data_frequency):
+                                   data_frequency,
+                                   retries):
 
         # Attempt to load pre-existing symbol data from cache.
         try:
@@ -371,54 +405,68 @@ class BaseBundle(object):
 
         # Select the most recent date in cached dataset if it exists,
         # otherwise use the provided `start_session`.
-        last = (
-            raw_data.index[-1].tz_localize('UTC')
-            if raw_data is not None and not raw_data.empty else
-            start_session
-        )
+        last = start_session
+        if raw_data is not None and len(raw_data) > 0:
+            last = raw_data.index[-1].tz_localize('UTC')
+        
+        should_sleep = False
 
         # Determine time at which cached data will be considered stale.
-        cache_expiration = last + pd.Timedelta(minutes=5)
-        if start_time <= cache_expiration:
+        cache_expiration = last + pd.Timedelta(days=2)
+        if start_time <= cache_expiration and raw_data is not None:
             # Data is fresh enough to reuse, no need to update. Iterator can
             # proceed to next symbol directly since no API call was required.
-            should_sleep = False
+            return raw_data, should_sleep
+
+        # Data for symbol is old enough to attempt an update or is not
+        # present in the cache.  Fetch raw data for a single symbol 
+        # with requested intervals and frequency. Retry as necessary.
+        for _ in range(retries):
+            try:
+                raw_data = self.fetch_raw_symbol_frame(
+                    api_key,
+                    symbol,
+                    calendar,
+                    start_session,
+                    end_session,
+                    data_frequency,
+                )
+                raw_data.index = pd.to_datetime(raw_data.index, utc=True)
+
+                # Filter incoming data to fit start and end sessions.
+                raw_data = raw_data[
+                    (raw_data.index >= start_session) &
+                    (raw_data.index <= end_session)
+                ]
+
+                # Filter out any duplicates entries, keep last one, since
+                # previous frame is probably an incomplete.
+                raw_data = raw_data[~raw_data.index.duplicated(keep='last')]
+
+                # Cache latest symbol data.
+                cache[symbol] = raw_data
+
+                # If we arrive here, we must have attempted an API call.
+                # This flag tells the iterator to pause before starting the next
+                # asset, that we don't exceed the data source's rate limit.
+                should_sleep = True
+
+                return raw_data, should_sleep
+
+            except Exception as e:
+                log.exception(
+                    'Exception raised fetching {name} data. Retrying.'
+                    .format(name=self.name)
+                )
         else:
-            # Data for symbol is old enough to attempt an update or is not
-            # present in the cache.  Fetch raw data for a single symbol 
-            # with requested intervals and frequency.
-            raw_diff = self.fetch_raw_symbol_frame(
-                api_key,
-                symbol,
-                last,
-                end_session,
-                data_frequency,
+            raise ValueError(
+                'Failed to download data for symbol {sym} '
+                'after {n} attempts.'.format(
+                    sym=symbol,
+                    n=retries,
+                )
             )
 
-            # Filter incoming data to minimize overlap.
-            raw_diff = raw_diff[
-                (raw_diff.index >= last) &
-                (raw_diff.index <= end_session)
-            ]
-
-            # Append incoming data to cached data if it exists,
-            # otherwise treat incoming data as the entire raw dataset.
-            raw_data = cache[symbol] = (
-                raw_data.append(raw_diff)
-                if raw_data is not None else
-                raw_diff
-            )
-
-            # Filter out any duplicates entries, keep last one as previous
-            # one was probably an incomplete frame.
-            raw_data = raw_data[~raw_data.index.duplicated(keep='last')]
-
-            # If we arrive here, we must have attempted an API call.
-            # This flag tells the iterator to pause before starting the next
-            # asset, that we don't exceed the data source's rate limit.
-            should_sleep = True
-
-        return raw_data, should_sleep
 
     def _write_symbol_for_freq(self,
                                pricing_iter,
