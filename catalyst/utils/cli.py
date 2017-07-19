@@ -17,6 +17,7 @@ def item_show_count(total=None):
 
     def item_show_func(item, _it=iter(count())):
         if item is not None:
+            starting = False
             return maybe_show_total(next(_it))
         return 'DONE'
 

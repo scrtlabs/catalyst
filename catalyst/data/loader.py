@@ -33,7 +33,7 @@ from ..utils.paths import (
 )
 from ..utils.deprecate import deprecated
 
-from catalyst.curate.poloniex import PoloniexCurator
+from catalyst.data.bundles.poloniex import PoloniexBundle
 from catalyst.utils.calendars import get_calendar
 
 
@@ -232,11 +232,14 @@ def load_market_data(trading_day=None, trading_days=None, bm_symbol='SPY',
     treasury_curves = tc[tc.index.slice_indexer(first_date, last_date)]
     return benchmark_returns, treasury_curves
 
-def ensure_crypto_benchmark_data(symbol, first_date, last_date, now,
-                                trading_day, environ=None):
+def ensure_crypto_benchmark_data(symbol,
+                                 first_date,
+                                 last_date,
+                                 now,
+                                 trading_day,
+                                 environ=None):
+
     filename = get_benchmark_filename(symbol)
-    source_filename = '/var/tmp/catalyst/data/poloniex/crypto_prices-{0}.csv'.\
-        format(symbol)
 
     logger.info(
         ('Loading benchmark data for {symbol!r} '
@@ -269,92 +272,23 @@ def ensure_crypto_benchmark_data(symbol, first_date, last_date, now,
         last_date=last_date
     )
 
-    def dateparse(time_in_secs):
-        return datetime.datetime.fromtimestamp(float(time_in_secs), pytz.utc)
-
-    def compute_daily_bars(five_min_bars, schedule):
-        # filter and copy the entry at the beginning of each session
-        daily_bars = five_min_bars[
-            five_min_bars.index.isin(schedule)
-        ].copy()
-
-        day_offset = pd.Timedelta(days=1)
-
-        # iterate through session starts doing:
-        # 1. filter five_min_bars to get all entries in one day
-        # 2. compute daily bar entry
-        # 3. record in rid-th row of daily_bars
-        for rid, start_date in enumerate(daily_bars.index):
-            # compute beginning of next session
-            end_date = start_date + day_offset
-
-            # filter for entries session entries
-            day_data = five_min_bars[
-                (five_min_bars.index >= start_date) &
-                (five_min_bars.index < end_date)
-            ]
-
-            # compute and record daily bar
-            daily_bars.iloc[rid] = (
-                day_data.open.iloc[0],   # first open price
-                day_data.high.max(),     # max of high prices
-                day_data.low.min(),      # min of low prices
-                day_data.close.iloc[-1], # last close prices
-                day_data.volume.sum(),   # sum of all volumes
-            )
-
-        # scale to allow trading 10-ths of a coin
-        scale = 10.0
-        daily_bars.loc[:, 'open'] /= scale
-        daily_bars.loc[:, 'high'] /= scale
-        daily_bars.loc[:, 'low'] /= scale
-        daily_bars.loc[:, 'close'] /= scale
-        daily_bars.loc[:, 'volume'] *= scale
-        
-        return daily_bars
-
-    
-    five_min_bars = None
+    # Load benchmark symbol from Poloniex API
     try:
-        # load five minute bars from csv cache
-        five_min_bars = pd.read_csv(
-            source_filename,
-            names=['date', 'open', 'high', 'low', 'close', 'volume'],
-            index_col=[0],
-            parse_dates=True,
-            date_parser=dateparse,
+        bundle = PoloniexBundle()
+        bench_raw = bundle._fetch_symbol_frame(
+            None,
+            symbol,
+            get_calendar(bundle.calendar_name),
+            first_date,
+            last_date,
+            'daily',
         )
-        five_min_bars.index = pd.to_datetime(five_min_bars.index, utc=True, unit='s')
-    except (OSError, IOError):
-        # Otherwise load from Poloniex API
-        try:
-            pc = PoloniexCurator()
-            pc.append_data_single_pair(symbol)
-
-            five_min_bars = pc.to_dataframe(
-                time.mktime(first_date.timetuple()),
-                time.mktime(last_date.timetuple()),
-                currencyPair=symbol,
-            )
-        except (OSError, IOError, HTTPError):
-            logger.exception('Failed to new crypto benchmark returns')
-            raise
-
-    # compute daily bars for open calendar
-    open_calendar = get_calendar('OPEN')
-    daily_bars = compute_daily_bars(
-        five_min_bars,
-        open_calendar.all_sessions,
-    )
-
-    # filter daily bars to include first_date and last_date
-    daily_bars = daily_bars[
-        (daily_bars.index >= (first_date - trading_day)) &
-        (daily_bars.index <= last_date)
-    ]
+    except (OSError, IOError, HTTPError):
+        logger.exception('Failed to fetch new crypto benchmark returns')
+        raise
 
     # select close column and compute percent change between days
-    daily_close = daily_bars[['close']]
+    daily_close = bench_raw[['close']]
     daily_close = daily_close.pct_change(1).iloc[1:]
 
     try:

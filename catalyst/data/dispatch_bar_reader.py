@@ -130,12 +130,16 @@ class AssetDispatchBarReader(with_metaclass(ABCMeta)):
 
         return results
 
-
 class AssetDispatchMinuteBarReader(AssetDispatchBarReader):
 
     def _dt_window_size(self, start_dt, end_dt):
         return len(self.trading_calendar.minutes_in_range(start_dt, end_dt))
 
+
+class AssetDispatchFiveMinuteBarReader(AssetDispatchBarReader):
+
+    def _dt_window_size(self, start_dt, end_dt):
+        return len(self.trading_calendar.five_minutes_in_range(start_dt, end_dt))
 
 class AssetDispatchSessionBarReader(AssetDispatchBarReader):
 

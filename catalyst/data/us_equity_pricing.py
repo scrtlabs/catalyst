@@ -229,7 +229,7 @@ class BcolzDailyBarWriter(object):
 
     @property
     def progress_bar_message(self):
-        return 'Compiling daily pricing data'
+        return 'Compiling daily data'
 
     def write(self,
               data,
