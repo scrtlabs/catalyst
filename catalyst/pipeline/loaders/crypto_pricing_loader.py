@@ -33,13 +33,30 @@ class CryptoPricingLoader(PipelineLoader):
     Delegates loading of baselines and adjustments.
     """
 
-    def __init__(self, raw_price_loader, dataset):
-        self.raw_price_loader = raw_price_loader
-        self._columns = dataset.columns
+    def __init__(self, bundle, data_frequency, dataset):
 
         cal = get_calendar('OPEN')
 
-        self._all_sessions = cal.all_sessions
+        if data_frequency == 'daily':
+            reader = bundle.daily_bar_reader
+            all_sessions = cal.all_sessions
+
+        elif data_frequency == '5-minute':
+            reader = bundle.five_minute_bar_reader
+            all_sessions = cal.all_five_minutes
+
+        elif daily_bar_reader == 'minute':
+            reader = bundle.minute_bar_reader
+            all_sessions = cal.all_minutes
+
+        else:
+            raise ValueError(
+                'Invalid data frequency: {}'.format(data_frequency)
+            )
+
+        self.raw_price_loader = reader
+        self._columns = dataset.columns
+        self._all_sessions = all_sessions
 
     @classmethod
     def from_files(cls, pricing_path):
@@ -89,6 +106,13 @@ class CryptoPricingLoader(PipelineLoader):
 
 
 def _shift_dates(dates, start_date, end_date, shift):
+    print 'dates.head:\n', dates[:10]
+    print 'dates.tail:\n', dates[:-10]
+
+    print 'start_date:', start_date
+    print 'end_date:', end_date
+    print 'shift:', shift
+
     try:
         start = dates.get_loc(start_date)
     except KeyError:

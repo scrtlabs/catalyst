@@ -17,6 +17,10 @@ from ..us_equity_pricing import (
     SQLiteAdjustmentReader,
     SQLiteAdjustmentWriter,
 )
+from ..five_minute_bars import (
+    BcolzFiveMinuteBarReader,
+    BcolzFiveMinuteBarWriter,
+)
 from ..minute_bars import (
     BcolzMinuteBarReader,
     BcolzMinuteBarWriter,
@@ -44,16 +48,21 @@ def asset_db_path(bundle_name, timestr, environ=None, db_version=None):
     )
 
 
-def minute_equity_path(bundle_name, timestr, environ=None):
+def minute_path(bundle_name, timestr, environ=None):
     return pth.data_path(
-        minute_equity_relative(bundle_name, timestr, environ),
+        minute_relative(bundle_name, timestr, environ),
         environ=environ,
     )
 
-
-def daily_equity_path(bundle_name, timestr, environ=None):
+def five_minute_path(bundle_name, timestr, environ=None):
     return pth.data_path(
-        daily_equity_relative(bundle_name, timestr, environ),
+        five_minute_relative(bundle_name, timestr, environ),
+        environ=environ,
+    )
+
+def daily_path(bundle_name, timestr, environ=None):
+    return pth.data_path(
+        daily_relative(bundle_name, timestr, environ),
         environ=environ,
     )
 
@@ -80,12 +89,14 @@ def cache_relative(bundle_name, timestr, environ=None):
     return bundle_name, '.cache'
 
 
-def daily_equity_relative(bundle_name, timestr, environ=None):
-    return bundle_name, timestr, 'daily_equities.bcolz'
+def daily_relative(bundle_name, timestr, environ=None):
+    return bundle_name, timestr, 'daily.bcolz'
 
+def five_minute_relative(bundle_name, timestr, environ=None):
+    return bundle_name, timestr, 'five_minute.bcolz'
 
-def minute_equity_relative(bundle_name, timestr, environ=None):
-    return bundle_name, timestr, 'minute_equities.bcolz'
+def minute_relative(bundle_name, timestr, environ=None):
+    return bundle_name, timestr, 'minute.bcolz'
 
 
 def asset_db_relative(bundle_name, timestr, environ=None, db_version=None):
@@ -195,13 +206,14 @@ RegisteredBundle = namedtuple(
      'start_session',
      'end_session',
      'minutes_per_day',
+     'five_minutes_per_day',
      'ingest',
      'create_writers']
 )
 
 BundleData = namedtuple(
     'BundleData',
-    'asset_finder equity_minute_bar_reader equity_daily_bar_reader '
+    'asset_finder minute_bar_reader five_minute_bar_reader daily_bar_reader '
     'adjustment_reader',
 )
 
@@ -281,15 +293,17 @@ def _make_bundle_core():
     bundles = mappingproxy(_bundles)
 
     def register_bundle(bundle_cls,
+                        asset_filter=None,
                         start_session=None,
                         end_session=None,
                         create_writers=True):
-        bundle = bundle_cls()
+        bundle = bundle_cls(asset_filter=asset_filter)
         return register(
             bundle.name,
             bundle.ingest,
             calendar_name=bundle.calendar_name,
             minutes_per_day=bundle.minutes_per_day,
+            five_minutes_per_day=bundle.five_minutes_per_day,
             start_session=start_session,
             end_session=end_session,
             create_writers=create_writers,
@@ -298,10 +312,11 @@ def _make_bundle_core():
     @curry
     def register(name,
                  f,
-                 calendar_name='NYSE',
+                 calendar_name='OPEN',
                  start_session=None,
                  end_session=None,
-                 minutes_per_day=390,
+                 minutes_per_day=1440,
+                 five_minutes_per_day=288,
                  create_writers=True):
         """Register a data bundle ingest function.
 
@@ -382,6 +397,7 @@ def _make_bundle_core():
             start_session=start_session,
             end_session=end_session,
             minutes_per_day=minutes_per_day,
+            five_minutes_per_day=five_minutes_per_day,
             ingest=f,
             create_writers=create_writers,
         )
@@ -413,7 +429,8 @@ def _make_bundle_core():
                environ=os.environ,
                timestamp=None,
                assets_versions=(),
-               show_progress=False):
+               show_progress=False,
+               is_compile=False):
         """Ingest data for a given bundle.
 
         Parameters
@@ -463,7 +480,7 @@ def _make_bundle_core():
                     pth.data_path([], environ=environ))
                 )
                 daily_bars_path = wd.ensure_dir(
-                    *daily_equity_relative(
+                    *daily_relative(
                         name, timestr, environ=environ,
                     )
                 )
@@ -477,10 +494,20 @@ def _make_bundle_core():
                 # when we create the SQLiteAdjustmentWriter below. The
                 # SQLiteAdjustmentWriter needs to open the daily ctables so
                 # that it can compute the adjustment ratios for the dividends.
-
                 daily_bar_writer.write(())
+
+                five_minute_bar_writer = BcolzFiveMinuteBarWriter(
+                    wd.ensure_dir(*five_minute_relative(
+                        name, timestr, environ=environ)
+                    ),
+                    calendar,
+                    start_session,
+                    end_session,
+                    five_minutes_per_day=bundle.five_minutes_per_day,
+                )
+
                 minute_bar_writer = BcolzMinuteBarWriter(
-                    wd.ensure_dir(*minute_equity_relative(
+                    wd.ensure_dir(*minute_relative(
                         name, timestr, environ=environ)
                     ),
                     calendar,
@@ -488,6 +515,7 @@ def _make_bundle_core():
                     end_session,
                     minutes_per_day=bundle.minutes_per_day,
                 )
+
                 assets_db_path = wd.getpath(*asset_db_relative(
                     name, timestr, environ=environ,
                 ))
@@ -504,6 +532,7 @@ def _make_bundle_core():
                 )
             else:
                 daily_bar_writer = None
+                five_minute_bar_writer = None
                 minute_bar_writer = None
                 asset_db_writer = None
                 adjustment_db_writer = None
@@ -515,6 +544,7 @@ def _make_bundle_core():
                 environ,
                 asset_db_writer,
                 minute_bar_writer,
+                five_minute_bar_writer,
                 daily_bar_writer,
                 adjustment_db_writer,
                 calendar,
@@ -522,6 +552,7 @@ def _make_bundle_core():
                 end_session,
                 cache,
                 show_progress,
+                is_compile,
                 pth.data_path([name, timestr], environ=environ),
             )
 
@@ -597,11 +628,14 @@ def _make_bundle_core():
             asset_finder=AssetFinder(
                 asset_db_path(name, timestr, environ=environ),
             ),
-            equity_minute_bar_reader=BcolzMinuteBarReader(
-                minute_equity_path(name, timestr, environ=environ),
+            minute_bar_reader=BcolzMinuteBarReader(
+                minute_path(name, timestr, environ=environ),
             ),
-            equity_daily_bar_reader=BcolzDailyBarReader(
-                daily_equity_path(name, timestr, environ=environ),
+            five_minute_bar_reader=BcolzFiveMinuteBarReader(
+                five_minute_path(name, timestr, environ=environ),
+            ),
+            daily_bar_reader=BcolzDailyBarReader(
+                daily_path(name, timestr, environ=environ),
             ),
             adjustment_reader=SQLiteAdjustmentReader(
                 adjustment_db_path(name, timestr, environ=environ),

@@ -25,7 +25,7 @@ from catalyst.api import (
 
 
 def initialize(context):
-    context.ASSET_NAME = 'USDT_ETH'
+    context.ASSET_NAME = 'USDT_BTC'
     context.TARGET_HODL_RATIO = 0.8
     context.RESERVE_RATIO = 1.0 - context.TARGET_HODL_RATIO
 
@@ -37,7 +37,13 @@ def initialize(context):
     context.is_buying = True
     context.asset = symbol(context.ASSET_NAME)
 
+    context.i = 0
+
 def handle_data(context, data):
+    context.i += 1
+
+    print 'i:', context.i
+
     starting_cash = context.portfolio.starting_cash
     target_hodl_value = context.TARGET_HODL_RATIO * starting_cash
     reserve_value = context.RESERVE_RATIO * starting_cash

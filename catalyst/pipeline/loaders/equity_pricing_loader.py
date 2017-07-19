@@ -36,15 +36,34 @@ class USEquityPricingLoader(PipelineLoader):
     Delegates loading of baselines and adjustments.
     """
 
-    def __init__(self, raw_price_loader, adjustments_loader, dataset):
-        self.raw_price_loader = raw_price_loader
-        self.adjustments_loader = adjustments_loader
+    def __init__(self, bundle, data_frequency, dataset):
+
+        if data_frequency == 'daily':
+            reader = bundle.daily_bar_reader
+        elif data_frequency == '5-minute':
+            reader = bundle.five_minute_bar_reader
+        elif daily_bar_reader == 'minute':
+            reader = bundle.minute_bar_reader
+        else:
+            raise ValueError(
+                'Invalid data frequency: {}'.format(data_frequency)
+            )
+
+        cal = reader.trading_calendar or get_calendar('NYSE')
+
+        if data_frequency == 'daily':
+            all_sessions = cal.all_sessions
+        elif data_frequency == '5-minute':
+            reader = bundle.five_minute_bar_reader
+            all_sessions = cal.all_five_minutes
+        elif daily_bar_reader == 'minute':
+            reader = bundle.minute_bar_reader
+            all_sessions = cal.all_minutes
+
+        self.raw_price_loader = reader
+        self.adjustments_loader = bundle.adjustments_loader
         self._columns = dataset.columns
-
-        cal = self.raw_price_loader.trading_calendar or \
-            get_calendar("NYSE")
-
-        self._all_sessions = cal.all_sessions
+        self._all_sessions = all_sessions
 
     @classmethod
     def from_files(cls, pricing_path, adjustments_path):

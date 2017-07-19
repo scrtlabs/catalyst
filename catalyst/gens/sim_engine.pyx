@@ -131,7 +131,7 @@ cdef class FiveMinuteSimulationClock(MinuteSimulationClock):
         for session_idx, session_nano in enumerate(self.sessions_nanos):
             five_minutes_nanos = np.arange(
                 self.market_opens_nanos[session_idx],
-                self.market_closes_nanos[session_idx] + _nanos_in_five_minutes,
+                self.market_closes_nanos[session_idx],
                 _nanos_in_five_minutes
             )
             five_minutes_by_session[session_nano] = pd.to_datetime(

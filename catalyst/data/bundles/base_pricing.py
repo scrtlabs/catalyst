@@ -38,9 +38,6 @@ class BasePricingBundle(BaseBundle):
         ]
 
 class BaseCryptoPricingBundle(BasePricingBundle):
-    def __init__(self):
-        super(BasePricingBundle, self).__init__()
-
     @lazyval
     def calendar_name(self):
         return 'OPEN'
@@ -48,6 +45,10 @@ class BaseCryptoPricingBundle(BasePricingBundle):
     @lazyval
     def minutes_per_day(self):
         return 1440
+
+    @lazyval
+    def five_minutes_per_day(self):
+        return 288
 
     @property
     def splits(self):
@@ -58,11 +59,6 @@ class BaseCryptoPricingBundle(BasePricingBundle):
         return []
 
 class BaseEquityPricingBundle(BasePricingBundle):
-    def __init__(self):
-        super(BasePricingBundle, self).__init__()
-        self._splits = []
-        self._dividends = []
-
     @lazyval
     def calendar_name(self):
         return 'NYSE'
@@ -71,6 +67,9 @@ class BaseEquityPricingBundle(BasePricingBundle):
     def minutes_per_day(self):
         return 390
 
+    @lazyval
+    def five_minutes_per_day(self):
+        return 78
 
     @property
     def splits(self):
