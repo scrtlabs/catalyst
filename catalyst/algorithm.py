@@ -308,7 +308,10 @@ class TradingAlgorithm(object):
         self.asset_finder = self.trading_environment.asset_finder
 
         # Initialize Pipeline API data.
-        self.init_engine(kwargs.pop('get_pipeline_loader', None))
+        self.init_engine(
+            kwargs.pop('get_pipeline_loader', None),
+            self.sim_params.data_frequency,
+        )
         self._pipelines = {}
         # Create an always-expired cache so that we compute the first time data
         # is requested.
@@ -422,16 +425,31 @@ class TradingAlgorithm(object):
 
         self.restrictions = NoRestrictions()
 
-    def init_engine(self, get_loader):
+    def init_engine(self, get_loader, data_frequency):
         """
         Construct and store a PipelineEngine from loader.
 
         If get_loader is None, constructs an ExplodingPipelineEngine
         """
         if get_loader is not None:
+            if data_frequency == 'daily':
+                all_dates = self.trading_calendar.all_sessions
+            elif data_frequency == '5-minute':
+                all_dates = self.trading_calendar.all_five_minutes
+            elif data_frequency == 'minute':
+                all_dates = self.trading_calendar.all_minutes
+            else:
+                raise ValueError(
+                    'Cannot initialize engine with '
+                    'data frequency: {}'.format(data_frequency)
+                )
+
+            print 'first_dates:', all_dates[:10]
+            print 'last_dates:', all_dates[:-10]
+
             self.engine = SimplePipelineEngine(
                 get_loader,
-                self.trading_calendar.all_sessions,
+                all_dates,
                 self.asset_finder,
             )
         else:

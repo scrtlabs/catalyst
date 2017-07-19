@@ -51,7 +51,10 @@ class BenchmarkSource(object):
         elif benchmark_returns is not None:
             daily_series = benchmark_returns[sessions[0]:sessions[-1]]
 
+            print 'BENCHMARK_RETURNS'
+
             if self.emission_rate == "minute":
+                print 'BENCHMARK_RETURNS minute'
                 # we need to take the env's benchmark returns, which are daily,
                 # and resample them to minute
                 minutes = trading_calendar.minutes_for_sessions_in_range(
@@ -65,7 +68,22 @@ class BenchmarkSource(object):
                 )
 
                 self._precalculated_series = minute_series
+            elif self.emission_rate == '5-minute':
+                print 'BENCHMARK_RETURNS 5-minute'
+                five_minutes = \
+                    trading_calendar.five_minutes_for_sessions_in_range(
+                        sessions[0],
+                        sessions[-1],
+                    )
+
+                five_minute_series = daily_series.reindex(
+                    index=five_minutes,
+                    method='ffill',
+                )
+                
+                self._precalculated_series = five_minute_series
             else:
+                print 'BENCHMARK_RETURNS daily'
                 self._precalculated_series = daily_series
         else:
             raise Exception("Must provide either benchmark_asset or "
@@ -156,7 +174,23 @@ class BenchmarkSource(object):
             )[asset]
 
             return benchmark_series.pct_change()[1:]
+        elif self.emission_rate == '5-minute':
+            five_minutes = trading_calendar.five_minutes_for_sessions_in_range(
+                self.sessions[0], self.sessions[-1]
+            )
+            benchmark_series = data_portal.get_history_window(
+                [asset],
+                five_minutes[-1],
+                bar_count=len(five_minutes) + 1,
+                frequency='5m',
+                field='price',
+                data_frequency=self.emission_rate,
+                ffill=True,
+            )[asset]
+
+            return benchmark_series.pct_change()[1:]
         else:
+            print '----------------------------------------'
             start_date = asset.start_date
             if start_date < trading_days[0]:
                 # get the window of close prices for benchmark_asset from the

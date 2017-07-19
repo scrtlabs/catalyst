@@ -42,6 +42,7 @@ from catalyst.assets.roll_finder import (
 )
 from catalyst.data.dispatch_bar_reader import (
     AssetDispatchMinuteBarReader,
+    AssetDispatchFiveMinuteBarReader,
     AssetDispatchSessionBarReader
 )
 from catalyst.data.resample import (
@@ -114,12 +115,16 @@ class DataPortal(object):
         The calendar instance used to provide minute->session information.
     first_trading_day : pd.Timestamp
         The first trading day for the simulation.
-    equity_daily_reader : BcolzDailyBarReader, optional
+    daily_reader : BcolzDailyBarReader, optional
         The daily bar reader for equities. This will be used to service
         daily data backtests or daily history calls in a minute backetest.
         If a daily bar reader is not provided but a minute bar reader is,
         the minutes will be rolled up to serve the daily requests.
-    equity_minute_reader : BcolzMinuteBarReader, optional
+    five_minute_reader : BcolzFiveMinuteBarReader, optional
+        The five minute bar reader for equities. This will be used to service
+        5-minute data backtests or five-minute history calls.  This can be used
+        to serve daily calls if no daily bar reader is provided.
+    minute_reader : BcolzMinuteBarReader, optional
         The minute bar reader for equities. This will be used to service
         minute data backtests or minute history calls. This can be used
         to serve daily calls if no daily bar reader is provided.
@@ -144,8 +149,9 @@ class DataPortal(object):
                  asset_finder,
                  trading_calendar,
                  first_trading_day,
-                 equity_daily_reader=None,
-                 equity_minute_reader=None,
+                 daily_reader=None,
+                 five_minute_reader=None,
+                 minute_reader=None,
                  future_daily_reader=None,
                  future_minute_reader=None,
                  adjustment_reader=None,
@@ -180,7 +186,7 @@ class DataPortal(object):
             # Infer the last session from the provided readers.
             last_sessions = [
                 reader.last_available_dt
-                for reader in [equity_daily_reader, future_daily_reader]
+                for reader in [daily_reader, future_daily_reader]
                 if reader is not None
             ]
             if last_sessions:
@@ -194,7 +200,11 @@ class DataPortal(object):
             # Infer the last minute from the provided readers.
             last_minutes = [
                 reader.last_available_dt
-                for reader in [equity_minute_reader, future_minute_reader]
+                for reader in [
+                    minute_reader,
+                    five_minute_reader,
+                    future_minute_reader,
+                ]
                 if reader is not None
             ]
             if last_minutes:
@@ -202,10 +212,12 @@ class DataPortal(object):
             else:
                 self._last_available_minute = None
 
-        aligned_equity_minute_reader = self._ensure_reader_aligned(
-            equity_minute_reader)
-        aligned_equity_session_reader = self._ensure_reader_aligned(
-            equity_daily_reader)
+        aligned_minute_reader = self._ensure_reader_aligned(
+            minute_reader)
+        aligned_five_minute_reader = self._ensure_reader_aligned(
+            five_minute_reader)
+        aligned_session_reader = self._ensure_reader_aligned(
+            daily_reader)
         aligned_future_minute_reader = self._ensure_reader_aligned(
             future_minute_reader)
         aligned_future_session_reader = self._ensure_reader_aligned(
@@ -217,12 +229,15 @@ class DataPortal(object):
         }
 
         aligned_minute_readers = {}
+        aligned_five_minute_readers = {}
         aligned_session_readers = {}
 
-        if aligned_equity_minute_reader is not None:
-            aligned_minute_readers[Equity] = aligned_equity_minute_reader
-        if aligned_equity_session_reader is not None:
-            aligned_session_readers[Equity] = aligned_equity_session_reader
+        if aligned_minute_reader is not None:
+            aligned_minute_readers[Equity] = aligned_minute_reader
+        if aligned_five_minute_reader is not None:
+            aligned_five_minute_readers[Equity] = aligned_five_minute_reader
+        if aligned_session_reader is not None:
+            aligned_session_readers[Equity] = aligned_session_reader
 
         if aligned_future_minute_reader is not None:
             aligned_minute_readers[Future] = aligned_future_minute_reader
@@ -252,6 +267,13 @@ class DataPortal(object):
             self._last_available_minute,
         )
 
+        _dispatch_five_minute_reader = AssetDispatchFiveMinuteBarReader(
+            self.trading_calendar,
+            self.asset_finder,
+            aligned_five_minute_readers,
+            self._last_available_minute,
+        )
+
         _dispatch_session_reader = AssetDispatchSessionBarReader(
             self.trading_calendar,
             self.asset_finder,
@@ -261,6 +283,7 @@ class DataPortal(object):
 
         self._pricing_readers = {
             'minute': _dispatch_minute_reader,
+            '5-minute': _dispatch_five_minute_reader,
             'daily': _dispatch_session_reader,
         }
 
@@ -514,15 +537,17 @@ class DataPortal(object):
                     )
             else:
                 if field == "last_traded":
-                    return self.get_last_traded_dt(asset, dt, 'minute')
+                    return self.get_last_traded_dt(asset, dt, data_frequency)
                 elif field == "price":
-                    return self._get_minute_spot_value(
-                        asset, "close", dt, ffill=True,
+                    return self._get_minutely_spot_value(
+                        asset, "close", dt, data_frequency, ffill=True,
                     )
                 elif field == "contract":
                     return self._get_current_contract(asset, dt)
                 else:
-                    return self._get_minute_spot_value(asset, field, dt)
+                    return self._get_minutely_spot_value(
+                        asset, field, dt, data_frequency,
+                     )
 
         if assets_is_scalar:
             return get_single_asset_value(assets)
@@ -648,8 +673,14 @@ class DataPortal(object):
 
         return spot_value
 
-    def _get_minute_spot_value(self, asset, column, dt, ffill=False):
-        reader = self._get_pricing_reader('minute')
+    def _get_minutely_spot_value(self,
+                                asset,
+                                column,
+                                dt,
+                                data_frequency,
+                                ffill=False):
+
+        reader = self._get_pricing_reader(data_frequency)
 
         if ffill:
             # If forward filling, we want the last minute with values (up to
@@ -680,8 +711,32 @@ class DataPortal(object):
         # the value we found came from a different day, so we have to adjust
         # the data if there are any adjustments on that day barrier
         return self.get_adjusted_value(
-            asset, column, query_dt,
-            dt, "minute", spot_value=result
+            asset,
+            column,
+            query_dt,
+            dt,
+            data_frequency,
+            spot_value=result
+        )
+
+
+    def _get_five_minute_spot_value(self, asset, column, dt, ffill=False):
+        return self._get_minutely_spot_value(
+            asset,
+            column,
+            dt,
+            ffill, 
+            '5-minute',
+        )
+        
+
+    def _get_minute_spot_value(self, asset, column, dt, ffill=False):
+        return self._get_minutely_spot_value(
+            asset,
+            column,
+            dt,
+            ffill, 
+            'minute',
         )
 
     def _get_daily_spot_value(self, asset, column, dt):

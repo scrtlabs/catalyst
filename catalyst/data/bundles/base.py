@@ -33,7 +33,17 @@ from catalyst.utils.memoize import lazyval
 logbook.StderrHandler().push_application()
 log = logbook.Logger(__name__)
 
+DEFAULT_RETRIES = 5
+
 class BaseBundle(object):
+    def __init__(self, asset_filter=[]):
+        self._asset_filter = asset_filter
+        self._reset()
+
+    def _reset(self):
+        self._splits = []
+        self._dividends = []
+
     @lazyval
     def name(self):
         raise NotImplementedError()
@@ -48,6 +58,10 @@ class BaseBundle(object):
 
     @lazyval
     def minutes_per_day(self):
+        raise NotImplementedError()
+
+    @lazyval
+    def five_minutes_per_day(self):
         raise NotImplementedError()
 
     @lazyval
@@ -101,6 +115,7 @@ class BaseBundle(object):
                environ,
                asset_db_writer,
                minute_bar_writer,
+               five_minute_bar_writer,
                daily_bar_writer,
                adjustment_writer,
                calendar,
@@ -108,110 +123,117 @@ class BaseBundle(object):
                end_session,
                cache,
                show_progress,
+               is_compile,
                output_dir):
 
-        api_key = environ.get('CATALYST_API_KEY')
-        retries = environ.get('CATALYST_DOWNLOAD_ATTEMPTS', 5)
-        use_local = environ.get('CATALYST_INGEST_LOCAL', 0) > 0
+        try:
+            api_key = environ.get('CATALYST_API_KEY')
+            retries = environ.get('CATALYST_DOWNLOAD_ATTEMPTS', 5)
 
-        if use_local:
-            # User has instructed local curation and ingestion of bundle.
-            # Fetch raw metadata for all symbols.
-            raw_metadata = self._fetch_metadata_frame(
-                api_key,
-                cache=cache,
-                retries=retries,
-                environ=environ,
-                show_progress=show_progress,
-            )
-
-            # Compile daily symbol data if bundle supports daily mode and
-            # persist the dataset to disk.
-            symbol_map = raw_metadata.symbol
-            if 'daily' in self.frequencies:
-                daily_bar_writer.write(
-                    self._fetch_symbol_iter(
-                        api_key,
-                        cache,
-                        symbol_map,
-                        calendar,
-                        start_session,
-                        end_session,
-                        'daily',
-                        retries,
-                    ),
-                    assets=raw_metadata.index,
+            if is_compile:
+                # User has instructed local compilation and ingestion of bundle.
+                # Fetch raw metadata for all symbols.
+                raw_metadata = self._fetch_metadata_frame(
+                    api_key,
+                    cache=cache,
+                    retries=retries,
+                    environ=environ,
                     show_progress=show_progress,
                 )
 
-            # Post-process metadata using cached symbol frames, and write to
-            # disk.  This metadata must be written before any attempt to write
-            # either minute or 5-minute data.
-            metadata = self._post_process_metadata(
-                raw_metadata,
-                cache,
-                show_progress=show_progress,
-            )
-            asset_db_writer.write(metadata)
+                # Compile daily symbol data if bundle supports daily mode and
+                # persist the dataset to disk.
+                symbol_map = raw_metadata.symbol
+                if 'daily' in self.frequencies:
+                    daily_bar_writer.write(
+                        self._fetch_symbol_iter(
+                            api_key,
+                            cache,
+                            symbol_map,
+                            calendar,
+                            start_session,
+                            end_session,
+                            'daily',
+                            retries,
+                        ),
+                        assets=raw_metadata.index,
+                        show_progress=show_progress,
+                    )
 
-            # Compile 5-minute symbol data if bundle supports 5-minute mode and
-            # persist the dataset to disk.
-            if '5-minute' in self.frequencies:
-                #TODO(cfromknecht) replace with five_minute_bar_writer
-                minute_bar_writer.write(
-                    self._fetch_symbol_iter(
-                        api_key,
-                        cache,
-                        symbol_map,
-                        calendar,
-                        start_session,
-                        end_session,
-                        '5-minute',
-                        retries,
-                    ),
+                # Post-process metadata using cached symbol frames, and write to
+                # disk.  This metadata must be written before any attempt to write
+                # either minute or 5-minute data.
+                metadata = self._post_process_metadata(
+                    raw_metadata,
+                    cache,
                     show_progress=show_progress,
                 )
+                asset_db_writer.write(metadata)
 
-            # Compile minute symbol data if bundle supports minute mode and
-            # persist the dataset to disk.
-            if 'minute' in self.frequencies:
-                minute_bar_writer.write(
-                    self._fetch_symbol_iter(
-                        api_key,
-                        cache,
-                        symbol_map,
-                        calendar,
-                        start_session,
-                        end_session,
-                        'minute',
-                        retries,
-                    ),
-                    show_progress=show_progress,
-                )
+                # Compile 5-minute symbol data if bundle supports 5-minute mode and
+                # persist the dataset to disk.
+                if '5-minute' in self.frequencies:
+                    five_minute_bar_writer.write(
+                        self._fetch_symbol_iter(
+                            api_key,
+                            cache,
+                            symbol_map,
+                            calendar,
+                            start_session,
+                            end_session,
+                            '5-minute',
+                            retries,
+                        ),
+                        length=len(symbol_map),
+                        show_progress=show_progress,
+                    )
 
-            # For legacy purposes, this call is required to ensure the database
-            # contains an appropriately initialized file structure.  We don't
-            # forsee a usecase for adjustments at this time, but may later
-            # choose to expose this functionality in the future.
-            if len(self.splits) > 0 or len(self.dividends) > 0:
+                # Compile minute symbol data if bundle supports minute mode and
+                # persist the dataset to disk.
+                if 'minute' in self.frequencies:
+                    minute_bar_writer.write(
+                        self._fetch_symbol_iter(
+                            api_key,
+                            cache,
+                            symbol_map,
+                            calendar,
+                            start_session,
+                            end_session,
+                            'minute',
+                            retries,
+                        ),
+                        show_progress=show_progress,
+                    )
+
+                # For legacy purposes, this call is required to ensure the database
+                # contains an appropriately initialized file structure.  We don't
+                # forsee a usecase for adjustments at this time, but may later
+                # choose to expose this functionality in the future.
                 adjustment_writer.write(
                     splits=(
                         pd.concat(self.splits, ignore_index=True)
-                        #if self.splits is not None \
-                        #and len(self.splits) > 0 else
-                        #None
+                        if len(self.splits) > 0 else
+                        None
                     ),
                     dividends=(
                         pd.concat(self.dividends, ignore_index=True)
-                        #if self.dividends is not None \
-                        #and len(dividends) > 0 else
-                        #None
+                        if len(self.dividends) > 0 else
+                        None
                     ),
                 )
+            else:
+                # Otherwise, user has instructed to download and untar bundle
+                # directly from the bundles `tar_url`.
+                self._download_and_untar(show_progress, output_dir)
+        except Exception as e:
+            log.exception(
+                ' Failed to ingest {name}:\n{msg}'.format(
+                    name=self.name,
+                    msg=str(e),
+                )
+            )
         else:
-            # Otherwise, user has instructed to download and untar bundle
-            # directly from the bundles `tar_url`.
-            self._download_and_untar(show_progress, output_dir)
+            self._reset()
 
     def _download_and_untar(self, show_progress, output_dir):
         # Download bundle conditioned on whether the user would like progress
@@ -233,7 +255,7 @@ class BaseBundle(object):
     def _fetch_metadata_frame(self,
                              api_key,
                              cache,
-                             retries=5,
+                             retries=DEFAULT_RETRIES,
                              environ=None,
                              show_progress=False):
         
@@ -257,7 +279,7 @@ class BaseBundle(object):
         for page_number in count(1):
             # Attempt to load metadata page from cache.  If it does not exist,
             # poll the API upto `retries` times in order to get raw DataFrame.
-            key = 'metadata-page-{pn}'.format(pn=page_number)
+            key = 'metadata-page-{pn}.frame'.format(pn=page_number)
             try:
                 raw = cache[key]
             except KeyError:
@@ -289,6 +311,10 @@ class BaseBundle(object):
                 # Empty DataFrame signals completion.
                 break
 
+            # Apply selective asset filtering, useful for benchmark
+            # ingestion.
+            raw = raw[raw.symbol.isin(self._asset_filter)]
+
             # Update cached value for key.
             cache[key] = raw
 
@@ -317,8 +343,9 @@ class BaseBundle(object):
                 # Attempt to load data from disk, the cache should have an entry
                 # for each symbol at this point of the execution. If one does
                 # not exist, we should fail.
+                key = '{sym}.daily.frame'.format(sym=symbol)
                 try:
-                    raw_data = cache[symbol]
+                    raw_data = cache[key]
                 except KeyError:
                     raise ValueError(
                       'Unable to find cached data for symbol: {0}'.format(symbol)
@@ -398,8 +425,9 @@ class BaseBundle(object):
                                    retries):
 
         # Attempt to load pre-existing symbol data from cache.
+        key = '{sym}.{freq}.frame'.format(sym=symbol, freq=data_frequency)
         try:
-            raw_data = cache[symbol]
+            raw_data = cache[key]
         except KeyError:
             raw_data = None
 
@@ -418,6 +446,36 @@ class BaseBundle(object):
             # proceed to next symbol directly since no API call was required.
             return raw_data, should_sleep
 
+        # If we arrive here, we must have attempted an API call.
+        # Setting this flag tells the iterator to pause before starting
+        # the next asset, that we don't exceed the data source's rate
+        # limit.
+        should_sleep = True
+
+        raw_data = self._fetch_symbol_frame(
+            api_key,
+            symbol,
+            calendar,
+            start_session,
+            end_session,
+            data_frequency,
+            retries=retries,
+        )
+
+        # Cache latest symbol data.
+        cache[key] = raw_data
+
+        return raw_data, should_sleep
+
+    def _fetch_symbol_frame(self,
+                            api_key,
+                            symbol,
+                            calendar,
+                            start_session,
+                            end_session,
+                            data_frequency,
+                            retries=DEFAULT_RETRIES):
+
         # Data for symbol is old enough to attempt an update or is not
         # present in the cache.  Fetch raw data for a single symbol 
         # with requested intervals and frequency. Retry as necessary.
@@ -432,6 +490,7 @@ class BaseBundle(object):
                     data_frequency,
                 )
                 raw_data.index = pd.to_datetime(raw_data.index, utc=True)
+                raw_data.index = raw_data.index.tz_localize('UTC')
 
                 # Filter incoming data to fit start and end sessions.
                 raw_data = raw_data[
@@ -443,15 +502,7 @@ class BaseBundle(object):
                 # previous frame is probably an incomplete.
                 raw_data = raw_data[~raw_data.index.duplicated(keep='last')]
 
-                # Cache latest symbol data.
-                cache[symbol] = raw_data
-
-                # If we arrive here, we must have attempted an API call.
-                # This flag tells the iterator to pause before starting the next
-                # asset, that we don't exceed the data source's rate limit.
-                should_sleep = True
-
-                return raw_data, should_sleep
+                return raw_data
 
             except Exception as e:
                 log.exception(
@@ -467,36 +518,6 @@ class BaseBundle(object):
                 )
             )
 
-
-    def _write_symbol_for_freq(self,
-                               pricing_iter,
-                               data_frequency,
-                               daily_bar_writer,
-                               minute_bar_writer,
-                               assets,
-                               show_progress=False):
-
-        if data_frequency == 'daily':
-            daily_bar_writer.write(
-                pricing_iter,
-                assets=assets,
-                show_progress=show_progress,
-            )
-        elif data_frequency == '5-minute':
-            # TODO(cfromknecht) replace with five minute writer
-            minute_bar_writer.write(
-                pricing_iter,
-                show_progress=show_progress,
-            )
-        elif data_frequency == 'minute':
-            minute_bar_writer.write(
-                pricing_iter,
-                show_progress=show_progress,
-            )
-        else:
-            raise ValueError(
-                'Unsupported data-frequency: {0}'.format(data_frequency)
-            )
 
 def _dtypes_to_cols(dtypes):
     return [name for name, _ in dtypes]

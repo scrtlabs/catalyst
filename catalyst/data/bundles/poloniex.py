@@ -36,6 +36,7 @@ class PoloniexBundle(BaseCryptoPricingBundle):
     def frequencies(self):
         return set((
             'daily',
+            '5-minute',
         ))
 
     @lazyval
@@ -72,8 +73,8 @@ class PoloniexBundle(BaseCryptoPricingBundle):
         return raw
 
     def post_process_symbol_metadata(self, asset_id, sym_md, sym_data):
-        start_date = sym_data.index[0].tz_localize(None)
-        end_date = sym_data.index[-1].tz_localize(None)
+        start_date = sym_data.index[0]
+        end_date = sym_data.index[-1]
         ac_date = end_date + pd.Timedelta(days=1)
 
         return (
@@ -100,7 +101,6 @@ class PoloniexBundle(BaseCryptoPricingBundle):
             ),
             orient='records',
         )
-
         raw.set_index('date', inplace=True)
 
         scale = 1000.0
@@ -155,4 +155,4 @@ class PoloniexBundle(BaseCryptoPricingBundle):
             query=urlencode(query_params),
         )
 
-register_bundle(PoloniexBundle)
+register_bundle(PoloniexBundle, ['USDT_BTC'])
