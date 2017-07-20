@@ -67,18 +67,68 @@ class PoloniexCurator(object):
 
         return DT_START
 
-    def get_data(self, currencyPair, start, end=9999999999, period=300):
-        url = self._api_path + 'command=returnChartData&currencyPair=' + currencyPair + '&start=' + str(start) + '&end=' + str(end) + '&period=' + str(period)
+    def get_data(self, currencyPair, start, end=9999999999, prev_df=None):
+        log.debug(currencyPair+': Retrieving from '+str(start)+' to '+str(end))
+
+        '''
+        Poloniex limits a single query to returnTradeHistory to less than a year between start and end
+        '''
+        if(end == 9999999999 and time.time() - start > 365*86400 ):     
+            newstart = time.time() - 360*86400
+        elif( end != 9999999999 and end - start > 365*86400 ):
+            newstart = end - 360*86400
+        else:
+            newstart = start
+        
+        url = self._api_path + 'command=returnTradeHistory&currencyPair=' + currencyPair + '&start=' + str(newstart) + '&end=' + str(end)
 
         try:
             response = requests.get(url)
         except Exception as e:
-            log.error('Failed to retrieve candlestick chart data for %s' % currencyPair)
+            log.error('Failed to retrieve trade history data for %s' % currencyPair)
             log.exception(e)
             return None
 
-        return response.json()
+        log.debug(currencyPair+': Received '+str(len(response.json()))+' trades.')
+        if(len(response.json())==1 and not isinstance(response.json(),list)):
+            r = response.json()
+            print(r)
+            if(r['error']):
+                log.error(r['error'])
+                return None
 
+        df = pd.DataFrame(data=response.json(), columns = ['date','rate', 'total', 'tradeID']) 
+        df['rate']    = pd.to_numeric( df['rate'],    errors='coerce')                # Convert rate to float
+        df['total']   = pd.to_numeric( df['total'],   errors='coerce')                # Convert vol to float
+        df['tradeID'] = pd.to_numeric( df['tradeID'], errors='coerce')                # Convert vol to float                       
+        df['date']    = pd.to_datetime(df['date'],    infer_datetime_format=True)     # Convert date
+        df.set_index('tradeID', inplace=True)                                         # Index by tradeID
+        df = df.iloc[::-1]                         # Reverse timeseries as TradeHistory is provided newest to oldest
+
+        if(prev_df is not None):
+            if(prev_df.index[0] == df.index[0]):
+                return prev_df
+            df = prev_df.combine_first(df)
+
+        first = df['date'].iloc[0].value // 10 ** 9
+        df = self.get_data( currencyPair, start, first, df )
+        return df
+
+
+    def generate_ohlcv(self, df):
+
+        df.set_index('date', inplace=True)                      # Index by date
+        vol = df['total'].to_frame('volume')                    # Will deal with vol separately, as ohlc() messes it up
+        df.drop('total', axis=1, inplace=True)                  # Drop volume data from dataframe
+        ohlc = df.resample('T').ohlc()                          # Resample OHLC in 5min bins
+        ohlc.columns = ohlc.columns.map(lambda t: t[1])         # Raname columns by dropping 'rate'
+        closes = ohlc['close'].fillna(method='pad')             # Pad forward missing 'close'
+        ohlc = ohlc.apply(lambda x: x.fillna(closes))           # Fill N/A with last close
+        vol = vol.resample('T').sum().fillna(0)                 # Add volumes by bin
+        ohlcv = pd.concat([ohlc,vol], axis=1)                   # Concatenate OHLC + Volume
+
+        return ohlcv
+    
     '''
     Pulls latest data for a single pair
     '''
@@ -88,21 +138,24 @@ class PoloniexCurator(object):
         start  = self._get_start_date(csv_fn)
         # Only fetch data if more than 5min have passed since last fetch
         if (time.time() > start):
-            data   = self.get_data(currencyPair, start)
+            data = self.get_data(currencyPair, start)
+
             if data is not None:
+                ohlcv = self.generate_ohlcv(data)
+
                 try: 
                     with open(csv_fn, 'ab') as csvfile:
                         csvwriter = csv.writer(csvfile)
-                        for item in data:
-                            if item['date'] == 0:
+                        for item in ohlcv.itertuples():
+                            if item.Index == 0:
                                 continue
                             csvwriter.writerow([
-                                item['date'],
-                                item['open'],
-                                item['high'],
-                                item['low'],
-                                item['close'],
-                                item['volume'],
+                                item.Index.value // 10 ** 9,
+                                item.open,
+                                item.high,
+                                item.low,
+                                item.close,
+                                item.volume,
                             ])
                 except Exception as e:
                     log.error('Error opening %s' % csv_fn)
