@@ -37,6 +37,7 @@ class CryptoPricingLoader(PipelineLoader):
 
         cal = get_calendar('OPEN')
 
+        print 'CryptoPricingLoader-{}'.format(data_frequency)
         if data_frequency == 'daily':
             reader = bundle.daily_bar_reader
             all_sessions = cal.all_sessions
@@ -57,6 +58,7 @@ class CryptoPricingLoader(PipelineLoader):
         self.raw_price_loader = reader
         self._columns = dataset.columns
         self._all_sessions = all_sessions
+        self._data_frequency = data_frequency
 
     @classmethod
     def from_files(cls, pricing_path):
