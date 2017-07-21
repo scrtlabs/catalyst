@@ -189,14 +189,14 @@ class PerformanceTracker(object):
 
     @property
     def progress(self):
-        if self.emission_rate == 'minute':
+        if self.emission_rate in set(('minute', '5-minute')):
             # Fake a value
             return 1.0
         elif self.emission_rate == 'daily':
             return self.session_count / self.total_session_count
 
     def set_date(self, date):
-        if self.emission_rate == 'minute':
+        if self.emission_rate in set(('minute', '5-minute')):
             self.saved_dt = date
             self.todays_performance.period_close = self.saved_dt
 
@@ -370,7 +370,9 @@ class PerformanceTracker(object):
                                             bench_since_open,
                                             account.leverage)
 
+        assert self.emission_rate in set(('minute', '5-minute'))
         minute_packet = self.to_dict(emission_type='minute')
+
         return minute_packet
 
     def handle_market_close(self, dt, data_portal):
