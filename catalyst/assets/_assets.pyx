@@ -59,6 +59,7 @@ cdef class Asset:
 
     cdef readonly object exchange
     cdef readonly object exchange_full
+    cdef readonly object min_trade_size
 
     _kwargnames = frozenset({
         'sid',
@@ -70,6 +71,7 @@ cdef class Asset:
         'auto_close_date',
         'exchange',
         'exchange_full',
+        'min_trade_size',
     })
 
     def __init__(self,
@@ -81,7 +83,8 @@ cdef class Asset:
                  object end_date=None,
                  object first_traded=None,
                  object auto_close_date=None,
-                 object exchange_full=None):
+                 object exchange_full=None,
+                 object min_trade_size=None):
 
         self.sid = sid
         self.sid_hash = hash(sid)
@@ -94,6 +97,7 @@ cdef class Asset:
         self.end_date = end_date
         self.first_traded = first_traded
         self.auto_close_date = auto_close_date
+        self.min_trade_size = min_trade_size
 
     def __int__(self):
         return self.sid
@@ -148,7 +152,8 @@ cdef class Asset:
 
     def __repr__(self):
         attrs = ('symbol', 'asset_name', 'exchange',
-                 'start_date', 'end_date', 'first_traded', 'auto_close_date')
+                 'start_date', 'end_date', 'first_traded', 'auto_close_date',
+                 'min_trade_size')
         tuples = ((attr, repr(getattr(self, attr, None)))
                   for attr in attrs)
         strings = ('%s=%s' % (t[0], t[1]) for t in tuples)
@@ -170,7 +175,8 @@ cdef class Asset:
                                  self.end_date,
                                  self.first_traded,
                                  self.auto_close_date,
-                                 self.exchange_full))
+                                 self.exchange_full,
+                                 self.min_trade_size))
 
     cpdef to_dict(self):
         """
@@ -186,6 +192,7 @@ cdef class Asset:
             'auto_close_date': self.auto_close_date,
             'exchange': self.exchange,
             'exchange_full': self.exchange_full,
+            'min_trade_size': self.min_trade_size
         }
 
     @classmethod
@@ -234,7 +241,7 @@ cdef class Equity(Asset):
     def __repr__(self):
         attrs = ('symbol', 'asset_name', 'exchange',
                  'start_date', 'end_date', 'first_traded', 'auto_close_date',
-                 'exchange_full')
+                 'exchange_full', 'min_trade_size')
         tuples = ((attr, repr(getattr(self, attr, None)))
                   for attr in attrs)
         strings = ('%s=%s' % (t[0], t[1]) for t in tuples)

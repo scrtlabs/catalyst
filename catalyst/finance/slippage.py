@@ -41,6 +41,7 @@ DEFAULT_EQUITY_VOLUME_SLIPPAGE_BAR_LIMIT = 0.025
 DEFAULT_FUTURE_VOLUME_SLIPPAGE_BAR_LIMIT = 0.05
 
 
+
 class LiquidityExceeded(Exception):
     pass
 
@@ -205,12 +206,14 @@ class VolumeShareSlippage(SlippageModel):
     def process_order(self, data, order):
         volume = data.current(order.asset, "volume")
 
+        min_trade_size = order.asset.min_trade_size
+
         max_volume = self.volume_limit * volume
 
         # price impact accounts for the total volume of transactions
         # created against the current minute bar
         remaining_volume = max_volume - self.volume_for_bar
-        if remaining_volume < 1:
+        if remaining_volume < min_trade_size:
             # we can't fill any more transactions
             raise LiquidityExceeded()
 
@@ -218,7 +221,7 @@ class VolumeShareSlippage(SlippageModel):
         # volume available in the bar or the open amount.
         cur_volume = int(min(remaining_volume, abs(order.open_amount)))
 
-        if cur_volume < 1:
+        if cur_volume < min_trade_size:
             return None, None
 
         # tally the current amount into our total amount ordered.

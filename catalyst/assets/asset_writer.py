@@ -73,6 +73,7 @@ _equities_defaults = {
     'exchange': None,
     # optional, something like "New York Stock Exchange"
     'exchange_full': None,
+    'min_trade_size': None
 }
 
 # Default values for the futures DataFrame
