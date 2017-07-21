@@ -25,6 +25,7 @@ from catalyst.api import (
     get_open_orders,
 )
 
+
 def initialize(context):
     context.ASSET_NAME = 'USDT_BTC'
     context.TARGET_HODL_RATIO = 0.8
