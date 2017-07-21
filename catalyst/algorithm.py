@@ -1712,12 +1712,12 @@ class TradingAlgorithm(object):
         return dt
 
     @api_method
-    def set_slippage(self, us_equities=None, us_futures=None):
+    def set_slippage(self, equities=None, us_futures=None):
         """Set the slippage models for the simulation.
 
         Parameters
         ----------
-        us_equities : EquitySlippageModel
+        equities : EquitySlippageModel
             The slippage model to use for trading US equities.
         us_futures : FutureSlippageModel
             The slippage model to use for trading US futures.
@@ -1729,14 +1729,14 @@ class TradingAlgorithm(object):
         if self.initialized:
             raise SetSlippagePostInit()
 
-        if us_equities is not None:
-            if Equity not in us_equities.allowed_asset_types:
+        if equities is not None:
+            if Equity not in equities.allowed_asset_types:
                 raise IncompatibleSlippageModel(
                     asset_type='equities',
-                    given_model=us_equities,
-                    supported_asset_types=us_equities.allowed_asset_types,
+                    given_model=equities,
+                    supported_asset_types=equities.allowed_asset_types,
                 )
-            self.blotter.slippage_models[Equity] = us_equities
+            self.blotter.slippage_models[Equity] = equities
 
         if us_futures is not None:
             if Future not in us_futures.allowed_asset_types:
@@ -1748,12 +1748,12 @@ class TradingAlgorithm(object):
             self.blotter.slippage_models[Future] = us_futures
 
     @api_method
-    def set_commission(self, us_equities=None, us_futures=None):
+    def set_commission(self, equities=None, us_futures=None):
         """Sets the commission models for the simulation.
 
         Parameters
         ----------
-        us_equities : EquityCommissionModel
+        equities : EquityCommissionModel
             The commission model to use for trading US equities.
         us_futures : FutureCommissionModel
             The commission model to use for trading US futures.
@@ -1767,14 +1767,14 @@ class TradingAlgorithm(object):
         if self.initialized:
             raise SetCommissionPostInit()
 
-        if us_equities is not None:
-            if Equity not in us_equities.allowed_asset_types:
+        if equities is not None:
+            if Equity not in equities.allowed_asset_types:
                 raise IncompatibleCommissionModel(
                     asset_type='equities',
-                    given_model=us_equities,
-                    supported_asset_types=us_equities.allowed_asset_types,
+                    given_model=equities,
+                    supported_asset_types=equities.allowed_asset_types,
                 )
-            self.blotter.commission_models[Equity] = us_equities
+            self.blotter.commission_models[Equity] = equities
 
         if us_futures is not None:
             if Future not in us_futures.allowed_asset_types:
