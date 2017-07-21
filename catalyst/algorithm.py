@@ -746,14 +746,15 @@ class TradingAlgorithm(object):
             for perf in self.get_generator():
                 perfs.append(perf)
 
+          
             # convert perf dict to pandas dataframe
-            daily_stats = self._create_daily_stats(perfs)
+            stats = self._create_daily_stats(perfs)
 
-            self.analyze(daily_stats)
+            self.analyze(stats)
         finally:
             self.data_portal = None
 
-        return daily_stats
+        return stats
 
     def _write_and_map_id_index_to_sids(self, identifiers, as_of_date):
         # Build new Assets for identifiers that can't be resolved as
@@ -1144,14 +1145,12 @@ class TradingAlgorithm(object):
 
         date_rule = date_rule or date_rules.every_day()
         if freq is 'daily':
-            # ignore time rule in daily mode
+            # Ignore any time rules in daily mode.
+            # every_minute in daily mode does nothing.
             time_rule = time_rules.every_minute()
         else:
-            # use provided time rule or default to every minute or 5 minutes
-            # based on desired data frequency.
-            time_rule = time_rule or (time_rules.every_5_minutes()
-                                      if freq is '5-minute' else
-                                      time_rules.every_minute())
+            # use provided time rule or default to every minute
+            time_rule = time_rule or time_rules.every_minute()
 
         # Check the type of the algorithm's schedule before pulling calendar
         # Note that the ExchangeTradingSchedule is currently the only
@@ -1175,7 +1174,13 @@ class TradingAlgorithm(object):
             )
 
         self.add_event(
-            make_eventrule(date_rule, time_rule, cal, half_days),
+            make_eventrule(
+                date_rule,
+                time_rule,
+                cal,
+                half_days=half_days,
+                data_frequency=self.data_frequency,
+            ),
             func,
         )
 

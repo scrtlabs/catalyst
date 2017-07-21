@@ -47,6 +47,8 @@ __all__ = [
     'NDaysBeforeLastTradingDayOfMonth',
     'StatefulRule',
     'OncePerDay',
+    'OncePerFiveMinutes',
+    'OncePerMinute',
 
     # Factory API
     'date_rules',
@@ -552,15 +554,18 @@ class StatefulRule(EventRule):
         """
         self.should_trigger = callable_
 
-
-class OncePerDay(StatefulRule):
+class OncePerInterval(StatefulRule):
     def __init__(self, rule=None):
         self.triggered = False
 
         self.date = None
         self.next_date = None
 
-        super(OncePerDay, self).__init__(rule)
+        super(OncePerInterval, self).__init__(rule)
+
+    @lazyval
+    def interval(self):
+        raise NotImplementedError
 
     def should_trigger(self, dt):
         if self.date is None or dt >= self.next_date:
@@ -570,11 +575,28 @@ class OncePerDay(StatefulRule):
 
             # record the timestamp for the next day, so that we can use it
             # to know if we've moved to the next day
-            self.next_date = dt + pd.Timedelta(1, unit="d")
+            self.next_date = dt + self.interval
 
         if not self.triggered and self.rule.should_trigger(dt):
             self.triggered = True
             return True
+        
+
+
+class OncePerDay(OncePerInterval):
+    @lazyval
+    def interval(self):
+        return pd.Timedelta(1, unit='d')
+
+class OncePerFiveMinutes(OncePerInterval):
+    @lazyval
+    def interval(self):
+        return pd.Timedelta(5, unit='m')
+
+class OncePerMinute(OncePerInterval):
+    @lazyval
+    def interval(self):
+        return pd.Timedelta(1, unit='m')
 
 
 # Factory API
@@ -612,7 +634,11 @@ class calendars(object):
     US_FUTURES = sentinel('US_FUTURES')
 
 
-def make_eventrule(date_rule, time_rule, cal, half_days=True):
+def make_eventrule(date_rule,
+                   time_rule,
+                   cal,
+                   half_days=True,
+                   data_frequency=None):
     """
     Constructs an event rule from the factory api.
     """
@@ -628,4 +654,15 @@ def make_eventrule(date_rule, time_rule, cal, half_days=True):
         nhd_rule.cal = cal
         inner_rule = date_rule & time_rule & nhd_rule
 
-    return OncePerDay(rule=inner_rule)
+    if data_frequency == 'daily':
+        return OncePerDay(rule=inner_rule)
+    elif data_frequency == '5-minute':
+        return OncePerFiveMinutes(rule=inner_rule)
+    elif data_frequency == 'minute':
+        return OncePerMinute(rule=inner_rule)
+    else:
+        raise ValueError(
+            'Cannot make event rule for data frequency: {}'.format(
+                data_frequency,
+            )
+        )

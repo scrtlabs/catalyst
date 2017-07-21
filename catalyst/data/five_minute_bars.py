@@ -60,7 +60,7 @@ OPEN_FIVE_MINUTES_PER_DAY = 288
 
 DEFAULT_EXPECTEDLEN_CRYPTO = OPEN_FIVE_MINUTES_PER_DAY * 366 * 15
 
-OHLC_RATIO = 1000000
+OHLC_RATIO = 1000
 
 OHLC = frozenset(['open', 'high', 'low', 'close'])
 OHLCV = frozenset(['open', 'high', 'low', 'close', 'volume'])
