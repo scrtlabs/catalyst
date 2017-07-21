@@ -431,6 +431,7 @@ class TradingAlgorithm(object):
 
         If get_loader is None, constructs an ExplodingPipelineEngine
         """
+        print 'using all_dates for {}'.format(data_frequency)
         if get_loader is not None:
             if data_frequency == 'daily':
                 all_dates = self.trading_calendar.all_sessions

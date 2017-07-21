@@ -44,7 +44,7 @@ def five_minute_value(ndarray[long_t, ndim=1] market_opens,
     q = cython.cdiv(pos, five_minutes_per_day)
     r = cython.cmod(pos, five_minutes_per_day)
 
-    return market_opens[q] + r
+    return market_opens[q] + 5 * r
 
 def find_position_of_minute(ndarray[long_t, ndim=1] market_opens,
                             ndarray[long_t, ndim=1] market_closes,
@@ -112,10 +112,14 @@ def find_position_of_five_minute(ndarray[long_t, ndim=1] market_opens,
     market_open = market_opens[market_open_loc]
     market_close = market_closes[market_open_loc]
 
-    if not forward_fill and ((five_minute_val - market_open) >= five_minutes_per_day):
+    val_open_offset = (five_minute_val - market_open)/5
+    close_open_offset = (market_close - market_open)/5
+
+    if not forward_fill and val_open_offset >= five_minutes_per_day:
         raise ValueError("Given five minutes is not between an open and a close")
 
-    delta = int_min(five_minute_val - market_open, market_close - market_open)
+    # clamp offset to close index
+    delta = int_min(val_open_offset, close_open_offset)
 
     return (market_open_loc * five_minutes_per_day) + delta
 

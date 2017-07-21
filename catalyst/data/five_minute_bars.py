@@ -1151,6 +1151,7 @@ class BcolzFiveMinuteBarReader(FiveMinuteBarReader):
 
         if field != 'volume':
             value *= self._ohlc_ratio_inverse_for_sid(sid)
+        #print 'minute pos: {}, {}: {}'.format(minute_pos, field, value)
         return value
 
     def get_last_traded_dt(self, asset, dt):
@@ -1161,8 +1162,8 @@ class BcolzFiveMinuteBarReader(FiveMinuteBarReader):
 
     def _find_last_traded_five_minute_position(self, asset, dt):
         volumes = self._open_minute_file('volume', asset)
-        start_date_minute = asset.start_date.value / NANOS_IN_FIVE_MINUTE
-        dt_minute = dt.value / NANOS_IN_FIVE_MINUTE
+        start_date_minute = asset.start_date.value / NANOS_IN_MINUTE
+        dt_minute = dt.value / NANOS_IN_MINUTE
 
         try:
             # if we know of a dt before which this asset has no volume,
@@ -1227,7 +1228,7 @@ class BcolzFiveMinuteBarReader(FiveMinuteBarReader):
         return find_position_of_five_minute(
             self._market_open_values,
             self._market_close_values,
-            minute_dt.value / NANOS_IN_FIVE_MINUTE,
+            minute_dt.value / NANOS_IN_MINUTE,
             self._five_minutes_per_day,
             False,
         )
@@ -1252,10 +1253,18 @@ class BcolzFiveMinuteBarReader(FiveMinuteBarReader):
             (minutes in range, sids) with a dtype of float64, containing the
             values for the respective field over start and end dt range.
         """
+        print 'start_dt:', start_dt
+        print 'end_dt:', end_dt
+
         start_idx = self._find_position_of_five_minute(start_dt)
         end_idx = self._find_position_of_five_minute(end_dt)
 
+        print 'start_idx:', start_idx
+        print 'end_idex:', end_idx
+
         num_minutes = (end_idx - start_idx + 1)
+
+        print 'num_minutes:', num_minutes
 
         results = []
 
@@ -1293,6 +1302,8 @@ class BcolzFiveMinuteBarReader(FiveMinuteBarReader):
                     out[:len(where), i][where] = values[where]
 
             results.append(out)
+
+        print 'results:', results
         return results
 
 
