@@ -289,7 +289,7 @@ class DataPortal(object):
 
         self._daily_aggregator = DailyHistoryAggregator(
             self.trading_calendar.schedule.market_open,
-            _dispatch_minute_reader,
+            _dispatch_session_reader,
             self.trading_calendar
         )
         self._history_loader = DailyHistoryLoader(
@@ -689,11 +689,9 @@ class DataPortal(object):
 
             if pd.isnull(query_dt):
                 # no last traded dt, bail
-                print 'ffill, no dt {} for, {}'.format(query_dt, column)
                 if column == 'volume':
                     return 0
                 else:
-                    print 'ffill, no dt, field == nan'
                     return np.nan
         else:
             # If not forward filling, we just want dt.
@@ -702,17 +700,14 @@ class DataPortal(object):
         try:
             result = reader.get_value(asset.sid, query_dt, column)
         except NoDataOnDate:
-            print 'no data for {} on date {}'.format(column, query_dt)
             if column == 'volume':
                 return 0
             else:
                 return np.nan
 
         if not ffill or (dt == query_dt) or (dt.date() == query_dt.date()):
-            #print 'already have data'
             return result
 
-        #print 'adjusting..'
         # the value we found came from a different day, so we have to adjust
         # the data if there are any adjustments on that day barrier
         return self.get_adjusted_value(

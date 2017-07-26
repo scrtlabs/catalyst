@@ -763,7 +763,7 @@ class BcolzDailyBarReader(SessionBarReader):
             if price == 0:
                 return nan
             else:
-                return price * 0.001
+                return price * 0.000001
         else:
             return price
 
