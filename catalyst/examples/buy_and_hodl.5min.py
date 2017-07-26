@@ -133,7 +133,7 @@ def analyze(context=None, results=None):
     ax5.set_ylabel('Percent Change')
 
     ax6 = plt.subplot(616, sharex=ax1)
-    results[['volume']].plot(ax=ax6)
+    (results[['volume']] / context.TICK_SIZE).plot(ax=ax6)
     ax6.set_ylabel('Volume (mCoins/5min)')
 
     plt.legend(loc=3)
