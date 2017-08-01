@@ -23,7 +23,9 @@ from catalyst.api import (
     record,
     cancel_order,
     get_open_orders,
+    set_slippage,
 )
+
 
 def initialize(context):
     context.ASSET_NAME = 'USDT_BTC'
@@ -39,6 +41,8 @@ def initialize(context):
     context.asset = symbol(context.ASSET_NAME)
 
     context.i = 0
+    
+    set_slippage(equities=VolumeShareSlippage(volume_limit=0.1))
 
 def handle_data(context, data):
     context.i += 1

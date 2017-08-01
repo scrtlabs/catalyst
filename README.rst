@@ -16,10 +16,10 @@ For now, please refer to the `Zipline API Docs <http://zipline.io>`_ as a genera
 
 Our primary contributions include the:
 
-- Intruction of an open trading calendar, that permits simulation to allow trades on weekends, holidays, and outside of normal business hours.
+- Introduction of an open trading calendar that permits simulation to allow trades on weekends, holidays, and outside of normal business hours.
 - Curation of OHLCV data bundle from `Poloniex's API <https://poloniex.com/support/api/>`_, which contains data in five-minute intervals as early as 2/19/2015.
-- Support for backtesting for daily trading strategies, support for five-minute backtesting is in development.
-- Addition Bitcoin price (USDT_BTC) as a benchmark asset for comparing performance.
+- Support for backtesting of daily trading strategies, support for five-minute backtesting is in development.
+- Addition of Bitcoin price (USDT_BTC) as a benchmark asset for comparing performance.
 
 Interested in getting involved?
 `Join us on Slack! <https://join.slack.com/enigmacatalyst/shared_invite/MTkzMjQ0MTg1NTczLTE0OTY3MjE3MDEtZGZmMTI5YzI3ZA>`_
@@ -62,7 +62,7 @@ If you wish to run any examples or use matplotlib during development, it can be 
 Getting Started
 ===============
 
-The following code implements a simple buy and hodl algorithm.  The full source can be found in ``catalyst/examples/buy_and_hodl.py``.
+The following code implements a simple buy and hold algorithm. The full source can be found in ``catalyst/examples/buy_and_hodl.py``.
 
 .. code:: python
 

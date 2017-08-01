@@ -117,6 +117,9 @@ class TradingCalendar(with_metaclass(ABCMeta)):
 
         self._trading_minutes_nanos = self.all_minutes.values.\
             astype(np.int64)
+        
+        self._trading_five_minutes_nanos = self.all_five_minutes.values.\
+            astype(np.int64)
 
         self.first_trading_session = _all_days[0]
         self.last_trading_session = _all_days[-1]
@@ -178,6 +181,18 @@ class TradingCalendar(with_metaclass(ABCMeta)):
              between start_session and end_session, inclusive.
         """
         return int(self._minutes_per_session[start_session:end_session].sum())
+
+    @lazyval
+    def _five_minutes_per_session(self):
+        diff = self.schedule.market_close - self.schedule.market_open
+        diff = diff.astype('timedelta64[m]')
+        return (diff + 1) // 5
+
+    def five_minutes_count_for_sessions_in_range(self,
+                                                 start_session,
+                                                 end_session):
+        five_mins = self._five_minutes_per_session[start_session:end_session]
+        return int(five_mins.sum())
 
     @property
     def regular_holidays(self):
@@ -371,6 +386,10 @@ class TradingCalendar(with_metaclass(ABCMeta)):
         idx = next_divider_idx(self._trading_minutes_nanos, dt.value)
         return self.all_minutes[idx]
 
+    def next_five_minute(self, dt):
+        idx = next_divider_idx(self._trading_five_minutes_nanos, dt.values)
+        return self.all_five_mintutes[idx]
+
     def previous_minute(self, dt):
         """
         Given a dt, return the previous exchange minute.
@@ -463,6 +482,12 @@ class TradingCalendar(with_metaclass(ABCMeta)):
         return self.minutes_in_range(
             start_minute=self.schedule.at[session_label, 'market_open'],
             end_minute=self.schedule.at[session_label, 'market_close'],
+        )
+
+    def five_minutes_for_session(self, session_label):
+        return self.five_minutes_in_range(
+            start_five_minute=self.schedule.at[session_label, 'market_open'],
+            end_five_minute=self.schedule.at[session_label, 'market_close'],
         )
 
     def minutes_window(self, start_dt, count):
@@ -566,6 +591,20 @@ class TradingCalendar(with_metaclass(ABCMeta)):
 
         return abs(end_idx - start_idx)
 
+    def five_minutes_in_range(self, start_five_minute, end_five_minute):
+        start_idx = searchsorted(self._trading_five_minutes_nanos,
+                                 start_five_minute.value)
+
+        end_idx = searchsorted(self._trading_five_minutes_nanos,
+                               end_five_minute.value)
+
+        if end_five_minute.value == self._trading_five_minutes_nanos[end_idx]:
+            # if the end minute is a market minute, increase by 1
+            end_idx += 1
+
+        return self.all_five_minutes[start_idx:end_idx]
+        
+
     def minutes_in_range(self, start_minute, end_minute):
         """
         Given start and end minutes, return all the calendar minutes
@@ -622,6 +661,15 @@ class TradingCalendar(with_metaclass(ABCMeta)):
         _, last_minute = self.open_and_close_for_session(end_session_label)
 
         return self.minutes_in_range(first_minute, last_minute)
+
+    def five_minutes_for_sessions_in_range(self,
+                                           start_session_label,
+                                           end_session_label):
+
+        first_minute, _ = self.open_and_close_for_session(start_session_label)
+        _, last_minute = self.open_and_close_for_session(end_session_label)
+
+        return self.five_minutes_in_range(first_minute, last_minute)
 
     def open_and_close_for_session(self, session_label):
         """
@@ -690,8 +738,7 @@ class TradingCalendar(with_metaclass(ABCMeta)):
     def execution_time_from_close(self, close_dates):
         return close_dates
 
-    @lazyval
-    def all_minutes(self):
+    def _all_minutes_with_interval(self, interval):
         """
         Returns a DatetimeIndex representing all the minutes in this calendar.
         """
@@ -703,8 +750,10 @@ class TradingCalendar(with_metaclass(ABCMeta)):
 
         deltas = closes_in_ns - opens_in_ns
 
+        nanos_in_interval = interval * NANOS_IN_MINUTE
+
         # + 1 because we want 390 days per standard day, not 389
-        daily_sizes = (deltas / NANOS_IN_MINUTE) + 1
+        daily_sizes = (deltas / nanos_in_interval) + 1
         num_minutes = np.sum(daily_sizes).astype(np.int64)
 
         # One allocation for the entire thing. This assumes that each day
@@ -721,12 +770,26 @@ class TradingCalendar(with_metaclass(ABCMeta)):
                 np.arange(
                     opens_in_ns[day_idx],
                     closes_in_ns[day_idx] + NANOS_IN_MINUTE,
-                    NANOS_IN_MINUTE
+                    nanos_in_interval
                 )
 
             idx += size_int
 
         return DatetimeIndex(all_minutes).tz_localize("UTC")
+
+    @lazyval
+    def all_five_minutes(self):
+        """
+        Returns a DatetimeIndex representing all the five minutes in this calendar.
+        """
+        return self._all_minutes_with_interval(5) 
+
+    @lazyval
+    def all_minutes(self):
+        """
+        Returns a DatetimeIndex representing all the minutes in this calendar.
+        """
+        return self._all_minutes_with_interval(1)
 
     @preprocess(dt=coerce(pd.Timestamp, attrgetter('value')))
     def minute_to_session_label(self, dt, direction="next"):

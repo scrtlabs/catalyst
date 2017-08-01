@@ -35,6 +35,17 @@ def minute_value(ndarray[long_t, ndim=1] market_opens,
 
     return market_opens[q] + r
 
+@cython.cdivision(True)
+def five_minute_value(ndarray[long_t, ndim=1] market_opens,
+                      Py_ssize_t pos,
+                      short five_minutes_per_day):
+
+    cdef short q, r
+    q = cython.cdiv(pos, five_minutes_per_day)
+    r = cython.cmod(pos, five_minutes_per_day)
+
+    return market_opens[q] + 5 * r
+
 def find_position_of_minute(ndarray[long_t, ndim=1] market_opens,
                             ndarray[long_t, ndim=1] market_closes,
                             long_t minute_val,
@@ -87,6 +98,30 @@ def find_position_of_minute(ndarray[long_t, ndim=1] market_opens,
     delta = int_min(minute_val - market_open, market_close - market_open)
 
     return (market_open_loc * minutes_per_day) + delta
+
+def find_position_of_five_minute(ndarray[long_t, ndim=1] market_opens,
+                                 ndarray[long_t, ndim=1] market_closes,
+                                 long_t five_minute_val,
+                                 short five_minutes_per_day,
+                                 bool forward_fill):
+
+    cdef Py_ssize_t market_open_loc, market_open, delta
+
+    market_open_loc = \
+        searchsorted(market_opens, five_minute_val, side='right') - 1
+    market_open = market_opens[market_open_loc]
+    market_close = market_closes[market_open_loc]
+
+    val_open_offset = (five_minute_val - market_open)/5
+    close_open_offset = (market_close - market_open)/5
+
+    if not forward_fill and val_open_offset >= five_minutes_per_day:
+        raise ValueError("Given five minutes is not between an open and a close")
+
+    # clamp offset to close index
+    delta = int_min(val_open_offset, close_open_offset)
+
+    return (market_open_loc * five_minutes_per_day) + delta
 
 def find_last_traded_position_internal(
         ndarray[long_t, ndim=1] market_opens,
@@ -153,6 +188,54 @@ def find_last_traded_position_internal(
             return minute_pos
 
         minute_pos -= 1
+
+    # we've gone to the beginning of this asset's range, and still haven't
+    # found a trade event
+    return -1
+
+def find_last_traded_five_minute_position_internal(
+        ndarray[long_t, ndim=1] market_opens,
+        ndarray[long_t, ndim=1] market_closes,
+        long_t end_five_minute,
+        long_t start_five_minute,
+        volumes,
+        short five_minutes_per_day):
+    cdef Py_ssize_t minute_pos, current_minute, q
+
+    five_minute_pos = int_min(
+        find_position_of_five_minute(
+            market_opens,
+            market_closes,
+            end_five_minute,
+            five_minutes_per_day,
+            True,
+        ),
+        len(volumes) - 1,
+    )
+
+    while five_minute_pos >= 0:
+        current_five_minute = five_minute_value(
+            market_opens, five_minute_pos, five_minutes_per_day
+        )
+
+        q = cython.cdiv(five_minute_pos, five_minutes_per_day)
+        if current_five_minute > market_closes[q]:
+            five_minute_pos = find_position_of_five_minute(
+                market_opens,
+                market_closes,
+                market_closes[q],
+                five_minutes_per_day,
+                False,
+            )
+            continue
+
+        if current_five_minute < start_five_minute:
+            return -1
+
+        if volumes[five_minute_pos] != 0:
+            return five_minute_pos
+
+        five_minute_pos -= 1
 
     # we've gone to the beginning of this asset's range, and still haven't
     # found a trade event

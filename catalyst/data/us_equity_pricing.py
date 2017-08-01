@@ -73,7 +73,10 @@ from catalyst.utils.sqlite_utils import (
     coerce_string_to_conn,
 )
 from catalyst.utils.memoize import lazyval
-from catalyst.utils.cli import maybe_show_progress
+from catalyst.utils.cli import (
+    item_show_count,
+    maybe_show_progress,
+)
 from ._equities import _compute_row_slices, _read_bcolz_data
 from ._adjustments import load_adjustments_from_sqlite
 
@@ -117,7 +120,15 @@ UINT64_MAX = iinfo(uint64).max
 def check_uint32_safe(value, colname):
     if value >= UINT32_MAX:
         raise ValueError(
-            "Value %s from column '%s' is too large" % (value, colname)
+            "Value %s from column '%s' is too large "
+            "for uint32" % (value, colname)
+        )
+
+def check_uint64_safe(value, colname):
+    if value >= UINT64_MAX:
+        raise ValueError(
+            "Value %s from column '%s' is too large "
+            "for uint64" % (value, colname)
         )
 
 
@@ -218,10 +229,7 @@ class BcolzDailyBarWriter(object):
 
     @property
     def progress_bar_message(self):
-        return "Merging daily equity files:"
-
-    def progress_bar_item_show_func(self, value):
-        return value if value is None else str(value[0])
+        return 'Compiling daily data'
 
     def write(self,
               data,
@@ -249,15 +257,17 @@ class BcolzDailyBarWriter(object):
         table : bcolz.ctable
             The newly-written table.
         """
+        total = None if assets is None else len(assets)
         ctx = maybe_show_progress(
             (
                 (sid, self.to_ctable(df, invalid_data_behavior))
                 for sid, df in data
             ),
             show_progress=show_progress,
-            item_show_func=self.progress_bar_item_show_func,
             label=self.progress_bar_message,
-            length=len(assets) if assets is not None else None,
+            item_show_func=item_show_count(total),
+            length=total,
+            show_percent=False,
         )
         with ctx as it:
             return self._write_internal(it, assets)
@@ -753,7 +763,7 @@ class BcolzDailyBarReader(SessionBarReader):
             if price == 0:
                 return nan
             else:
-                return price * 0.001
+                return price * 0.000001
         else:
             return price
 
