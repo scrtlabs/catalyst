@@ -93,8 +93,8 @@ def has_data_for_dates(series_or_df, first_date, last_date):
     dts = series_or_df.index
     if not isinstance(dts, pd.DatetimeIndex):
         raise TypeError("Expected a DatetimeIndex, but got %s." % type(dts))
-    first, last = dts[[0, -1]]
-    return (first <= first_date) and (last >= last_date)
+    first, last = dts[[0, -1]].tz_localize(None)
+    return (first <= first_date.tz_localize(None)) and (last >= last_date.tz_localize(None))
 
 def load_crypto_market_data(trading_day=None,
                             trading_days=None,
