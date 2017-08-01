@@ -1,10 +1,34 @@
+from itertools import count
+
 import click
 import pandas as pd
 
 from .context_tricks import CallbackManager
 
+DEFAULT_BAR_TEMPLATE = '    [%(bar)s]  %(label)s:  %(info)s'
+DEFAULT_EMPTY_CHAR = ' '
+DEFAULT_FILL_CHAR = '='
 
-def maybe_show_progress(it, show_progress, **kwargs):
+def item_show_count(total=None):
+    def maybe_show_total(index):
+        if total is not None:
+            return '{0}/{1}'.format(index, total)
+        return str(index)
+
+    def item_show_func(item, _it=iter(count())):
+        if item is not None:
+            starting = False
+            return maybe_show_total(next(_it))
+        return 'DONE'
+
+    return item_show_func
+
+def maybe_show_progress(it,
+                        show_progress,
+                        empty_char=DEFAULT_EMPTY_CHAR,
+                        fill_char=DEFAULT_FILL_CHAR,
+                        bar_template=DEFAULT_BAR_TEMPLATE,
+                        **kwargs):
     """Optionally show a progress bar for the given iterator.
 
     Parameters
@@ -30,6 +54,9 @@ def maybe_show_progress(it, show_progress, **kwargs):
                 ...
     """
     if show_progress:
+        kwargs['bar_template'] = bar_template
+        kwargs['empty_char'] = empty_char
+        kwargs['fill_char'] = fill_char
         return click.progressbar(it, **kwargs)
 
     # context manager that just return `it` when we enter it

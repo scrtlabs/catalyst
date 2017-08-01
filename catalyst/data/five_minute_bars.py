@@ -24,6 +24,10 @@ from bcolz import ctable
 from intervaltree import IntervalTree
 import logbook
 import numpy as np
+from numpy import (
+    iinfo,
+    uint64,
+)
 import pandas as pd
 from pandas import HDFStore
 import tables
@@ -31,31 +35,39 @@ from six import with_metaclass
 from toolz import keymap, valmap
 
 from catalyst.data._minute_bar_internal import (
-    minute_value,
-    find_position_of_minute,
-    find_last_traded_position_internal
+    five_minute_value,
+    find_position_of_five_minute,
+    find_last_traded_five_minute_position_internal,
 )
 
 from catalyst.gens.sim_engine import NANOS_IN_MINUTE
 
 from catalyst.data.bar_reader import BarReader, NoDataOnDate
-from catalyst.data.us_equity_pricing import check_uint32_safe
+from catalyst.data.us_equity_pricing import (
+    winsorise_uint64,
+    check_uint64_safe,
+)
 from catalyst.utils.calendars import get_calendar
-from catalyst.utils.cli import maybe_show_progress
+from catalyst.utils.cli import (
+    item_show_count,
+    maybe_show_progress,
+)
 from catalyst.utils.memoize import lazyval
-
 
 logger = logbook.Logger('FiveMinuteBars')
 
-CRYPTO_ASSETS_FIVE_MINUTES_PER_DAY = 288
-US_EQUITIES_MINUTES_PER_DAY = 390
-FUTURES_MINUTES_PER_DAY = 1440
+OPEN_FIVE_MINUTES_PER_DAY = 288
 
-DEFAULT_EXPECTEDLEN = US_EQUITIES_MINUTES_PER_DAY * 252 * 15
-DEFAULT_EXPECTED_CRYPTO_LEN = CRYPTO_ASSETS_FIVE_MINUTES_PER_DAY * 366 * 15
+DEFAULT_EXPECTEDLEN_CRYPTO = OPEN_FIVE_MINUTES_PER_DAY * 366 * 15
 
 OHLC_RATIO = 1000
 
+OHLC = frozenset(['open', 'high', 'low', 'close'])
+OHLCV = frozenset(['open', 'high', 'low', 'close', 'volume'])
+
+UINT64_MAX = iinfo(uint64).max
+
+NANOS_IN_FIVE_MINUTES = 5 * NANOS_IN_MINUTE
 
 class BcolzFiveMinuteOverlappingData(Exception):
     pass
@@ -68,13 +80,13 @@ class BcolzFiveMinuteWriterColumnMismatch(Exception):
 class FiveMinuteBarReader(BarReader):
     @property
     def data_frequency(self):
-        return "five-minute"
+        return "5-minute"
 
 
 def _calc_five_minute_index(market_opens, five_minutes_per_day):
     five_minutes = np.zeros(len(market_opens) * five_minutes_per_day,
                        dtype='datetime64[ns]')
-    deltas = np.arange(0, five_minutes_per_day, dtype='timedelta64[m]')
+    deltas = 5 * np.arange(0, five_minutes_per_day, dtype='timedelta64[m]')
     for i, market_open in enumerate(market_opens):
         start = market_open.asm8
         five_minute_values = start + deltas
@@ -116,19 +128,19 @@ def _sid_subdir_path(sid):
 
 
 def convert_cols(cols, scale_factor, sid, invalid_data_behavior):
-    """Adapt OHLCV columns into uint32 columns.
+    """Adapt OHLCV columns into uint64 columns.
 
     Parameters
     ----------
     cols : dict
         A dict mapping each column name (open, high, low, close, volume)
-        to a float column to convert to uint32.
+        to a float column to convert to uint64.
     scale_factor : int
-        Factor to use to scale float values before converting to uint32.
+        Factor to use to scale float values before converting to uint64.
     sid : int
         Sid of the relevant asset, for logging.
     invalid_data_behavior : str
-        Specifies behavior when data cannot be converted to uint32.
+        Specifies behavior when data cannot be converted to uint64.
         If 'raise', raises an exception.
         If 'warn', logs a warning and filters out incompatible values.
         If 'ignore', silently filters out incompatible values.
@@ -137,6 +149,7 @@ def convert_cols(cols, scale_factor, sid, invalid_data_behavior):
     scaled_highs = np.nan_to_num(cols['high']) * scale_factor
     scaled_lows = np.nan_to_num(cols['low']) * scale_factor
     scaled_closes = np.nan_to_num(cols['close']) * scale_factor
+    volumes = np.nan_to_num(cols['volume'])
 
     exclude_mask = np.zeros_like(scaled_opens, dtype=bool)
 
@@ -145,11 +158,12 @@ def convert_cols(cols, scale_factor, sid, invalid_data_behavior):
         ('high', scaled_highs),
         ('low', scaled_lows),
         ('close', scaled_closes),
+        ('volume', volumes),
     ]:
         max_val = scaled_col.max()
 
         try:
-            check_uint32_safe(max_val, col_name)
+            check_uint64_safe(max_val, col_name)
         except ValueError:
             if invalid_data_behavior == 'raise':
                 raise
@@ -157,20 +171,20 @@ def convert_cols(cols, scale_factor, sid, invalid_data_behavior):
             if invalid_data_behavior == 'warn':
                 logger.warn(
                     'Values for sid={}, col={} contain some too large for '
-                    'uint32 (max={}), filtering them out',
+                    'uint64 (max={}), filtering them out',
                     sid, col_name, max_val,
                 )
 
             # We want to exclude all rows that have an unsafe value in
             # this column.
-            exclude_mask &= (scaled_col >= np.iinfo(np.uint32).max)
+            exclude_mask &= (scaled_col >= iinfo(uint64).max)
 
-    # Convert all cols to uint32.
-    opens = scaled_opens.astype(np.uint32)
-    highs = scaled_highs.astype(np.uint32)
-    lows = scaled_lows.astype(np.uint32)
-    closes = scaled_closes.astype(np.uint32)
-    volumes = cols['volume'].astype(np.uint32)
+    # Convert all cols to uint64.
+    opens = scaled_opens.astype(uint64)
+    highs = scaled_highs.astype(uint64)
+    lows = scaled_lows.astype(uint64)
+    closes = scaled_closes.astype(uint64)
+    volumes = volumes.astype(uint64)
 
     # Exclude rows with unsafe values by setting to zero.
     opens[exclude_mask] = 0
@@ -200,7 +214,7 @@ class BcolzFiveMinuteBarMetadata(object):
     """
     FORMAT_VERSION = 3
 
-    METADATA_FILENAME = 'metadata.json'
+    METADATA_FILENAME = 'five-minute-metadata.json'
 
     @classmethod
     def metadata_path(cls, rootdir):
@@ -257,7 +271,7 @@ class BcolzFiveMinuteBarMetadata(object):
                 calendar,
                 start_session,
                 end_session,
-                minutes_per_day,
+                five_minutes_per_day,
                 version=version,
             )
 
@@ -290,7 +304,7 @@ class BcolzFiveMinuteBarMetadata(object):
         ohlc_ratio : int
             The default ratio by which to multiply the pricing data to
             convert the floats from floats to an integer to fit within
-            the np.uint32. If ohlc_ratios_per_sid is None or does not
+            the np.uint64. If ohlc_ratios_per_sid is None or does not
             contain a mapping for a given sid, this ratio is used.
         ohlc_ratios_per_sid : dict
              A dict mapping each sid in the output to the factor by
@@ -334,7 +348,7 @@ class BcolzFiveMinuteBarMetadata(object):
             'version': self.version,
             'ohlc_ratio': self.default_ohlc_ratio,
             'ohlc_ratios_per_sid': self.ohlc_ratios_per_sid,
-            'minutes_per_day': self.five_minutes_per_day,
+            'five_minutes_per_day': self.five_minutes_per_day,
             'calendar_name': self.calendar.name,
             'start_session': str(self.start_session.date()),
             'end_session': str(self.end_session.date()),
@@ -374,13 +388,13 @@ class BcolzFiveMinuteBarWriter(object):
         The last trading session in the data set.
     default_ohlc_ratio : int, optional
         The default ratio by which to multiply the pricing data to
-        convert from floats to integers that fit within np.uint32. If
+        convert from floats to integers that fit within np.uint64. If
         ohlc_ratios_per_sid is None or does not contain a mapping for a
         given sid, this ratio is used. Default is OHLC_RATIO (1000).
     ohlc_ratios_per_sid : dict, optional
         A dict mapping each sid in the output to the ratio by which to
         multiply the pricing data to convert the floats from floats to
-        an integer to fit within the np.uint32.
+        an integer to fit within the np.uint64.
     expectedlen : int, optional
         The expected length of the dataset, used when creating the initial
         bcolz ctable.
@@ -405,9 +419,9 @@ class BcolzFiveMinuteBarWriter(object):
 
     The open, high, low, and close columns are integers which are 1000 times
     the quoted price, so that the data can represented and stored as an
-    np.uint32, supporting market prices quoted up to the thousands place.
+    np.uint64, supporting market prices quoted up to the thousands place.
 
-    volume is a np.uint32 with no mutation of the tens place.
+    volume is a np.uint64 with no mutation of the tens place.
 
     The 'index' for each individual asset are a repeating period of minutes of
     length `minutes_per_day` starting from each market open.
@@ -450,7 +464,7 @@ class BcolzFiveMinuteBarWriter(object):
                  five_minutes_per_day,
                  default_ohlc_ratio=OHLC_RATIO,
                  ohlc_ratios_per_sid=None,
-                 expectedlen=DEFAULT_EXPECTED_CRYPTO_LEN,
+                 expectedlen=DEFAULT_EXPECTEDLEN_CRYPTO,
                  write_metadata=True):
 
         self._rootdir = rootdir
@@ -466,11 +480,11 @@ class BcolzFiveMinuteBarWriter(object):
         self._default_ohlc_ratio = default_ohlc_ratio
         self._ohlc_ratios_per_sid = ohlc_ratios_per_sid
 
-        self._minute_index = _calc_minute_index(
-            self._schedule.market_open, self._minutes_per_day)
+        self._five_minute_index = _calc_five_minute_index(
+            self._schedule.market_open, self._five_minutes_per_day)
 
         if write_metadata:
-            metadata = BcolzMinuteBarMetadata(
+            metadata = BcolzFiveMinuteBarMetadata(
                 self._default_ohlc_ratio,
                 self._ohlc_ratios_per_sid,
                 self._calendar,
@@ -575,7 +589,7 @@ class BcolzFiveMinuteBarWriter(object):
         if not os.path.exists(sid_containing_dirname):
             # Other sids may have already created the containing directory.
             os.makedirs(sid_containing_dirname)
-        initial_array = np.empty(0, np.uint32)
+        initial_array = np.empty(0, np.uint64)
         table = ctable(
             rootdir=path,
             columns=[
@@ -612,7 +626,7 @@ class BcolzFiveMinuteBarWriter(object):
         five_minute_offset = len(table) % self._five_minutes_per_day
         num_to_prepend = numdays * self._five_minutes_per_day - five_minute_offset
 
-        prepend_array = np.zeros(num_to_prepend, np.uint32)
+        prepend_array = np.zeros(num_to_prepend, np.uint64)
         # Fill all OHLCV with zeros.
         table.append([prepend_array] * 5)
         table.flush()
@@ -667,7 +681,11 @@ class BcolzFiveMinuteBarWriter(object):
         for k, v in kwargs.items():
             table.attrs[k] = v
 
-    def write(self, data, show_progress=False, invalid_data_behavior='warn'):
+    def write(self,
+              data,
+              length=None,
+              show_progress=False,
+              invalid_data_behavior='warn'):
         """Write a stream of minute data.
 
         Parameters
@@ -687,14 +705,15 @@ class BcolzFiveMinuteBarWriter(object):
         show_progress : bool, optional
             Whether or not to show a progress bar while writing.
         """
-        ctx = maybe_show_progress(
+        with maybe_show_progress(
             data,
+            length=length,
+            show_percent=False,
             show_progress=show_progress,
-            item_show_func=lambda e: e if e is None else str(e[0]),
-            label="Merging minute equity files:",
-        )
-        write_sid = self.write_sid
-        with ctx as it:
+            item_show_func=item_show_count(length),
+            label='Compiling five-minute data',
+        ) as it:
+            write_sid = self.write_sid
             for e in it:
                 write_sid(*e, invalid_data_behavior=invalid_data_behavior)
 
@@ -796,9 +815,12 @@ class BcolzFiveMinuteBarWriter(object):
         # Get the number of minutes already recorded in this sid's ctable
         num_rec_mins = table.size
 
-        all_minutes = self._minute_index
+        all_minutes = self._five_minute_index
         # Get the latest minute we wish to write to the ctable
         last_minute_to_write = pd.Timestamp(dts[-1], tz='UTC')
+
+        #print 'all_minutes[-1]:', all_minutes[num_rec_mins-1]
+        #print 'last_minute_to_write:', last_minute_to_write
 
         # In the event that we've already written some minutely data to the
         # ctable, guard against overwriting that data.
@@ -817,11 +839,11 @@ class BcolzFiveMinuteBarWriter(object):
 
         minutes_count = all_minutes_in_window.size
 
-        open_col = np.zeros(minutes_count, dtype=np.uint32)
-        high_col = np.zeros(minutes_count, dtype=np.uint32)
-        low_col = np.zeros(minutes_count, dtype=np.uint32)
-        close_col = np.zeros(minutes_count, dtype=np.uint32)
-        vol_col = np.zeros(minutes_count, dtype=np.uint32)
+        open_col = np.zeros(minutes_count, dtype=uint64)
+        high_col = np.zeros(minutes_count, dtype=uint64)
+        low_col = np.zeros(minutes_count, dtype=uint64)
+        close_col = np.zeros(minutes_count, dtype=uint64)
+        vol_col = np.zeros(minutes_count, dtype=uint64)
 
         dt_ixs = np.searchsorted(all_minutes_in_window.values,
                                  dts.astype('datetime64[ns]'))
@@ -853,7 +875,7 @@ class BcolzFiveMinuteBarWriter(object):
         day_ix = self._session_labels.get_loc(day)
         # Add one to the 0-indexed day_ix to get the number of days.
         num_days = day_ix + 1
-        return num_days * self._minutes_per_day
+        return num_days * self._five_minutes_per_day
 
     def truncate(self, date):
         """Truncate data beyond this date in all ctables."""
@@ -991,7 +1013,7 @@ class BcolzFiveMinuteBarReader(FiveMinuteBarReader):
         market_closes = self._market_closes.values.astype('datetime64[m]')
         minutes_per_day = (market_closes - market_opens).astype(np.int64) / 5
         early_indices = np.where(
-            minutes_per_day != self._minutes_per_day - 1)[0]
+            minutes_per_day != self._five_minutes_per_day - 1)[0]
         early_opens = self._market_opens[early_indices]
         early_closes = self._market_closes[early_indices]
         minutes = [(market_open, early_close)
@@ -1019,9 +1041,9 @@ class BcolzFiveMinuteBarReader(FiveMinuteBarReader):
         """
         itree = IntervalTree()
         for market_open, early_close in self._minutes_to_exclude():
-            start_pos = self._find_position_of_minute(early_close) + 1
+            start_pos = self._find_position_of_five_minute(early_close) + 1
             end_pos = (
-                self._find_position_of_minute(market_open)
+                self._find_position_of_five_minute(market_open)
                 +
                 self._five_minutes_per_day
                 -
@@ -1110,7 +1132,7 @@ class BcolzFiveMinuteBarReader(FiveMinuteBarReader):
             minute_pos = self._last_get_value_dt_position
         else:
             try:
-                minute_pos = self._find_position_of_minute(dt)
+                minute_pos = self._find_position_of_five_minute(dt)
             except ValueError:
                 raise NoDataOnDate()
 
@@ -1129,15 +1151,16 @@ class BcolzFiveMinuteBarReader(FiveMinuteBarReader):
 
         if field != 'volume':
             value *= self._ohlc_ratio_inverse_for_sid(sid)
+        #print 'minute pos: {}, {}: {}'.format(minute_pos, field, value)
         return value
 
     def get_last_traded_dt(self, asset, dt):
-        minute_pos = self._find_last_traded_position(asset, dt)
+        minute_pos = self._find_last_traded_five_minute_position(asset, dt)
         if minute_pos == -1:
             return pd.NaT
         return self._pos_to_minute(minute_pos)
 
-    def _find_last_traded_position(self, asset, dt):
+    def _find_last_traded_five_minute_position(self, asset, dt):
         volumes = self._open_minute_file('volume', asset)
         start_date_minute = asset.start_date.value / NANOS_IN_MINUTE
         dt_minute = dt.value / NANOS_IN_MINUTE
@@ -1152,13 +1175,13 @@ class BcolzFiveMinuteBarReader(FiveMinuteBarReader):
         if dt_minute < earliest_dt_to_search:
             return -1
 
-        pos = find_last_traded_position_internal(
+        pos = find_last_traded_five_minute_position_internal(
             self._market_open_values,
             self._market_close_values,
             dt_minute,
             earliest_dt_to_search,
             volumes,
-            self._minutes_per_day,
+            self._five_minutes_per_day,
         )
 
         if pos == -1:
@@ -1175,15 +1198,15 @@ class BcolzFiveMinuteBarReader(FiveMinuteBarReader):
         return pos
 
     def _pos_to_minute(self, pos):
-        minute_epoch = minute_value(
+        minute_epoch = five_minute_value(
             self._market_open_values,
             pos,
-            self._minutes_per_day
+            self._five_minutes_per_day
         )
 
         return pd.Timestamp(minute_epoch, tz='UTC', unit="m")
 
-    def _find_position_of_minute(self, minute_dt):
+    def _find_position_of_five_minute(self, minute_dt):
         """
         Internal method that returns the position of the given minute in the
         list of every trading minute since market open of the first trading
@@ -1202,11 +1225,11 @@ class BcolzFiveMinuteBarReader(FiveMinuteBarReader):
         int: The position of the given minute in the list of all trading
         minutes since market open on the first trading day.
         """
-        return find_position_of_minute(
+        return find_position_of_five_minute(
             self._market_open_values,
             self._market_close_values,
             minute_dt.value / NANOS_IN_MINUTE,
-            self._minutes_per_day,
+            self._five_minutes_per_day,
             False,
         )
 
@@ -1230,10 +1253,18 @@ class BcolzFiveMinuteBarReader(FiveMinuteBarReader):
             (minutes in range, sids) with a dtype of float64, containing the
             values for the respective field over start and end dt range.
         """
-        start_idx = self._find_position_of_minute(start_dt)
-        end_idx = self._find_position_of_minute(end_dt)
+        print 'start_dt:', start_dt
+        print 'end_dt:', end_dt
+
+        start_idx = self._find_position_of_five_minute(start_dt)
+        end_idx = self._find_position_of_five_minute(end_dt)
+
+        print 'start_idx:', start_idx
+        print 'end_idex:', end_idx
 
         num_minutes = (end_idx - start_idx + 1)
+
+        print 'num_minutes:', num_minutes
 
         results = []
 
@@ -1250,7 +1281,7 @@ class BcolzFiveMinuteBarReader(FiveMinuteBarReader):
             if field != 'volume':
                 out = np.full(shape, np.nan)
             else:
-                out = np.zeros(shape, dtype=np.uint32)
+                out = np.zeros(shape, dtype=uint64)
 
             for i, sid in enumerate(sids):
                 carray = self._open_minute_file(field, sid)
@@ -1271,6 +1302,8 @@ class BcolzFiveMinuteBarReader(FiveMinuteBarReader):
                     out[:len(where), i][where] = values[where]
 
             results.append(out)
+
+        print 'results:', results
         return results
 
 

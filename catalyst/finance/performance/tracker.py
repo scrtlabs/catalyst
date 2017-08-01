@@ -111,6 +111,21 @@ class PerformanceTracker(object):
                     self.treasury_curves,
                     self.trading_calendar
                 )
+        elif self.emission_rate == '5-minute':
+            self.all_benchmark_returns = pd.Series(
+                index=pd.date_range(
+                    self.sim_params.first_open,
+                    self.sim_params.last_close,
+                    freq='5min'
+                ),
+            )
+            self.cumulative_risk_metrics = \
+                risk.RiskMetricsCumulative(
+                    self.sim_params,
+                    self.treasury_curves,
+                    self.trading_calendar,
+                    create_first_day_stats=True,
+                )
         elif self.emission_rate == 'minute':
             self.all_benchmark_returns = pd.Series(index=pd.date_range(
                 self.sim_params.first_open, self.sim_params.last_close,
@@ -174,14 +189,14 @@ class PerformanceTracker(object):
 
     @property
     def progress(self):
-        if self.emission_rate == 'minute':
+        if self.emission_rate in set(('minute', '5-minute')):
             # Fake a value
             return 1.0
         elif self.emission_rate == 'daily':
             return self.session_count / self.total_session_count
 
     def set_date(self, date):
-        if self.emission_rate == 'minute':
+        if self.emission_rate in set(('minute', '5-minute')):
             self.saved_dt = date
             self.todays_performance.period_close = self.saved_dt
 
@@ -355,7 +370,9 @@ class PerformanceTracker(object):
                                             bench_since_open,
                                             account.leverage)
 
+        assert self.emission_rate in set(('minute', '5-minute'))
         minute_packet = self.to_dict(emission_type='minute')
+
         return minute_packet
 
     def handle_market_close(self, dt, data_portal):

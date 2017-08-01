@@ -23,6 +23,7 @@ from catalyst.api import (
     set_max_leverage,
     schedule_function,
     date_rules,
+    time_rules,
     attach_pipeline,
     pipeline_output,
 )
@@ -35,8 +36,8 @@ from catalyst.pipeline.factors.crypto import VWAP
 def initialize(context):
     context.ASSET_NAME = 'USDT_BTC'
     context.TARGET_INVESTMENT_RATIO = 0.8
-    context.SHORT_WINDOW = 30
-    context.LONG_WINDOW = 100
+    context.SHORT_WINDOW = 30 * 288
+    context.LONG_WINDOW = 100 * 288
 
     # For all trading pairs in the poloniex bundle, the default denomination
     # currently supported by Catalyst is 1/1000th of a full coin. Use this
@@ -52,7 +53,7 @@ def initialize(context):
 
     schedule_function(
         rebalance,
-        date_rule=date_rules.every_day(),
+        time_rule=time_rules.every_minute(),
     )
 
 
