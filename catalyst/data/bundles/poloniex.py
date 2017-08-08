@@ -155,4 +155,13 @@ class PoloniexBundle(BaseCryptoPricingBundle):
             query=urlencode(query_params),
         )
 
-register_bundle(PoloniexBundle, ['USDT_BTC'])
+''' 
+As a second parameter, you can pass an array of currency pairs 
+that will be processed as an asset_filter to only process that 
+subset of assets in the bundle, such as:
+register_bundle(PoloniexBundle, ['USDT_BTC',])
+
+For a production environment make sure to use (to bundle all pairs):
+register_bundle(PoloniexBundle)
+'''
+register_bundle(PoloniexBundle)

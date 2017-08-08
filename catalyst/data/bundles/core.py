@@ -90,13 +90,13 @@ def cache_relative(bundle_name, timestr, environ=None):
 
 
 def daily_relative(bundle_name, timestr, environ=None):
-    return bundle_name, timestr, 'daily.bcolz'
+    return bundle_name, timestr, 'daily_equities.bcolz'
 
 def five_minute_relative(bundle_name, timestr, environ=None):
     return bundle_name, timestr, 'five_minute.bcolz'
 
 def minute_relative(bundle_name, timestr, environ=None):
-    return bundle_name, timestr, 'minute.bcolz'
+    return bundle_name, timestr, 'minute_equities.bcolz'
 
 
 def asset_db_relative(bundle_name, timestr, environ=None, db_version=None):
