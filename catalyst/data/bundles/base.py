@@ -296,14 +296,12 @@ class BaseBundle(object):
                     except Exception as e:
                         log.exception(
                             'Failed to load metadata from {}. '
-                            'Retrying.'.format(
-                                name=self.name,
-                            )
+                            'Retrying.'.format(self.name)
                         ) 
                 else:
                     raise ValueError(
-                        'Failed to download metadata page %d after %d '
-                        'attempts.'.format(page_number, retries),
+                        'Failed to download metadata page {} after {} '
+                        'attempts.'.format(page_number, retries)
                     )
 
 
@@ -313,7 +311,8 @@ class BaseBundle(object):
 
             # Apply selective asset filtering, useful for benchmark
             # ingestion.
-            raw = raw[raw.symbol.isin(self._asset_filter)]
+            if self._asset_filter:
+                raw = raw[raw.symbol.isin(self._asset_filter)]
 
             # Update cached value for key.
             cache[key] = raw
