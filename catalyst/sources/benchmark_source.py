@@ -51,10 +51,7 @@ class BenchmarkSource(object):
         elif benchmark_returns is not None:
             daily_series = benchmark_returns[sessions[0]:sessions[-1]]
 
-            print 'BENCHMARK_RETURNS'
-
             if self.emission_rate == "minute":
-                print 'BENCHMARK_RETURNS minute'
                 # we need to take the env's benchmark returns, which are daily,
                 # and resample them to minute
                 minutes = trading_calendar.minutes_for_sessions_in_range(
@@ -69,7 +66,6 @@ class BenchmarkSource(object):
 
                 self._precalculated_series = minute_series
             elif self.emission_rate == '5-minute':
-                print 'BENCHMARK_RETURNS 5-minute'
                 five_minutes = \
                     trading_calendar.five_minutes_for_sessions_in_range(
                         sessions[0],
@@ -83,7 +79,6 @@ class BenchmarkSource(object):
                 
                 self._precalculated_series = five_minute_series
             else:
-                print 'BENCHMARK_RETURNS daily'
                 self._precalculated_series = daily_series
         else:
             raise Exception("Must provide either benchmark_asset or "

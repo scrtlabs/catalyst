@@ -36,7 +36,7 @@ class PoloniexBundle(BaseCryptoPricingBundle):
     def frequencies(self):
         return set((
             'daily',
-            '5-minute',
+            #'5-minute',
         ))
 
     @lazyval

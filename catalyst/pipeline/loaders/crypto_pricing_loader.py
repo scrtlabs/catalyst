@@ -45,7 +45,7 @@ class CryptoPricingLoader(PipelineLoader):
             reader = bundle.five_minute_bar_reader
             all_sessions = cal.all_five_minutes
 
-        elif daily_bar_reader == 'minute':
+        elif data_frequency == 'minute':
             reader = bundle.minute_bar_reader
             all_sessions = cal.all_minutes
 
