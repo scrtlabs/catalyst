@@ -279,7 +279,7 @@ def ensure_crypto_benchmark_data(symbol,
             None,
             symbol,
             get_calendar(bundle.calendar_name),
-            first_date,
+            first_date - trading_day,
             last_date,
             'daily',
         )
@@ -491,7 +491,7 @@ def _load_cached_data(filename, first_date, last_date, now, resource_name,
     if os.path.exists(path):
         try:
             data = from_csv(path)
-            data.index = pd.to_datetime(data.index).tz_localize('UTC')
+            data.index = pd.to_datetime(data.index, infer_datetime_format=True, errors='coerce' ).tz_localize('UTC')
             if has_data_for_dates(data, first_date, last_date):
                 return data
 

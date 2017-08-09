@@ -444,9 +444,6 @@ class TradingAlgorithm(object):
                     'data frequency: {}'.format(data_frequency)
                 )
 
-            print 'first_dates:', all_dates[:10]
-            print 'last_dates:', all_dates[:-10]
-
             self.engine = SimplePipelineEngine(
                 get_loader,
                 all_dates,
