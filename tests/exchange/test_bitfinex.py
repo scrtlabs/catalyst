@@ -64,8 +64,20 @@ class BitfinexTestCase(BaseExchangeTestCase):
         log.info('canceled order: {}'.format(response))
         pass
 
-    def test_spot_value(self):
-        log.info('spot valud not implemented')
+    def test_get_spot_value(self):
+        log.info('spot value not implemented')
+        bitfinex = Bitfinex()
+        assets = [
+            bitfinex.get_asset('eth_usd'),
+            bitfinex.get_asset('etc_usd'),
+            bitfinex.get_asset('eos_usd'),
+        ]
+        # assets = bitfinex.get_asset('eth_usd')
+        value = bitfinex.get_spot_value(
+            assets=assets,
+            field='close',
+            data_frequency='minute'
+        )
         pass
 
     def test_tickers(self):

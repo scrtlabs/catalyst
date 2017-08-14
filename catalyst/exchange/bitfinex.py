@@ -6,6 +6,7 @@ import json
 import time
 import requests
 import pandas as pd
+import collections
 from catalyst.protocol import Portfolio, Account
 # from websocket import create_connection
 from catalyst.exchange.exchange import Exchange
@@ -15,6 +16,7 @@ from catalyst.finance.execution import (MarketOrder,
                                         LimitOrder,
                                         StopOrder,
                                         StopLimitOrder)
+from catalyst.data.data_portal import BASE_FIELDS
 
 BITFINEX_URL = 'https://api.bitfinex.com'
 BITFINEX_KEY = 'hjZ7DZzwbBZsIZPWeSSQtrWCPNwyhxw96r3LnY7jtOH'
@@ -84,6 +86,11 @@ class Bitfinex(Exchange):
 
         return request
 
+    def _get_v2_symbol(self, asset):
+        pair = asset.symbol.split('_')
+        symbol = 't' + pair[0].upper() + pair[1].upper()
+        return symbol
+
     def _get_v2_symbols(self, assets):
         """
         Workaround to support Bitfinex v2
@@ -95,9 +102,7 @@ class Bitfinex(Exchange):
 
         v2_symbols = []
         for asset in assets:
-            pair = asset.symbol.split('_')
-            symbol = 't' + pair[0].upper() + pair[1].upper()
-            v2_symbols.append(symbol)
+            v2_symbols.append(self._get_v2_symbol(asset))
 
         return v2_symbols
 
@@ -214,13 +219,99 @@ class Bitfinex(Exchange):
     @property
     def time_skew(self):
         # TODO: research the time skew conditions
-        return None
+        return pd.Timedelta('0s')
 
     def subscribe_to_market_data(self, symbol):
         pass
 
-    def get_spot_value(self, assets, field, dt, data_frequency):
-        raise NotImplementedError()
+    def get_spot_value(self, assets, field, dt=None, data_frequency='minute'):
+        """
+        Public API method that returns a scalar value representing the value
+        of the desired asset's field at either the given dt.
+
+        Parameters
+        ----------
+        assets : Asset, ContinuousFuture, or iterable of same.
+            The asset or assets whose data is desired.
+        field : {'open', 'high', 'low', 'close', 'volume',
+                 'price', 'last_traded'}
+            The desired field of the asset.
+        dt : pd.Timestamp
+            The timestamp for the desired value.
+        data_frequency : str
+            The frequency of the data to query; i.e. whether the data is
+            'daily' or 'minute' bars
+
+        Returns
+        -------
+        value : float, int, or pd.Timestamp
+            The spot value of ``field`` for ``asset`` The return type is based
+            on the ``field`` requested. If the field is one of 'open', 'high',
+            'low', 'close', or 'price', the value will be a float. If the
+            ``field`` is 'volume' the value will be a int. If the ``field`` is
+            'last_traded' the value will be a Timestamp.
+
+        Bitfinex timeframes
+        -------------------
+        Available values: '1m', '5m', '15m', '30m', '1h', '3h', '6h', '12h',
+         '1D', '7D', '14D', '1M'
+        """
+        if field not in BASE_FIELDS:
+            raise KeyError('Invalid column: ' + str(field))
+
+        if isinstance(assets, collections.Iterable):
+            values = list()
+            for asset in assets:
+                value = self.get_single_spot_value(
+                    asset, field, data_frequency)
+                values.append(value)
+
+            return values
+        else:
+            return self.get_single_spot_value(
+                assets, field, data_frequency)
+
+    def get_single_spot_value(self, asset, field, data_frequency):
+        symbol = self._get_v2_symbol(asset)
+        log.debug('fetching spot value for symbol {}'.format(symbol))
+
+        if data_frequency == 'minute':
+            frequency = '1m'
+        elif data_frequency == 'daily':
+            frequency = '1d'
+        else:
+            raise NotImplementedError(
+                'Unsupported frequency %s' % data_frequency
+            )
+
+        request = requests.get(
+            '{url}/v2/candles/trade:{frequency}:{symbol}/last'.format(
+                url=self.url,
+                frequency=frequency,
+                symbol=symbol
+            )
+        )
+        candles = request.json()
+
+        if 'message' in candles:
+            raise ValueError(
+                'Unable to retrieve candles: %s' % candles['message']
+            )
+
+        ohlc = dict(
+            open=candles[1],
+            high=candles[3],
+            low=candles[4],
+            close=candles[2],
+            volume=candles[5],
+            price=candles[2],
+            last_traded=pd.Timestamp.utcfromtimestamp(candles[0] / 1000.0),
+        )
+
+        if not field in ohlc:
+            raise KeyError('Invalid column: ' + str(field))
+
+        return ohlc[field]
 
     def order(self, asset, amount, limit_price, stop_price, style):
         """Place an order.

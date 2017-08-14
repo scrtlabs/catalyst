@@ -38,7 +38,7 @@ class BaseExchangeTestCase():
         pass
 
     @abstractmethod
-    def test_spot_value(self):
+    def test_get_spot_value(self):
         pass
 
     @abstractmethod

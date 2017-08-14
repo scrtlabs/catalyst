@@ -184,6 +184,32 @@ class Exchange:
 
     @abstractmethod
     def get_spot_value(self, assets, field, dt, data_frequency):
+        """
+        Public API method that returns a scalar value representing the value
+        of the desired asset's field at either the given dt.
+
+        Parameters
+        ----------
+        assets : Asset, ContinuousFuture, or iterable of same.
+            The asset or assets whose data is desired.
+        field : {'open', 'high', 'low', 'close', 'volume',
+                 'price', 'last_traded'}
+            The desired field of the asset.
+        dt : pd.Timestamp
+            The timestamp for the desired value.
+        data_frequency : str
+            The frequency of the data to query; i.e. whether the data is
+            'daily' or 'minute' bars
+
+        Returns
+        -------
+        value : float, int, or pd.Timestamp
+            The spot value of ``field`` for ``asset`` The return type is based
+            on the ``field`` requested. If the field is one of 'open', 'high',
+            'low', 'close', or 'price', the value will be a float. If the
+            ``field`` is 'volume' the value will be a int. If the ``field`` is
+            'last_traded' the value will be a Timestamp.
+        """
         pass
 
     @abc.abstractmethod
