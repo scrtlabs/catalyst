@@ -133,7 +133,10 @@ from catalyst.utils.security_list import SecurityList
 import catalyst.protocol
 from catalyst.sources.requests_csv import PandasRequestsCSV
 
-from catalyst.gens.sim_engine import MinuteSimulationClock
+from catalyst.gens.sim_engine import (
+    MinuteSimulationClock,
+    FiveMinuteSimulationClock,
+)
 from catalyst.sources.benchmark_source import BenchmarkSource
 from catalyst.catalyst_warnings import ZiplineDeprecationWarning
 
@@ -170,7 +173,7 @@ class TradingAlgorithm(object):
     algo_filename : str, optional
         The filename for the algoscript. This will be used in exception
         tracebacks. default: '<string>'.
-    data_frequency : {'daily', 'minute'}, optional
+    data_frequency : {'daily', '5-minute', 'minute'}, optional
         The duration of the bars.
     instant_fill : bool, optional
         Whether to fill orders immediately or on next bar. default: False
@@ -223,7 +226,7 @@ class TradingAlgorithm(object):
             script : str
                 Algoscript that contains initialize and
                 handle_data function definition.
-            data_frequency : {'daily', 'minute'}
+            data_frequency : {'daily', '5-minute', 'minute'}
                The duration of the bars.
             capital_base : float <default: 1.0e5>
                How much capital to start with.
@@ -305,7 +308,10 @@ class TradingAlgorithm(object):
         self.asset_finder = self.trading_environment.asset_finder
 
         # Initialize Pipeline API data.
-        self.init_engine(kwargs.pop('get_pipeline_loader', None))
+        self.init_engine(
+            kwargs.pop('get_pipeline_loader', None),
+            self.sim_params.data_frequency,
+        )
         self._pipelines = {}
         # Create an always-expired cache so that we compute the first time data
         # is requested.
@@ -419,16 +425,28 @@ class TradingAlgorithm(object):
 
         self.restrictions = NoRestrictions()
 
-    def init_engine(self, get_loader):
+    def init_engine(self, get_loader, data_frequency):
         """
         Construct and store a PipelineEngine from loader.
 
         If get_loader is None, constructs an ExplodingPipelineEngine
         """
         if get_loader is not None:
+            if data_frequency == 'daily':
+                all_dates = self.trading_calendar.all_sessions
+            elif data_frequency == '5-minute':
+                all_dates = self.trading_calendar.all_five_minutes
+            elif data_frequency == 'minute':
+                all_dates = self.trading_calendar.all_minutes
+            else:
+                raise ValueError(
+                    'Cannot initialize engine with '
+                    'data frequency: {}'.format(data_frequency)
+                )
+
             self.engine = SimplePipelineEngine(
                 get_loader,
-                self.trading_calendar.all_sessions,
+                all_dates,
                 self.asset_finder,
             )
         else:
@@ -449,7 +467,7 @@ class TradingAlgorithm(object):
         self._in_before_trading_start = True
 
         with handle_non_market_minutes(data) if \
-                self.data_frequency == "minute" else ExitStack():
+                self.data_frequency in ('minute', '5-minute') else ExitStack():
             self._before_trading_start(self, data)
 
         self._in_before_trading_start = False
@@ -505,10 +523,11 @@ class TradingAlgorithm(object):
         market_closes = trading_o_and_c['market_close']
         minutely_emission = False
 
-        if self.sim_params.data_frequency == 'minute':
+        if self.sim_params.data_frequency in set(('minute', '5-minute')):
             market_opens = trading_o_and_c['market_open']
 
-            minutely_emission = self.sim_params.emission_rate == "minute"
+            minutely_emission = self.sim_params.emission_rate in \
+                set(('minute', '5-minute'))
         else:
             # in daily mode, we want to have one bar per session, timestamped
             # as the last minute of the session.
@@ -528,9 +547,18 @@ class TradingAlgorithm(object):
         # FIXME generalize these values
         before_trading_start_minutes = days_at_time(
             self.sim_params.sessions,
-            time(8, 45),
-            "US/Eastern"
+            time(0, 0),
+            'UTC',
         )
+
+        if self.sim_params.data_frequency == '5-minute':
+            return FiveMinuteSimulationClock(
+                self.sim_params.sessions,
+                execution_opens,
+                execution_closes,
+                before_trading_start_minutes,
+                minute_emission=minutely_emission,
+            )
 
         return MinuteSimulationClock(
             self.sim_params.sessions,
@@ -660,8 +688,11 @@ class TradingAlgorithm(object):
                     # Assume data is daily if timestamp times are
                     # standardized, otherwise assume minute bars.
                     times = data.major_axis.time
-                    if np.all(times == times[0]):
+                    time_count = times.nunique()
+                    if time_count == 1:
                         self.sim_params.data_frequency = 'daily'
+                    elif time_count == 288:
+                        self.sim_params.data_frequency = '5-minute'
                     else:
                         self.sim_params.data_frequency = 'minute'
 
@@ -683,6 +714,8 @@ class TradingAlgorithm(object):
 
                 if self.sim_params.data_frequency == 'daily':
                     equity_reader_arg = 'equity_daily_reader'
+                elif self.sim_params.data_frequency == '5-minute':
+                    equity_daily_reader = 'equity_5_minute_reader'
                 elif self.sim_params.data_frequency == 'minute':
                     equity_reader_arg = 'equity_minute_reader'
                 equity_reader = PanelBarReader(
@@ -926,9 +959,9 @@ class TradingAlgorithm(object):
                   The arena from the simulation parameters. This will normally
                   be ``'backtest'`` but some systems may use this distinguish
                   live trading from backtesting.
-              data_frequency : {'daily', 'minute'}
+              data_frequency : {'daily', '5-minute', 'minute'}
                   data_frequency tells the algorithm if it is running with
-                  daily data or minute data.
+                  daily, minute, or five-minute mode.
               start : datetime
                   The start date for the simulation.
               end : datetime
@@ -1102,12 +1135,19 @@ class TradingAlgorithm(object):
                           'date_rule. You should use keyword argument '
                           'time_rule= when calling schedule_function without '
                           'specifying a date_rule', stacklevel=3)
+        
+        freq = self.sim_params.data_frequency
 
         date_rule = date_rule or date_rules.every_day()
-        time_rule = ((time_rule or time_rules.every_minute())
-                     if self.sim_params.data_frequency == 'minute' else
-                     # If we are in daily mode the time_rule is ignored.
-                     time_rules.every_minute())
+        if freq is 'daily':
+            # ignore time rule in daily mode
+            time_rule = time_rules.every_minute()
+        else:
+            # use provided time rule or default to every minute or 5 minutes
+            # based on desired data frequency.
+            time_rule = time_rule or (time_rules.every_5_minutes()
+                                      if freq is '5-minute' else
+                                      time_rules.every_minute())
 
         # Check the type of the algorithm's schedule before pulling calendar
         # Note that the ExchangeTradingSchedule is currently the only
@@ -1782,7 +1822,7 @@ class TradingAlgorithm(object):
 
     @data_frequency.setter
     def data_frequency(self, value):
-        assert value in ('daily', 'minute')
+        assert value in ('daily', '5-minute', 'minute')
         self.sim_params.data_frequency = value
 
     @api_method

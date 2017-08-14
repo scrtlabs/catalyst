@@ -123,7 +123,7 @@ def ipython_only(option):
 )
 @click.option(
     '--data-frequency',
-    type=click.Choice({'daily', 'minute'}),
+    type=click.Choice({'daily', '5-minute', 'minute'}),
     default='daily',
     show_default=True,
     help='The data frequency of the simulation.',
@@ -291,6 +291,13 @@ def catalyst_magic(line, cell=None):
     help='The data bundle to ingest.',
 )
 @click.option(
+    '-c',
+    '--compile-locally',
+    is_flag=True,
+    default=False,
+    help='Download dataset from source and compile bundle locally.',
+)
+@click.option(
     '--assets-version',
     type=int,
     multiple=True,
@@ -301,7 +308,7 @@ def catalyst_magic(line, cell=None):
     default=True,
     help='Print progress information to the terminal.'
 )
-def ingest(bundle, assets_version, show_progress):
+def ingest(bundle, compile_locally, assets_version, show_progress):
     """Ingest the data for the given bundle.
     """
     bundles_module.ingest(
@@ -310,6 +317,7 @@ def ingest(bundle, assets_version, show_progress):
         pd.Timestamp.utcnow(),
         assets_version,
         show_progress,
+        compile_locally,
     )
 
 

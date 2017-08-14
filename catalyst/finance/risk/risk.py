@@ -158,7 +158,7 @@ def choose_treasury(select_treasury, treasury_curves, start_session,
                 )
                 break
 
-        if search_day:
+        if search_day and trading_calendar.name != 'OPEN':          # Supress warning for 'OPEN' calendar
             if (search_dist is None or search_dist > 1) and \
                     search_days[0] <= end_session <= search_days[-1]:
                 message = "No rate within 1 trading day of end date = \
