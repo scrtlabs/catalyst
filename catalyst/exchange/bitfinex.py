@@ -308,7 +308,7 @@ class Bitfinex(Exchange):
             last_traded=pd.Timestamp.utcfromtimestamp(candles[0] / 1000.0),
         )
 
-        if not field in ohlc:
+        if field not in ohlc:
             raise KeyError('Invalid column: ' + str(field))
 
         return ohlc[field]

@@ -45,7 +45,7 @@ class DataPortalExchange(DataPortal):
         # The returned dataframe contains today's value as a NaN because
         # end_dt points to the current wall clock. We drop today's
         # value to be in sync with the simulation's behavior.
-        today = pd.to_datetime('now').date()
+        today = pd.Timestamp.utcnow()
         return history_window[history_window.index.date != today]
 
     def get_spot_value(self, assets, field, dt, data_frequency):

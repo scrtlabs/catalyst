@@ -40,11 +40,11 @@ class ExchangeClock(object):
     """
 
     def __init__(self,
-                 sessions,
-                 execution_opens,
-                 execution_closes,
-                 before_trading_start_minutes,
-                 minute_emission,
+                 sessions=None,
+                 execution_opens=None,
+                 execution_closes=None,
+                 before_trading_start_minutes=None,
+                 minute_emission=False,
                  time_skew=pd.Timedelta("0s")):
         self.sessions = sessions
         self.execution_opens = execution_opens
@@ -55,21 +55,14 @@ class ExchangeClock(object):
         self._last_emit = None
         self._before_trading_start_bar_yielded = False
 
-        # It is expected to have this clock created once a day (ideally prior
-        # to BEFORE_TRADING_START_BAR event). Multiple days (sessions) are
-        # not supported.
-        assert len(self.sessions) == 1
-
     def __iter__(self):
-        yield self.sessions[0], SESSION_START
+        yield pd.Timestamp.utcnow(), SESSION_START
 
         while True:
             current_time = pd.Timestamp.utcnow()
-            server_time = (current_time + self.time_skew).floor('1 min')
+            server_time = current_time.floor('1 min')
 
-            if (self._last_emit is None or
-                            server_time - self._last_emit >=
-                        pd.Timedelta('1 minute')):
+            if self._last_emit is None or server_time > self._last_emit:
 
                 self._last_emit = server_time
                 yield server_time, BAR

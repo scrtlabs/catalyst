@@ -44,7 +44,7 @@ class BitfinexTestCase(BaseExchangeTestCase):
             asset=bitfinex.get_asset('eth_usd'),
             style=LimitOrder(limit_price=200),
             limit_price=200,
-            amount=1,
+            amount=0.5,
             stop_price=None
         )
         log.info('order created {}'.format(order_id))
@@ -53,7 +53,7 @@ class BitfinexTestCase(BaseExchangeTestCase):
     def test_get_order(self):
         log.info('querying orders from bitfinex')
         bitfinex = Bitfinex()
-        response = bitfinex.get_order(order_id=3330866978)
+        response = bitfinex.get_order(order_id=3361248395)
         log.info('the order: {}'.format(response))
         pass
 

@@ -1,7 +1,7 @@
 import abc
-from collections import namedtuple
-from abc import ABCMeta, abstractmethod, abstractproperty
 import json
+from abc import ABCMeta, abstractmethod, abstractproperty
+
 import pandas as pd
 from catalyst.assets._assets import Asset
 
