@@ -5,18 +5,6 @@ import json
 import pandas as pd
 from catalyst.assets._assets import Asset
 
-RTVolumeBar = namedtuple('RTVolumeBar', ['last_trade_price',
-                                         'last_trade_size',
-                                         'last_trade_time',
-                                         'total_volume',
-                                         'vwap',
-                                         'single_trade_flag'])
-
-Position = namedtuple('Position', ['contract', 'position', 'market_price',
-                                   'market_value', 'average_cost',
-                                   'unrealized_pnl', 'realized_pnl',
-                                   'account_name'])
-
 
 class Exchange:
     __metaclass__ = ABCMeta
@@ -43,6 +31,11 @@ class Exchange:
         return symbol
 
     def get_asset(self, symbol):
+        """
+        Find an Asset on the current exchange based on its Catalyst symbol
+        :param symbol: the [target]_[base] currency pair symbol
+        :return: Asset
+        """
         asset = None
 
         for key in self.assets:

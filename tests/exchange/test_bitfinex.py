@@ -6,7 +6,6 @@ from catalyst.finance.execution import (MarketOrder,
                                         LimitOrder,
                                         StopOrder,
                                         StopLimitOrder)
-import catalyst.protocol as protocol
 
 log = Logger('BitfinexTestCase')
 
@@ -33,6 +32,9 @@ class BitfinexTestCase(BaseExchangeTestCase):
 
     def test_get_open_orders(self):
         log.info('fetching open orders')
+        bitfinex = Bitfinex()
+        order_id = bitfinex.get_open_orders()
+        log.info('open orders: {}'.format(order_id))
         pass
 
     def test_order(self):
@@ -51,8 +53,8 @@ class BitfinexTestCase(BaseExchangeTestCase):
     def test_get_order(self):
         log.info('querying orders from bitfinex')
         bitfinex = Bitfinex()
-        response = bitfinex.order_status(order_id=3330866978)
-        log.info('the orders: {}'.format(response))
+        response = bitfinex.get_order(order_id=3330866978)
+        log.info('the order: {}'.format(response))
         pass
 
     def test_cancel_order(self):

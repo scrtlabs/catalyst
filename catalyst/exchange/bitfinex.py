@@ -8,7 +8,7 @@ import requests
 import pandas as pd
 from catalyst.protocol import Portfolio, Account
 # from websocket import create_connection
-from catalyst.exchange.exchange import Exchange, RTVolumeBar, Position
+from catalyst.exchange.exchange import Exchange
 from logbook import Logger
 from catalyst.finance.order import Order, ORDER_STATUS
 from catalyst.finance.execution import (MarketOrder,
@@ -98,7 +98,61 @@ class Bitfinex(Exchange):
             pair = asset.symbol.split('_')
             symbol = 't' + pair[0].upper() + pair[1].upper()
             v2_symbols.append(symbol)
+
         return v2_symbols
+
+    def _create_order(self, order_status):
+        """
+        Create a Catalyst order object from a Bitfinex order dictionary
+        :param order_status:
+        :return: Order
+        """
+        if order_status['is_cancelled']:
+            status = ORDER_STATUS.CANCELLED
+        elif not order_status['is_live']:
+            log.info('found executed order %s', order_status)
+            status = ORDER_STATUS.FILLED
+        else:
+            status = ORDER_STATUS.OPEN
+
+        amount = float(order_status['original_amount'])
+        filled = float(order_status['executed_amount'])
+        is_buy = (amount > 0)
+
+        price = float(order_status['price'])
+        order_type = order_status['type']
+
+        stop_price = None
+        limit_price = None
+
+        # TODO: is this comprehensive enough?
+        if order_type.endswith('limit'):
+            limit_price = price
+        elif order_type.endswith('stop'):
+            stop_price = price
+
+        executed_price = float(order_status['avg_execution_price'])
+
+        if executed_price > 0 and price > 0:
+            # TODO: This does not really work. Find a better way.
+            commission = executed_price - price \
+                if is_buy else price - executed_price
+        else:
+            commission = None
+
+        order = Order(
+            dt=pd.Timestamp.utcfromtimestamp(float(order_status['timestamp'])),
+            asset=self.assets[order_status['symbol']],
+            amount=amount,
+            stop=stop_price,
+            limit=limit_price,
+            filled=filled,
+            id=order_status['id'],
+            commission=commission
+        )
+        order.status = status
+
+        return order
 
     @property
     def portfolio(self):
@@ -168,7 +222,6 @@ class Bitfinex(Exchange):
     def get_spot_value(self, assets, field, dt, data_frequency):
         raise NotImplementedError()
 
-    # TODO: why repeating prices if already in style?
     def order(self, asset, amount, limit_price, stop_price, style):
         """Place an order.
 
@@ -253,20 +306,23 @@ class Bitfinex(Exchange):
                     'message']
             )
 
+        order_id = exchange_order['id']
         order = Order(
             dt=pd.Timestamp.utcnow(),
             asset=asset,
             amount=amount,
             stop=style.get_stop_price(is_buy),
             limit=style.get_limit_price(is_buy),
+            id=order_id
         )
+        # TODO: is this required?
+        order.broker_order_id = order_id
 
-        order_id = order.broker_order_id = exchange_order['id']
         self.orders[order_id] = order
 
         return order_id
 
-    def get_open_orders(self, asset):
+    def get_open_orders(self, asset=None):
         """Retrieve all of the current open orders.
 
         Parameters
@@ -283,10 +339,19 @@ class Bitfinex(Exchange):
             If an asset is passed then this will return a list of the open
             orders for this asset.
         """
-        # TODO: map to asset
         response = self._request('orders', None)
-        orders = response.json()
-        # TODO: what is the right format?
+        order_statuses = response.json()
+        if 'message' in order_statuses:
+            raise ValueError(
+                'Unable to retrieve open orders: %s' % order_statuses[
+                    'message']
+            )
+
+        orders = list()
+        for order_status in order_statuses:
+            # TODO: filter by asset
+            orders.append(self._create_order(order_status))
+
         return orders
 
     def get_order(self, order_id):
@@ -305,32 +370,12 @@ class Bitfinex(Exchange):
         """
         response = self._request('order/status', {'order_id': int(order_id)})
         order_status = response.json()
+
         if 'message' in order_status:
             raise ValueError(
                 'Unable to retrieve order status: %s' % order_status['message']
             )
-
-        result = dict(exchange=self.name)
-
-        if order_status['is_cancelled']:
-            warning_logger.warn(
-                'removing cancelled order from the open orders list %s',
-                order_status)
-            result['status'] = 'canceled'
-
-        elif not order_status['is_live']:
-            log.info('found executed order %s', order_status)
-            result['status'] = 'closed'
-            result['executed_price'] = \
-                float(order_status['avg_execution_price'])
-            result['executed_amount'] = \
-                float(order_status['executed_amount'])
-
-        else:
-            result['status'] = 'open'
-
-        # TODO: what's the right format?
-        return result
+        return self._create_order(order_status)
 
     def cancel_order(self, order_id):
         """Cancel an open order.
@@ -342,7 +387,10 @@ class Bitfinex(Exchange):
         """
         response = self._request('order/cancel', {'order_id': order_id})
         status = response.json()
-        return status
+        if 'message' in status:
+            raise ValueError(
+                'Unable to cancel order: %s %s' % (order_id, status['message'])
+            )
 
     def tickers(self, date, assets):
         """
