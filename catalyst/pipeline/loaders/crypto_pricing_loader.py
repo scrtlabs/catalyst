@@ -106,12 +106,6 @@ class CryptoPricingLoader(PipelineLoader):
 
 
 def _shift_dates(dates, start_date, end_date, shift):
-    print 'dates.head:\n', dates[:10]
-    print 'dates.tail:\n', dates[:-10]
-
-    print 'start_date:', start_date
-    print 'end_date:', end_date
-    print 'shift:', shift
 
     try:
         start = dates.get_loc(start_date)

@@ -134,17 +134,19 @@ def load_crypto_market_data(trading_day=None,
         trading_day,
         environ,
     )
+    # Override first_date for treasury data since we have it for many more years
+    # and is independent of crypto data
+    first_date_treasury = pd.Timestamp('1990-01-01', tz='UTC') 
     tc = ensure_treasury_data(
         bm_symbol,
-        first_date,
+        first_date_treasury,
         last_date,
         now,
         environ,
     )
     benchmark_returns = br[br.index.slice_indexer(first_date, last_date)]
-    treasury_curves = tc[tc.index.slice_indexer(first_date, last_date)]
+    treasury_curves = tc[tc.index.slice_indexer(first_date_treasury, last_date)]
     return benchmark_returns, treasury_curves
-    
 
 
 def load_market_data(trading_day=None, trading_days=None, bm_symbol='SPY',
@@ -231,6 +233,7 @@ def load_market_data(trading_day=None, trading_days=None, bm_symbol='SPY',
     benchmark_returns = br[br.index.slice_indexer(first_date, last_date)]
     treasury_curves = tc[tc.index.slice_indexer(first_date, last_date)]
     return benchmark_returns, treasury_curves
+
 
 def ensure_crypto_benchmark_data(symbol,
                                  first_date,
@@ -364,6 +367,7 @@ def ensure_benchmark_data(symbol, first_date, last_date, now, trading_day,
         logger.warn("Still don't have expected data after redownload!")
     return data
 
+
 def ensure_benchmark_data(symbol, first_date, last_date, now, trading_day,
                           environ=None):
     """
@@ -478,11 +482,6 @@ def ensure_treasury_data(symbol, first_date, last_date, now, environ=None):
 
 def _load_cached_data(filename, first_date, last_date, now, resource_name,
                       environ=None):
-    if resource_name == 'benchmark':
-        from_csv = pd.Series.from_csv
-    else:
-        from_csv = pd.DataFrame.from_csv
-
     # Path for the cache.
     path = get_data_filepath(filename, environ)
 
@@ -490,7 +489,9 @@ def _load_cached_data(filename, first_date, last_date, now, resource_name,
     # yet, so don't try to read from 'path'.
     if os.path.exists(path):
         try:
-            data = from_csv(path)
+            data = pd.DataFrame.from_csv(path)
+            if data.empty:
+                raise ValueError("File is empty.")
             data.index = pd.to_datetime(data.index, infer_datetime_format=True, errors='coerce' ).tz_localize('UTC')
             if has_data_for_dates(data, first_date, last_date):
                 return data
