@@ -103,7 +103,7 @@ class PoloniexBundle(BaseCryptoPricingBundle):
         )
         raw.set_index('date', inplace=True)
 
-        scale = 1000.0
+        scale = 1
         raw.loc[:, 'open'] /= scale
         raw.loc[:, 'high'] /= scale
         raw.loc[:, 'low'] /= scale
@@ -132,7 +132,7 @@ class PoloniexBundle(BaseCryptoPricingBundle):
                          data_frequency):
         period_map = {
             'daily': 86400,
-            '5-minute': 300,
+#            '5-minute': 300,
         }
 
         try:

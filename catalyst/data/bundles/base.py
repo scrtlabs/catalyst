@@ -172,6 +172,7 @@ class BaseBundle(object):
 
                 # Compile 5-minute symbol data if bundle supports 5-minute mode and
                 # persist the dataset to disk.
+                '''
                 if '5-minute' in self.frequencies:
                     five_minute_bar_writer.write(
                         self._fetch_symbol_iter(
@@ -187,6 +188,7 @@ class BaseBundle(object):
                         length=len(symbol_map),
                         show_progress=show_progress,
                     )
+                '''
 
                 # Compile minute symbol data if bundle supports minute mode and
                 # persist the dataset to disk.

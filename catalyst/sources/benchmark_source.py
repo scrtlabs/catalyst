@@ -185,7 +185,6 @@ class BenchmarkSource(object):
 
             return benchmark_series.pct_change()[1:]
         else:
-            print '----------------------------------------'
             start_date = asset.start_date
             if start_date < trading_days[0]:
                 # get the window of close prices for benchmark_asset from the
