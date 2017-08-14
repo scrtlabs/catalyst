@@ -42,6 +42,15 @@ class Exchange:
 
         return symbol
 
+    def get_asset(self, symbol):
+        asset = None
+
+        for key in self.assets:
+            if not asset and self.assets[key].symbol == symbol:
+                asset = self.assets[key]
+
+        return asset
+
     def get_symbols(self, assets):
         symbols = []
         for asset in assets:
@@ -63,7 +72,7 @@ class Exchange:
 
         for exchange_symbol in assets:
             asset_obj = Asset(
-                sid=0,
+                sid=abs(hash(assets[exchange_symbol]['symbol'])) % (10 ** 4),
                 exchange=self.name,
                 **assets[exchange_symbol]
             )
@@ -91,18 +100,93 @@ class Exchange:
 
     @abstractmethod
     def order(self, asset, amount, limit_price, stop_price, style):
+        """Place an order.
+
+        Parameters
+        ----------
+        asset : Asset
+            The asset that this order is for.
+        amount : int
+            The amount of shares to order. If ``amount`` is positive, this is
+            the number of shares to buy or cover. If ``amount`` is negative,
+            this is the number of shares to sell or short.
+        limit_price : float, optional
+            The limit price for the order.
+        stop_price : float, optional
+            The stop price for the order.
+        style : ExecutionStyle, optional
+            The execution style for the order.
+
+        Returns
+        -------
+        order_id : str or None
+            The unique identifier for this order, or None if no order was
+            placed.
+
+        Notes
+        -----
+        The ``limit_price`` and ``stop_price`` arguments provide shorthands for
+        passing common execution styles. Passing ``limit_price=N`` is
+        equivalent to ``style=LimitOrder(N)``. Similarly, passing
+        ``stop_price=M`` is equivalent to ``style=StopOrder(M)``, and passing
+        ``limit_price=N`` and ``stop_price=M`` is equivalent to
+        ``style=StopLimitOrder(N, M)``. It is an error to pass both a ``style``
+        and ``limit_price`` or ``stop_price``.
+
+        See Also
+        --------
+        :class:`catalyst.finance.execution.ExecutionStyle`
+        :func:`catalyst.api.order_value`
+        :func:`catalyst.api.order_percent`
+        """
         pass
 
     @abstractmethod
     def get_open_orders(self, asset):
+        """Retrieve all of the current open orders.
+
+        Parameters
+        ----------
+        asset : Asset
+            If passed and not None, return only the open orders for the given
+            asset instead of all open orders.
+
+        Returns
+        -------
+        open_orders : dict[list[Order]] or list[Order]
+            If no asset is passed this will return a dict mapping Assets
+            to a list containing all the open orders for the asset.
+            If an asset is passed then this will return a list of the open
+            orders for this asset.
+        """
         pass
 
     @abstractmethod
     def get_order(self, order_id):
+        """Lookup an order based on the order id returned from one of the
+        order functions.
+
+        Parameters
+        ----------
+        order_id : str
+            The unique identifier for the order.
+
+        Returns
+        -------
+        order : Order
+            The order object.
+        """
         pass
 
     @abstractmethod
     def cancel_order(self, order_param):
+        """Cancel an open order.
+
+        Parameters
+        ----------
+        order_param : str or Order
+            The order_id or order object to cancel.
+        """
         pass
 
     @abstractmethod
@@ -112,20 +196,3 @@ class Exchange:
     @abc.abstractmethod
     def tickers(self, date, pairs):
         return
-
-        # @abc.abstractmethod
-        # def new_order(self, symbol, side, order_type, price, amount, leverage):
-        #     return
-        #
-        # @abc.abstractmethod
-        # def cancel_order(self, order_id):
-        #     return
-        #
-        # @abc.abstractmethod
-        # def order_status(self, order_id):
-        #     return
-        #
-        # @abc.abstractmethod
-        # def balance(self, currencies):
-        #     return
-        #

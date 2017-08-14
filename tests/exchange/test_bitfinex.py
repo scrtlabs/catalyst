@@ -6,51 +6,75 @@ from catalyst.finance.execution import (MarketOrder,
                                         LimitOrder,
                                         StopOrder,
                                         StopLimitOrder)
-from catalyst.assets._assets import Asset
+import catalyst.protocol as protocol
 
 log = Logger('BitfinexTestCase')
 
 
 class BitfinexTestCase(BaseExchangeTestCase):
-    def test_ticker(self):
-        log.info('fetching ticker from bitfinex')
+    def test_positions(self):
+        log.info('querying positions from bitfinex')
         bitfinex = Bitfinex()
-        current_date = pd.Timestamp.utcnow()
-        assets = [
-            Asset(sid=0, exchange=bitfinex.name, symbol='eth_usd'),
-            Asset(sid=1, exchange=bitfinex.name, symbol='etc_usd'),
-            Asset(sid=2, exchange=bitfinex.name, symbol='eos_usd')
-        ]
-        tickers = bitfinex.tickers(date=current_date, assets=assets)
-        log.info('got tickers {}'.format(tickers))
+        balance = bitfinex.positions()
+        log.info('the balance: {}'.format(balance))
+        pass
+
+    def test_portfolio(self):
+        log.info('fetching portfolio data')
+        pass
+
+    def test_account(self):
+        log.info('fetching account data')
+        pass
+
+    def test_time_skew(self):
+        log.info('time skew not implemented')
+        pass
+
+    def test_get_open_orders(self):
+        log.info('fetching open orders')
+        pass
 
     def test_order(self):
         log.info('ordering from bitfinex')
         bitfinex = Bitfinex()
-        asset = Asset(sid=0, exchange=bitfinex.name, symbol='eth_usd')
         order_id = bitfinex.order(
-            asset=asset,
+            asset=bitfinex.get_asset('eth_usd'),
             style=LimitOrder(limit_price=200),
             limit_price=200,
             amount=1,
             stop_price=None
         )
         log.info('order created {}'.format(order_id))
+        pass
+
+    def test_get_order(self):
+        log.info('querying orders from bitfinex')
+        bitfinex = Bitfinex()
+        response = bitfinex.order_status(order_id=3330866978)
+        log.info('the orders: {}'.format(response))
+        pass
 
     def test_cancel_order(self):
         log.info('canceling order from bitfinex')
         bitfinex = Bitfinex()
-        response = bitfinex.cancel_order(order_id=2776936269)
+        response = bitfinex.cancel_order(order_id=3330847408)
         log.info('canceled order: {}'.format(response))
+        pass
 
-    def test_order_status(self):
-        log.info('querying orders from bitfinex')
-        bitfinex = Bitfinex()
-        response = bitfinex.order_status(order_id=2776972180)
-        log.info('the orders: {}'.format(response))
+    def test_spot_value(self):
+        log.info('spot valud not implemented')
+        pass
 
-    def test_balance(self):
-        log.info('querying positions from bitfinex')
+    def test_tickers(self):
+        log.info('fetching ticker from bitfinex')
         bitfinex = Bitfinex()
-        balance = bitfinex.balance(currencies=['usd', 'etc', 'pez'])
-        log.info('the balance: {}'.format(balance))
+        current_date = pd.Timestamp.utcnow()
+        assets = [
+            bitfinex.get_asset('eth_usd'),
+            bitfinex.get_asset('etc_usd'),
+            bitfinex.get_asset('eos_usd'),
+        ]
+        tickers = bitfinex.tickers(date=current_date, assets=assets)
+        log.info('got tickers {}'.format(tickers))
+        pass
