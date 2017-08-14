@@ -156,15 +156,15 @@ def _run(handle_data,
                 environ=environ,
             )
 
-            first_trading_day =\
-                bundle_data.equity_minute_bar_reader.first_trading_day
+            first_trading_day = bundle_data.minute_bar_reader.first_trading_day
 
             data = DataPortal(
                 env.asset_finder,
                 open_calendar,
                 first_trading_day=first_trading_day,
-                equity_minute_reader=bundle_data.equity_minute_bar_reader,
-                equity_daily_reader=bundle_data.equity_daily_bar_reader,
+                minute_reader=bundle_data.minute_bar_reader,
+                five_minute_reader=bundle_data.five_minute_bar_reader,
+                daily_reader=bundle_data.daily_bar_reader,
                 adjustment_reader=bundle_data.adjustment_reader,
             )
 
@@ -179,13 +179,14 @@ def _run(handle_data,
 
             if b == 'poloniex':
                 return CryptoPricingLoader(
-                           bundle_data.equity_daily_bar_reader,
+                           bundle_data,
+                           data_frequency,
                            CryptoPricing,
                        )
-            elif b == 'quantopian-quandl':
+            elif b == 'quandl':
                 return USEquityPricingLoader(
-                           bundle_data.equity_daily_bar_reader,
-                           bundle_data.adjustment_reader,
+                           bundle_data,
+                           data_frequency,
                            USEquityPricing,
                        )
             raise ValueError(
@@ -216,6 +217,7 @@ def _run(handle_data,
             end=end,
             capital_base=capital_base,
             data_frequency=data_frequency,
+            emission_rate=data_frequency,
         ),
         **{
             'initialize': initialize,

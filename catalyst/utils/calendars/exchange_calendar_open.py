@@ -1,6 +1,7 @@
 from datetime import time
 from pytz import timezone
 
+from pandas import Timestamp
 from pandas.tseries.offsets import DateOffset
 
 from catalyst.utils.memoize import lazyval
@@ -28,3 +29,6 @@ class OpenExchangeCalendar(TradingCalendar):
     @lazyval
     def day(self):
         return DateOffset(days=1)
+
+    def __init__(self, *args, **kwargs):
+        super(OpenExchangeCalendar, self).__init__(start=Timestamp('2015-03-01', tz='UTC'), **kwargs)

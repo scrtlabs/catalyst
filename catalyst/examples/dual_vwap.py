@@ -52,7 +52,7 @@ def initialize(context):
 
     schedule_function(
         rebalance,
-        date_rules.every_day(),
+        time_rules=times_rules.every_minute(),
     )
 
 
