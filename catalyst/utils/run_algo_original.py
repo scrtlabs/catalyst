@@ -4,10 +4,6 @@ from runpy import run_path
 import sys
 import warnings
 
-
-import pandas as pd
-
-
 import click
 try:
     from pygments import highlight
@@ -32,9 +28,6 @@ from catalyst.pipeline.loaders import (
 from catalyst.utils.calendars import get_calendar
 from catalyst.utils.factory import create_simulation_parameters
 import catalyst.utils.paths as pth
-
-from catalyst.exchange.algorithm_exchange import ExchangeTradingAlgorithm
-from catalyst.exchange.data_portal_exchange import DataPortalExchange
 
 
 class _RunAlgoError(click.ClickException, ValueError):
@@ -75,8 +68,7 @@ def _run(handle_data,
          output,
          print_algo,
          local_namespace,
-         environ,
-         exchange):
+         environ):
     """Run a backtest for the given algorithm.
 
     This is shared between the cli and :func:`catalyst.run_algo`.
@@ -166,10 +158,7 @@ def _run(handle_data,
 
             first_trading_day = bundle_data.minute_bar_reader.first_trading_day
 
-            DataPortalClass = (partial(DataPortalExchange, exchange)
-                               if exchange
-                               else DataPortal)
-            data = DataPortalClass(
+            data = DataPortal(
                 env.asset_finder,
                 open_calendar,
                 first_trading_day=first_trading_day,
@@ -219,14 +208,7 @@ def _run(handle_data,
         env = TradingEnvironment(environ=environ)
         choose_loader = None
 
-    if exchange:
-        start = pd.Timestamp.utcnow()
-        end = start + pd.Timedelta('1', 'D')
-
-    TradingAlgorithmClass = (partial(ExchangeTradingAlgorithm, exchange=exchange)
-                             if exchange else TradingAlgorithm)
-
-    perf = TradingAlgorithmClass(
+    perf = TradingAlgorithm(
         namespace=namespace,
         env=env,
         get_pipeline_loader=choose_loader,
@@ -326,9 +308,7 @@ def run_algorithm(start,
                   default_extension=True,
                   extensions=(),
                   strict_extensions=True,
-                  environ=os.environ,
-                  live_trading=False,
-                  tws_uri=None):
+                  environ=os.environ):
     """Run a trading algorithm.
 
     Parameters
@@ -432,5 +412,4 @@ def run_algorithm(start,
         print_algo=False,
         local_namespace=False,
         environ=environ,
-        exchange=None,
     )

@@ -46,6 +46,7 @@ class ExchangeClock(object):
                  before_trading_start_minutes=None,
                  minute_emission=False,
                  time_skew=pd.Timedelta("0s")):
+
         self.sessions = sessions
         self.execution_opens = execution_opens
         self.execution_closes = execution_closes
@@ -53,7 +54,7 @@ class ExchangeClock(object):
         self.minute_emission = minute_emission
         self.time_skew = time_skew
         self._last_emit = None
-        self._before_trading_start_bar_yielded = False
+        self._before_trading_start_bar_yielded = True
 
     def __iter__(self):
         yield pd.Timestamp.utcnow(), SESSION_START
@@ -64,6 +65,7 @@ class ExchangeClock(object):
 
             if self._last_emit is None or server_time > self._last_emit:
 
+                print 'emitting bar %s' % server_time
                 self._last_emit = server_time
                 yield server_time, BAR
 

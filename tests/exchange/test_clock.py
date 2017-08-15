@@ -8,10 +8,16 @@ from collections import defaultdict
 from catalyst.utils.calendars import get_calendar
 import pandas as pd
 
-log = Logger('BitfinexTestCase')
+log = Logger('ExchangeClockTestCase')
 
 
-class BitfinexTestCase(TestCase):
+class ExchangeClockTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.open_calendar = get_calendar("OPEN")
+
+        cls.sessions = pd.Timestamp.utcnow()
+
     def setUp(self):
         self.internal_clock = None
         self.events = defaultdict(list)
@@ -31,13 +37,12 @@ class BitfinexTestCase(TestCase):
     def test_clock(self):
         with patch('catalyst.exchange.exchange_clock.pd.to_datetime') as to_dt, \
                 patch('catalyst.exchange.exchange_clock.sleep') as sleep:
-            clock = ExchangeClock()
+            clock = ExchangeClock(sessions=self.sessions)
             to_dt.side_effect = self.get_clock
             sleep.side_effect = self.advance_clock
             start_time = pd.Timestamp.utcnow()
             self.internal_clock = start_time
 
-            log.info('listing events')
             events = list(clock)
 
             # Event 0 is SESSION_START which always happens at 00:00.
