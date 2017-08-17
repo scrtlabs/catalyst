@@ -183,3 +183,50 @@ The following sample algorithm uses the run_algorithm interface:
 ```
 catalyst/examples/buy_and_hold_live.py
 ```
+
+<h2>Portfolio Management</h2>
+
+Zipline has a Portfolio class containing key metrics used by zipline
+for, but not only, these reasons:
+
+* Placing orders: When placing orders (e.g. order_target_percent),
+zipline queries the portfolio to assess the size of current positions,
+cash available, etc.
+* Measuring performance: The portfolio contains attributes like
+cost basis of each asset, p&l, etc. which zipline uses to compute all
+of its performance criteria.
+
+When backtesting, zipline automatically updates the Portfolio object
+of its corresponding algorithm. When live trading, these updates should
+be the responsibility of the exchange as it holds the truth for:
+
+* Executed price of each order (including fees and slippage)
+* Partial / failed orders
+* Cash (i.e. base currency) available
+* Cost basis of each position
+
+If each exchange account had a one-to-one relationship with an
+algorithm, portfolio metrics could be retrieved directly from the
+exchange without persisting any data to the algorithm. However,
+doing this would have at least the following drawbacks:
+
+* It may not be reasonable to ask users to dedicate an
+exchange account to a single algorithm. Exchanges are not easy
+to partition.
+* If an exchange account contains existing positions, the calculated
+cost basis would correspond to all positions, not just those
+initiated by the algorithm.
+* It would not be possible impose trading limits on algorithms.
+
+It follow that Portfolio metrics should be calculated using a strategic
+combination of the exchange data and algorithm activity. While tracking
+the activity of an algorithm works well in backtesting, it is more
+challenging during live trading. A live algorithm might run over
+several months. It might have to stop and start for many reasons.
+This means that the platform should have the ability to persist
+algorithm activity in order to be reliable.
+
+In the interest of time, I will start by persisting algorithm
+activity in memory. Data will be lost when the algorithm execution stops.
+The intent it to offer a simple basis from which to implement data
+persistence strategies in the future.
