@@ -308,14 +308,14 @@ class Bitfinex(Exchange):
                 'Unsupported frequency %s' % data_frequency
             )
 
-        request = requests.get(
+        response = requests.get(
             '{url}/v2/candles/trade:{frequency}:{symbol}/last'.format(
                 url=self.url,
                 frequency=frequency,
                 symbol=symbol
             )
         )
-        candles = request.json()
+        candles = response.json()
 
         if 'message' in candles:
             raise ValueError(
@@ -333,7 +333,7 @@ class Bitfinex(Exchange):
         )
 
         if field not in ohlc:
-            raise KeyError('Invalid column: ' + str(field))
+            raise KeyError('Invalid column: %s' % field)
 
         return ohlc[field]
 
