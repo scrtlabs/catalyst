@@ -5,6 +5,12 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 import pandas as pd
 from catalyst.assets._assets import Asset
 
+from catalyst.errors import (
+    MultipleSymbolsFound,
+    SymbolNotFound,
+)
+from datetime import timedelta
+
 
 class Exchange:
     __metaclass__ = ABCMeta
@@ -39,8 +45,11 @@ class Exchange:
         asset = None
 
         for key in self.assets:
-            if not asset and self.assets[key].symbol == symbol:
+            if not asset and self.assets[key].symbol.lower() == symbol.lower():
                 asset = self.assets[key]
+
+        if not asset:
+            raise SymbolNotFound('Asset not found: %s' % symbol)
 
         return asset
 
@@ -67,6 +76,7 @@ class Exchange:
             asset_obj = Asset(
                 sid=abs(hash(assets[exchange_symbol]['symbol'])) % (10 ** 4),
                 exchange=self.name,
+                end_date=pd.Timestamp.utcnow() + timedelta(minutes=300000),
                 **assets[exchange_symbol]
             )
             self.assets[exchange_symbol] = asset_obj

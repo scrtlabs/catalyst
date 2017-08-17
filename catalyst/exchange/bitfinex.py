@@ -19,25 +19,24 @@ from catalyst.finance.execution import (MarketOrder,
 from catalyst.data.data_portal import BASE_FIELDS
 
 BITFINEX_URL = 'https://api.bitfinex.com'
-BITFINEX_KEY = ''
-BITFINEX_SECRET = b''
-
-ASSETS = '{ "btcusd": {"symbol":"btc_usd", "start_date": "2010-01-01"}, "ltcusd": {"symbol":"ltc_usd", "start_date": "2010-01-01"}, "ltcbtc": {"symbol":"ltc_btc", "start_date": "2010-01-01"}, "ethusd": {"symbol":"eth_usd", "start_date": "2010-01-01"}, "ethbtc": {"symbol":"eth_btc", "start_date": "2010-01-01"}, "etcbtc": {"symbol":"etc_btc", "start_date": "2010-01-01"}, "etcusd": {"symbol":"etc_usd", "start_date": "2010-01-01"}, "rrtusd": {"symbol":"rrt_usd", "start_date": "2010-01-01"}, "rrtbtc": {"symbol":"rrt_btc", "start_date": "2010-01-01"}, "zecusd": {"symbol":"zec_usd", "start_date": "2010-01-01"}, "zecbtc": {"symbol":"zec_btc", "start_date": "2010-01-01"}, "xmrusd": {"symbol":"xmr_usd", "start_date": "2010-01-01"}, "xmrbtc": {"symbol":"xmr_btc", "start_date": "2010-01-01"}, "dshusd": {"symbol":"dsh_usd", "start_date": "2010-01-01"}, "dshbtc": {"symbol":"dsh_btc", "start_date": "2010-01-01"}, "bccbtc": {"symbol":"bcc_btc", "start_date": "2010-01-01"}, "bcubtc": {"symbol":"bcu_btc", "start_date": "2010-01-01"}, "bccusd": {"symbol":"bcc_usd", "start_date": "2010-01-01"}, "bcuusd": {"symbol":"bcu_usd", "start_date": "2010-01-01"}, "xrpusd": {"symbol":"xrp_usd", "start_date": "2010-01-01"}, "xrpbtc": {"symbol":"xrp_btc", "start_date": "2010-01-01"}, "iotusd": {"symbol":"iot_usd", "start_date": "2010-01-01"}, "iotbtc": {"symbol":"iot_btc", "start_date": "2010-01-01"}, "ioteth": {"symbol":"iot_eth", "start_date": "2010-01-01"}, "eosusd": {"symbol":"eos_usd", "start_date": "2010-01-01"}, "eosbtc": {"symbol":"eos_btc", "start_date": "2010-01-01"}, "eoseth": {"symbol":"eos_eth", "start_date": "2010-01-01"} }'
+ASSETS = '{ "USDT_BTC": {"symbol":"btc_usd", "start_date": "2010-01-01"}, "ltcusd": {"symbol":"ltc_usd", "start_date": "2010-01-01"}, "ltcbtc": {"symbol":"ltc_btc", "start_date": "2010-01-01"}, "ethusd": {"symbol":"eth_usd", "start_date": "2010-01-01"}, "ethbtc": {"symbol":"eth_btc", "start_date": "2010-01-01"}, "etcbtc": {"symbol":"etc_btc", "start_date": "2010-01-01"}, "etcusd": {"symbol":"etc_usd", "start_date": "2010-01-01"}, "rrtusd": {"symbol":"rrt_usd", "start_date": "2010-01-01"}, "rrtbtc": {"symbol":"rrt_btc", "start_date": "2010-01-01"}, "zecusd": {"symbol":"zec_usd", "start_date": "2010-01-01"}, "zecbtc": {"symbol":"zec_btc", "start_date": "2010-01-01"}, "xmrusd": {"symbol":"xmr_usd", "start_date": "2010-01-01"}, "xmrbtc": {"symbol":"xmr_btc", "start_date": "2010-01-01"}, "dshusd": {"symbol":"dsh_usd", "start_date": "2010-01-01"}, "dshbtc": {"symbol":"dsh_btc", "start_date": "2010-01-01"}, "bccbtc": {"symbol":"bcc_btc", "start_date": "2010-01-01"}, "bcubtc": {"symbol":"bcu_btc", "start_date": "2010-01-01"}, "bccusd": {"symbol":"bcc_usd", "start_date": "2010-01-01"}, "bcuusd": {"symbol":"bcu_usd", "start_date": "2010-01-01"}, "xrpusd": {"symbol":"xrp_usd", "start_date": "2010-01-01"}, "xrpbtc": {"symbol":"xrp_btc", "start_date": "2010-01-01"}, "iotusd": {"symbol":"iot_usd", "start_date": "2010-01-01"}, "iotbtc": {"symbol":"iot_btc", "start_date": "2010-01-01"}, "ioteth": {"symbol":"iot_eth", "start_date": "2010-01-01"}, "eosusd": {"symbol":"eos_usd", "start_date": "2010-01-01"}, "eosbtc": {"symbol":"eos_btc", "start_date": "2010-01-01"}, "eoseth": {"symbol":"eos_eth", "start_date": "2010-01-01"} }'
 
 log = Logger('Bitfinex')
 warning_logger = Logger('AlgoWarning')
 
 
 class Bitfinex(Exchange):
-    def __init__(self):
+    def __init__(self, key, secret, base_currency):
         self.url = BITFINEX_URL
-        self.key = BITFINEX_KEY
-        self.secret = BITFINEX_SECRET
+        self.key = key
+        self.secret = secret
         self.id = 'b'
         self.name = 'bitfinex'
         self.orders = {}
         self.assets = {}
         self.load_assets(ASSETS)
+        self.base_currency = base_currency
+        self._portfolio = None
 
     def _request(self, operation, data, version='v1'):
         payload_object = {
@@ -166,19 +165,39 @@ class Bitfinex(Exchange):
         TODO: I'm not sure how that's used yet
         :return: 
         """
-        portfolio = Portfolio()
-        portfolio.capital_used = None
-        portfolio.starting_cash = None
+        response = self._request('balances', None)
+        positions = response.json()
+        if 'message' in positions:
+            raise ValueError(
+                'unable to fetch balance %s' % positions['message']
+            )
 
-        portfolio.portfolio_value = None
-        portfolio.pnl = None
-        portfolio.cash = None
+        base_position = None
+        for position in positions:
+            if not base_position and position['type'] == 'exchange' \
+                    and position['currency'] == self.base_currency:
+                base_position = position
 
-        portfolio.returns = None
-        portfolio.start_date = None
-        portfolio.positions = self.positions
-        portfolio.positions_value = None
-        portfolio.positions_exposure = None
+        if position is None:
+            raise ValueError(
+                'Base currency %s not found in portfolio' % self.base_currency
+            )
+
+        base_position_available = float(base_position['available'])
+        if self._portfolio is None:
+            portfolio = self._portfolio = Portfolio()
+            portfolio.starting_cash = portfolio.cash = \
+                portfolio.portfolio_value = base_position_available
+            portfolio.capital_used = 0
+            portfolio.pnl = 0
+            portfolio.returns = 0
+            portfolio.start_date = pd.Timestamp.utcnow()
+            portfolio.positions = []
+            portfolio.positions_value = 0
+            portfolio.positions_exposure = 0
+        else:
+            portfolio = self._portfolio
+            portfolio.cash = base_position_available
 
         return portfolio
 
@@ -208,14 +227,7 @@ class Bitfinex(Exchange):
 
     @property
     def positions(self):
-        response = self._request('balances', None)
-        positions = response.json()
-        if 'message' in positions:
-            raise ValueError(
-                'unable to fetch balance %s' % positions['message']
-            )
-
-        return positions
+        raise NotImplementedError('positions not implemented')
 
     @property
     def time_skew(self):
@@ -279,7 +291,7 @@ class Bitfinex(Exchange):
         if data_frequency == 'minute':
             frequency = '1m'
         elif data_frequency == 'daily':
-            frequency = '1d'
+            frequency = '1D'
         else:
             raise NotImplementedError(
                 'Unsupported frequency %s' % data_frequency
@@ -372,7 +384,12 @@ class Bitfinex(Exchange):
             order_type = 'stop'
             price = stop_price
         elif isinstance(style, StopLimitOrder):
-            raise NotImplementedError('Stop/limit orders not available')
+            log.warn('using limit order instead of stop/limit')
+            # TODO: Not sure how to do this with the api. Investigate.
+            order_type = 'limit'
+            price = limit_price
+        else:
+            raise NotImplementedError('%s orders not available' % style)
 
         exchange_symbol = self.get_symbol(asset)
         req = dict(
@@ -442,7 +459,9 @@ class Bitfinex(Exchange):
         orders = list()
         for order_status in order_statuses:
             # TODO: filter by asset
-            orders.append(self._create_order(order_status))
+            order = self._create_order(order_status)
+            if asset is None or asset == order.sid:
+                orders.append(order)
 
         return orders
 
@@ -469,7 +488,7 @@ class Bitfinex(Exchange):
             )
         return self._create_order(order_status)
 
-    def cancel_order(self, order_id):
+    def cancel_order(self, order_param):
         """Cancel an open order.
 
         Parameters
@@ -477,6 +496,9 @@ class Bitfinex(Exchange):
         order_param : str or Order
             The order_id or order object to cancel.
         """
+        order_id = \
+            order_param.id if isinstance(order_param, Order) else order_param
+
         response = self._request('order/cancel', {'order_id': order_id})
         status = response.json()
         if 'message' in status:

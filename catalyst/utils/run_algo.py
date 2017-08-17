@@ -4,15 +4,16 @@ from runpy import run_path
 import sys
 import warnings
 
-
 import pandas as pd
 
-
 import click
+import time
+
 try:
     from pygments import highlight
     from pygments.lexers import PythonLexer
     from pygments.formatters import TerminalFormatter
+
     PYGMENTS = True
 except:
     PYGMENTS = False
@@ -35,6 +36,11 @@ import catalyst.utils.paths as pth
 
 from catalyst.exchange.algorithm_exchange import ExchangeTradingAlgorithm
 from catalyst.exchange.data_portal_exchange import DataPortalExchange
+from catalyst.exchange.bitfinex import Bitfinex
+from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
+from logbook import Logger
+
+log = Logger('run_algo')
 
 
 class _RunAlgoError(click.ClickException, ValueError):
@@ -95,7 +101,7 @@ def _run(handle_data,
                 raise ValueError(
                     'invalid define %r, should be of the form name=value' %
                     assign,
-                    )
+                )
             try:
                 # evaluate in the same namespace so names may refer to
                 # eachother
@@ -103,7 +109,7 @@ def _run(handle_data,
             except Exception as e:
                 raise ValueError(
                     'failed to execute definition for name %r: %s' % (name, e),
-                    )
+                )
     elif defines:
         raise _RunAlgoError(
             'cannot pass define without `algotext`',
@@ -125,6 +131,7 @@ def _run(handle_data,
         else:
             click.echo(algotext)
 
+    open_calendar = get_calendar('OPEN')
     if bundle is not None:
         bundles = bundle.split(',')
 
@@ -152,9 +159,7 @@ def _run(handle_data,
                 raise ValueError(
                     "invalid url %r, must begin with 'sqlite:///'" %
                     str(bundle_data.asset_finder.engine.url),
-                    )
-
-            open_calendar = get_calendar('OPEN')
+                )
 
             env = TradingEnvironment(
                 load=partial(load_crypto_market_data, environ=environ),
@@ -166,10 +171,10 @@ def _run(handle_data,
 
             first_trading_day = bundle_data.minute_bar_reader.first_trading_day
 
-            DataPortalClass = (partial(DataPortalExchange, exchange)
-                               if exchange
-                               else DataPortal)
-            data = DataPortalClass(
+            # DataPortalClass = (partial(DataPortalExchange, exchange)
+            #                    if exchange
+            #                    else DataPortal)
+            data = DataPortal(
                 env.asset_finder,
                 open_calendar,
                 first_trading_day=first_trading_day,
@@ -216,15 +221,32 @@ def _run(handle_data,
             )
 
     else:
-        env = TradingEnvironment(environ=environ)
-        choose_loader = None
+        if exchange is not None:
+            env = TradingEnvironment(
+                environ=environ,
+                exchange_tz="UTC",
+                asset_db_path=None
+            )
+            env.asset_finder = AssetFinderExchange(exchange)
+
+            data = DataPortalExchange(
+                exchange=exchange,
+                asset_finder=env.asset_finder,
+                trading_calendar=open_calendar,
+                first_trading_day=start
+            )
+            choose_loader = None
+        else:
+            env = TradingEnvironment(environ=environ)
+            choose_loader = None
 
     if exchange:
         start = pd.Timestamp.utcnow()
         end = start + pd.Timedelta('1', 'D')
 
-    TradingAlgorithmClass = (partial(ExchangeTradingAlgorithm, exchange=exchange)
-                             if exchange else TradingAlgorithm)
+    TradingAlgorithmClass = (
+        partial(ExchangeTradingAlgorithm, exchange=exchange)
+        if exchange else TradingAlgorithm)
 
     perf = TradingAlgorithmClass(
         namespace=namespace,
@@ -327,8 +349,8 @@ def run_algorithm(start,
                   extensions=(),
                   strict_extensions=True,
                   environ=os.environ,
-                  live_trading=False,
-                  tws_uri=None):
+                  live=False,
+                  exchange_conn=None):
     """Run a trading algorithm.
 
     Parameters
@@ -382,6 +404,12 @@ def run_algorithm(start,
     environ : mapping[str -> str], optional
         The os environment to use. Many extensions use this to get parameters.
         This defaults to ``os.environ``.
+    live: execute live trading
+    exchange_conn: The exchange connection parameters
+
+    Supported Exchanges
+    -------------------
+    bitfinex
 
     Returns
     -------
@@ -392,26 +420,41 @@ def run_algorithm(start,
     --------
     catalyst.data.bundles.bundles : The available data bundles.
     """
+    mode = 'live' if live else 'backtest'
+    log.info('running algo in {mode} mode'.format(mode=mode))
     load_extensions(default_extension, extensions, strict_extensions, environ)
 
-    non_none_data = valfilter(bool, {
-        'data': data is not None,
-        'bundle': bundle is not None,
-    })
-    if not non_none_data:
-        # if neither data nor bundle are passed use 'quantopian-quandl'
-        bundle = 'quantopian-quandl'
+    exchange = None
+    if mode == 'backtest':
+        non_none_data = valfilter(bool, {
+            'data': data is not None,
+            'bundle': bundle is not None,
+        })
+        if not non_none_data:
+            # if neither data nor bundle are passed use 'quantopian-quandl'
+            bundle = 'quantopian-quandl'
 
-    elif len(non_none_data) != 1:
-        raise ValueError(
-            'must specify one of `data`, `data_portal`, or `bundle`,'
-            ' got: %r' % non_none_data,
+        elif len(non_none_data) != 1:
+            raise ValueError(
+                'must specify one of `data`, `data_portal`, or `bundle`,'
+                ' got: %r' % non_none_data,
             )
 
-    elif 'bundle' not in non_none_data and bundle_timestamp is not None:
-        raise ValueError(
-            'cannot specify `bundle_timestamp` without passing `bundle`',
-        )
+        elif 'bundle' not in non_none_data and bundle_timestamp is not None:
+            raise ValueError(
+                'cannot specify `bundle_timestamp` without passing `bundle`',
+            )
+    else:
+        if exchange_conn is not None:
+            if exchange_conn['name'] == 'bitfinex':
+                exchange = Bitfinex(
+                    key=exchange_conn['key'],
+                    secret=exchange_conn['secret'],
+                    base_currency=exchange_conn['base_currency']
+                )
+            else:
+                raise NotImplementedError(
+                    'exchange not supported: %s' % exchange_conn['name'])
 
     return _run(
         handle_data=handle_data,
@@ -432,5 +475,5 @@ def run_algorithm(start,
         print_algo=False,
         local_namespace=False,
         environ=environ,
-        exchange=None,
+        exchange=exchange,
     )

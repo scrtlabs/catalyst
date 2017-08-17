@@ -1,28 +1,85 @@
-# code
-from catalyst.api import order, record, symbol
-from catalyst.exchange.algorithm_exchange import ExchangeTradingAlgorithm
-from datetime import timedelta
-from catalyst.exchange.bitfinex import Bitfinex
-import pandas as pd
+from catalyst.utils.run_algo import run_algorithm
+from datetime import datetime
+import pytz
+from logbook import Logger
 
-bitfinex = Bitfinex()
+from catalyst.api import (
+    order_target_value,
+    order_target_percent,
+    symbol,
+    record,
+    cancel_order,
+    get_open_orders,
+)
+
+log = Logger('buy_and_hold_live')
 
 
 def initialize(context):
-    pass
+    log.info('initializing algo')
+    context.asset = symbol('eos_usd')
+
+    context.TARGET_HODL_RATIO = 0.8
+    context.RESERVE_RATIO = 1.0 - context.TARGET_HODL_RATIO
+
+    context.is_buying = True
 
 
 def handle_data(context, data):
-    asset = bitfinex.get_asset('eth_usd')
-    test = data.current(asset, 'close')
-    order(symbol('AAPL'), 10)
+    log.info('handling bar {data}'.format(data=data))
+
+    starting_cash = context.portfolio.starting_cash
+    target_hodl_value = context.TARGET_HODL_RATIO * starting_cash
+    reserve_value = context.RESERVE_RATIO * starting_cash
+    log.info('starting cash: {}'.format(starting_cash))
+
+    price = data.current(context.asset, 'price')
+    log.info('got price {}'.format(price))
+
+    # Stop buying after passing the reserve threshold
+    orders = get_open_orders(context.asset) or []
+    for order in orders:
+        log.info('cancelling open order {}'.format(order))
+        cancel_order(order)
+
+    # Stop buying after passing the reserve threshold
+    cash = context.portfolio.cash
+    if cash <= reserve_value:
+        context.is_buying = False
+
+    log.info('cash {}'.format(cash))
+
+    # Check if still buying and could (approximately) afford another purchase
+    if context.is_buying and cash > price:
+        # Place order to make position in asset equal to target_hodl_value
+        # This works
+        # order_target_value(
+        #     context.asset,
+        #     target_hodl_value,
+        #     limit_price=price * 1.1,
+        #     stop_price=price * 0.9,
+        # )
+        order_target_percent(
+            context.asset,
+            0.2,
+            limit_price=price * 1.1
+        )
 
 
-algo_obj = ExchangeTradingAlgorithm(
+start = datetime(2015, 3, 1, 0, 0, 0, 0, pytz.utc)
+end = datetime(2017, 6, 28, 0, 0, 0, 0, pytz.utc)
+exchange_conn = dict(
+    name='bitfinex',
+    key='',
+    secret=b'',
+    base_currency='usd'
+)
+run_algorithm(
     initialize=initialize,
     handle_data=handle_data,
-    start=pd.Timestamp.utcnow(),
-    end=pd.Timestamp.utcnow() + timedelta(hours=1),
-    exchange=bitfinex,
+    start=start,
+    end=end,
+    capital_base=100000,
+    exchange_conn=exchange_conn,
+    live=True
 )
-perf_manual = algo_obj.run()
