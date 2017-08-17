@@ -10,6 +10,11 @@ class AssetFinderExchange(object):
 
     @property
     def sids(self):
+        """
+        This seems to be used to pre-fetch assets.
+        I don't think that we need this for live-trading.
+        Leaving the list empty.
+        """
         return list()
 
     def retrieve_all(self, sids, default_none=False):

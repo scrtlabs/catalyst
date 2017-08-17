@@ -166,14 +166,14 @@ class Bitfinex(Exchange):
         :return: 
         """
         response = self._request('balances', None)
-        positions = response.json()
-        if 'message' in positions:
+        balances = response.json()
+        if 'message' in balances:
             raise ValueError(
-                'unable to fetch balance %s' % positions['message']
+                'unable to fetch balance %s' % balances['message']
             )
 
         base_position = None
-        for position in positions:
+        for position in balances:
             if not base_position and position['type'] == 'exchange' \
                     and position['currency'] == self.base_currency:
                 base_position = position
@@ -227,6 +227,12 @@ class Bitfinex(Exchange):
 
     @property
     def positions(self):
+        response = self._request('positions', None)
+        positions = response.json()
+        if 'message' in positions:
+            raise ValueError(
+                'unable to fetch positions %s' % positions['message']
+            )
         raise NotImplementedError('positions not implemented')
 
     @property
