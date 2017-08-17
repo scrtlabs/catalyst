@@ -292,7 +292,12 @@ class Bitfinex(Exchange):
 
     def get_single_spot_value(self, asset, field, data_frequency):
         symbol = self._get_v2_symbol(asset)
-        log.debug('fetching spot value for symbol {}'.format(symbol))
+        log.debug(
+            'fetching spot value {field} for symbol {symbol}'.format(
+                symbol=symbol,
+                field=field
+            )
+        )
 
         if data_frequency == 'minute':
             frequency = '1m'
@@ -378,6 +383,17 @@ class Bitfinex(Exchange):
         :func:`catalyst.api.order_value`
         :func:`catalyst.api.order_percent`
         """
+        log.debug(
+            'ordering {amount} {symbol} {style}'.format(
+                amount=amount,
+                symbol=asset.symbol,
+                style=style
+            )
+        )
+
+        if amount == 0:
+            log.warn('skipping order amount of 0')
+            return None
 
         is_buy = (amount > 0)
 
@@ -400,7 +416,7 @@ class Bitfinex(Exchange):
         exchange_symbol = self.get_symbol(asset)
         req = dict(
             symbol=exchange_symbol,
-            amount=str(float(amount)),
+            amount=str(float(abs(amount))),
             price=str(float(price)),
             side='buy' if is_buy else 'sell',
             type='exchange ' + order_type,  # TODO: support margin trades

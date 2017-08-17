@@ -131,6 +131,10 @@ def _run(handle_data,
         else:
             click.echo(algotext)
 
+    if exchange is not None:
+        start = pd.Timestamp.utcnow()
+        end = start + pd.Timedelta('365', 'D')
+
     open_calendar = get_calendar('OPEN')
     if bundle is not None:
         bundles = bundle.split(',')
@@ -233,16 +237,12 @@ def _run(handle_data,
                 exchange=exchange,
                 asset_finder=env.asset_finder,
                 trading_calendar=open_calendar,
-                first_trading_day=start
+                first_trading_day=pd.to_datetime('today', utc=True)
             )
             choose_loader = None
         else:
             env = TradingEnvironment(environ=environ)
             choose_loader = None
-
-    if exchange:
-        start = pd.Timestamp.utcnow()
-        end = start + pd.Timedelta('1', 'D')
 
     TradingAlgorithmClass = (
         partial(ExchangeTradingAlgorithm, exchange=exchange)
@@ -334,10 +334,10 @@ def load_extensions(default, extensions, strict, environ, reload=False):
             _loaded_extensions.add(ext)
 
 
-def run_algorithm(start,
-                  end,
-                  initialize,
+def run_algorithm(initialize,
                   capital_base,
+                  start=None,
+                  end=None,
                   handle_data=None,
                   before_trading_start=None,
                   analyze=None,

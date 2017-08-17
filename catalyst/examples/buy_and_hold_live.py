@@ -66,8 +66,6 @@ def handle_data(context, data):
         )
 
 
-start = datetime(2015, 3, 1, 0, 0, 0, 0, pytz.utc)
-end = datetime(2017, 6, 28, 0, 0, 0, 0, pytz.utc)
 exchange_conn = dict(
     name='bitfinex',
     key='',
@@ -77,8 +75,6 @@ exchange_conn = dict(
 run_algorithm(
     initialize=initialize,
     handle_data=handle_data,
-    start=start,
-    end=end,
     capital_base=100000,
     exchange_conn=exchange_conn,
     live=True
