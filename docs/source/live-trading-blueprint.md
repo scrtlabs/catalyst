@@ -1,15 +1,15 @@
 <h1>Live Trading Blueprint</h1>
 The purpose of this document is to allow project contributors navigate
-ongoing live trading implementation.
+through the ongoing live trading implementation.
 
 <h2>Components</h2>
-At a high level the following components have been modified to coerce
+At a high level the following components have been implemented to coerce
 zipline into live trading.
 
 <h3>Exchange</h3>
 Exchange is a new package which introduces the concept of cryptocurrency
 exchanges to zipline. The package contains all new component
-implementations adapted to charasteristics of exchanges.
+implementations adapted to characteristics of exchanges.
 
 ```
 catalyst/exchange
@@ -35,71 +35,49 @@ It can vary drastically between exchanges.
 * Their order book is publicly available, the platform should access to
 it as it can be used to drastically reduce slippage.
 
-<h4>New Components</h4>
+<h3>New Components</h3>
 These components of the exchange package were added to the zipline
 sources.
 
-<h5>Exchange</h5>
+<h4>Exchange</h4>
 
-```
-catalyst/exchange/exchange.py
-```
+*catalyst/exchange/exchange.py*
 
 Abstract class which acts an interface for the implementation of
 various exchanges. It also contains logic common to all exchanges.
 
-<h5>Bitfinex</h5>
+<h4>Bitfinex</h4>
 
-```
-catalyst/exchange/bitfinex.py
-```
+*catalyst/exchange/bitfinex.py*
 
 The Bitfinex exchange implementation. It extends the Exchange class.
 
-<h5>DataPortalExchange</h5>
+<h4>DataPortalExchange</h4>
 
-```
-catalyst/exchange/data_portal_exchange.py
-```
+*catalyst/exchange/data_portal_exchange.py*
 
 Extends the zipline DataPortal to route spot data to the exchange.
 This is critical because it allows the algoritm to request data in
 real-time.
 
-For example,
-
-```python
-    data.current(asset, 'price')
-```
-
-retrieves the current price of the asset, not the price at the time
+For example, `data.current(asset, 'price')` retrieves the current price of the asset, not the price at the time
 of yielding the bar this is critical to minimize slippage.
 
-<h5>ExchangeClock</h5>
+<h4>ExchangeClock</h4>
 
-```
-catalyst/exchange/exchange_clock.py
-```
+*catalyst/exchange/exchange_clock.py*
 
 An implementation to the zipline Clock which runs 24/7. It yeilds a
 bar every minute.
 
-<h5>AssetFinderExchange</h5>
+<h4>AssetFinderExchange</h4>
 
-```
-catalyst/exchange/asset_finder_exchange.py
-```
+*catalyst/exchange/asset_finder_exchange.py*
 
 An alternate implementation of AssetFinder which locates each asset
 against the exchanges instead of bundle databases.
 
-For example,
-
-```python
-symbol('eth_usd')
-```
-
-retrieves an Asset object against the exchange as opposed to querying
+For example, `symbol('eth_usd')` retrieves an Asset object against the exchange as opposed to querying
 a database of equities.
 
 I have created a dictionary of currencies for the Bitfinex exchange.
@@ -136,26 +114,22 @@ on the exchange.
 }
 ```
 
-<h5>ExchangeTradingAlgorithm</h5>
+<h4>ExchangeTradingAlgorithm</h4>
 
-```
-catalyst/exchange/algorithm_exchange.py
-```
+*catalyst/exchange/algorithm_exchange.py*
 
 Extends the TradingAlgorithm class which orchestrates the api
 operations. This class brings together most of the components
 described above.
 
-<h4>Modified Components</h4>
+<h3>Modified Components</h3>
 
 The following components have been modified to include conditional
 business logic to enable live trading.
 
-<h5>run_algorithm</h5>
+<h4>run_algorithm</h4>
 
-```
-catalyst/utils/run_algo.py
-```
+*catalyst/utils/run_algo.py*
 
 The run_algorithm interface is an entry point to execute an
 algorithm in zipline. This component was already modified for
@@ -180,9 +154,7 @@ exchange_conn = dict(
 
 The following sample algorithm uses the run_algorithm interface:
 
-```
-catalyst/examples/buy_and_hold_live.py
-```
+*catalyst/examples/buy_and_hold_live.py*
 
 <h2>Portfolio Management</h2>
 
