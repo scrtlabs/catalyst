@@ -40,7 +40,6 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
 
         super(self.__class__, self).__init__(*args, **kwargs)
 
-        self.perf_tracker = None
         log.info('exchange trading algorithm successfully initialized')
 
     def _create_clock(self):
@@ -116,7 +115,9 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
 
     def handle_data(self, data):
         self.exchange.update_portfolio()
-        self.exchange.check_open_orders()
+        transactions = self.exchange.check_open_orders()
+        for transaction in transactions:
+            self.perf_tracker.process_transaction(transaction)
 
         if self._handle_data:
             self._handle_data(self, data)
@@ -137,8 +138,11 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         amount, style = self._calculate_order(asset, amount,
                                               limit_price, stop_price, style)
 
-        return self.exchange.order(asset, amount, limit_price, stop_price,
-                                   style)
+        order_id = self.exchange.order(asset, amount, limit_price, stop_price,
+                                       style)
+        order = self.portfolio.open_orders[order_id]
+        self.perf_tracker.process_order(order)
+        return order
 
     @api_method
     def batch_market_order(self, share_counts):

@@ -140,12 +140,13 @@ class Bitfinex(Exchange):
 
         executed_price = float(order_status['avg_execution_price'])
 
-        if executed_price > 0 and price > 0:
-            # TODO: This does not really work. Find a better way.
-            commission = executed_price - price \
-                if is_buy else price - executed_price
-        else:
-            commission = None
+        # if executed_price > 0 and price > 0:
+        #     # TODO: This does not really work. Find a better way.
+        #     commission = executed_price - price \
+        #         if is_buy else price - executed_price
+        # else:
+        #     commission = None
+        commission = None
 
         date = pd.Timestamp.utcfromtimestamp(float(order_status['timestamp']))
         date = pytz.utc.localize(date)

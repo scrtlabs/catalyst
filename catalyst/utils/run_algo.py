@@ -253,6 +253,8 @@ def _run(handle_data,
                 start=start,
                 end=end,
                 capital_base=exchange.portfolio.starting_cash,
+                emission_rate='minute',
+                data_frequency='minute'
             )
             # sim_params = None
         else:

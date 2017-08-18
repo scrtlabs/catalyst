@@ -5,6 +5,7 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 import pandas as pd
 from catalyst.assets._assets import Asset
 from catalyst.finance.order import ORDER_STATUS
+from catalyst.finance.transaction import Transaction
 
 from catalyst.errors import (
     MultipleSymbolsFound,
@@ -87,6 +88,7 @@ class Exchange:
             self.assets[exchange_symbol] = asset_obj
 
     def check_open_orders(self):
+        transactions = list()
         if self.portfolio.open_orders:
             for order_id in list(self.portfolio.open_orders):
                 log.debug('found open order: {}'.format(order_id))
@@ -94,6 +96,17 @@ class Exchange:
                 log.debug('got updated order {}'.format(order))
 
                 if order.status == ORDER_STATUS.FILLED:
+                    transaction = Transaction(
+                        asset=order.asset,
+                        amount=order.amount,
+                        dt=pd.Timestamp.utcnow(),
+                        price=order.executed_price,
+                        order_id=order.id,
+                        commission=order.commission
+                    )
+                    transactions.append(transaction)
+
+                    # TODO: use the transaction to pass the executed price
                     self.portfolio.execute_order(order)
                 elif order.status == ORDER_STATUS.CANCELLED:
                     self.portfolio.remove_order(order)
@@ -105,6 +118,7 @@ class Exchange:
                             delta=delta
                         )
                     )
+        return transactions
 
     @abstractmethod
     def subscribe_to_market_data(self, symbol):
