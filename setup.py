@@ -212,7 +212,7 @@ def read_requirements(path,
                       conda_format=False,
                       filter_names=None):
     """
-    Read a requirements.txt file, expressed as a path relative to Zipline root.
+    Read a requirements.txt file, expressed as a path relative to Catalyst root.
 
     Returns requirements with the pinned versions as lower bounds
     if `strict_bounds` is falsey.
