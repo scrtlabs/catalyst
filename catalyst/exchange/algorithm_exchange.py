@@ -40,7 +40,8 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
 
         super(self.__class__, self).__init__(*args, **kwargs)
 
-        log.info("initialization done")
+        self.perf_tracker = None
+        log.info('exchange trading algorithm successfully initialized')
 
     def _create_clock(self):
         # This method is taken from TradingAlgorithm.
@@ -103,10 +104,27 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         return self.trading_client.transform()
 
     def updated_portfolio(self):
+        """
+        We skip the entire performance tracker business and update the
+        portfolio directly.
+        :return:
+        """
         return self.exchange.portfolio
 
     def updated_account(self):
         return self.exchange.account
+
+    def handle_data(self, data):
+        self.exchange.update_portfolio()
+        self.exchange.check_open_orders()
+
+        if self._handle_data:
+            self._handle_data(self, data)
+
+        # Unlike trading controls which remain constant unless placing an
+        # order, account controls can change each bar. Thus, must check
+        # every bar no matter if the algorithm places an order or not.
+        self.validate_account_controls()
 
     @api_method
     @disallowed_in_before_trading_start(OrderInBeforeTradingStart())
@@ -119,7 +137,8 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         amount, style = self._calculate_order(asset, amount,
                                               limit_price, stop_price, style)
 
-        return self.exchange.order(asset, amount, limit_price, stop_price, style)
+        return self.exchange.order(asset, amount, limit_price, stop_price,
+                                   style)
 
     @api_method
     def batch_market_order(self, share_counts):

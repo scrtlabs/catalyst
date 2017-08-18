@@ -38,6 +38,7 @@ from catalyst.exchange.algorithm_exchange import ExchangeTradingAlgorithm
 from catalyst.exchange.data_portal_exchange import DataPortalExchange
 from catalyst.exchange.bitfinex import Bitfinex
 from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
+from catalyst.exchange.exchange_portfolio import PortfolioMemoryStore
 from logbook import Logger
 
 log = Logger('run_algo')
@@ -82,7 +83,8 @@ def _run(handle_data,
          print_algo,
          local_namespace,
          environ,
-         exchange):
+         exchange,
+         algo_namespace):
     """Run a backtest for the given algorithm.
 
     This is shared between the cli and :func:`catalyst.run_algo`.
@@ -136,6 +138,13 @@ def _run(handle_data,
         end = start + pd.Timedelta('365', 'D')
 
     open_calendar = get_calendar('OPEN')
+    sim_params = create_simulation_parameters(
+        start=start,
+        end=end,
+        capital_base=capital_base,
+        data_frequency=data_frequency,
+        emission_rate=data_frequency,
+    )
     if bundle is not None:
         bundles = bundle.split(',')
 
@@ -240,6 +249,12 @@ def _run(handle_data,
                 first_trading_day=pd.to_datetime('today', utc=True)
             )
             choose_loader = None
+            sim_params = create_simulation_parameters(
+                start=start,
+                end=end,
+                capital_base=exchange.portfolio.starting_cash,
+            )
+            # sim_params = None
         else:
             env = TradingEnvironment(environ=environ)
             choose_loader = None
@@ -252,13 +267,7 @@ def _run(handle_data,
         namespace=namespace,
         env=env,
         get_pipeline_loader=choose_loader,
-        sim_params=create_simulation_parameters(
-            start=start,
-            end=end,
-            capital_base=capital_base,
-            data_frequency=data_frequency,
-            emission_rate=data_frequency,
-        ),
+        sim_params=sim_params,
         **{
             'initialize': initialize,
             'handle_data': handle_data,
@@ -350,7 +359,8 @@ def run_algorithm(initialize,
                   strict_extensions=True,
                   environ=os.environ,
                   live=False,
-                  exchange_conn=None):
+                  exchange_conn=None,
+                  algo_namespace=None):
     """Run a trading algorithm.
 
     Parameters
@@ -446,11 +456,14 @@ def run_algorithm(initialize,
             )
     else:
         if exchange_conn is not None:
+            store = PortfolioMemoryStore(algo_namespace)
+
             if exchange_conn['name'] == 'bitfinex':
                 exchange = Bitfinex(
                     key=exchange_conn['key'],
                     secret=exchange_conn['secret'],
-                    base_currency=exchange_conn['base_currency']
+                    base_currency=exchange_conn['base_currency'],
+                    store=store
                 )
             else:
                 raise NotImplementedError(
@@ -476,4 +489,5 @@ def run_algorithm(initialize,
         local_namespace=False,
         environ=environ,
         exchange=exchange,
+        algo_namespace=algo_namespace
     )

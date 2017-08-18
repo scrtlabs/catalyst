@@ -1,3 +1,4 @@
+import pytz
 import six
 import base64
 import hashlib
@@ -11,12 +12,14 @@ from catalyst.protocol import Portfolio, Account
 # from websocket import create_connection
 from catalyst.exchange.exchange import Exchange
 from logbook import Logger
-from catalyst.finance.order import Order, ORDER_STATUS
+from catalyst.finance.order import ORDER_STATUS
+from catalyst.exchange.exchange_order import ExchangeOrder
 from catalyst.finance.execution import (MarketOrder,
                                         LimitOrder,
                                         StopOrder,
                                         StopLimitOrder)
 from catalyst.data.data_portal import BASE_FIELDS
+from catalyst.exchange.exchange_portfolio import ExchangePortfolio
 
 BITFINEX_URL = 'https://api.bitfinex.com'
 ASSETS = '{ "USDT_BTC": {"symbol":"btc_usd", "start_date": "2010-01-01"}, "ltcusd": {"symbol":"ltc_usd", "start_date": "2010-01-01"}, "ltcbtc": {"symbol":"ltc_btc", "start_date": "2010-01-01"}, "ethusd": {"symbol":"eth_usd", "start_date": "2010-01-01"}, "ethbtc": {"symbol":"eth_btc", "start_date": "2010-01-01"}, "etcbtc": {"symbol":"etc_btc", "start_date": "2010-01-01"}, "etcusd": {"symbol":"etc_usd", "start_date": "2010-01-01"}, "rrtusd": {"symbol":"rrt_usd", "start_date": "2010-01-01"}, "rrtbtc": {"symbol":"rrt_btc", "start_date": "2010-01-01"}, "zecusd": {"symbol":"zec_usd", "start_date": "2010-01-01"}, "zecbtc": {"symbol":"zec_btc", "start_date": "2010-01-01"}, "xmrusd": {"symbol":"xmr_usd", "start_date": "2010-01-01"}, "xmrbtc": {"symbol":"xmr_btc", "start_date": "2010-01-01"}, "dshusd": {"symbol":"dsh_usd", "start_date": "2010-01-01"}, "dshbtc": {"symbol":"dsh_btc", "start_date": "2010-01-01"}, "bccbtc": {"symbol":"bcc_btc", "start_date": "2010-01-01"}, "bcubtc": {"symbol":"bcu_btc", "start_date": "2010-01-01"}, "bccusd": {"symbol":"bcc_usd", "start_date": "2010-01-01"}, "bcuusd": {"symbol":"bcu_usd", "start_date": "2010-01-01"}, "xrpusd": {"symbol":"xrp_usd", "start_date": "2010-01-01"}, "xrpbtc": {"symbol":"xrp_btc", "start_date": "2010-01-01"}, "iotusd": {"symbol":"iot_usd", "start_date": "2010-01-01"}, "iotbtc": {"symbol":"iot_btc", "start_date": "2010-01-01"}, "ioteth": {"symbol":"iot_eth", "start_date": "2010-01-01"}, "eosusd": {"symbol":"eos_usd", "start_date": "2010-01-01"}, "eosbtc": {"symbol":"eos_btc", "start_date": "2010-01-01"}, "eoseth": {"symbol":"eos_eth", "start_date": "2010-01-01"} }'
@@ -26,17 +29,16 @@ warning_logger = Logger('AlgoWarning')
 
 
 class Bitfinex(Exchange):
-    def __init__(self, key, secret, base_currency):
+    def __init__(self, key, secret, base_currency, store):
         self.url = BITFINEX_URL
         self.key = key
         self.secret = secret
         self.id = 'b'
         self.name = 'bitfinex'
-        self.orders = {}
         self.assets = {}
         self.load_assets(ASSETS)
         self.base_currency = base_currency
-        self._portfolio = None
+        self.store = store
 
     def _request(self, operation, data, version='v1'):
         payload_object = {
@@ -115,7 +117,7 @@ class Bitfinex(Exchange):
         if order_status['is_cancelled']:
             status = ORDER_STATUS.CANCELLED
         elif not order_status['is_live']:
-            log.info('found executed order %s', order_status)
+            log.info('found executed order {}'.format(order_status))
             status = ORDER_STATUS.FILLED
         else:
             status = ORDER_STATUS.OPEN
@@ -145,8 +147,10 @@ class Bitfinex(Exchange):
         else:
             commission = None
 
-        order = Order(
-            dt=pd.Timestamp.utcfromtimestamp(float(order_status['timestamp'])),
+        date = pd.Timestamp.utcfromtimestamp(float(order_status['timestamp']))
+        date = pytz.utc.localize(date)
+        order = ExchangeOrder(
+            dt=date,
             asset=self.assets[order_status['symbol']],
             amount=amount,
             stop=stop_price,
@@ -156,14 +160,16 @@ class Bitfinex(Exchange):
             commission=commission
         )
         order.status = status
+        order.executed_price = executed_price
 
         return order
 
-    @property
-    def portfolio(self):
+    def update_portfolio(self):
         """
-        TODO: I'm not sure how that's used yet
-        :return: 
+        Update the portfolio cash and position balances based on the
+        latest ticker prices.
+
+        :return:
         """
         response = self._request('balances', None)
         balances = response.json()
@@ -183,21 +189,40 @@ class Bitfinex(Exchange):
                 'Base currency %s not found in portfolio' % self.base_currency
             )
 
-        base_position_available = float(base_position['available'])
-        if self._portfolio is None:
-            portfolio = self._portfolio = Portfolio()
-            portfolio.starting_cash = portfolio.cash = \
-                portfolio.portfolio_value = base_position_available
-            portfolio.capital_used = 0
-            portfolio.pnl = 0
-            portfolio.returns = 0
-            portfolio.start_date = pd.Timestamp.utcnow()
-            portfolio.positions = []
-            portfolio.positions_value = 0
-            portfolio.positions_exposure = 0
+        portfolio = self.store.portfolio
+        portfolio.cash = float(base_position['available'])
+
+        if portfolio.positions:
+            tickers = self.tickers(portfolio.positions.keys())
+            portfolio.positions_value = 0.0
+            for ticker in tickers:
+                # TODO: convert if the position is not in the base currency
+                position = portfolio.positions[ticker['asset']]
+                position.last_sale_price = ticker['last_price']
+                position.last_sale_date = ticker['timestamp']
+
+                portfolio.positions_value += \
+                    position.amount * position.last_sale_price
+                portfolio.portfolio_value = \
+                    portfolio.positions_value + portfolio.cash
+
+    @property
+    def portfolio(self):
+        """
+        TODO: I'm not sure how that's used yet
+        :return: 
+        """
+        if self.store.portfolio is None:
+            portfolio = ExchangePortfolio(
+                store=self.store,
+                start_date=pd.Timestamp.utcnow()
+            )
+            self.store.portfolio = portfolio
+            self.update_portfolio()
+
+            portfolio.starting_cash = portfolio.cash
         else:
-            portfolio = self._portfolio
-            portfolio.cash = base_position_available
+            portfolio = self.store.portfolio
 
         return portfolio
 
@@ -227,13 +252,7 @@ class Bitfinex(Exchange):
 
     @property
     def positions(self):
-        response = self._request('positions', None)
-        positions = response.json()
-        if 'message' in positions:
-            raise ValueError(
-                'unable to fetch positions %s' % positions['message']
-            )
-        raise NotImplementedError('positions not implemented')
+        return self.portfolio.positions
 
     @property
     def time_skew(self):
@@ -438,7 +457,7 @@ class Bitfinex(Exchange):
             )
 
         order_id = exchange_order['id']
-        order = Order(
+        order = ExchangeOrder(
             dt=pd.Timestamp.utcnow(),
             asset=asset,
             amount=amount,
@@ -449,7 +468,7 @@ class Bitfinex(Exchange):
         # TODO: is this required?
         order.broker_order_id = order_id
 
-        self.orders[order_id] = order
+        self.portfolio.create_order(order)
 
         return order_id
 
@@ -518,8 +537,8 @@ class Bitfinex(Exchange):
         order_param : str or Order
             The order_id or order object to cancel.
         """
-        order_id = \
-            order_param.id if isinstance(order_param, Order) else order_param
+        order_id = order_param.id \
+            if isinstance(order_param, ExchangeOrder) else order_param
 
         response = self._request('order/cancel', {'order_id': order_id})
         status = response.json()
@@ -528,7 +547,7 @@ class Bitfinex(Exchange):
                 'Unable to cancel order: %s %s' % (order_id, status['message'])
             )
 
-    def tickers(self, date, assets):
+    def tickers(self, assets):
         """
         Fetch ticket data for assets
         https://docs.bitfinex.com/v2/reference#rest-public-tickers
@@ -559,7 +578,7 @@ class Bitfinex(Exchange):
 
             tick = dict(
                 asset=assets[index],
-                timestamp=date,
+                timestamp=pd.Timestamp.utcnow(),
                 bid=ticker[1],
                 ask=ticker[3],
                 last_price=ticker[7],

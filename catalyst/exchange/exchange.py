@@ -4,12 +4,16 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 
 import pandas as pd
 from catalyst.assets._assets import Asset
+from catalyst.finance.order import ORDER_STATUS
 
 from catalyst.errors import (
     MultipleSymbolsFound,
     SymbolNotFound,
 )
 from datetime import timedelta
+from logbook import Logger
+
+log = Logger('Exchange')
 
 
 class Exchange:
@@ -19,6 +23,7 @@ class Exchange:
         self.name = None
         self.trading_pairs = None
         self.assets = {}
+        self._portfolio = None
 
     def get_trading_pairs(self, pairs):
         return [pair for pair in pairs if pair in self.trading_pairs]
@@ -81,12 +86,36 @@ class Exchange:
             )
             self.assets[exchange_symbol] = asset_obj
 
+    def check_open_orders(self):
+        if self.portfolio.open_orders:
+            for order_id in list(self.portfolio.open_orders):
+                log.debug('found open order: {}'.format(order_id))
+                order = self.get_order(order_id)
+                log.debug('got updated order {}'.format(order))
+
+                if order.status == ORDER_STATUS.FILLED:
+                    self.portfolio.execute_order(order)
+                elif order.status == ORDER_STATUS.CANCELLED:
+                    self.portfolio.remove_order(order)
+                else:
+                    delta = pd.Timestamp.utcnow() - order.dt
+                    log.info(
+                        'order {order_id} still open after {delta}'.format(
+                            order_id=order_id,
+                            delta=delta
+                        )
+                    )
+
     @abstractmethod
     def subscribe_to_market_data(self, symbol):
         pass
 
     @abstractproperty
     def positions(self):
+        pass
+
+    @abstractproperty
+    def update_portfolio(self):
         pass
 
     @abstractproperty

@@ -4,6 +4,7 @@ import pytz
 from logbook import Logger
 
 from catalyst.api import (
+    order,
     order_target_value,
     order_target_percent,
     symbol,
@@ -37,10 +38,10 @@ def handle_data(context, data):
     log.info('got price {}'.format(price))
 
     # Stop buying after passing the reserve threshold
-    orders = get_open_orders(context.asset) or []
-    for order in orders:
-        log.info('cancelling open order {}'.format(order))
-        cancel_order(order)
+    # orders = get_open_orders(context.asset) or []
+    # for order in orders:
+    #     log.info('cancelling open order {}'.format(order))
+    #     cancel_order(order)
 
     # Stop buying after passing the reserve threshold
     cash = context.portfolio.cash
@@ -52,18 +53,26 @@ def handle_data(context, data):
     # Check if still buying and could (approximately) afford another purchase
     if context.is_buying and cash > price:
         # Place order to make position in asset equal to target_hodl_value
+        order(context.asset, 1, limit_price=price + 1.1)
         # This works
         # order_target_value(
         #     context.asset,
         #     target_hodl_value,
         #     limit_price=price * 1.1,
-        #     stop_price=price * 0.9,
         # )
-        order_target_percent(
-            context.asset,
-            0.2,
-            limit_price=price * 1.1
-        )
+        # order_target_percent(
+        #     context.asset,
+        #     0.01,
+        #     limit_price=price * 1.1
+        # )
+
+    record(
+        price=price,
+        cash=cash,
+        starting_cash=context.portfolio.starting_cash,
+        leverage=context.account.leverage,
+    )
+    pass
 
 
 exchange_conn = dict(
@@ -77,5 +86,6 @@ run_algorithm(
     handle_data=handle_data,
     capital_base=100000,
     exchange_conn=exchange_conn,
-    live=True
+    live=True,
+    algo_namespace='buy_and_hold_live'
 )

@@ -7,13 +7,12 @@ At a high level the following components have been implemented to coerce
 zipline into live trading.
 
 <h3>Exchange</h3>
+
+*catalyst/exchange*
+
 Exchange is a new package which introduces the concept of cryptocurrency
 exchanges to zipline. The package contains all new component
 implementations adapted to characteristics of exchanges.
-
-```
-catalyst/exchange
-```
 
 Here are some key characteristics which makes exchanges different from
 equity and futures currently implemented in zipline.
