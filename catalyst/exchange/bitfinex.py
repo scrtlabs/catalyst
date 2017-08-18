@@ -193,7 +193,8 @@ class Bitfinex(Exchange):
         portfolio.cash = float(base_position['available'])
 
         if portfolio.positions:
-            tickers = self.tickers(portfolio.positions.keys())
+            assets = portfolio.positions.keys()
+            tickers = self.tickers(assets)
             portfolio.positions_value = 0.0
             for ticker in tickers:
                 # TODO: convert if the position is not in the base currency
@@ -209,8 +210,9 @@ class Bitfinex(Exchange):
     @property
     def portfolio(self):
         """
-        TODO: I'm not sure how that's used yet
-        :return: 
+        Return the Portfolio
+
+        :return:
         """
         if self.store.portfolio is None:
             portfolio = ExchangePortfolio(
@@ -402,17 +404,15 @@ class Bitfinex(Exchange):
         :func:`catalyst.api.order_value`
         :func:`catalyst.api.order_percent`
         """
-        log.debug(
-            'ordering {amount} {symbol} {style}'.format(
-                amount=amount,
-                symbol=asset.symbol,
-                style=style
-            )
-        )
-
         if amount == 0:
             log.warn('skipping order amount of 0')
             return None
+
+        base_currency = asset.symbol.split('_')[1]
+        if base_currency.lower() != self.base_currency.lower():
+            raise NotImplementedError(
+                'Currency pairs must share their base with the exchange.'
+            )
 
         is_buy = (amount > 0)
 
@@ -431,6 +431,14 @@ class Bitfinex(Exchange):
             price = limit_price
         else:
             raise NotImplementedError('%s orders not available' % style)
+
+        log.debug(
+            'ordering {amount} {symbol} for {price}'.format(
+                amount=amount,
+                symbol=asset.symbol,
+                price=price
+            )
+        )
 
         exchange_symbol = self.get_symbol(asset)
         req = dict(

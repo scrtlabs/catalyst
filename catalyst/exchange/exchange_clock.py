@@ -64,8 +64,8 @@ class ExchangeClock(object):
             server_time = current_time.floor('1 min')
 
             if self._last_emit is None or server_time > self._last_emit:
+                log.debug('emitting minutely bar: {}'.format(server_time))
 
-                print 'emitting bar %s' % server_time
                 self._last_emit = server_time
                 yield server_time, BAR
 

@@ -18,7 +18,7 @@ log = Logger('buy_and_hold_live')
 
 def initialize(context):
     log.info('initializing algo')
-    context.asset = symbol('eos_usd')
+    context.asset = symbol('eos_btc')
 
     context.TARGET_HODL_RATIO = 0.8
     context.RESERVE_RATIO = 1.0 - context.TARGET_HODL_RATIO
@@ -53,7 +53,7 @@ def handle_data(context, data):
     # Check if still buying and could (approximately) afford another purchase
     if context.is_buying and cash > price:
         # Place order to make position in asset equal to target_hodl_value
-        order(context.asset, 1, limit_price=price + 1.1)
+        order(context.asset, 1, limit_price=price * 1.1)
         # This works
         # order_target_value(
         #     context.asset,
@@ -79,7 +79,7 @@ exchange_conn = dict(
     name='bitfinex',
     key='',
     secret=b'',
-    base_currency='usd'
+    base_currency='btc'
 )
 run_algorithm(
     initialize=initialize,
