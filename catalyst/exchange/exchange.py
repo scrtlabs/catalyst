@@ -367,6 +367,7 @@ class Exchange:
             The frequency of the data to query; i.e. whether the data is
             'daily' or 'minute' bars.
 
+        # TODO: fill how?
         ffill: boolean
             Forward-fill missing values. Only has effect if field
             is 'price'.
@@ -383,26 +384,13 @@ class Exchange:
             end_dt=end_dt
         )
 
-        # def get_single_field_df(asset, candles):
-        #     # columns = [field, 'last_traded']
-        #     # df = pd.DataFrame(candles, columns=columns)
-        #     # df.set_index('last_traded', drop=True,inplace=True)
-        #
-        # if len(assets) == 1:
-        #     asset = assets[0]
-        #     df = get_single_field_series(candles[asset])
-        # else:
-        #     series = []
-        #     for asset in assets:
-        #         item = get_single_field_series(candles[asset])
-        #         series.append(item)
-        #     df = pd.concat(series, axis=1)
-        # return df
         frames = []
         for asset in assets:
             asset_candles = candles[asset]
+
             asset_data = dict()
-            asset_data[asset] = map(lambda candle: candle[field], asset_candles)
+            asset_data[asset] = map(lambda candle: candle[field],
+                                    asset_candles)
 
             dates = map(lambda candle: candle['last_traded'],
                         asset_candles)
@@ -410,9 +398,7 @@ class Exchange:
             df = pd.DataFrame(asset_data, index=dates)
             frames.append(df)
 
-        df = pd.concat(frames)
-
-        return df
+        return pd.concat(frames)
 
     @abc.abstractmethod
     def tickers(self, date, pairs):

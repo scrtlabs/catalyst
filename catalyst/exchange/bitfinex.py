@@ -28,6 +28,10 @@ from catalyst.exchange.exchange_errors import (
     InvalidHistoryFrequencyError
 )
 
+# Trying to account for REST api instability
+# https://stackoverflow.com/questions/15431044/can-i-set-max-retries-for-requests-request
+requests.adapters.DEFAULT_RETRIES = 20
+
 BITFINEX_URL = 'https://api.bitfinex.com'
 ASSETS = '{ "USDT_BTC": {"symbol":"btc_usd", "start_date": "2010-01-01"}, "ltcusd": {"symbol":"ltc_usd", "start_date": "2010-01-01"}, "ltcbtc": {"symbol":"ltc_btc", "start_date": "2010-01-01"}, "ethusd": {"symbol":"eth_usd", "start_date": "2010-01-01"}, "ethbtc": {"symbol":"eth_btc", "start_date": "2010-01-01"}, "etcbtc": {"symbol":"etc_btc", "start_date": "2010-01-01"}, "etcusd": {"symbol":"etc_usd", "start_date": "2010-01-01"}, "rrtusd": {"symbol":"rrt_usd", "start_date": "2010-01-01"}, "rrtbtc": {"symbol":"rrt_btc", "start_date": "2010-01-01"}, "zecusd": {"symbol":"zec_usd", "start_date": "2010-01-01"}, "zecbtc": {"symbol":"zec_btc", "start_date": "2010-01-01"}, "xmrusd": {"symbol":"xmr_usd", "start_date": "2010-01-01"}, "xmrbtc": {"symbol":"xmr_btc", "start_date": "2010-01-01"}, "dshusd": {"symbol":"dsh_usd", "start_date": "2010-01-01"}, "dshbtc": {"symbol":"dsh_btc", "start_date": "2010-01-01"}, "bccbtc": {"symbol":"bcc_btc", "start_date": "2010-01-01"}, "bcubtc": {"symbol":"bcu_btc", "start_date": "2010-01-01"}, "bccusd": {"symbol":"bcc_usd", "start_date": "2010-01-01"}, "bcuusd": {"symbol":"bcu_usd", "start_date": "2010-01-01"}, "xrpusd": {"symbol":"xrp_usd", "start_date": "2010-01-01"}, "xrpbtc": {"symbol":"xrp_btc", "start_date": "2010-01-01"}, "iotusd": {"symbol":"iot_usd", "start_date": "2010-01-01"}, "iotbtc": {"symbol":"iot_btc", "start_date": "2010-01-01"}, "ioteth": {"symbol":"iot_eth", "start_date": "2010-01-01"}, "eosusd": {"symbol":"eos_usd", "start_date": "2010-01-01"}, "eosbtc": {"symbol":"eos_btc", "start_date": "2010-01-01"}, "eoseth": {"symbol":"eos_eth", "start_date": "2010-01-01"} }'
 
@@ -147,12 +151,7 @@ class Bitfinex(Exchange):
 
         executed_price = float(order_status['avg_execution_price'])
 
-        # if executed_price > 0 and price > 0:
-        #     # TODO: This does not really work. Find a better way.
-        #     commission = executed_price - price \
-        #         if is_buy else price - executed_price
-        # else:
-        #     commission = None
+        # TODO: bitfinex does not specify comission. I could calculate it but not sure if it's worth it.
         commission = None
 
         date = pd.Timestamp.utcfromtimestamp(float(order_status['timestamp']))
@@ -179,8 +178,12 @@ class Bitfinex(Exchange):
 
         :return:
         """
-        response = self._request('balances', None)
-        balances = response.json()
+        try:
+            response = self._request('balances', None)
+            balances = response.json()
+        except Exception as e:
+            raise ExchangeRequestError(error=e)
+
         if 'message' in balances:
             raise ExchangeRequestError(
                 error='unable to fetch balance {}'.format(balances['message'])
@@ -273,7 +276,7 @@ class Bitfinex(Exchange):
         pass
 
     def get_candles(self, data_frequency, assets,
-                     end_dt=None, bar_count=None, limit=None):
+                    end_dt=None, bar_count=None, limit=None):
 
         # TODO: support all available frequencies
         start_dt = None
@@ -311,8 +314,11 @@ class Bitfinex(Exchange):
                 is_list = False
                 url += '/last'
 
-            response = requests.get(url)
-            candles = response.json()
+            try:
+                response = requests.get(url)
+                candles = response.json()
+            except Exception as e:
+                raise ExchangeRequestError(error=e)
 
             if 'message' in candles:
                 raise ExchangeRequestError(
@@ -346,7 +352,6 @@ class Bitfinex(Exchange):
 
         return ohlc_list[assets] \
             if isinstance(assets, Asset) else ohlc_list
-
 
     def order(self, asset, amount, limit_price, stop_price, style):
         """Place an order.
@@ -446,8 +451,12 @@ class Bitfinex(Exchange):
             sell_price_oco=0
         )
 
-        response = self._request('order/new', req)
-        exchange_order = response.json()
+        try:
+            response = self._request('order/new', req)
+            exchange_order = response.json()
+        except Exception as e:
+            raise ExchangeRequestError(error=e)
+
         if 'message' in exchange_order:
             raise ExchangeRequestError(
                 error='unable to create Bitfinex order {}'.format(
@@ -487,8 +496,12 @@ class Bitfinex(Exchange):
             If an asset is passed then this will return a list of the open
             orders for this asset.
         """
-        response = self._request('orders', None)
-        order_statuses = response.json()
+        try:
+            response = self._request('orders', None)
+            order_statuses = response.json()
+        except Exception as e:
+            raise ExchangeRequestError(error=e)
+
         if 'message' in order_statuses:
             raise ExchangeRequestError(
                 error='Unable to retrieve open orders: {}'.format(
@@ -518,8 +531,12 @@ class Bitfinex(Exchange):
         order : Order
             The order object.
         """
-        response = self._request('order/status', {'order_id': int(order_id)})
-        order_status = response.json()
+        try:
+            response = self._request(
+                'order/status', {'order_id': int(order_id)})
+            order_status = response.json()
+        except Exception as e:
+            raise ExchangeRequestError(error=e)
 
         if 'message' in order_status:
             raise ExchangeRequestError(
@@ -539,8 +556,12 @@ class Bitfinex(Exchange):
         order_id = order_param.id \
             if isinstance(order_param, ExchangeOrder) else order_param
 
-        response = self._request('order/cancel', {'order_id': order_id})
-        status = response.json()
+        try:
+            response = self._request('order/cancel', {'order_id': order_id})
+            status = response.json()
+        except Exception as e:
+            raise ExchangeRequestError(error=e)
+
         if 'message' in status:
             raise ExchangeRequestError(
                 error='Unable to cancel order: {} {}'.format(
@@ -558,13 +579,16 @@ class Bitfinex(Exchange):
         symbols = self._get_v2_symbols(assets)
         log.debug('fetching tickers {}'.format(symbols))
 
-        request = requests.get(
-            '{url}/v2/tickers?symbols={symbols}'.format(
-                url=self.url,
-                symbols=','.join(symbols),
+        try:
+            response = requests.get(
+                '{url}/v2/tickers?symbols={symbols}'.format(
+                    url=self.url,
+                    symbols=','.join(symbols),
+                )
             )
-        )
-        tickers = request.json()
+            tickers = response.json()
+        except Exception as e:
+            raise ExchangeRequestError(error=e)
 
         if 'message' in tickers:
             raise ExchangeRequestError(

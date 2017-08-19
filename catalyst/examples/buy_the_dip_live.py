@@ -39,7 +39,7 @@ def handle_data(context, data):
     #                     )
     ohlc = data.history(context.asset,
                         fields=['price', 'volume'],
-                        bar_count=20,
+                        bar_count=120,
                         frequency='1m'
                         )
     # ohlc = data.history([context.asset, symbol('iot_usd')],
