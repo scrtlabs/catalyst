@@ -27,7 +27,7 @@ def initialize(context):
 
 def handle_data(context, data):
     log.info('handling bar {data}'.format(data=data))
-    # ohlc = data.history(context.asset,
+    # price_history = data.history(symbol('iot_usd'),
     #                     fields='price',
     #                     bar_count=20,
     #                     frequency='1d'
@@ -37,11 +37,18 @@ def handle_data(context, data):
     #                     bar_count=20,
     #                     frequency='1d'
     #                     )
-    ohlc = data.history([context.asset, symbol('iot_usd')],
+    ohlc = data.history(context.asset,
                         fields=['price', 'volume'],
                         bar_count=20,
-                        frequency='1d'
+                        frequency='1m'
                         )
+    # ohlc = data.history([context.asset, symbol('iot_usd')],
+    #                     fields=['price', 'volume'],
+    #                     bar_count=20,
+    #                     frequency='1d'
+    #                     )
+
+    hist_price = ohlc['price']
 
     cash = context.portfolio.cash
     log.info('base currency available: {cash}'.format(cash=cash))
@@ -115,8 +122,8 @@ def handle_data(context, data):
 
 exchange_conn = dict(
     name='bitfinex',
-    key='',
-    secret=b'',
+    key='TvmJpJ9XBKRwBhyeB27d2jXc3Lrpfz0OXIptrfbf9kH',
+    secret=b'ODC0mHvIdMYQpjsdviV8fJ1kfDFIUdIAJOReiFsJR5Z',
     base_currency='usd'
 )
 run_algorithm(

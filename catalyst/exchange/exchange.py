@@ -341,33 +341,39 @@ class Exchange:
                            end_dt,
                            bar_count,
                            frequency,
-                           fields,
+                           field,
                            data_frequency,
                            ffill=True):
 
         """
+        Public API method that returns a dataframe containing the requested
+        history window.  Data is fully adjusted.
 
-        :param assets:
-        :param end_dt:
-        :param bar_count:
-        :param frequency:
-        :param fields:
-        :param data_frequency:
-        :param ffill:
+        Parameters
+        ----------
+        assets : list of catalyst.data.Asset objects
+            The assets whose data is desired.
 
-        :return df:
-        If a single security and a single field were passed into data.history,
-        a pandas Series is returned, indexed by date.
+        bar_count: int
+            The number of bars desired.
 
-        If multiple securities and single field are passed in, the returned
-        pandas DataFrame is indexed by date, and has assets as columns.
+        frequency: string
+            "1d" or "1m"
 
-        If a single security and multiple fields are passed in, the returned
-        pandas DataFrame is indexed by date, and has fields as columns.
+        field: string
+            The desired field of the asset.
 
-        If multiple assets and multiple fields are passed in, the returned
-        pandas Panel is indexed by field, has date as the major axis, and
-        securities as the minor axis.
+        data_frequency: string
+            The frequency of the data to query; i.e. whether the data is
+            'daily' or 'minute' bars.
+
+        ffill: boolean
+            Forward-fill missing values. Only has effect if field
+            is 'price'.
+
+        Returns
+        -------
+        A dataframe containing the requested data.
         """
 
         candles = self.get_candles(
@@ -377,28 +383,34 @@ class Exchange:
             end_dt=end_dt
         )
 
-        def get_single_field_series(candles):
-            return pd.Series(
-                map(lambda candle: candle[fields], candles),
-                index=map(lambda candle: candle['last_traded'], candles)
-            )
+        # def get_single_field_df(asset, candles):
+        #     # columns = [field, 'last_traded']
+        #     # df = pd.DataFrame(candles, columns=columns)
+        #     # df.set_index('last_traded', drop=True,inplace=True)
+        #
+        # if len(assets) == 1:
+        #     asset = assets[0]
+        #     df = get_single_field_series(candles[asset])
+        # else:
+        #     series = []
+        #     for asset in assets:
+        #         item = get_single_field_series(candles[asset])
+        #         series.append(item)
+        #     df = pd.concat(series, axis=1)
+        # return df
+        frames = []
+        for asset in assets:
+            asset_candles = candles[asset]
+            asset_data = dict()
+            asset_data[asset] = map(lambda candle: candle[field], asset_candles)
 
-        df = None
-        if len(assets) == 1:
-            if type(fields) is str:
-                asset = assets[0]
-                df = get_single_field_series(candles[asset])
-            else:
-                raise NotImplementedError()
-        else:
-            if type(fields) is str:
-                series = []
-                for asset in assets:
-                    item = get_single_field_series(candles[asset])
-                    series.append(item)
-                df = pd.concat(series, axis=1)
-            else:
-                raise NotImplementedError()
+            dates = map(lambda candle: candle['last_traded'],
+                        asset_candles)
+
+            df = pd.DataFrame(asset_data, index=dates)
+            frames.append(df)
+
+        df = pd.concat(frames)
 
         return df
 
