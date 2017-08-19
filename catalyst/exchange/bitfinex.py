@@ -7,19 +7,26 @@ import json
 import time
 import requests
 import pandas as pd
-import collections
+from datetime import timedelta, datetime
 from catalyst.protocol import Portfolio, Account
 # from websocket import create_connection
 from catalyst.exchange.exchange import Exchange
 from logbook import Logger
+from catalyst.assets._assets import Asset
 from catalyst.finance.order import ORDER_STATUS
 from catalyst.exchange.exchange_order import ExchangeOrder
 from catalyst.finance.execution import (MarketOrder,
                                         LimitOrder,
                                         StopOrder,
                                         StopLimitOrder)
-from catalyst.data.data_portal import BASE_FIELDS
 from catalyst.exchange.exchange_portfolio import ExchangePortfolio
+from catalyst.errors import (
+    IncompatibleHistoryFrequency,
+)
+from catalyst.exchange.exchange_errors import (
+    ExchangeRequestError,
+    InvalidHistoryFrequencyError
+)
 
 BITFINEX_URL = 'https://api.bitfinex.com'
 ASSETS = '{ "USDT_BTC": {"symbol":"btc_usd", "start_date": "2010-01-01"}, "ltcusd": {"symbol":"ltc_usd", "start_date": "2010-01-01"}, "ltcbtc": {"symbol":"ltc_btc", "start_date": "2010-01-01"}, "ethusd": {"symbol":"eth_usd", "start_date": "2010-01-01"}, "ethbtc": {"symbol":"eth_btc", "start_date": "2010-01-01"}, "etcbtc": {"symbol":"etc_btc", "start_date": "2010-01-01"}, "etcusd": {"symbol":"etc_usd", "start_date": "2010-01-01"}, "rrtusd": {"symbol":"rrt_usd", "start_date": "2010-01-01"}, "rrtbtc": {"symbol":"rrt_btc", "start_date": "2010-01-01"}, "zecusd": {"symbol":"zec_usd", "start_date": "2010-01-01"}, "zecbtc": {"symbol":"zec_btc", "start_date": "2010-01-01"}, "xmrusd": {"symbol":"xmr_usd", "start_date": "2010-01-01"}, "xmrbtc": {"symbol":"xmr_btc", "start_date": "2010-01-01"}, "dshusd": {"symbol":"dsh_usd", "start_date": "2010-01-01"}, "dshbtc": {"symbol":"dsh_btc", "start_date": "2010-01-01"}, "bccbtc": {"symbol":"bcc_btc", "start_date": "2010-01-01"}, "bcubtc": {"symbol":"bcu_btc", "start_date": "2010-01-01"}, "bccusd": {"symbol":"bcc_usd", "start_date": "2010-01-01"}, "bcuusd": {"symbol":"bcu_usd", "start_date": "2010-01-01"}, "xrpusd": {"symbol":"xrp_usd", "start_date": "2010-01-01"}, "xrpbtc": {"symbol":"xrp_btc", "start_date": "2010-01-01"}, "iotusd": {"symbol":"iot_usd", "start_date": "2010-01-01"}, "iotbtc": {"symbol":"iot_btc", "start_date": "2010-01-01"}, "ioteth": {"symbol":"iot_eth", "start_date": "2010-01-01"}, "eosusd": {"symbol":"eos_usd", "start_date": "2010-01-01"}, "eosbtc": {"symbol":"eos_btc", "start_date": "2010-01-01"}, "eoseth": {"symbol":"eos_eth", "start_date": "2010-01-01"} }'
@@ -175,8 +182,8 @@ class Bitfinex(Exchange):
         response = self._request('balances', None)
         balances = response.json()
         if 'message' in balances:
-            raise ValueError(
-                'unable to fetch balance %s' % balances['message']
+            raise ExchangeRequestError(
+                error='unable to fetch balance {}'.format(balances['message'])
             )
 
         base_position = None
@@ -187,7 +194,7 @@ class Bitfinex(Exchange):
 
         if position is None:
             raise ValueError(
-                'Base currency %s not found in portfolio' % self.base_currency
+                error='Base currency %s not found in portfolio' % self.base_currency
             )
 
         portfolio = self.store.portfolio
@@ -265,99 +272,81 @@ class Bitfinex(Exchange):
     def subscribe_to_market_data(self, symbol):
         pass
 
-    def get_spot_value(self, assets, field, dt=None, data_frequency='minute'):
-        """
-        Public API method that returns a scalar value representing the value
-        of the desired asset's field at either the given dt.
+    def get_candles(self, data_frequency, assets,
+                     end_dt=None, bar_count=None, limit=None):
 
-        Parameters
-        ----------
-        assets : Asset, ContinuousFuture, or iterable of same.
-            The asset or assets whose data is desired.
-        field : {'open', 'high', 'low', 'close', 'volume',
-                 'price', 'last_traded'}
-            The desired field of the asset.
-        dt : pd.Timestamp
-            The timestamp for the desired value.
-        data_frequency : str
-            The frequency of the data to query; i.e. whether the data is
-            'daily' or 'minute' bars
-
-        Returns
-        -------
-        value : float, int, or pd.Timestamp
-            The spot value of ``field`` for ``asset`` The return type is based
-            on the ``field`` requested. If the field is one of 'open', 'high',
-            'low', 'close', or 'price', the value will be a float. If the
-            ``field`` is 'volume' the value will be a int. If the ``field`` is
-            'last_traded' the value will be a Timestamp.
-
-        Bitfinex timeframes
-        -------------------
-        Available values: '1m', '5m', '15m', '30m', '1h', '3h', '6h', '12h',
-         '1D', '7D', '14D', '1M'
-        """
-        if field not in BASE_FIELDS:
-            raise KeyError('Invalid column: ' + str(field))
-
-        if isinstance(assets, collections.Iterable):
-            values = list()
-            for asset in assets:
-                value = self.get_single_spot_value(
-                    asset, field, data_frequency)
-                values.append(value)
-
-            return values
-        else:
-            return self.get_single_spot_value(
-                assets, field, data_frequency)
-
-    def get_single_spot_value(self, asset, field, data_frequency):
-        symbol = self._get_v2_symbol(asset)
-        log.debug(
-            'fetching spot value {field} for symbol {symbol}'.format(
-                symbol=symbol,
-                field=field
-            )
-        )
-
-        if data_frequency == 'minute':
+        # TODO: support all available frequencies
+        start_dt = None
+        if data_frequency == 'minute' or data_frequency == '1m':
             frequency = '1m'
-        elif data_frequency == 'daily':
+            if bar_count and end_dt:
+                start_dt = end_dt - timedelta(minutes=bar_count)
+        elif data_frequency == 'daily' or data_frequency == '1d':
             frequency = '1D'
+            if bar_count and end_dt:
+                start_dt = end_dt - timedelta(days=bar_count)
         else:
-            raise NotImplementedError(
-                'Unsupported frequency %s' % data_frequency
+            raise InvalidHistoryFrequencyError(
+                frequency=data_frequency
             )
 
-        response = requests.get(
-            '{url}/v2/candles/trade:{frequency}:{symbol}/last'.format(
+        # Making sure that assets are iterable
+        asset_list = [assets] if isinstance(assets, Asset) else assets
+        ohlc_list = dict()
+        for asset in asset_list:
+            symbol = self._get_v2_symbol(asset)
+            url = '{url}/v2/candles/trade:{frequency}:{symbol}'.format(
                 url=self.url,
                 frequency=frequency,
                 symbol=symbol
             )
-        )
-        candles = response.json()
 
-        if 'message' in candles:
-            raise ValueError(
-                'Unable to retrieve candles: %s' % candles['message']
-            )
+            if start_dt and end_dt:
+                is_list = True
+                url += '/hist?start={start}&end={end}'.format(
+                    start=time.mktime(start_dt.timetuple()) * 1000,
+                    end=time.mktime(end_dt.timetuple()) * 1000,
+                )
+            else:
+                is_list = False
+                url += '/last'
 
-        ohlc = dict(
-            open=candles[1],
-            high=candles[3],
-            low=candles[4],
-            close=candles[2],
-            volume=candles[5],
-            price=candles[2],
-            last_traded=pd.Timestamp.utcfromtimestamp(candles[0] / 1000.0),
-        )
+            response = requests.get(url)
+            candles = response.json()
 
-        if field not in ohlc:
-            raise KeyError('Invalid column: %s' % field)
+            if 'message' in candles:
+                raise ExchangeRequestError(
+                    error='Unable to retrieve candles: {}'.format(
+                        candles['message'])
+                )
 
-        return ohlc[field]
+            def ohlc_from_candle(candle):
+                return dict(
+                    open=candle[1],
+                    high=candle[3],
+                    low=candle[4],
+                    close=candle[2],
+                    volume=candle[5],
+                    price=candle[2],
+                    last_traded=pd.Timestamp.utcfromtimestamp(
+                        candle[0] / 1000.0),
+                )
+
+            if is_list:
+                ohlc_bars = []
+                for candle in candles:
+                    ohlc = ohlc_from_candle(candle)
+                    ohlc_bars.append(ohlc)
+
+                ohlc_list[asset] = ohlc_bars
+
+            else:
+                ohlc = ohlc_from_candle(candles)
+                ohlc_list[asset] = ohlc
+
+        return ohlc_list[assets] \
+            if isinstance(assets, Asset) else ohlc_list
+
 
     def order(self, asset, amount, limit_price, stop_price, style):
         """Place an order.
@@ -460,9 +449,9 @@ class Bitfinex(Exchange):
         response = self._request('order/new', req)
         exchange_order = response.json()
         if 'message' in exchange_order:
-            raise ValueError(
-                'unable to create Bitfinex order %s' % exchange_order[
-                    'message']
+            raise ExchangeRequestError(
+                error='unable to create Bitfinex order {}'.format(
+                    exchange_order['message'])
             )
 
         order_id = exchange_order['id']
@@ -501,9 +490,9 @@ class Bitfinex(Exchange):
         response = self._request('orders', None)
         order_statuses = response.json()
         if 'message' in order_statuses:
-            raise ValueError(
-                'Unable to retrieve open orders: %s' % order_statuses[
-                    'message']
+            raise ExchangeRequestError(
+                error='Unable to retrieve open orders: {}'.format(
+                    order_statuses['message'])
             )
 
         orders = list()
@@ -533,8 +522,9 @@ class Bitfinex(Exchange):
         order_status = response.json()
 
         if 'message' in order_status:
-            raise ValueError(
-                'Unable to retrieve order status: %s' % order_status['message']
+            raise ExchangeRequestError(
+                error='Unable to retrieve order status: {}'.format(
+                    order_status['message'])
             )
         return self._create_order(order_status)
 
@@ -552,8 +542,9 @@ class Bitfinex(Exchange):
         response = self._request('order/cancel', {'order_id': order_id})
         status = response.json()
         if 'message' in status:
-            raise ValueError(
-                'Unable to cancel order: %s %s' % (order_id, status['message'])
+            raise ExchangeRequestError(
+                error='Unable to cancel order: {} {}'.format(
+                    order_id, status['message'])
             )
 
     def tickers(self, assets):
@@ -576,8 +567,9 @@ class Bitfinex(Exchange):
         tickers = request.json()
 
         if 'message' in tickers:
-            raise ValueError(
-                'Unable to retrieve tickers: %s' % tickers['message']
+            raise ExchangeRequestError(
+                error='Unable to retrieve tickers: {}'.format(
+                    tickers['message'])
             )
 
         formatted_tickers = []

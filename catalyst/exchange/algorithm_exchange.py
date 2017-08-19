@@ -24,6 +24,9 @@ from catalyst.utils.api_support import (
     disallowed_in_before_trading_start)
 
 from catalyst.utils.calendars.trading_calendar import days_at_time
+from catalyst.exchange.exchange_errors import (
+    ExchangeRequestError
+)
 
 log = logbook.Logger("ExchangeTradingAlgorithm")
 
@@ -37,6 +40,11 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
     def __init__(self, *args, **kwargs):
         self.exchange = kwargs.pop('exchange', None)
         self.orders = {}
+
+        self.retry_check_open_orders = 5
+        self.retry_update_portfolio = 5
+        self.retry_order = 1
+        self.retry_delay = 5
 
         super(self.__class__, self).__init__(*args, **kwargs)
 
@@ -113,9 +121,32 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
     def updated_account(self):
         return self.exchange.account
 
+    def _update_portfolio(self, attempt_index=0):
+        try:
+            self.exchange.update_portfolio()
+        except ExchangeRequestError as e:
+            log.warn(
+                'update portfolio attempt {}: {}'.format(attempt_index, e)
+            )
+            if attempt_index < self.retry_update_portfolio:
+                time.sleep(self.retry_delay)
+                self._update_portfolio(attempt_index + 1)
+
+    def _check_open_orders(self, attempt_index=0):
+        try:
+            return self.exchange.check_open_orders()
+        except ExchangeRequestError as e:
+            log.warn(
+                'check open orders attempt {}: {}'.format(attempt_index, e)
+            )
+            if attempt_index < self.retry_check_open_orders:
+                time.sleep(self.retry_delay)
+                return self._check_open_orders(attempt_index + 1)
+
     def handle_data(self, data):
-        self.exchange.update_portfolio()
-        transactions = self.exchange.check_open_orders()
+        self._update_portfolio()
+
+        transactions = self._check_open_orders()
         for transaction in transactions:
             self.perf_tracker.process_transaction(transaction)
 
@@ -127,6 +158,27 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         # every bar no matter if the algorithm places an order or not.
         self.validate_account_controls()
 
+    def _order(self,
+               asset,
+               amount,
+               limit_price=None,
+               stop_price=None,
+               style=None,
+               attempt_index=0):
+        try:
+            return self.exchange.order(asset, amount, limit_price,
+                                       stop_price,
+                                       style)
+        except ExchangeRequestError as e:
+            log.warn(
+                'order attempt {}: {}'.format(attempt_index, e)
+            )
+            if attempt_index < self.retry_order:
+                time.sleep(self.retry_delay)
+                return self._order(
+                    asset, amount, limit_price, stop_price, style,
+                    attempt_index + 1)
+
     @api_method
     @disallowed_in_before_trading_start(OrderInBeforeTradingStart())
     def order(self,
@@ -136,11 +188,12 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
               stop_price=None,
               style=None):
         amount, style = self._calculate_order(asset, amount,
-                                              limit_price, stop_price, style)
+                                              limit_price, stop_price,
+                                              style)
 
-        order_id = self.exchange.order(asset, amount, limit_price, stop_price,
-                                       style)
+        order_id = self._order(asset, amount, limit_price, stop_price, style)
         order = self.portfolio.open_orders[order_id]
+
         self.perf_tracker.process_order(order)
         return order
 

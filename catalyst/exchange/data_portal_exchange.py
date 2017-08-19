@@ -33,7 +33,7 @@ class DataPortalExchange(DataPortal):
                            field,
                            data_frequency,
                            ffill=True):
-        history_window = super(self.__class__, self).get_history_window(
+        return self.exchange.get_history_window(
             assets,
             end_dt,
             bar_count,
@@ -42,12 +42,6 @@ class DataPortalExchange(DataPortal):
             data_frequency,
             ffill)
 
-        # The returned dataframe contains today's value as a NaN because
-        # end_dt points to the current wall clock. We drop today's
-        # value to be in sync with the simulation's behavior.
-        today = pd.Timestamp.utcnow()
-        return history_window[history_window.index.date != today]
-
     def get_spot_value(self, assets, field, dt, data_frequency):
         return self.exchange.get_spot_value(assets, field, dt, data_frequency)
 
@@ -55,4 +49,5 @@ class DataPortalExchange(DataPortal):
                            perspective_dt,
                            data_frequency,
                            spot_value=None):
+        # TODO: does this pertain to cryptocurrencies?
         raise NotImplementedError("get_adjusted_value is not implemented yet!")

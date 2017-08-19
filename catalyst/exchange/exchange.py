@@ -1,11 +1,13 @@
 import abc
 import json
 from abc import ABCMeta, abstractmethod, abstractproperty
+import collections
 
 import pandas as pd
 from catalyst.assets._assets import Asset
 from catalyst.finance.order import ORDER_STATUS
 from catalyst.finance.transaction import Transaction
+from catalyst.data.data_portal import BASE_FIELDS
 
 from catalyst.errors import (
     MultipleSymbolsFound,
@@ -264,6 +266,141 @@ class Exchange:
             'last_traded' the value will be a Timestamp.
         """
         pass
+
+    @abstractmethod
+    def get_candles(self, data_frequency, assets,
+                    end_dt=None, bar_count=None, limit=None):
+        """
+        Retrieve OHLC candles
+        """
+        pass
+
+    def get_spot_value(self, assets, field, dt=None, data_frequency='minute'):
+        """
+        Public API method that returns a scalar value representing the value
+        of the desired asset's field at either the given dt.
+
+        Parameters
+        ----------
+        assets : Asset, ContinuousFuture, or iterable of same.
+            The asset or assets whose data is desired.
+        field : {'open', 'high', 'low', 'close', 'volume',
+                 'price', 'last_traded'}
+            The desired field of the asset.
+        dt : pd.Timestamp
+            The timestamp for the desired value.
+        data_frequency : str
+            The frequency of the data to query; i.e. whether the data is
+            'daily' or 'minute' bars
+
+        Returns
+        -------
+        value : float, int, or pd.Timestamp
+            The spot value of ``field`` for ``asset`` The return type is based
+            on the ``field`` requested. If the field is one of 'open', 'high',
+            'low', 'close', or 'price', the value will be a float. If the
+            ``field`` is 'volume' the value will be a int. If the ``field`` is
+            'last_traded' the value will be a Timestamp.
+
+        Bitfinex timeframes
+        -------------------
+        Available values: '1m', '5m', '15m', '30m', '1h', '3h', '6h', '12h',
+         '1D', '7D', '14D', '1M'
+        """
+        if field not in BASE_FIELDS:
+            raise KeyError('Invalid column: ' + str(field))
+
+        if isinstance(assets, collections.Iterable):
+            values = list()
+            for asset in assets:
+                value = self.get_single_spot_value(
+                    asset, field, data_frequency)
+                values.append(value)
+
+            return values
+        else:
+            return self.get_single_spot_value(
+                assets, field, data_frequency)
+
+    def get_single_spot_value(self, asset, field, data_frequency):
+        log.debug(
+            'fetching spot value {field} for symbol {symbol}'.format(
+                symbol=asset.symbol,
+                field=field
+            )
+        )
+
+        ohlc = self.get_candles(data_frequency, asset)
+        if field not in ohlc:
+            raise KeyError('Invalid column: %s' % field)
+
+        return ohlc[field]
+
+    def get_history_window(self,
+                           assets,
+                           end_dt,
+                           bar_count,
+                           frequency,
+                           fields,
+                           data_frequency,
+                           ffill=True):
+
+        """
+
+        :param assets:
+        :param end_dt:
+        :param bar_count:
+        :param frequency:
+        :param fields:
+        :param data_frequency:
+        :param ffill:
+
+        :return df:
+        If a single security and a single field were passed into data.history,
+        a pandas Series is returned, indexed by date.
+
+        If multiple securities and single field are passed in, the returned
+        pandas DataFrame is indexed by date, and has assets as columns.
+
+        If a single security and multiple fields are passed in, the returned
+        pandas DataFrame is indexed by date, and has fields as columns.
+
+        If multiple assets and multiple fields are passed in, the returned
+        pandas Panel is indexed by field, has date as the major axis, and
+        securities as the minor axis.
+        """
+
+        candles = self.get_candles(
+            data_frequency=frequency,
+            assets=assets,
+            bar_count=bar_count,
+            end_dt=end_dt
+        )
+
+        def get_single_field_series(candles):
+            return pd.Series(
+                map(lambda candle: candle[fields], candles),
+                index=map(lambda candle: candle['last_traded'], candles)
+            )
+
+        df = None
+        if len(assets) == 1:
+            if type(fields) is str:
+                asset = assets[0]
+                df = get_single_field_series(candles[asset])
+            else:
+                raise NotImplementedError()
+        else:
+            if type(fields) is str:
+                series = []
+                for asset in assets:
+                    item = get_single_field_series(candles[asset])
+                    series.append(item)
+                df = pd.concat(series, axis=1)
+            else:
+                raise NotImplementedError()
+
+        return df
 
     @abc.abstractmethod
     def tickers(self, date, pairs):

@@ -7,8 +7,10 @@ from catalyst.api import (
     record,
     get_open_orders,
 )
+from catalyst.exchange.exchange_errors import ExchangeRequestError
 
-log = Logger('buy_and_hold_live')
+algo_namespace = 'buy_the_dip_live'
+log = Logger(algo_namespace)
 
 
 def initialize(context):
@@ -18,9 +20,28 @@ def initialize(context):
     context.TARGET_POSITIONS = 100
     context.BUY_INCREMENT = 1
 
+    context.retry_check_open_orders = 2
+    context.retry_update_portfolio = 2
+    context.retry_order = 2
+
 
 def handle_data(context, data):
     log.info('handling bar {data}'.format(data=data))
+    # ohlc = data.history(context.asset,
+    #                     fields='price',
+    #                     bar_count=20,
+    #                     frequency='1d'
+    #                     )
+    # ohlc = data.history([context.asset, symbol('iot_usd')],
+    #                     fields='price',
+    #                     bar_count=20,
+    #                     frequency='1d'
+    #                     )
+    ohlc = data.history([context.asset, symbol('iot_usd')],
+                        fields=['price', 'volume'],
+                        bar_count=20,
+                        frequency='1d'
+                        )
 
     cash = context.portfolio.cash
     log.info('base currency available: {cash}'.format(cash=cash))
@@ -82,10 +103,13 @@ def handle_data(context, data):
         leverage=context.account.leverage,
     )
 
-    context.perf_tracker.update_performance()
-    log.info('the performance:\n{}'.format(
-        context.perf_tracker.to_dict('minute')
-    ))
+    try:
+        context.perf_tracker.update_performance()
+        log.info('the performance:\n{}'.format(
+            context.perf_tracker.to_dict('minute')
+        ))
+    except Exception as e:
+        log.warn('unable to calculate performance: {}'.format(e))
     pass
 
 
@@ -101,5 +125,5 @@ run_algorithm(
     capital_base=100000,
     exchange_conn=exchange_conn,
     live=True,
-    algo_namespace='buy_and_hold_live'
+    algo_namespace=algo_namespace
 )
