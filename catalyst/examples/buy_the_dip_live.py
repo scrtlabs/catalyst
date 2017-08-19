@@ -122,8 +122,8 @@ def handle_data(context, data):
 
 exchange_conn = dict(
     name='bitfinex',
-    key='TvmJpJ9XBKRwBhyeB27d2jXc3Lrpfz0OXIptrfbf9kH',
-    secret=b'ODC0mHvIdMYQpjsdviV8fJ1kfDFIUdIAJOReiFsJR5Z',
+    key='',
+    secret=b'',
     base_currency='usd'
 )
 run_algorithm(
