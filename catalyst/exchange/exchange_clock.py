@@ -15,6 +15,8 @@ from time import sleep
 
 from logbook import Logger
 import pandas as pd
+import signal
+import sys
 
 from catalyst.gens.sim_engine import (
     BAR,
@@ -57,6 +59,13 @@ class ExchangeClock(object):
         self._before_trading_start_bar_yielded = True
 
     def __iter__(self):
+        def signal_handler(signal, frame):
+            log.info('You pressed Ctrl+C!')
+            # yield pd.Timestamp.utcnow(), BAR
+            sys.exit(0)
+
+        signal.signal(signal.SIGINT, signal_handler)
+
         yield pd.Timestamp.utcnow(), SESSION_START
 
         while True:

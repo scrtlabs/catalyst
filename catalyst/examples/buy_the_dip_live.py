@@ -37,18 +37,18 @@ def handle_data(context, data):
     #                     bar_count=20,
     #                     frequency='1d'
     #                     )
-    ohlc = data.history(context.asset,
-                        fields=['price', 'volume'],
-                        bar_count=120,
-                        frequency='1m'
-                        )
+    # ohlc = data.history(context.asset,
+    #                     fields=['price', 'volume'],
+    #                     bar_count=120,
+    #                     frequency='1m'
+    #                     )
     # ohlc = data.history([context.asset, symbol('iot_usd')],
     #                     fields=['price', 'volume'],
     #                     bar_count=20,
     #                     frequency='1d'
     #                     )
 
-    hist_price = ohlc['price']
+    # hist_price = ohlc['price']
 
     cash = context.portfolio.cash
     log.info('base currency available: {cash}'.format(cash=cash))

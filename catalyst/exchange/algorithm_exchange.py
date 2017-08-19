@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from datetime import time
+from time import sleep
 import logbook
 
 import catalyst.protocol as zp
@@ -129,7 +130,7 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
                 'update portfolio attempt {}: {}'.format(attempt_index, e)
             )
             if attempt_index < self.retry_update_portfolio:
-                time.sleep(self.retry_delay)
+                sleep(self.retry_delay)
                 self._update_portfolio(attempt_index + 1)
 
     def _check_open_orders(self, attempt_index=0):
@@ -140,7 +141,7 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
                 'check open orders attempt {}: {}'.format(attempt_index, e)
             )
             if attempt_index < self.retry_check_open_orders:
-                time.sleep(self.retry_delay)
+                sleep(self.retry_delay)
                 return self._check_open_orders(attempt_index + 1)
 
     def handle_data(self, data):
@@ -174,7 +175,7 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
                 'order attempt {}: {}'.format(attempt_index, e)
             )
             if attempt_index < self.retry_order:
-                time.sleep(self.retry_delay)
+                sleep(self.retry_delay)
                 return self._order(
                     asset, amount, limit_price, stop_price, style,
                     attempt_index + 1)
