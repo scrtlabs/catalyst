@@ -129,8 +129,8 @@ def analyze(context, stats):
 
 exchange_conn = dict(
     name='bitfinex',
-    key='yCN1b2LsLpjt8jmS4xi2ZZSfW9DRq4r9h2Aa9WOrKFr',
-    secret=b'VOW6R7zbmBGsLh49FIK76qkHrwr2ovNb4FQ1N1d3cyC',
+    key='',
+    secret=b'',
     base_currency='usd'
 )
 run_algorithm(
