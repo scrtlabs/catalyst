@@ -48,6 +48,12 @@ class ExchangeSymbolsNotFound(ZiplineError):
     ).strip()
 
 
+class AlgoPickleNotFound(ZiplineError):
+    msg = (
+        'Pickle not found for algo {algo} in path {filename}'
+    ).strip()
+
+
 class InvalidHistoryFrequencyError(ZiplineError):
     msg = (
         'History frequency {frequency} not supported by the exchange.'

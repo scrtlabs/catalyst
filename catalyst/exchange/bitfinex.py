@@ -41,7 +41,7 @@ warning_logger = Logger('AlgoWarning')
 
 
 class Bitfinex(Exchange):
-    def __init__(self, key, secret, base_currency, store):
+    def __init__(self, key, secret, base_currency, portfolio=None):
         self.url = BITFINEX_URL
         self.key = key
         self.secret = secret
@@ -50,7 +50,7 @@ class Bitfinex(Exchange):
         self.assets = {}
         self.load_assets(get_exchange_symbols(self.name))
         self.base_currency = base_currency
-        self.store = store
+        self._portfolio = portfolio
 
     def _request(self, operation, data, version='v1'):
         payload_object = {
@@ -203,8 +203,10 @@ class Bitfinex(Exchange):
                 error='Base currency %s not found in portfolio' % self.base_currency
             )
 
-        portfolio = self.store.portfolio
+        portfolio = self._portfolio
         portfolio.cash = float(base_position['available'])
+        if portfolio.starting_cash is None:
+            portfolio.starting_cash = portfolio.cash
 
         if portfolio.positions:
             assets = portfolio.positions.keys()
@@ -228,19 +230,18 @@ class Bitfinex(Exchange):
 
         :return:
         """
-        if self.store.portfolio is None:
-            portfolio = ExchangePortfolio(
-                store=self.store,
-                start_date=pd.Timestamp.utcnow()
-            )
-            self.store.portfolio = portfolio
-            self.update_portfolio()
+        # if self._portfolio is None:
+        #     portfolio = ExchangePortfolio(
+        #         start_date=pd.Timestamp.utcnow()
+        #     )
+        #     self.store.portfolio = portfolio
+        #     self.update_portfolio()
+        #
+        #     portfolio.starting_cash = portfolio.cash
+        # else:
+        #     portfolio = self.store.portfolio
 
-            portfolio.starting_cash = portfolio.cash
-        else:
-            portfolio = self.store.portfolio
-
-        return portfolio
+        return self._portfolio
 
     @property
     def account(self):

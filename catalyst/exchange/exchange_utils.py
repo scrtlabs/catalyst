@@ -1,9 +1,10 @@
 import os
 import urllib
 import json
+import pickle
 from catalyst.utils.paths import data_root, ensure_directory
 from catalyst.exchange.exchange_errors import ExchangeAuthNotFound, \
-    ExchangeSymbolsNotFound
+    ExchangeSymbolsNotFound, AlgoPickleNotFound
 
 SYMBOLS_URL = 'https://raw.githubusercontent.com/enigmampc/catalyst/' \
               'live-trading/catalyst/exchange/symbols/{exchange}.json'
@@ -60,3 +61,36 @@ def get_exchange_auth(exchange_name, environ=None):
             exchange=exchange_name,
             filename=filename
         )
+
+
+def get_algo_folder(algo_name, environ=None):
+    if not environ:
+        environ = os.environ
+
+    root = data_root(environ)
+    algo_folder = os.path.join(root, 'live_algos', algo_name)
+    ensure_directory(algo_folder)
+
+    return algo_folder
+
+
+def get_algo_object(algo_name, key, environ=None):
+    algo_folder = get_algo_folder(algo_name, environ)
+    filename = os.path.join(algo_folder, key + '.p')
+
+    if os.path.isfile(filename):
+        try:
+            with open(filename, 'rb') as handle:
+                return pickle.load(handle)
+        except Exception as e:
+            return None
+    else:
+        return None
+
+
+def save_algo_object(algo_name, key, obj, environ=None):
+    algo_folder = get_algo_folder(algo_name, environ)
+    filename = os.path.join(algo_folder, key + '.p')
+
+    with open(filename, 'wb') as handle:
+        pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)

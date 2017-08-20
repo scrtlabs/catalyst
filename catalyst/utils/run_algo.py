@@ -39,13 +39,13 @@ from catalyst.exchange.algorithm_exchange import ExchangeTradingAlgorithm
 from catalyst.exchange.data_portal_exchange import DataPortalExchange
 from catalyst.exchange.bitfinex import Bitfinex
 from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
-from catalyst.exchange.exchange_portfolio import PortfolioMemoryStore
+from catalyst.exchange.exchange_portfolio import ExchangePortfolio
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     ExchangeRequestErrorTooManyAttempts
 )
 from catalyst.exchange.exchange_utils import get_exchange_auth, \
-    get_exchange_folder
+    get_algo_object
 from logbook import Logger
 
 log = Logger('run_algo')
@@ -254,7 +254,7 @@ def _run(handle_data,
             )
             choose_loader = None
 
-            def fetch_portfolio(attempt_index=0):
+            def update_portfolio(attempt_index=0):
                 """
                 Fetch the portfolio for the exchange
                 We can't continue on error because it is required to bootstrap
@@ -263,18 +263,19 @@ def _run(handle_data,
                 :return:
                 """
                 try:
+                    exchange.update_portfolio()
                     return exchange.portfolio
                 except ExchangeRequestError as e:
                     if attempt_index < 20:
                         sleep(5)
-                        return fetch_portfolio(attempt_index + 1)
+                        return update_portfolio(attempt_index + 1)
                     else:
                         raise ExchangeRequestErrorTooManyAttempts(
                             attempts=attempt_index,
                             error=e
                         )
 
-            portfolio = fetch_portfolio()
+            portfolio = update_portfolio()
             sim_params = create_simulation_parameters(
                 start=start,
                 end=end,
@@ -287,7 +288,8 @@ def _run(handle_data,
             choose_loader = None
 
     TradingAlgorithmClass = (
-        partial(ExchangeTradingAlgorithm, exchange=exchange)
+        partial(ExchangeTradingAlgorithm, exchange=exchange,
+                algo_namespace=algo_namespace)
         if exchange else TradingAlgorithm)
 
     perf = TradingAlgorithmClass(
@@ -484,14 +486,23 @@ def run_algorithm(initialize,
             )
     else:
         if exchange_name is not None:
-            store = PortfolioMemoryStore(algo_namespace)
+            portfolio = get_algo_object(
+                algo_name=algo_namespace,
+                key='portfolio',
+                environ=environ
+            )
+            if portfolio is None:
+                portfolio = ExchangePortfolio(
+                    start_date=pd.Timestamp.utcnow()
+                )
+
             exchange_auth = get_exchange_auth(exchange_name)
             if exchange_name == 'bitfinex':
                 exchange = Bitfinex(
                     key=exchange_auth['key'],
                     secret=exchange_auth['secret'].encode('UTF-8'),
                     base_currency=base_currency,
-                    store=store
+                    portfolio=portfolio
                 )
             else:
                 raise NotImplementedError(

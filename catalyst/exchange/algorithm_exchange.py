@@ -34,6 +34,7 @@ from catalyst.exchange.exchange_errors import (
     ExchangeTransactionError
 )
 from catalyst.finance.performance.period import calc_period_stats
+from catalyst.exchange.exchange_utils import save_algo_object, get_algo_object
 
 log = logbook.Logger("ExchangeTradingAlgorithm")
 
@@ -46,8 +47,9 @@ class ExchangeAlgorithmExecutor(AlgorithmSimulator):
 class ExchangeTradingAlgorithm(TradingAlgorithm):
     def __init__(self, *args, **kwargs):
         self.exchange = kwargs.pop('exchange', None)
+        self.algo_namespace = kwargs.pop('algo_namespace', None)
         self.orders = {}
-        self.minute_perfs = []
+        self.minute_perfs = None
         self.is_running = True
 
         self.retry_check_open_orders = 5
@@ -254,6 +256,13 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         if not self.is_running:
             return
 
+        if self.minute_perfs is None:
+            perfs = get_algo_object(
+                algo_name=self.algo_namespace,
+                key='minute_perfs'
+            )
+            self.minute_perfs = perfs if perfs is not None else []
+
         self._update_portfolio()
 
         transactions = self._check_open_orders()
@@ -281,6 +290,24 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
 
         except Exception as e:
             log.warn('unable to calculate performance: {}'.format(e))
+
+        try:
+            save_algo_object(
+                algo_name=self.algo_namespace,
+                key='minute_perfs',
+                obj=self.minute_perfs
+            )
+        except Exception as e:
+            log.warn('unable to save minute perfs to disk: {}'.format(e))
+
+        try:
+            save_algo_object(
+                algo_name=self.algo_namespace,
+                key='portfolio',
+                obj=self.exchange.portfolio
+            )
+        except Exception as e:
+            log.warn('unable to save portfolio to disk: {}'.format(e))
 
     def _order(self,
                asset,
