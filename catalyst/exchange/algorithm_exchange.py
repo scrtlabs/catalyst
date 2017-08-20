@@ -29,7 +29,7 @@ from catalyst.utils.api_support import (
 
 from catalyst.utils.calendars.trading_calendar import days_at_time
 from catalyst.exchange.exchange_errors import (
-    ExchangeRequestError
+    ExchangeRequestError,
 )
 
 log = logbook.Logger("ExchangeTradingAlgorithm")
@@ -164,6 +164,8 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
             if attempt_index < self.retry_check_open_orders:
                 sleep(self.retry_delay)
                 return self._check_open_orders(attempt_index + 1)
+            else:
+                return list()
 
     def handle_data(self, data):
         if not self.is_running:
@@ -222,6 +224,8 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
                 return self._order(
                     asset, amount, limit_price, stop_price, style,
                     attempt_index + 1)
+            else:
+                return None
 
     @api_method
     @disallowed_in_before_trading_start(OrderInBeforeTradingStart())
@@ -255,6 +259,8 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
             if attempt_index < self.retry_get_open_orders:
                 sleep(self.retry_delay)
                 return self._get_open_orders(asset, attempt_index + 1)
+            else:
+                return []
 
     @error_keywords(sid='Keyword argument `sid` is no longer supported for '
                         'get_open_orders. Use `asset` instead.')

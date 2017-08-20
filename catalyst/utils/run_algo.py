@@ -3,6 +3,7 @@ import re
 from runpy import run_path
 import sys
 import warnings
+from time import sleep
 
 import pandas as pd
 
@@ -39,6 +40,10 @@ from catalyst.exchange.data_portal_exchange import DataPortalExchange
 from catalyst.exchange.bitfinex import Bitfinex
 from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
 from catalyst.exchange.exchange_portfolio import PortfolioMemoryStore
+from catalyst.exchange.exchange_errors import (
+    ExchangeRequestError,
+    ExchangeRequestErrorTooManyAttempts
+)
 from logbook import Logger
 
 log = Logger('run_algo')
@@ -246,14 +251,35 @@ def _run(handle_data,
                 first_trading_day=pd.to_datetime('today', utc=True)
             )
             choose_loader = None
+
+            def fetch_portfolio(attempt_index=0):
+                """
+                Fetch the portfolio for the exchange
+                We can't continue on error because it is required to bootstrap
+                the algorithm.
+                :param attempt_index:
+                :return:
+                """
+                try:
+                    return exchange.portfolio
+                except ExchangeRequestError as e:
+                    if attempt_index < 20:
+                        sleep(5)
+                        return fetch_portfolio(attempt_index + 1)
+                    else:
+                        raise ExchangeRequestErrorTooManyAttempts(
+                            attempts=attempt_index,
+                            error=e
+                        )
+
+            portfolio = fetch_portfolio()
             sim_params = create_simulation_parameters(
                 start=start,
                 end=end,
-                capital_base=exchange.portfolio.starting_cash,
+                capital_base=portfolio.starting_cash,
                 emission_rate='minute',
                 data_frequency='minute'
             )
-            # sim_params = None
         else:
             env = TradingEnvironment(environ=environ)
             choose_loader = None

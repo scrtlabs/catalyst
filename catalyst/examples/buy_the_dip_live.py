@@ -29,7 +29,7 @@ def initialize(context):
 
 
 def handle_data(context, data):
-    log.info('handling bar {data}'.format(data=data))
+    log.info('handling bar {}'.format(data.current_dt))
     # price_history = data.history(symbol('iot_usd'),
     #                     fields='price',
     #                     bar_count=20,
@@ -129,8 +129,8 @@ def analyze(context, stats):
 
 exchange_conn = dict(
     name='bitfinex',
-    key='',
-    secret=b'',
+    key='yCN1b2LsLpjt8jmS4xi2ZZSfW9DRq4r9h2Aa9WOrKFr',
+    secret=b'VOW6R7zbmBGsLh49FIK76qkHrwr2ovNb4FQ1N1d3cyC',
     base_currency='usd'
 )
 run_algorithm(
