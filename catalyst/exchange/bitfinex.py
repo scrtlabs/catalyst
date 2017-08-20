@@ -54,7 +54,8 @@ class Bitfinex(Exchange):
     def _request(self, operation, data, version='v1'):
         payload_object = {
             'request': '/{}/{}'.format(version, operation),
-            'nonce': '{0:f}'.format(time.time() * 100000),  # convert to string
+            'nonce': '{0:f}'.format(time.time() * 1000000),
+            # convert to string
             'options': {}
         }
 
@@ -154,8 +155,10 @@ class Bitfinex(Exchange):
         # TODO: bitfinex does not specify comission. I could calculate it but not sure if it's worth it.
         commission = None
 
+        # TODO: zipline likes rounded dates to match statistics, is this ok?
         date = pd.Timestamp.utcfromtimestamp(float(order_status['timestamp']))
         date = pytz.utc.localize(date)
+        date = date.floor('1 min')
         order = ExchangeOrder(
             dt=date,
             asset=self.assets[order_status['symbol']],
@@ -451,6 +454,7 @@ class Bitfinex(Exchange):
             sell_price_oco=0
         )
 
+        date = pd.Timestamp.utcnow().floor('1 min')  # Making zipline happy
         try:
             response = self._request('order/new', req)
             exchange_order = response.json()
@@ -465,7 +469,7 @@ class Bitfinex(Exchange):
 
         order_id = exchange_order['id']
         order = ExchangeOrder(
-            dt=pd.Timestamp.utcnow(),
+            dt=date,
             asset=asset,
             amount=amount,
             stop=style.get_stop_price(is_buy),

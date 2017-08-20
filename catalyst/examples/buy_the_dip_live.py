@@ -8,6 +8,7 @@ from catalyst.api import (
     get_open_orders,
 )
 from catalyst.exchange.exchange_errors import ExchangeRequestError
+import matplotlib.pyplot as plt
 
 algo_namespace = 'buy_the_dip_live'
 log = Logger(algo_namespace)
@@ -15,7 +16,9 @@ log = Logger(algo_namespace)
 
 def initialize(context):
     log.info('initializing algo')
-    context.asset = symbol('eos_usd')
+    context.ASSET_NAME = 'EOS_USD'
+    context.TICK_SIZE = 1000.0
+    context.asset = symbol(context.ASSET_NAME)
 
     context.TARGET_POSITIONS = 100
     context.BUY_INCREMENT = 1
@@ -37,18 +40,18 @@ def handle_data(context, data):
     #                     bar_count=20,
     #                     frequency='1d'
     #                     )
-    # ohlc = data.history(context.asset,
-    #                     fields=['price', 'volume'],
-    #                     bar_count=120,
-    #                     frequency='1m'
-    #                     )
+    ohlc = data.history(context.asset,
+                        fields=['price', 'volume'],
+                        bar_count=120,
+                        frequency='1m'
+                        )
     # ohlc = data.history([context.asset, symbol('iot_usd')],
     #                     fields=['price', 'volume'],
     #                     bar_count=20,
     #                     frequency='1d'
     #                     )
 
-    # hist_price = ohlc['price']
+    hist_price = ohlc['price']
 
     cash = context.portfolio.cash
     log.info('base currency available: {cash}'.format(cash=cash))
@@ -110,15 +113,19 @@ def handle_data(context, data):
         leverage=context.account.leverage,
     )
 
-    try:
-        context.perf_tracker.update_performance()
-        log.info('the performance:\n{}'.format(
-            context.perf_tracker.to_dict('minute')
-        ))
-    except Exception as e:
-        log.warn('unable to calculate performance: {}'.format(e))
     pass
 
+
+def analyze(context, stats):
+    pnl, = plt.plot(stats.index, stats['pnl'], '-',
+                         color='blue',
+                         linewidth=1.0,
+                         label='P&L',
+                         )
+
+    plt.legend(handles=[pnl])
+    plt.show()
+    pass
 
 exchange_conn = dict(
     name='bitfinex',
@@ -129,6 +136,7 @@ exchange_conn = dict(
 run_algorithm(
     initialize=initialize,
     handle_data=handle_data,
+    analyze=analyze,
     capital_base=100000,
     exchange_conn=exchange_conn,
     live=True,

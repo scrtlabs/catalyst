@@ -13,6 +13,9 @@
 from datetime import time
 from time import sleep
 import logbook
+import signal
+import sys
+import pandas as pd
 
 import catalyst.protocol as zp
 from catalyst.algorithm import TradingAlgorithm
@@ -41,15 +44,28 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
     def __init__(self, *args, **kwargs):
         self.exchange = kwargs.pop('exchange', None)
         self.orders = {}
+        self.minute_perfs = []
+        self.is_running = True
 
         self.retry_check_open_orders = 5
         self.retry_update_portfolio = 5
+        self.retry_get_open_orders = 5
         self.retry_order = 1
         self.retry_delay = 5
 
         super(self.__class__, self).__init__(*args, **kwargs)
 
         log.info('exchange trading algorithm successfully initialized')
+
+    def signal_handler(self, signal, frame):
+        self.is_running = False
+
+        log.info('You pressed Ctrl+C!')
+        stats = pd.DataFrame(self.minute_perfs)
+        stats.set_index('period_close', drop=True, inplace=True)
+        self.analyze(stats)
+
+        sys.exit(0)
 
     def _create_clock(self):
         # This method is taken from TradingAlgorithm.
@@ -86,6 +102,8 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
             "US/Eastern"
         )
 
+        signal.signal(signal.SIGINT, self.signal_handler)
+
         return ExchangeClock(
             self.sim_params.sessions,
             execution_opens,
@@ -108,6 +126,9 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
             self.restrictions,
             universe_func=self._calculate_universe
         )
+
+        # self.perf_tracker.cumulative_performance.keep_transactions = True
+        # self.perf_tracker.cumulative_performance.keep_orders = True
 
         return self.trading_client.transform()
 
@@ -145,6 +166,9 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
                 return self._check_open_orders(attempt_index + 1)
 
     def handle_data(self, data):
+        if not self.is_running:
+            return
+
         self._update_portfolio()
 
         transactions = self._check_open_orders()
@@ -158,6 +182,25 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         # order, account controls can change each bar. Thus, must check
         # every bar no matter if the algorithm places an order or not.
         self.validate_account_controls()
+
+        try:
+            # Since the clock runs 24/7, I trying to disable the daily
+            # Performance tracker and keep only minute and cumulative
+            self.perf_tracker.update_performance()
+            perf_dict = self.perf_tracker.to_dict('minute')
+
+            # Weird messy part of zipline
+            # I derived the logic from: catalyst.algorithm.TradingAlgorithm#_create_daily_stats
+            minute_perf = perf_dict['minute_perf']
+            minute_perf.update(perf_dict['cumulative_risk_metrics'])
+
+            log.debug('the minute performance:\n{}'.format(
+                minute_perf
+            ))
+            self.minute_perfs.append(minute_perf)
+
+        except Exception as e:
+            log.warn('unable to calculate performance: {}'.format(e))
 
     def _order(self,
                asset,
@@ -202,11 +245,22 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
     def batch_market_order(self, share_counts):
         raise NotImplementedError()
 
+    def _get_open_orders(self, asset=None, attempt_index=0):
+        try:
+            return self.exchange.get_open_orders(asset)
+        except ExchangeRequestError as e:
+            log.warn(
+                'open orders attempt {}: {}'.format(attempt_index, e)
+            )
+            if attempt_index < self.retry_get_open_orders:
+                sleep(self.retry_delay)
+                return self._get_open_orders(asset, attempt_index + 1)
+
     @error_keywords(sid='Keyword argument `sid` is no longer supported for '
                         'get_open_orders. Use `asset` instead.')
     @api_method
     def get_open_orders(self, asset=None):
-        return self.exchange.get_open_orders(asset)
+        return self._get_open_orders(asset)
 
     @api_method
     def get_order(self, order_id):

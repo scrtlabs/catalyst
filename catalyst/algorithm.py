@@ -1135,7 +1135,7 @@ class TradingAlgorithm(object):
                           'date_rule. You should use keyword argument '
                           'time_rule= when calling schedule_function without '
                           'specifying a date_rule', stacklevel=3)
-        
+
         freq = self.sim_params.data_frequency
 
         date_rule = date_rule or date_rules.every_day()

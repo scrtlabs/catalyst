@@ -184,9 +184,6 @@ def _run(handle_data,
 
             first_trading_day = bundle_data.minute_bar_reader.first_trading_day
 
-            # DataPortalClass = (partial(DataPortalExchange, exchange)
-            #                    if exchange
-            #                    else DataPortal)
             data = DataPortal(
                 env.asset_finder,
                 open_calendar,

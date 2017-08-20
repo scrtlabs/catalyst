@@ -101,7 +101,7 @@ class Exchange:
                     transaction = Transaction(
                         asset=order.asset,
                         amount=order.amount,
-                        dt=pd.Timestamp.utcnow(),
+                        dt=pd.Timestamp.utcnow().floor('1 min'),
                         price=order.executed_price,
                         order_id=order.id,
                         commission=order.commission
@@ -334,7 +334,10 @@ class Exchange:
         if field not in ohlc:
             raise KeyError('Invalid column: %s' % field)
 
-        return ohlc[field]
+        value = ohlc[field]
+        log.debug('got spot value: {}'.format(value))
+
+        return value
 
     def get_history_window(self,
                            assets,
