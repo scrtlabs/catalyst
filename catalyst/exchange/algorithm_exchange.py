@@ -31,6 +31,7 @@ from catalyst.utils.calendars.trading_calendar import days_at_time
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
 )
+from catalyst.finance.performance.period import calc_period_stats
 
 log = logbook.Logger("ExchangeTradingAlgorithm")
 
@@ -61,8 +62,12 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         self.is_running = False
 
         log.info('You pressed Ctrl+C!')
+
         stats = pd.DataFrame(self.minute_perfs)
         stats.set_index('period_close', drop=True, inplace=True)
+
+        # TODO: pyfolio is going to want the daily, just resample and pick the last row
+        # daily_stats = stats.resample('24H').last()
         self.analyze(stats)
 
         sys.exit(0)
@@ -167,6 +172,66 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
             else:
                 return list()
 
+    def prepare_period_stats(self, bar_date):
+        """
+        Creates a dictionary representing the state of the tracker.
+
+
+        I rewrote this in an attempt to better control the stats.
+        I don't want things to happen magically through complex logic
+        pertaining to backtesting.
+        """
+        tracker = self.perf_tracker
+        period = tracker.todays_performance
+
+        pos_stats = period.position_tracker.stats()
+        period_stats = calc_period_stats(pos_stats, period.ending_cash)
+
+        stats = dict(
+            period_start=tracker.period_start,
+            period_end=tracker.period_end,
+            capital_base=tracker.capital_base,
+            progress=tracker.progress,
+            ending_value=period.ending_value,
+            ending_exposure=period.ending_exposure,
+            capital_used=period.cash_flow,
+            starting_value=period.starting_value,
+            starting_exposure=period.starting_exposure,
+            starting_cash=period.starting_cash,
+            ending_cash=period.ending_cash,
+            portfolio_value=period.ending_cash + period.ending_value,
+            pnl=period.pnl,
+            returns=period.returns,
+            period_open=period.period_open,
+            period_close=period.period_close,
+            gross_leverage=period_stats.gross_leverage,
+            net_leverage=period_stats.net_leverage,
+            short_exposure=pos_stats.short_exposure,
+            long_exposure=pos_stats.long_exposure,
+            short_value=pos_stats.short_value,
+            long_value=pos_stats.long_value,
+            longs_count=pos_stats.longs_count,
+            shorts_count=pos_stats.shorts_count,
+        )
+
+        stats.update(tracker.cumulative_risk_metrics.to_dict())
+
+        stats['positions'] = period.position_tracker.get_positions_list()
+
+        # we want the key to be absent, not just empty
+        # Only include transactions for given dt
+        stats['transactions'] = list(filter(
+            lambda date:
+            period.processed_transactions[date] if date == bar_date else None,
+            period.processed_transactions))
+
+        stats['orders'] = list(filter(
+            lambda date:
+            period.orders_by_modified if date == bar_date else None,
+            period.orders_by_modified))
+
+        return stats
+
     def handle_data(self, data):
         if not self.is_running:
             return
@@ -189,17 +254,11 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
             # Since the clock runs 24/7, I trying to disable the daily
             # Performance tracker and keep only minute and cumulative
             self.perf_tracker.update_performance()
-            perf_dict = self.perf_tracker.to_dict('minute')
 
-            # Weird messy part of zipline
-            # I derived the logic from: catalyst.algorithm.TradingAlgorithm#_create_daily_stats
-            minute_perf = perf_dict['minute_perf']
-            minute_perf.update(perf_dict['cumulative_risk_metrics'])
+            stats = self.prepare_period_stats(data.current_dt)
+            log.debug('the minute performance:\n{}'.format(stats))
 
-            log.debug('the minute performance:\n{}'.format(
-                minute_perf
-            ))
-            self.minute_perfs.append(minute_perf)
+            self.minute_perfs.append(stats)
 
         except Exception as e:
             log.warn('unable to calculate performance: {}'.format(e))

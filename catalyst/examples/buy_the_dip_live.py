@@ -9,6 +9,7 @@ from catalyst.api import (
 )
 from catalyst.exchange.exchange_errors import ExchangeRequestError
 import matplotlib.pyplot as plt
+import pyfolio as pf
 
 algo_namespace = 'buy_the_dip_live'
 log = Logger(algo_namespace)
@@ -117,15 +118,19 @@ def handle_data(context, data):
 
 
 def analyze(context, stats):
-    pnl, = plt.plot(stats.index, stats['pnl'], '-',
-                         color='blue',
-                         linewidth=1.0,
-                         label='P&L',
-                         )
+    # pnl, = plt.plot(stats.index, stats['pnl'], '-',
+    #                      color='blue',
+    #                      linewidth=1.0,
+    #                      label='P&L',
+    #                      )
+    #
+    # plt.legend(handles=[pnl])
+    # plt.show()
+    returns, positions, transactions, gross_lev = \
+        pf.utils.extract_rets_pos_txn_from_zipline(stats)
 
-    plt.legend(handles=[pnl])
-    plt.show()
     pass
+
 
 exchange_conn = dict(
     name='bitfinex',
