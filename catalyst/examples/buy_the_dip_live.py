@@ -8,8 +8,7 @@ from catalyst.api import (
     get_open_orders,
 )
 from catalyst.errors import ZiplineError
-import matplotlib.pyplot as plt
-import pyfolio as pf
+import talib
 
 algo_namespace = 'buy_the_dip_live'
 log = Logger(algo_namespace)
@@ -17,12 +16,12 @@ log = Logger(algo_namespace)
 
 def initialize(context):
     log.info('initializing algo')
-    context.ASSET_NAME = 'EOS_USD'
-    context.TICK_SIZE = 1000.0
+    context.ASSET_NAME = 'IOT_USD'
     context.asset = symbol(context.ASSET_NAME)
 
-    context.TARGET_POSITIONS = 100
-    context.BUY_INCREMENT = 1
+    context.TARGET_POSITIONS = 200
+    context.PROFIT_TARGET = 0.1
+    context.SLIPPAGE_ALLOWED = 0.02
 
     context.retry_check_open_orders = 2
     context.retry_update_portfolio = 2
@@ -32,28 +31,22 @@ def initialize(context):
 
 
 def _handle_data(context, data):
-    # price_history = data.history(symbol('iot_usd'),
-    #                     fields='price',
-    #                     bar_count=20,
-    #                     frequency='1d'
-    #                     )
-    # ohlc = data.history([context.asset, symbol('iot_usd')],
-    #                     fields='price',
-    #                     bar_count=20,
-    #                     frequency='1d'
-    #                     )
-    ohlc = data.history(context.asset,
-                        fields=['price', 'volume'],
-                        bar_count=120,
-                        frequency='1m'
-                        )
-    # ohlc = data.history([context.asset, symbol('iot_usd')],
-    #                     fields=['price', 'volume'],
-    #                     bar_count=20,
-    #                     frequency='1d'
-    #                     )
+    prices = data.history(
+        context.asset,
+        fields='price',
+        bar_count=20,
+        frequency='15m'
+    )
+    rsi = talib.RSI(prices.values, timeperiod=14)[-1]
+    log.info('got rsi: {}'.format(rsi))
 
-    hist_price = ohlc['price']
+    # Buying more when RSI is low, this should lower our cost basis
+    if rsi <= 40:
+        buy_increment = 2
+    elif rsi <= 30:
+        buy_increment = 5
+    else:
+        buy_increment = 1
 
     cash = context.portfolio.cash
     log.info('base currency available: {cash}'.format(cash=cash))
@@ -66,7 +59,7 @@ def _handle_data(context, data):
         log.info('skipping bar until all open orders execute')
         return
 
-    if price * context.BUY_INCREMENT > cash:
+    if price * buy_increment > cash:
         log.info('not enough base currency to consider buying')
         return
 
@@ -83,12 +76,13 @@ def _handle_data(context, data):
         )
         if price < cost_basis:
             is_buy = True
-        elif price > cost_basis * 1.1:
-            log.info('price higher than cost basis, taking profit')
+        elif price > cost_basis * (1 + context.PROFIT_TARGET) or rsi > 70:
+            profit = (price * position.amount) - (cost_basis * position.amount)
+            log.info('closing position, taking profit: {}'.format(profit))
             order_target_percent(
                 asset=context.asset,
                 target=0,
-                limit_price=price * 0.95,
+                limit_price=price * (1 - context.SLIPPAGE_ALLOWED),
             )
         else:
             log.info('no buy or sell opportunity found')
@@ -104,8 +98,8 @@ def _handle_data(context, data):
         )
         order(
             asset=context.asset,
-            amount=context.BUY_INCREMENT,
-            limit_price=price * 1.1
+            amount=buy_increment,
+            limit_price=price * (1 + context.SLIPPAGE_ALLOWED)
         )
 
     record(
@@ -134,17 +128,7 @@ def handle_data(context, data):
 
 
 def analyze(context, stats):
-    # pnl, = plt.plot(stats.index, stats['pnl'], '-',
-    #                      color='blue',
-    #                      linewidth=1.0,
-    #                      label='P&L',
-    #                      )
-    #
-    # plt.legend(handles=[pnl])
-    # plt.show()
-    returns, positions, transactions, gross_lev = \
-        pf.utils.extract_rets_pos_txn_from_zipline(stats)
-
+    log.info('the full stats:\n{}'.format(stats))
     pass
 
 

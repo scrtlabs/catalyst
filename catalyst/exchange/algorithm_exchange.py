@@ -226,7 +226,11 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
             shorts_count=pos_stats.shorts_count,
         )
 
+        # Merging cumulative risk
         stats.update(tracker.cumulative_risk_metrics.to_dict())
+
+        # Merging latest recorded variables
+        stats.update(self.recorded_vars)
 
         stats['positions'] = period.position_tracker.get_positions_list()
 

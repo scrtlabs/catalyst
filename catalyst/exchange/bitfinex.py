@@ -1,3 +1,4 @@
+import re
 import pytz
 import six
 import base64
@@ -279,17 +280,43 @@ class Bitfinex(Exchange):
 
     def get_candles(self, data_frequency, assets,
                     end_dt=None, bar_count=None, limit=None):
+        """
+        Retrieve OHLVC candles from Bitfinex
 
-        # TODO: support all available frequencies
-        start_dt = None
-        if data_frequency == 'minute' or data_frequency == '1m':
+        :param data_frequency:
+        :param assets:
+        :param end_dt:
+        :param bar_count:
+        :param limit:
+        :return:
+
+        Available Frequencies
+        ---------------------
+        '1m', '5m', '15m', '30m', '1h', '3h', '6h', '12h', '1D', '7D', '14D',
+         '1M'
+        """
+        freq_match = re.match(r'([0-9].*)(m|h|d)', data_frequency, re.M | re.I)
+        if freq_match:
+            number = int(freq_match.group(1))
+            unit = freq_match.group(2)
+
+            if unit == 'd':
+                converted_unit = 'D'
+            else:
+                converted_unit = unit
+
+            frequency = '{}{}'.format(number, converted_unit)
+            allowed_frequencies = ['1m', '5m', '15m', '30m', '1h', '3h', '6h',
+                                   '12h', '1D', '7D', '14D', '1M']
+
+            if frequency not in allowed_frequencies:
+                raise InvalidHistoryFrequencyError(
+                    frequency=data_frequency
+                )
+        elif data_frequency == 'minute':
             frequency = '1m'
-            if bar_count and end_dt:
-                start_dt = end_dt - timedelta(minutes=bar_count)
-        elif data_frequency == 'daily' or data_frequency == '1d':
+        elif data_frequency == 'daily':
             frequency = '1D'
-            if bar_count and end_dt:
-                start_dt = end_dt - timedelta(days=bar_count)
         else:
             raise InvalidHistoryFrequencyError(
                 frequency=data_frequency
@@ -306,27 +333,25 @@ class Bitfinex(Exchange):
                 symbol=symbol
             )
 
-            if start_dt and end_dt:
+            if bar_count:
                 is_list = True
-                url += '/hist?start={start}&end={end}'.format(
-                    start=time.mktime(start_dt.timetuple()) * 1000,
-                    end=time.mktime(end_dt.timetuple()) * 1000,
-                )
+                url += '/hist?limit={}'.format(int(bar_count))
             else:
                 is_list = False
                 url += '/last'
 
             try:
                 response = requests.get(url)
-                candles = response.json()
             except Exception as e:
                 raise ExchangeRequestError(error=e)
 
-            if 'message' in candles:
+            if 'error' in response.content:
                 raise ExchangeRequestError(
                     error='Unable to retrieve candles: {}'.format(
-                        candles['message'])
+                        response.content)
                 )
+
+            candles = response.json()
 
             def ohlc_from_candle(candle):
                 return dict(
@@ -342,7 +367,8 @@ class Bitfinex(Exchange):
 
             if is_list:
                 ohlc_bars = []
-                for candle in candles:
+                # We can to list candles from old to new
+                for candle in reversed(candles):
                     ohlc = ohlc_from_candle(candle)
                     ohlc_bars.append(ohlc)
 
