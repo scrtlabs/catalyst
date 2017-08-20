@@ -7,7 +7,7 @@ from catalyst.api import (
     record,
     get_open_orders,
 )
-from catalyst.exchange.exchange_errors import ExchangeRequestError
+from catalyst.errors import ZiplineError
 import matplotlib.pyplot as plt
 import pyfolio as pf
 
@@ -28,9 +28,10 @@ def initialize(context):
     context.retry_update_portfolio = 2
     context.retry_order = 2
 
+    context.errors = []
 
-def handle_data(context, data):
-    log.info('handling bar {}'.format(data.current_dt))
+
+def _handle_data(context, data):
     # price_history = data.history(symbol('iot_usd'),
     #                     fields='price',
     #                     bar_count=20,
@@ -114,7 +115,22 @@ def handle_data(context, data):
         leverage=context.account.leverage,
     )
 
-    pass
+
+def handle_data(context, data):
+    log.info('handling bar {}'.format(data.current_dt))
+    try:
+        _handle_data(context, data)
+    except ZiplineError as e:
+        log.warn('aborting the bar on error {}'.format(e))
+        context.errors.append(e)
+
+    log.info('completed bar {}, total execution errors {}'.format(
+        data.current_dt,
+        len(context.errors)
+    ))
+
+    if len(context.errors) > 0:
+        log.info('the errors:\n{}'.format(context.errors))
 
 
 def analyze(context, stats):

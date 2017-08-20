@@ -10,7 +10,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from datetime import time
+from datetime import time, timedelta
 from time import sleep
 import logbook
 import signal
@@ -30,6 +30,8 @@ from catalyst.utils.api_support import (
 from catalyst.utils.calendars.trading_calendar import days_at_time
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
+    ExchangePortfolioDataError,
+    ExchangeTransactionError
 )
 from catalyst.finance.performance.period import calc_period_stats
 
@@ -51,7 +53,7 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         self.retry_check_open_orders = 5
         self.retry_update_portfolio = 5
         self.retry_get_open_orders = 5
-        self.retry_order = 1
+        self.retry_order = 2
         self.retry_delay = 5
 
         super(self.__class__, self).__init__(*args, **kwargs)
@@ -158,6 +160,12 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
             if attempt_index < self.retry_update_portfolio:
                 sleep(self.retry_delay)
                 self._update_portfolio(attempt_index + 1)
+            else:
+                raise ExchangePortfolioDataError(
+                    data_type='update-portfolio',
+                    attempts=attempt_index,
+                    error=e
+                )
 
     def _check_open_orders(self, attempt_index=0):
         try:
@@ -170,9 +178,13 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
                 sleep(self.retry_delay)
                 return self._check_open_orders(attempt_index + 1)
             else:
-                return list()
+                raise ExchangePortfolioDataError(
+                    data_type='order-status',
+                    attempts=attempt_index,
+                    error=e
+                )
 
-    def prepare_period_stats(self, bar_date):
+    def prepare_period_stats(self, start_dt, end_dt):
         """
         Creates a dictionary representing the state of the tracker.
 
@@ -220,15 +232,17 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
 
         # we want the key to be absent, not just empty
         # Only include transactions for given dt
-        stats['transactions'] = list(filter(
-            lambda date:
-            period.processed_transactions[date] if date == bar_date else None,
-            period.processed_transactions))
+        stats['transactions'] = dict()
+        for date in period.processed_transactions:
+            if start_dt <= date < end_dt:
+                stats['transactions'][date] = \
+                    period.processed_transactions[date]
 
-        stats['orders'] = list(filter(
-            lambda date:
-            period.orders_by_modified if date == bar_date else None,
-            period.orders_by_modified))
+        stats['orders'] = dict()
+        for date in period.orders_by_modified:
+            if start_dt <= date < end_dt:
+                stats['orders'][date] = \
+                    period.orders_by_modified[date]
 
         return stats
 
@@ -255,10 +269,11 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
             # Performance tracker and keep only minute and cumulative
             self.perf_tracker.update_performance()
 
-            stats = self.prepare_period_stats(data.current_dt)
-            log.debug('the minute performance:\n{}'.format(stats))
+            minute_stats = self.prepare_period_stats(
+                data.current_dt, data.current_dt + timedelta(minutes=1))
+            log.debug('the minute performance:\n{}'.format(minute_stats))
 
-            self.minute_perfs.append(stats)
+            self.minute_perfs.append(minute_stats)
 
         except Exception as e:
             log.warn('unable to calculate performance: {}'.format(e))
@@ -284,7 +299,11 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
                     asset, amount, limit_price, stop_price, style,
                     attempt_index + 1)
             else:
-                return None
+                raise ExchangeTransactionError(
+                    transaction_type='order',
+                    attempts=attempt_index,
+                    error=e
+                )
 
     @api_method
     @disallowed_in_before_trading_start(OrderInBeforeTradingStart())
@@ -319,7 +338,11 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
                 sleep(self.retry_delay)
                 return self._get_open_orders(asset, attempt_index + 1)
             else:
-                return []
+                raise ExchangePortfolioDataError(
+                    data_type='open-orders',
+                    attempts=attempt_index,
+                    error=e
+                )
 
     @error_keywords(sid='Keyword argument `sid` is no longer supported for '
                         'get_open_orders. Use `asset` instead.')

@@ -158,7 +158,6 @@ class Bitfinex(Exchange):
         # TODO: zipline likes rounded dates to match statistics, is this ok?
         date = pd.Timestamp.utcfromtimestamp(float(order_status['timestamp']))
         date = pytz.utc.localize(date)
-        date = date.floor('1 min')
         order = ExchangeOrder(
             dt=date,
             asset=self.assets[order_status['symbol']],
@@ -454,7 +453,7 @@ class Bitfinex(Exchange):
             sell_price_oco=0
         )
 
-        date = pd.Timestamp.utcnow().floor('1 min')  # Making zipline happy
+        date = pd.Timestamp.utcnow()
         try:
             response = self._request('order/new', req)
             exchange_order = response.json()
@@ -603,7 +602,9 @@ class Bitfinex(Exchange):
         formatted_tickers = []
         for index, ticker in enumerate(tickers):
             if not len(ticker) == 11:
-                raise ValueError('Invalid ticker: %s' % ticker)
+                raise ExchangeRequestError(
+                    error='Invalid ticker in response: {}'.format(ticker)
+                )
 
             tick = dict(
                 asset=assets[index],

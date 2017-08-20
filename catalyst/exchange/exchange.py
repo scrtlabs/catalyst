@@ -101,7 +101,7 @@ class Exchange:
                     transaction = Transaction(
                         asset=order.asset,
                         amount=order.amount,
-                        dt=pd.Timestamp.utcnow().floor('1 min'),
+                        dt=pd.Timestamp.utcnow(),
                         price=order.executed_price,
                         order_id=order.id,
                         commission=order.commission

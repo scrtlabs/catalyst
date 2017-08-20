@@ -13,9 +13,14 @@
 
 import pandas as pd
 
+from time import sleep
 from catalyst.data.data_portal import DataPortal
 
 from logbook import Logger
+from catalyst.exchange.exchange_errors import (
+    ExchangeRequestError,
+    ExchangeBarDataError
+)
 
 log = Logger('DataPortalExchange')
 
@@ -23,7 +28,52 @@ log = Logger('DataPortalExchange')
 class DataPortalExchange(DataPortal):
     def __init__(self, exchange, *args, **kwargs):
         self.exchange = exchange
+
+        # TODO: put somewhere accessible by each algo
+        self.retry_get_history_window = 5
+        self.retry_get_spot_value = 5
+        self.retry_delay = 5
+
         super(DataPortalExchange, self).__init__(*args, **kwargs)
+
+    def _get_history_window(self,
+                            assets,
+                            end_dt,
+                            bar_count,
+                            frequency,
+                            field,
+                            data_frequency,
+                            ffill=True,
+                            attempt_index=0):
+        try:
+            return self.exchange.get_history_window(
+                assets,
+                end_dt,
+                bar_count,
+                frequency,
+                field,
+                data_frequency,
+                ffill)
+        except ExchangeRequestError as e:
+            log.warn(
+                'get history attempt {}: {}'.format(attempt_index, e)
+            )
+            if attempt_index < self.retry_get_history_window:
+                sleep(self.retry_delay)
+                return self._get_history_window(assets,
+                                                end_dt,
+                                                bar_count,
+                                                frequency,
+                                                field,
+                                                data_frequency,
+                                                ffill,
+                                                attempt_index + 1)
+            else:
+                raise ExchangeBarDataError(
+                    data_type='history',
+                    attempts=attempt_index,
+                    error=e
+                )
 
     def get_history_window(self,
                            assets,
@@ -33,17 +83,36 @@ class DataPortalExchange(DataPortal):
                            field,
                            data_frequency,
                            ffill=True):
-        return self.exchange.get_history_window(
-            assets,
-            end_dt,
-            bar_count,
-            frequency,
-            field,
-            data_frequency,
-            ffill)
+        return self._get_history_window(assets,
+                                        end_dt,
+                                        bar_count,
+                                        frequency,
+                                        field,
+                                        data_frequency,
+                                        ffill)
+
+    def _get_spot_value(self, assets, field, dt, data_frequency,
+                        attempt_index=0):
+        try:
+            return self.exchange.get_spot_value(assets, field, dt,
+                                                data_frequency)
+        except ExchangeRequestError as e:
+            log.warn(
+                'get spot value attempt {}: {}'.format(attempt_index, e)
+            )
+            if attempt_index < self.retry_get_spot_value:
+                sleep(self.retry_delay)
+                return self._get_spot_value(assets, field, dt, data_frequency,
+                                            attempt_index + 1)
+            else:
+                raise ExchangeBarDataError(
+                    data_type='spot',
+                    attempts=attempt_index,
+                    error=e
+                )
 
     def get_spot_value(self, assets, field, dt, data_frequency):
-        return self.exchange.get_spot_value(assets, field, dt, data_frequency)
+        return self._get_spot_value(assets, field, dt, data_frequency)
 
     def get_adjusted_value(self, asset, field, dt,
                            perspective_dt,

@@ -89,6 +89,7 @@ class ExchangePortfolio(Portfolio):
         self.capital_used += order.amount * order.executed_price
 
         if order_position.cost_basis > 0:
+            # TODO: consider buy orders only
             order_position.cost_basis = np.average(
                 [order_position.cost_basis, order.executed_price],
                 weights=[order_position.amount, order.amount]
