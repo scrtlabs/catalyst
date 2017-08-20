@@ -129,7 +129,7 @@ def handle_data(context, data):
 
 
 def analyze(context, stats):
-    log.info('the full stats:\n{}'.format(stats))
+    log.info('the full stats:\n{}'.format(stats.head()))
     pass
 
 
