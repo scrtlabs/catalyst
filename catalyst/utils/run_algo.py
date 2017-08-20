@@ -44,6 +44,8 @@ from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     ExchangeRequestErrorTooManyAttempts
 )
+from catalyst.exchange.exchange_utils import get_exchange_auth, \
+    get_exchange_folder
 from logbook import Logger
 
 log = Logger('run_algo')
@@ -369,7 +371,7 @@ def load_extensions(default, extensions, strict, environ, reload=False):
 
 
 def run_algorithm(initialize,
-                  capital_base,
+                  capital_base=None,
                   start=None,
                   end=None,
                   handle_data=None,
@@ -384,7 +386,8 @@ def run_algorithm(initialize,
                   strict_extensions=True,
                   environ=os.environ,
                   live=False,
-                  exchange_conn=None,
+                  exchange_name=None,
+                  base_currency=None,
                   algo_namespace=None):
     """Run a trading algorithm.
 
@@ -480,19 +483,19 @@ def run_algorithm(initialize,
                 'cannot specify `bundle_timestamp` without passing `bundle`',
             )
     else:
-        if exchange_conn is not None:
+        if exchange_name is not None:
             store = PortfolioMemoryStore(algo_namespace)
-
-            if exchange_conn['name'] == 'bitfinex':
+            exchange_auth = get_exchange_auth(exchange_name)
+            if exchange_name == 'bitfinex':
                 exchange = Bitfinex(
-                    key=exchange_conn['key'],
-                    secret=exchange_conn['secret'],
-                    base_currency=exchange_conn['base_currency'],
+                    key=exchange_auth['key'],
+                    secret=exchange_auth['secret'].encode('UTF-8'),
+                    base_currency=base_currency,
                     store=store
                 )
             else:
                 raise NotImplementedError(
-                    'exchange not supported: %s' % exchange_conn['name'])
+                    'exchange not supported: %s' % exchange_name)
 
     return _run(
         handle_data=handle_data,

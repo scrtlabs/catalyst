@@ -8,6 +8,8 @@ from catalyst.api import (
     get_open_orders,
 )
 from catalyst.errors import ZiplineError
+from catalyst.exchange.exchange_utils import get_exchange_folder, \
+    download_exchange_symbols, get_exchange_auth
 import talib
 
 algo_namespace = 'buy_the_dip_live'
@@ -23,11 +25,12 @@ def initialize(context):
     context.PROFIT_TARGET = 0.1
     context.SLIPPAGE_ALLOWED = 0.02
 
-    context.retry_check_open_orders = 2
-    context.retry_update_portfolio = 2
-    context.retry_order = 2
+    context.retry_check_open_orders = 10
+    context.retry_update_portfolio = 10
+    context.retry_order = 5
 
     context.errors = []
+    pass
 
 
 def _handle_data(context, data):
@@ -53,6 +56,11 @@ def _handle_data(context, data):
 
     price = data.current(context.asset, 'price')
     log.info('got price {price}'.format(price=price))
+
+    record(
+        price=price,
+        rsi=rsi,
+    )
 
     orders = get_open_orders(context.asset)
     if orders:
@@ -102,13 +110,6 @@ def _handle_data(context, data):
             limit_price=price * (1 + context.SLIPPAGE_ALLOWED)
         )
 
-    record(
-        price=price,
-        cash=cash,
-        starting_cash=context.portfolio.starting_cash,
-        leverage=context.account.leverage,
-    )
-
 
 def handle_data(context, data):
     log.info('handling bar {}'.format(data.current_dt))
@@ -132,18 +133,12 @@ def analyze(context, stats):
     pass
 
 
-exchange_conn = dict(
-    name='bitfinex',
-    key='',
-    secret=b'',
-    base_currency='usd'
-)
 run_algorithm(
     initialize=initialize,
     handle_data=handle_data,
     analyze=analyze,
-    capital_base=100000,
-    exchange_conn=exchange_conn,
+    exchange_name='bitfinex',
     live=True,
-    algo_namespace=algo_namespace
+    algo_namespace=algo_namespace,
+    base_currency='usd'
 )

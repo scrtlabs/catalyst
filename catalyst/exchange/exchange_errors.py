@@ -34,6 +34,20 @@ class ExchangeTransactionError(ZiplineError):
     ).strip()
 
 
+class ExchangeAuthNotFound(ZiplineError):
+    msg = (
+        'Please create an auth.json file containing the api token and key for '
+        'exchange {exchange}. Place the file here: {filename}'
+    ).strip()
+
+
+class ExchangeSymbolsNotFound(ZiplineError):
+    msg = (
+        'Unable to download or find a local copy of symbols.json for exchange '
+        '{exchange}. The file should be here: {filename}'
+    ).strip()
+
+
 class InvalidHistoryFrequencyError(ZiplineError):
     msg = (
         'History frequency {frequency} not supported by the exchange.'

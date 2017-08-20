@@ -21,6 +21,7 @@ from catalyst.finance.execution import (MarketOrder,
                                         StopOrder,
                                         StopLimitOrder)
 from catalyst.exchange.exchange_portfolio import ExchangePortfolio
+from catalyst.exchange.exchange_utils import get_exchange_symbols
 from catalyst.errors import (
     IncompatibleHistoryFrequency,
 )
@@ -34,7 +35,6 @@ from catalyst.exchange.exchange_errors import (
 requests.adapters.DEFAULT_RETRIES = 20
 
 BITFINEX_URL = 'https://api.bitfinex.com'
-ASSETS = '{ "USDT_BTC": {"symbol":"btc_usd", "start_date": "2010-01-01"}, "ltcusd": {"symbol":"ltc_usd", "start_date": "2010-01-01"}, "ltcbtc": {"symbol":"ltc_btc", "start_date": "2010-01-01"}, "ethusd": {"symbol":"eth_usd", "start_date": "2010-01-01"}, "ethbtc": {"symbol":"eth_btc", "start_date": "2010-01-01"}, "etcbtc": {"symbol":"etc_btc", "start_date": "2010-01-01"}, "etcusd": {"symbol":"etc_usd", "start_date": "2010-01-01"}, "rrtusd": {"symbol":"rrt_usd", "start_date": "2010-01-01"}, "rrtbtc": {"symbol":"rrt_btc", "start_date": "2010-01-01"}, "zecusd": {"symbol":"zec_usd", "start_date": "2010-01-01"}, "zecbtc": {"symbol":"zec_btc", "start_date": "2010-01-01"}, "xmrusd": {"symbol":"xmr_usd", "start_date": "2010-01-01"}, "xmrbtc": {"symbol":"xmr_btc", "start_date": "2010-01-01"}, "dshusd": {"symbol":"dsh_usd", "start_date": "2010-01-01"}, "dshbtc": {"symbol":"dsh_btc", "start_date": "2010-01-01"}, "bccbtc": {"symbol":"bcc_btc", "start_date": "2010-01-01"}, "bcubtc": {"symbol":"bcu_btc", "start_date": "2010-01-01"}, "bccusd": {"symbol":"bcc_usd", "start_date": "2010-01-01"}, "bcuusd": {"symbol":"bcu_usd", "start_date": "2010-01-01"}, "xrpusd": {"symbol":"xrp_usd", "start_date": "2010-01-01"}, "xrpbtc": {"symbol":"xrp_btc", "start_date": "2010-01-01"}, "iotusd": {"symbol":"iot_usd", "start_date": "2010-01-01"}, "iotbtc": {"symbol":"iot_btc", "start_date": "2010-01-01"}, "ioteth": {"symbol":"iot_eth", "start_date": "2010-01-01"}, "eosusd": {"symbol":"eos_usd", "start_date": "2010-01-01"}, "eosbtc": {"symbol":"eos_btc", "start_date": "2010-01-01"}, "eoseth": {"symbol":"eos_eth", "start_date": "2010-01-01"} }'
 
 log = Logger('Bitfinex')
 warning_logger = Logger('AlgoWarning')
@@ -48,7 +48,7 @@ class Bitfinex(Exchange):
         self.id = 'b'
         self.name = 'bitfinex'
         self.assets = {}
-        self.load_assets(ASSETS)
+        self.load_assets(get_exchange_symbols(self.name))
         self.base_currency = base_currency
         self.store = store
 

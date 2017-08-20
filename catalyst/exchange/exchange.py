@@ -74,18 +74,14 @@ class Exchange:
                 asset[key] = pd.to_datetime(asset[key], utc=True)
         return asset
 
-    def load_assets(self, assets_json):
-        assets = json.loads(
-            assets_json,
-            object_hook=Exchange.asset_parser
-        )
-
-        for exchange_symbol in assets:
+    def load_assets(self, symbol_map):
+        for exchange_symbol in symbol_map:
             asset_obj = Asset(
-                sid=abs(hash(assets[exchange_symbol]['symbol'])) % (10 ** 4),
+                sid=abs(hash(symbol_map[exchange_symbol]['symbol']))
+                    % (10 ** 4),
                 exchange=self.name,
                 end_date=pd.Timestamp.utcnow() + timedelta(minutes=300000),
-                **assets[exchange_symbol]
+                **symbol_map[exchange_symbol]
             )
             self.assets[exchange_symbol] = asset_obj
 
