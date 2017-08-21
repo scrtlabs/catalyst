@@ -75,6 +75,11 @@ def _handle_data(context, data):
     cost_basis = None
     if context.asset in context.portfolio.positions:
         position = context.portfolio.positions[context.asset]
+
+        if position.amount >= context.TARGET_POSITIONS:
+            log.info('reached positions target: {}'.format(position.amount))
+            return
+
         cost_basis = position.cost_basis
         log.info(
             'found {amount} positions with cost basis {cost_basis}'.format(

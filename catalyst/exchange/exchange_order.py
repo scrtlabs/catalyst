@@ -2,24 +2,8 @@ import math
 
 import catalyst.protocol as zp
 from catalyst.assets import Asset
-from catalyst.finance.order import Order
-from catalyst.utils.enum import enum
+from catalyst.finance.order import Order, ORDER_STATUS
 from catalyst.utils.input_validation import expect_types
-
-ORDER_STATUS = enum(
-    'OPEN',
-    'FILLED',
-    'CANCELLED',
-    'REJECTED',
-    'HELD',
-)
-
-SELL = 1 << 0
-BUY = 1 << 1
-STOP = 1 << 2
-LIMIT = 1 << 3
-
-ORDER_FIELDS_TO_IGNORE = {'type', 'direction', '_status', 'asset'}
 
 
 class ExchangeOrder(Order):

@@ -1,5 +1,6 @@
 import numpy as np
 from catalyst.protocol import Portfolio, Positions, Position
+from catalyst.finance.order import BUY
 from logbook import Logger
 
 log = Logger('ExchangePortfolio')
@@ -49,14 +50,14 @@ class ExchangePortfolio(Portfolio):
 
         self.capital_used += order.amount * order.executed_price
 
-        if order_position.cost_basis > 0:
-            # TODO: consider buy orders only
-            order_position.cost_basis = np.average(
-                [order_position.cost_basis, order.executed_price],
-                weights=[order_position.amount, order.amount]
-            )
-        else:
-            order_position.cost_basis = order.executed_price
+        if order.amount > 0:
+            if order_position.cost_basis > 0:
+                order_position.cost_basis = np.average(
+                    [order_position.cost_basis, order.executed_price],
+                    weights=[order_position.amount, order.amount]
+                )
+            else:
+                order_position.cost_basis = order.executed_price
 
         log.debug('updated portfolio with executed order')
 
