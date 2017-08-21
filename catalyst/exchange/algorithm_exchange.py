@@ -10,31 +10,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from datetime import time, timedelta
-from time import sleep
-import logbook
 import signal
 import sys
+from datetime import timedelta
+from time import sleep
+
+import logbook
 import pandas as pd
 
 import catalyst.protocol as zp
 from catalyst.algorithm import TradingAlgorithm
-from catalyst.exchange.exchange_clock import ExchangeClock
-from catalyst.gens.tradesimulation import AlgorithmSimulator
 from catalyst.errors import OrderInBeforeTradingStart
-from catalyst.utils.input_validation import error_keywords
-from catalyst.utils.api_support import (
-    api_method,
-    disallowed_in_before_trading_start)
-
-from catalyst.utils.calendars.trading_calendar import days_at_time
+from catalyst.exchange.exchange_clock import ExchangeClock
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     ExchangePortfolioDataError,
     ExchangeTransactionError
 )
-from catalyst.finance.performance.period import calc_period_stats
 from catalyst.exchange.exchange_utils import save_algo_object, get_algo_object
+from catalyst.finance.performance.period import calc_period_stats
+from catalyst.gens.tradesimulation import AlgorithmSimulator
+from catalyst.utils.api_support import (
+    api_method,
+    disallowed_in_before_trading_start)
+from catalyst.utils.input_validation import error_keywords
 
 log = logbook.Logger("ExchangeTradingAlgorithm")
 
@@ -104,20 +103,13 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         execution_closes = \
             self.trading_calendar.execution_time_from_close(market_closes)
 
-        # FIXME generalize these values
-        before_trading_start_minutes = days_at_time(
-            self.sim_params.sessions,
-            time(8, 45),
-            "US/Eastern"
-        )
-
         signal.signal(signal.SIGINT, self.signal_handler)
 
         return ExchangeClock(
             self.sim_params.sessions,
             execution_opens,
             execution_closes,
-            before_trading_start_minutes,
+            None,
             minute_emission=minutely_emission,
             time_skew=self.exchange.time_skew
         )
@@ -135,9 +127,6 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
             self.restrictions,
             universe_func=self._calculate_universe
         )
-
-        # self.perf_tracker.cumulative_performance.keep_transactions = True
-        # self.perf_tracker.cumulative_performance.keep_orders = True
 
         return self.trading_client.transform()
 

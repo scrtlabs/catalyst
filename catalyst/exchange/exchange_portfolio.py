@@ -1,7 +1,7 @@
 import numpy as np
-from catalyst.protocol import Portfolio, Positions, Position
-from catalyst.finance.order import BUY
 from logbook import Logger
+
+from catalyst.protocol import Portfolio, Positions, Position
 
 log = Logger('ExchangePortfolio')
 
@@ -36,7 +36,7 @@ class ExchangePortfolio(Portfolio):
         order_position.amount += order.amount
         log.debug('open order added to portfolio')
 
-    def execute_order(self, order):
+    def execute_order(self, order, transaction):
         log.debug('executing order {}'.format(order.id))
         del self.open_orders[order.id]
 
@@ -48,16 +48,16 @@ class ExchangePortfolio(Portfolio):
                 'Trying to execute order for a position not held: %s' % order.id
             )
 
-        self.capital_used += order.amount * order.executed_price
+        self.capital_used += order.amount * transaction.price
 
         if order.amount > 0:
             if order_position.cost_basis > 0:
                 order_position.cost_basis = np.average(
-                    [order_position.cost_basis, order.executed_price],
+                    [order_position.cost_basis, transaction.price],
                     weights=[order_position.amount, order.amount]
                 )
             else:
-                order_position.cost_basis = order.executed_price
+                order_position.cost_basis = transaction.price
 
         log.debug('updated portfolio with executed order')
 

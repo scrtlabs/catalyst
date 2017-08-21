@@ -1,10 +1,11 @@
-import os
-import urllib
 import json
+import os
 import pickle
-from catalyst.utils.paths import data_root, ensure_directory
+import urllib
+
 from catalyst.exchange.exchange_errors import ExchangeAuthNotFound, \
-    ExchangeSymbolsNotFound, AlgoPickleNotFound
+    ExchangeSymbolsNotFound
+from catalyst.utils.paths import data_root, ensure_directory
 
 SYMBOLS_URL = 'https://raw.githubusercontent.com/enigmampc/catalyst/' \
               'live-trading/catalyst/exchange/symbols/{exchange}.json'

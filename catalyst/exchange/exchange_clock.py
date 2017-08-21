@@ -13,16 +13,13 @@
 
 from time import sleep
 
-from logbook import Logger
 import pandas as pd
-
 from catalyst.gens.sim_engine import (
     BAR,
     SESSION_START,
-    SESSION_END,
-    MINUTE_END,
-    BEFORE_TRADING_START_BAR
+    MINUTE_END
 )
+from logbook import Logger
 
 log = Logger('ExchangeClock')
 

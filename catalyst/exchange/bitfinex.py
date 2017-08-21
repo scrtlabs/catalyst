@@ -1,34 +1,30 @@
-import re
-import pytz
-import six
 import base64
 import hashlib
 import hmac
 import json
+import re
 import time
-import requests
+
 import pandas as pd
-from datetime import timedelta, datetime
-from catalyst.protocol import Portfolio, Account
+import pytz
+import requests
+import six
+from catalyst.assets._assets import Asset
+from logbook import Logger
+
 # from websocket import create_connection
 from catalyst.exchange.exchange import Exchange
-from logbook import Logger
-from catalyst.assets._assets import Asset
-from catalyst.finance.order import ORDER_STATUS
-from catalyst.exchange.exchange_order import ExchangeOrder
-from catalyst.finance.execution import (MarketOrder,
-                                        LimitOrder,
-                                        StopOrder,
-                                        StopLimitOrder)
-from catalyst.exchange.exchange_portfolio import ExchangePortfolio
-from catalyst.exchange.exchange_utils import get_exchange_symbols
-from catalyst.errors import (
-    IncompatibleHistoryFrequency,
-)
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     InvalidHistoryFrequencyError
 )
+from catalyst.exchange.exchange_utils import get_exchange_symbols
+from catalyst.finance.execution import (MarketOrder,
+                                        LimitOrder,
+                                        StopOrder,
+                                        StopLimitOrder)
+from catalyst.finance.order import Order, ORDER_STATUS
+from catalyst.protocol import Account
 
 # Trying to account for REST api instability
 # https://stackoverflow.com/questions/15431044/can-i-set-max-retries-for-requests-request
@@ -159,7 +155,7 @@ class Bitfinex(Exchange):
         # TODO: zipline likes rounded dates to match statistics, is this ok?
         date = pd.Timestamp.utcfromtimestamp(float(order_status['timestamp']))
         date = pytz.utc.localize(date)
-        order = ExchangeOrder(
+        order = Order(
             dt=date,
             asset=self.assets[order_status['symbol']],
             amount=amount,
@@ -170,9 +166,8 @@ class Bitfinex(Exchange):
             commission=commission
         )
         order.status = status
-        order.executed_price = executed_price
 
-        return order
+        return order, executed_price
 
     def update_portfolio(self):
         """
@@ -494,7 +489,7 @@ class Bitfinex(Exchange):
             )
 
         order_id = exchange_order['id']
-        order = ExchangeOrder(
+        order = Order(
             dt=date,
             asset=asset,
             amount=amount,
@@ -540,8 +535,7 @@ class Bitfinex(Exchange):
 
         orders = list()
         for order_status in order_statuses:
-            # TODO: filter by asset
-            order = self._create_order(order_status)
+            order, = self._create_order(order_status)
             if asset is None or asset == order.sid:
                 orders.append(order)
 
@@ -584,7 +578,7 @@ class Bitfinex(Exchange):
             The order_id or order object to cancel.
         """
         order_id = order_param.id \
-            if isinstance(order_param, ExchangeOrder) else order_param
+            if isinstance(order_param, Order) else order_param
 
         try:
             response = self._request('order/cancel', {'order_id': order_id})

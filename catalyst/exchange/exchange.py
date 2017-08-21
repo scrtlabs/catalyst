@@ -1,20 +1,18 @@
 import abc
-import json
-from abc import ABCMeta, abstractmethod, abstractproperty
 import collections
+from abc import ABCMeta, abstractmethod, abstractproperty
+from datetime import timedelta
 
 import pandas as pd
 from catalyst.assets._assets import Asset
-from catalyst.finance.order import ORDER_STATUS
-from catalyst.finance.transaction import Transaction
-from catalyst.data.data_portal import BASE_FIELDS
+from logbook import Logger
 
+from catalyst.data.data_portal import BASE_FIELDS
 from catalyst.errors import (
-    MultipleSymbolsFound,
     SymbolNotFound,
 )
-from datetime import timedelta
-from logbook import Logger
+from catalyst.finance.order import ORDER_STATUS
+from catalyst.finance.transaction import Transaction
 
 log = Logger('Exchange')
 
@@ -90,7 +88,7 @@ class Exchange:
         if self.portfolio.open_orders:
             for order_id in list(self.portfolio.open_orders):
                 log.debug('found open order: {}'.format(order_id))
-                order = self.get_order(order_id)
+                order, executed_price = self.get_order(order_id)
                 log.debug('got updated order {}'.format(order))
 
                 if order.status == ORDER_STATUS.FILLED:
@@ -98,14 +96,13 @@ class Exchange:
                         asset=order.asset,
                         amount=order.amount,
                         dt=pd.Timestamp.utcnow(),
-                        price=order.executed_price,
+                        price=executed_price,
                         order_id=order.id,
                         commission=order.commission
                     )
                     transactions.append(transaction)
 
-                    # TODO: use the transaction to pass the executed price
-                    self.portfolio.execute_order(order)
+                    self.portfolio.execute_order(order, transaction)
                 elif order.status == ORDER_STATUS.CANCELLED:
                     self.portfolio.remove_order(order)
                 else:
@@ -219,6 +216,8 @@ class Exchange:
         -------
         order : Order
             The order object.
+        execution_price: float
+            The execution price per share of the order
         """
         pass
 
