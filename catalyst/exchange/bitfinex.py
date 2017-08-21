@@ -274,16 +274,13 @@ class Bitfinex(Exchange):
     def subscribe_to_market_data(self, symbol):
         pass
 
-    def get_candles(self, data_frequency, assets,
-                    end_dt=None, bar_count=None, limit=None):
+    def get_candles(self, data_frequency, assets, bar_count=None):
         """
         Retrieve OHLVC candles from Bitfinex
 
         :param data_frequency:
         :param assets:
-        :param end_dt:
         :param bar_count:
-        :param limit:
         :return:
 
         Available Frequencies
@@ -596,7 +593,7 @@ class Bitfinex(Exchange):
         """
         Fetch ticket data for assets
         https://docs.bitfinex.com/v2/reference#rest-public-tickers
-        :param date:
+
         :param assets:
         :return:
         """
@@ -610,15 +607,16 @@ class Bitfinex(Exchange):
                     symbols=','.join(symbols),
                 )
             )
-            tickers = response.json()
         except Exception as e:
             raise ExchangeRequestError(error=e)
 
-        if 'message' in tickers:
+        if 'error' in response.content:
             raise ExchangeRequestError(
                 error='Unable to retrieve tickers: {}'.format(
-                    tickers['message'])
+                    response.content)
             )
+
+        tickers = response.json()
 
         formatted_tickers = []
         for index, ticker in enumerate(tickers):

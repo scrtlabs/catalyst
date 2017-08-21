@@ -26,95 +26,6 @@ class Exchange:
         self.assets = {}
         self._portfolio = None
 
-    def get_trading_pairs(self, pairs):
-        return [pair for pair in pairs if pair in self.trading_pairs]
-
-    def get_symbol(self, asset):
-        symbol = None
-
-        for key in self.assets:
-            if not symbol and self.assets[key].symbol == asset.symbol:
-                symbol = key
-
-        if not symbol:
-            raise ValueError('Currency %s not supported by exchange %s' %
-                             (asset['symbol'], self.name))
-
-        return symbol
-
-    def get_asset(self, symbol):
-        """
-        Find an Asset on the current exchange based on its Catalyst symbol
-        :param symbol: the [target]_[base] currency pair symbol
-        :return: Asset
-        """
-        asset = None
-
-        for key in self.assets:
-            if not asset and self.assets[key].symbol.lower() == symbol.lower():
-                asset = self.assets[key]
-
-        if not asset:
-            raise SymbolNotFound('Asset not found: %s' % symbol)
-
-        return asset
-
-    def get_symbols(self, assets):
-        symbols = []
-        for asset in assets:
-            symbols.append(self.get_symbol(asset))
-        return symbols
-
-    @staticmethod
-    def asset_parser(asset):
-        for key in asset:
-            if key == 'start_date':
-                asset[key] = pd.to_datetime(asset[key], utc=True)
-        return asset
-
-    def load_assets(self, symbol_map):
-        for exchange_symbol in symbol_map:
-            asset_obj = Asset(
-                sid=abs(hash(symbol_map[exchange_symbol]['symbol']))
-                    % (10 ** 4),
-                exchange=self.name,
-                end_date=pd.Timestamp.utcnow() + timedelta(minutes=300000),
-                **symbol_map[exchange_symbol]
-            )
-            self.assets[exchange_symbol] = asset_obj
-
-    def check_open_orders(self):
-        transactions = list()
-        if self.portfolio.open_orders:
-            for order_id in list(self.portfolio.open_orders):
-                log.debug('found open order: {}'.format(order_id))
-                order, executed_price = self.get_order(order_id)
-                log.debug('got updated order {}'.format(order))
-
-                if order.status == ORDER_STATUS.FILLED:
-                    transaction = Transaction(
-                        asset=order.asset,
-                        amount=order.amount,
-                        dt=pd.Timestamp.utcnow(),
-                        price=executed_price,
-                        order_id=order.id,
-                        commission=order.commission
-                    )
-                    transactions.append(transaction)
-
-                    self.portfolio.execute_order(order, transaction)
-                elif order.status == ORDER_STATUS.CANCELLED:
-                    self.portfolio.remove_order(order)
-                else:
-                    delta = pd.Timestamp.utcnow() - order.dt
-                    log.info(
-                        'order {order_id} still open after {delta}'.format(
-                            order_id=order_id,
-                            delta=delta
-                        )
-                    )
-        return transactions
-
     @abstractmethod
     def subscribe_to_market_data(self, symbol):
         pass
@@ -138,6 +49,277 @@ class Exchange:
     @abstractproperty
     def time_skew(self):
         pass
+
+    def get_symbol(self, asset):
+        """
+        Get the exchange specific symbol of the given asset.
+
+        :param asset: Asset
+        :return: symbol: str
+        """
+        symbol = None
+
+        for key in self.assets:
+            if not symbol and self.assets[key].symbol == asset.symbol:
+                symbol = key
+
+        if not symbol:
+            raise ValueError('Currency %s not supported by exchange %s' %
+                             (asset['symbol'], self.name))
+
+        return symbol
+
+    def get_symbols(self, assets):
+        """
+        Get a list of symbols corresponding to each given asset.
+
+        :param assets: Asset[]
+        :return:
+        """
+        symbols = []
+
+        for asset in assets:
+            symbols.append(self.get_symbol(asset))
+
+        return symbols
+
+    def get_asset(self, symbol):
+        """
+        Find an Asset on the current exchange based on its Catalyst symbol
+        :param symbol: the [target]_[base] currency pair symbol
+        :return: Asset
+        """
+        asset = None
+
+        for key in self.assets:
+            if not asset and self.assets[key].symbol.lower() == symbol.lower():
+                asset = self.assets[key]
+
+        if not asset:
+            raise SymbolNotFound('Asset not found: %s' % symbol)
+
+        return asset
+
+    @staticmethod
+    def asset_parser(asset):
+        """
+        Helper method to de-serialize Asset objects correctly.
+
+        :param asset:
+        :return:
+        """
+        for key in asset:
+            if key == 'start_date':
+                asset[key] = pd.to_datetime(asset[key], utc=True)
+        return asset
+
+    def load_assets(self, symbol_map):
+        """
+        Populate the 'assets' attribute with a dictionary of Assets.
+        The key of the resulting dictionary is the exchange specific
+        currency pair symbol. The universal symbol is contained in the
+        'symbol' attribute of each asset.
+
+
+        Note
+        ----
+        The sid of each asset is calculated based on a numeric hash of the
+        universal symbol. This simple approach avoids maintaining a mapping
+        of sids.
+
+        :param symbol_map:
+        :return:
+        """
+        for exchange_symbol in symbol_map:
+            asset_obj = Asset(
+                sid=abs(hash(symbol_map[exchange_symbol]['symbol']))
+                    % (10 ** 4),
+                exchange=self.name,
+                end_date=pd.Timestamp.utcnow() + timedelta(minutes=300000),
+                **symbol_map[exchange_symbol]
+            )
+            self.assets[exchange_symbol] = asset_obj
+
+    def check_open_orders(self):
+        """
+        Loop through the list of open orders in the Portfolio object.
+        For each executed order found, create a transaction and apply to the
+        Portfolio.
+
+        :return:
+        transactions: Transaction[]
+        """
+        transactions = list()
+        if self.portfolio.open_orders:
+            for order_id in list(self.portfolio.open_orders):
+                log.debug('found open order: {}'.format(order_id))
+
+                order, executed_price = self.get_order(order_id)
+                log.debug('got updated order {} {}'.format(
+                    order, executed_price))
+
+                if order.status == ORDER_STATUS.FILLED:
+                    transaction = Transaction(
+                        asset=order.asset,
+                        amount=order.amount,
+                        dt=pd.Timestamp.utcnow(),
+                        price=executed_price,
+                        order_id=order.id,
+                        commission=order.commission
+                    )
+                    transactions.append(transaction)
+
+                    self.portfolio.execute_order(order, transaction)
+
+                elif order.status == ORDER_STATUS.CANCELLED:
+                    self.portfolio.remove_order(order)
+
+                else:
+                    delta = pd.Timestamp.utcnow() - order.dt
+                    log.info(
+                        'order {order_id} still open after {delta}'.format(
+                            order_id=order_id,
+                            delta=delta
+                        )
+                    )
+        return transactions
+
+    def get_spot_value(self, assets, field, dt=None, data_frequency='minute'):
+        """
+        Public API method that returns a scalar value representing the value
+        of the desired asset's field at either the given dt.
+
+        Parameters
+        ----------
+        assets : Asset, ContinuousFuture, or iterable of same.
+            The asset or assets whose data is desired.
+        field : {'open', 'high', 'low', 'close', 'volume',
+                 'price', 'last_traded'}
+            The desired field of the asset.
+        dt : pd.Timestamp
+            The timestamp for the desired value.
+        data_frequency : str
+            The frequency of the data to query; i.e. whether the data is
+            'daily' or 'minute' bars
+
+        Returns
+        -------
+        value : float, int, or pd.Timestamp
+            The spot value of ``field`` for ``asset`` The return type is based
+            on the ``field`` requested. If the field is one of 'open', 'high',
+            'low', 'close', or 'price', the value will be a float. If the
+            ``field`` is 'volume' the value will be a int. If the ``field`` is
+            'last_traded' the value will be a Timestamp.
+
+        Bitfinex timeframes
+        -------------------
+        Available values: '1m', '5m', '15m', '30m', '1h', '3h', '6h', '12h',
+         '1D', '7D', '14D', '1M'
+        """
+        if field not in BASE_FIELDS:
+            raise KeyError('Invalid column: ' + str(field))
+
+        if isinstance(assets, collections.Iterable):
+            values = list()
+            for asset in assets:
+                value = self.get_single_spot_value(
+                    asset, field, data_frequency)
+                values.append(value)
+
+            return values
+        else:
+            return self.get_single_spot_value(
+                assets, field, data_frequency)
+
+    def get_single_spot_value(self, asset, field, data_frequency):
+        """
+        Similar to 'get_spot_value' but for a single asset
+
+        :param asset:
+        :param field:
+        :param data_frequency:
+        :return value: The spot value of the given asset / field
+        """
+        log.debug(
+            'fetching spot value {field} for symbol {symbol}'.format(
+                symbol=asset.symbol,
+                field=field
+            )
+        )
+
+        ohlc = self.get_candles(data_frequency, asset)
+        if field not in ohlc:
+            raise KeyError('Invalid column: %s' % field)
+
+        value = ohlc[field]
+        log.debug('got spot value: {}'.format(value))
+
+        return value
+
+    def get_history_window(self,
+                           assets,
+                           end_dt,
+                           bar_count,
+                           frequency,
+                           field,
+                           data_frequency,
+                           ffill=True):
+
+        """
+        Public API method that returns a dataframe containing the requested
+        history window.  Data is fully adjusted.
+
+        Parameters
+        ----------
+        assets : list of catalyst.data.Asset objects
+            The assets whose data is desired.
+
+        end_dt: not applicable to cryptocurrencies
+
+        bar_count: int
+            The number of bars desired.
+
+        frequency: string
+            "1d" or "1m"
+
+        field: string
+            The desired field of the asset.
+
+        data_frequency: string
+            The frequency of the data to query; i.e. whether the data is
+            'daily' or 'minute' bars.
+
+        # TODO: fill how?
+        ffill: boolean
+            Forward-fill missing values. Only has effect if field
+            is 'price'.
+
+        Returns
+        -------
+        A dataframe containing the requested data.
+        """
+
+        candles = self.get_candles(
+            data_frequency=frequency,
+            assets=assets,
+            bar_count=bar_count,
+        )
+
+        frames = []
+        for asset in assets:
+            asset_candles = candles[asset]
+
+            asset_data = dict()
+            asset_data[asset] = map(lambda candle: candle[field],
+                                    asset_candles)
+
+            dates = map(lambda candle: candle['last_traded'],
+                        asset_candles)
+
+            df = pd.DataFrame(asset_data, index=dates)
+            frames.append(df)
+
+        return pd.concat(frames)
 
     @abstractmethod
     def order(self, asset, amount, limit_price, stop_price, style):
@@ -233,171 +415,25 @@ class Exchange:
         pass
 
     @abstractmethod
-    def get_spot_value(self, assets, field, dt, data_frequency):
+    def get_candles(self, data_frequency, assets, bar_count=None):
         """
-        Public API method that returns a scalar value representing the value
-        of the desired asset's field at either the given dt.
+        Retrieve OHLCV candles for the given assets
 
-        Parameters
-        ----------
-        assets : Asset, ContinuousFuture, or iterable of same.
-            The asset or assets whose data is desired.
-        field : {'open', 'high', 'low', 'close', 'volume',
-                 'price', 'last_traded'}
-            The desired field of the asset.
-        dt : pd.Timestamp
-            The timestamp for the desired value.
-        data_frequency : str
-            The frequency of the data to query; i.e. whether the data is
-            'daily' or 'minute' bars
-
-        Returns
-        -------
-        value : float, int, or pd.Timestamp
-            The spot value of ``field`` for ``asset`` The return type is based
-            on the ``field`` requested. If the field is one of 'open', 'high',
-            'low', 'close', or 'price', the value will be a float. If the
-            ``field`` is 'volume' the value will be a int. If the ``field`` is
-            'last_traded' the value will be a Timestamp.
+        :param data_frequency:
+        :param assets:
+        :param end_dt:
+        :param bar_count:
+        :param limit:
+        :return:
         """
         pass
-
-    @abstractmethod
-    def get_candles(self, data_frequency, assets,
-                    end_dt=None, bar_count=None, limit=None):
-        """
-        Retrieve OHLC candles
-        """
-        pass
-
-    def get_spot_value(self, assets, field, dt=None, data_frequency='minute'):
-        """
-        Public API method that returns a scalar value representing the value
-        of the desired asset's field at either the given dt.
-
-        Parameters
-        ----------
-        assets : Asset, ContinuousFuture, or iterable of same.
-            The asset or assets whose data is desired.
-        field : {'open', 'high', 'low', 'close', 'volume',
-                 'price', 'last_traded'}
-            The desired field of the asset.
-        dt : pd.Timestamp
-            The timestamp for the desired value.
-        data_frequency : str
-            The frequency of the data to query; i.e. whether the data is
-            'daily' or 'minute' bars
-
-        Returns
-        -------
-        value : float, int, or pd.Timestamp
-            The spot value of ``field`` for ``asset`` The return type is based
-            on the ``field`` requested. If the field is one of 'open', 'high',
-            'low', 'close', or 'price', the value will be a float. If the
-            ``field`` is 'volume' the value will be a int. If the ``field`` is
-            'last_traded' the value will be a Timestamp.
-
-        Bitfinex timeframes
-        -------------------
-        Available values: '1m', '5m', '15m', '30m', '1h', '3h', '6h', '12h',
-         '1D', '7D', '14D', '1M'
-        """
-        if field not in BASE_FIELDS:
-            raise KeyError('Invalid column: ' + str(field))
-
-        if isinstance(assets, collections.Iterable):
-            values = list()
-            for asset in assets:
-                value = self.get_single_spot_value(
-                    asset, field, data_frequency)
-                values.append(value)
-
-            return values
-        else:
-            return self.get_single_spot_value(
-                assets, field, data_frequency)
-
-    def get_single_spot_value(self, asset, field, data_frequency):
-        log.debug(
-            'fetching spot value {field} for symbol {symbol}'.format(
-                symbol=asset.symbol,
-                field=field
-            )
-        )
-
-        ohlc = self.get_candles(data_frequency, asset)
-        if field not in ohlc:
-            raise KeyError('Invalid column: %s' % field)
-
-        value = ohlc[field]
-        log.debug('got spot value: {}'.format(value))
-
-        return value
-
-    def get_history_window(self,
-                           assets,
-                           end_dt,
-                           bar_count,
-                           frequency,
-                           field,
-                           data_frequency,
-                           ffill=True):
-
-        """
-        Public API method that returns a dataframe containing the requested
-        history window.  Data is fully adjusted.
-
-        Parameters
-        ----------
-        assets : list of catalyst.data.Asset objects
-            The assets whose data is desired.
-
-        bar_count: int
-            The number of bars desired.
-
-        frequency: string
-            "1d" or "1m"
-
-        field: string
-            The desired field of the asset.
-
-        data_frequency: string
-            The frequency of the data to query; i.e. whether the data is
-            'daily' or 'minute' bars.
-
-        # TODO: fill how?
-        ffill: boolean
-            Forward-fill missing values. Only has effect if field
-            is 'price'.
-
-        Returns
-        -------
-        A dataframe containing the requested data.
-        """
-
-        candles = self.get_candles(
-            data_frequency=frequency,
-            assets=assets,
-            bar_count=bar_count,
-            end_dt=end_dt
-        )
-
-        frames = []
-        for asset in assets:
-            asset_candles = candles[asset]
-
-            asset_data = dict()
-            asset_data[asset] = map(lambda candle: candle[field],
-                                    asset_candles)
-
-            dates = map(lambda candle: candle['last_traded'],
-                        asset_candles)
-
-            df = pd.DataFrame(asset_data, index=dates)
-            frames.append(df)
-
-        return pd.concat(frames)
 
     @abc.abstractmethod
-    def tickers(self, date, pairs):
+    def tickers(self, assets):
+        """
+        Retrieve current tick data for the given assets
+
+        :param assets:
+        :return:
+        """
         return
