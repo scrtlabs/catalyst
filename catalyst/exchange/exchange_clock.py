@@ -58,16 +58,13 @@ class ExchangeClock(object):
 
         while True:
             current_time = pd.Timestamp.utcnow()
-            server_time = current_time.floor('1 min')
+            current_minute = current_time.floor('1 min')
 
-            if self._last_emit is None or server_time > self._last_emit:
-                log.debug('emitting minutely bar: {}'.format(server_time))
+            if self._last_emit is None or current_minute > self._last_emit:
+                log.debug('emitting minutely bar: {}'.format(current_minute))
 
-                self._last_emit = server_time
-                yield server_time, BAR
-
-                if self.minute_emission:
-                    yield server_time, MINUTE_END
+                self._last_emit = current_minute
+                yield current_minute, BAR
 
             else:
                 sleep(1)

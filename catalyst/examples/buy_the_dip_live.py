@@ -18,10 +18,10 @@ log = Logger(algo_namespace)
 
 def initialize(context):
     log.info('initializing algo')
-    context.ASSET_NAME = 'IOT_USD'
+    context.ASSET_NAME = 'XRP_USD'
     context.asset = symbol(context.ASSET_NAME)
 
-    context.TARGET_POSITIONS = 200
+    context.TARGET_POSITIONS = 7
     context.PROFIT_TARGET = 0.1
     context.SLIPPAGE_ALLOWED = 0.02
 
@@ -44,12 +44,12 @@ def _handle_data(context, data):
     log.info('got rsi: {}'.format(rsi))
 
     # Buying more when RSI is low, this should lower our cost basis
-    if rsi <= 40:
-        buy_increment = 2
-    elif rsi <= 30:
-        buy_increment = 5
-    else:
+    if rsi <= 30:
         buy_increment = 1
+    elif rsi <= 40:
+        buy_increment = 0.5
+    else:
+        buy_increment = 0.1
 
     cash = context.portfolio.cash
     log.info('base currency available: {cash}'.format(cash=cash))
@@ -76,10 +76,6 @@ def _handle_data(context, data):
     if context.asset in context.portfolio.positions:
         position = context.portfolio.positions[context.asset]
 
-        if position.amount >= context.TARGET_POSITIONS:
-            log.info('reached positions target: {}'.format(position.amount))
-            return
-
         cost_basis = position.cost_basis
         log.info(
             'found {amount} positions with cost basis {cost_basis}'.format(
@@ -87,6 +83,20 @@ def _handle_data(context, data):
                 cost_basis=cost_basis
             )
         )
+
+        # if position.amount > 0:
+        #     order_target_percent(
+        #         asset=context.asset,
+        #         target=0,
+        #         limit_price=price * (1 - context.SLIPPAGE_ALLOWED),
+        #     )
+        #     log.debug('liquidated the position')
+        #     return
+
+        if position.amount >= context.TARGET_POSITIONS:
+            log.info('reached positions target: {}'.format(position.amount))
+            return
+
         if price < cost_basis:
             is_buy = True
         elif price > cost_basis * (1 + context.PROFIT_TARGET) or rsi > 70:
@@ -120,7 +130,7 @@ def handle_data(context, data):
     log.info('handling bar {}'.format(data.current_dt))
     try:
         _handle_data(context, data)
-    except ZiplineError as e:
+    except Exception as e:
         log.warn('aborting the bar on error {}'.format(e))
         context.errors.append(e)
 

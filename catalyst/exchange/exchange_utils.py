@@ -95,3 +95,12 @@ def save_algo_object(algo_name, key, obj, environ=None):
 
     with open(filename, 'wb') as handle:
         pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def get_exchange_minute_writer_root(exchange_name, environ=None):
+    exchange_folder = get_exchange_folder(exchange_name, environ)
+
+    minute_data_folder = os.path.join(exchange_folder, 'minute_data')
+    ensure_directory(minute_data_folder)
+
+    return minute_data_folder

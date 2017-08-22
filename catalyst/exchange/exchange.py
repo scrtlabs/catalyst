@@ -1,8 +1,11 @@
 import abc
+import random
+from time import sleep
 import collections
 from abc import ABCMeta, abstractmethod, abstractproperty
 from datetime import timedelta
 
+import numpy as np
 import pandas as pd
 from catalyst.assets._assets import Asset
 from logbook import Logger
@@ -13,6 +16,7 @@ from catalyst.errors import (
 )
 from catalyst.finance.order import ORDER_STATUS
 from catalyst.finance.transaction import Transaction
+from catalyst.exchange.exchange_utils import get_exchange_symbols
 
 log = Logger('Exchange')
 
@@ -25,6 +29,8 @@ class Exchange:
         self.trading_pairs = None
         self.assets = {}
         self._portfolio = None
+        self.minute_writer = None
+        self.minute_reader = None
 
     @abstractmethod
     def subscribe_to_market_data(self, symbol):
@@ -100,20 +106,7 @@ class Exchange:
 
         return asset
 
-    @staticmethod
-    def asset_parser(asset):
-        """
-        Helper method to de-serialize Asset objects correctly.
-
-        :param asset:
-        :return:
-        """
-        for key in asset:
-            if key == 'start_date':
-                asset[key] = pd.to_datetime(asset[key], utc=True)
-        return asset
-
-    def load_assets(self, symbol_map):
+    def load_assets(self):
         """
         Populate the 'assets' attribute with a dictionary of Assets.
         The key of the resulting dictionary is the exchange specific
@@ -121,23 +114,31 @@ class Exchange:
         'symbol' attribute of each asset.
 
 
-        Note
-        ----
+        Notes
+        -----
         The sid of each asset is calculated based on a numeric hash of the
         universal symbol. This simple approach avoids maintaining a mapping
         of sids.
 
-        :param symbol_map:
-        :return:
+        This method can be overridden if an exchange offers equivalent data
+        via its api.
         """
+
+        symbol_map = get_exchange_symbols(self.name)
         for exchange_symbol in symbol_map:
+            asset = symbol_map[exchange_symbol]
+            symbol = asset['symbol']
+            asset_name = ' / '.join(symbol.split('_')).upper()
+
             asset_obj = Asset(
-                sid=abs(hash(symbol_map[exchange_symbol]['symbol']))
-                    % (10 ** 4),
+                symbol=symbol,
+                asset_name=asset_name,
+                sid=abs(hash(symbol)) % (10 ** 4),
                 exchange=self.name,
+                start_date=pd.to_datetime(asset['start_date'], utc=True),
                 end_date=pd.Timestamp.utcnow() + timedelta(minutes=300000),
-                **symbol_map[exchange_symbol]
             )
+
             self.assets[exchange_symbol] = asset_obj
 
     def check_open_orders(self):
@@ -235,6 +236,13 @@ class Exchange:
         """
         Similar to 'get_spot_value' but for a single asset
 
+        Note
+        ----
+        We're writing each minute bar to disk using zipline's machinery.
+        This is especially useful when running multiple algorithms
+        concurrently. By using local data when possible, we try to reaching
+        request limits on exchanges.
+
         :param asset:
         :param field:
         :param data_frequency:
@@ -247,12 +255,53 @@ class Exchange:
             )
         )
 
-        ohlc = self.get_candles(data_frequency, asset)
-        if field not in ohlc:
-            raise KeyError('Invalid column: %s' % field)
+        if field == 'price':
+            field = 'close'
 
-        value = ohlc[field]
-        log.debug('got spot value: {}'.format(value))
+        # Don't use a timezone here
+        dt = pd.Timestamp.utcnow().floor('1 min')
+        value = None
+        if self.minute_reader is not None:
+            try:
+                # Slight delay to minimize the chances that multiple algos
+                # might try to hit the cache at the exact same time.
+                sleep_time = random.uniform(0.5, 0.8)
+                sleep(sleep_time)
+                # TODO: This does not always! Why is that? Open an issue with zipline.
+                value = self.minute_reader.get_value(
+                    sid=asset.sid,
+                    dt=dt,
+                    field=field
+                )
+            except Exception as e:
+                log.warn('minute data not found: {}'.format(e))
+
+        if value is None or np.isnan(value):
+            ohlc = self.get_candles(data_frequency, asset)
+            if field not in ohlc:
+                raise KeyError('Invalid column: %s' % field)
+
+            df = pd.DataFrame(
+                [ohlc],
+                index=pd.DatetimeIndex([dt]),
+                columns=['open', 'high', 'low', 'close', 'volume']
+            )
+
+            if self.minute_writer is not None:
+                try:
+                    self.minute_writer.write_sid(
+                        sid=asset.sid,
+                        df=df
+                    )
+                    log.debug('wrote minute data: {}'.format(dt))
+                except Exception as e:
+                    log.warn(
+                        'unable to write minute data: {} {}'.format(dt, e))
+
+            value = ohlc[field]
+            log.debug('got spot value: {}'.format(value))
+        else:
+            log.debug('got spot value from cache: {}'.format(value))
 
         return value
 

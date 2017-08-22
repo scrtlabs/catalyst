@@ -10,6 +10,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 import signal
 import sys
 from datetime import timedelta
@@ -20,6 +21,8 @@ import pandas as pd
 
 import catalyst.protocol as zp
 from catalyst.algorithm import TradingAlgorithm
+from catalyst.data.minute_bars import BcolzMinuteBarWriter, \
+    BcolzMinuteBarReader
 from catalyst.errors import OrderInBeforeTradingStart
 from catalyst.exchange.exchange_clock import ExchangeClock
 from catalyst.exchange.exchange_errors import (
@@ -27,6 +30,7 @@ from catalyst.exchange.exchange_errors import (
     ExchangePortfolioDataError,
     ExchangeTransactionError
 )
+from catalyst.exchange.exchange_utils import get_exchange_minute_writer_root
 from catalyst.exchange.exchange_utils import save_algo_object, get_algo_object
 from catalyst.finance.performance.period import calc_period_stats
 from catalyst.gens.tradesimulation import AlgorithmSimulator
@@ -58,8 +62,31 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         self.retry_delay = 5
 
         super(self.__class__, self).__init__(*args, **kwargs)
+        self._create_minute_writer()
+
+        signal.signal(signal.SIGINT, self.signal_handler)
 
         log.info('exchange trading algorithm successfully initialized')
+
+    def _create_minute_writer(self):
+        root = get_exchange_minute_writer_root(self.exchange.name)
+        filename = os.path.join(root, 'metadata.json')
+
+        if os.path.isfile(filename):
+            writer = BcolzMinuteBarWriter.open(
+                root, self.sim_params.end_session)
+        else:
+            writer = BcolzMinuteBarWriter(
+                rootdir=root,
+                calendar=self.trading_calendar,
+                minutes_per_day=1440,
+                start_session=self.sim_params.start_session,
+                end_session=self.sim_params.end_session,
+                write_metadata=True
+            )
+
+        self.exchange.minute_writer = writer
+        self.exchange.minute_reader = BcolzMinuteBarReader(root)
 
     def signal_handler(self, signal, frame):
         self.is_running = False
@@ -103,7 +130,6 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         execution_closes = \
             self.trading_calendar.execution_time_from_close(market_closes)
 
-        signal.signal(signal.SIGINT, self.signal_handler)
 
         return ExchangeClock(
             self.sim_params.sessions,
@@ -342,6 +368,15 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
 
         self.perf_tracker.process_order(order)
         return order
+
+    def round_order(self, amount):
+        """
+        We need fractions with cryptocurrencies
+
+        :param amount:
+        :return:
+        """
+        return amount
 
     @api_method
     def batch_market_order(self, share_counts):

@@ -1,4 +1,5 @@
 import base64
+import numpy as np
 import hashlib
 import hmac
 import json
@@ -18,7 +19,6 @@ from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     InvalidHistoryFrequencyError
 )
-from catalyst.exchange.exchange_utils import get_exchange_symbols
 from catalyst.finance.execution import (MarketOrder,
                                         LimitOrder,
                                         StopOrder,
@@ -44,9 +44,11 @@ class Bitfinex(Exchange):
         self.id = 'b'
         self.name = 'bitfinex'
         self.assets = {}
-        self.load_assets(get_exchange_symbols(self.name))
+        self.load_assets()
         self.base_currency = base_currency
         self._portfolio = portfolio
+        self.minute_writer = None
+        self.minute_reader = None
 
     def _request(self, operation, data, version='v1'):
         payload_object = {
@@ -288,6 +290,8 @@ class Bitfinex(Exchange):
         '1m', '5m', '15m', '30m', '1h', '3h', '6h', '12h', '1D', '7D', '14D',
          '1M'
         """
+
+        # TODO: use BcolzMinuteBarReader to read from cache
         freq_match = re.match(r'([0-9].*)(m|h|d)', data_frequency, re.M | re.I)
         if freq_match:
             number = int(freq_match.group(1))
@@ -347,16 +351,18 @@ class Bitfinex(Exchange):
             candles = response.json()
 
             def ohlc_from_candle(candle):
-                return dict(
-                    open=candle[1],
-                    high=candle[3],
-                    low=candle[4],
-                    close=candle[2],
-                    volume=candle[5],
-                    price=candle[2],
+                ohlc = dict(
+                    open=np.float64(candle[1]),
+                    high=np.float64(candle[3]),
+                    low=np.float64(candle[4]),
+                    close=np.float64(candle[2]),
+                    volume=np.float64(candle[5]),
+                    price=np.float64(candle[2]),
                     last_traded=pd.Timestamp.utcfromtimestamp(
                         candle[0] / 1000.0),
+                    minute_dt=pd.Timestamp.utcnow().floor('1 min')
                 )
+                return ohlc
 
             if is_list:
                 ohlc_bars = []
