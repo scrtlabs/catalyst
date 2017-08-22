@@ -21,7 +21,7 @@ def initialize(context):
     context.ASSET_NAME = 'XRP_USD'
     context.asset = symbol(context.ASSET_NAME)
 
-    context.TARGET_POSITIONS = 7
+    context.TARGET_POSITIONS = 5000
     context.PROFIT_TARGET = 0.1
     context.SLIPPAGE_ALLOWED = 0.02
 
@@ -45,11 +45,11 @@ def _handle_data(context, data):
 
     # Buying more when RSI is low, this should lower our cost basis
     if rsi <= 30:
-        buy_increment = 1
+        buy_increment = 50
     elif rsi <= 40:
-        buy_increment = 0.5
+        buy_increment = 20
     else:
-        buy_increment = 0.1
+        buy_increment = 5
 
     cash = context.portfolio.cash
     log.info('base currency available: {cash}'.format(cash=cash))
@@ -99,7 +99,8 @@ def _handle_data(context, data):
 
         if price < cost_basis:
             is_buy = True
-        elif price > cost_basis * (1 + context.PROFIT_TARGET) or rsi > 70:
+        elif position > 0 and \
+                (price > cost_basis * (1 + context.PROFIT_TARGET) or rsi > 70):
             profit = (price * position.amount) - (cost_basis * position.amount)
             log.info('closing position, taking profit: {}'.format(profit))
             order_target_percent(
