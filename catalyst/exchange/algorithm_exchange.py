@@ -13,7 +13,6 @@
 import os
 import signal
 import sys
-import json
 from datetime import timedelta
 from time import sleep
 
@@ -32,7 +31,7 @@ from catalyst.exchange.exchange_errors import (
     ExchangeTransactionError
 )
 from catalyst.exchange.exchange_utils import get_exchange_minute_writer_root, \
-    save_algo_object, get_algo_object, append_algo_object
+    save_algo_object, get_algo_object
 from catalyst.finance.performance.period import calc_period_stats
 from catalyst.gens.tradesimulation import AlgorithmSimulator
 from catalyst.utils.api_support import (
