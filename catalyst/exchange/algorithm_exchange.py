@@ -13,6 +13,7 @@
 import os
 import signal
 import sys
+import json
 from datetime import timedelta
 from time import sleep
 
@@ -30,8 +31,8 @@ from catalyst.exchange.exchange_errors import (
     ExchangePortfolioDataError,
     ExchangeTransactionError
 )
-from catalyst.exchange.exchange_utils import get_exchange_minute_writer_root
-from catalyst.exchange.exchange_utils import save_algo_object, get_algo_object
+from catalyst.exchange.exchange_utils import get_exchange_minute_writer_root, \
+    save_algo_object, get_algo_object, append_algo_object
 from catalyst.finance.performance.period import calc_period_stats
 from catalyst.gens.tradesimulation import AlgorithmSimulator
 from catalyst.utils.api_support import (
@@ -52,7 +53,6 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         self.exchange = kwargs.pop('exchange', None)
         self.algo_namespace = kwargs.pop('algo_namespace', None)
         self.orders = {}
-        self.minute_perfs = None
         self.is_running = True
 
         self.retry_check_open_orders = 5
@@ -93,12 +93,20 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
 
         log.info('You pressed Ctrl+C!')
 
-        stats = pd.DataFrame(self.minute_perfs)
-        stats.set_index('period_close', drop=True, inplace=True)
+        # TODO: load from daily perf pickle files?
+        # See: catalyst.algorithm.TradingAlgorithm#_create_daily_stats
+        # stats = pd.DataFrame(self.minute_perfs)
+        # stats.set_index('period_close', drop=True, inplace=True)
 
-        # TODO: pyfolio is going to want the daily, just resample and pick the last row
-        # daily_stats = stats.resample('24H').last()
-        self.analyze(stats)
+        try:
+            # convert perf dict to pandas dataframe
+            stats = self.prepare_period_stats(
+                start_dt=self.sim_params.start_session,
+                end_dt=pd.Timestamp.utcnow()
+            )
+            self.analyze(stats)
+        except Exception as e:
+            log.warn('Unable to compute daily stats: {}'.format(e))
 
         sys.exit(0)
 
@@ -295,11 +303,22 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
             # Performance tracker and keep only minute and cumulative
             self.perf_tracker.update_performance()
 
+            # TODO: save for future use?
             minute_stats = self.prepare_period_stats(
                 data.current_dt, data.current_dt + timedelta(minutes=1))
             log.debug('the minute performance:\n{}'.format(minute_stats))
 
-            self.minute_perfs.append(minute_stats)
+            today = pd.to_datetime('today', utc=True)
+            daily_stats = self.prepare_period_stats(
+                start_dt=today,
+                end_dt=pd.Timestamp.utcnow()
+            )
+            save_algo_object(
+                algo_name=self.algo_namespace,
+                key=today.strftime('%Y-%m-%d'),
+                obj=daily_stats,
+                rel_path='daily_perf'
+            )
 
         except Exception as e:
             log.warn('unable to calculate performance: {}'.format(e))
