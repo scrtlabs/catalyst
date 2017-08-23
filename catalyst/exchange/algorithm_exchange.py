@@ -130,7 +130,6 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         execution_closes = \
             self.trading_calendar.execution_time_from_close(market_closes)
 
-
         return ExchangeClock(
             self.sim_params.sessions,
             execution_opens,
@@ -141,6 +140,12 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         )
 
     def _create_generator(self, sim_params):
+        if self.perf_tracker is None:
+            self.perf_tracker = get_algo_object(
+                algo_name=self.algo_namespace,
+                key='perf_tracker'
+            )
+
         # Call the simulation trading algorithm for side-effects:
         # it creates the perf tracker
         TradingAlgorithm._create_generator(self, sim_params)
@@ -271,13 +276,6 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         if not self.is_running:
             return
 
-        if self.minute_perfs is None:
-            perfs = get_algo_object(
-                algo_name=self.algo_namespace,
-                key='minute_perfs'
-            )
-            self.minute_perfs = perfs if perfs is not None else []
-
         self._update_portfolio()
 
         transactions = self._check_open_orders()
@@ -309,8 +307,8 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         try:
             save_algo_object(
                 algo_name=self.algo_namespace,
-                key='minute_perfs',
-                obj=self.minute_perfs
+                key='perf_tracker',
+                obj=self.perf_tracker
             )
         except Exception as e:
             log.warn('unable to save minute perfs to disk: {}'.format(e))
@@ -318,7 +316,7 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         try:
             save_algo_object(
                 algo_name=self.algo_namespace,
-                key='portfolio',
+                key='portfolio_{}'.format(self.exchange.name),
                 obj=self.exchange.portfolio
             )
         except Exception as e:

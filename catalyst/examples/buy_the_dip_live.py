@@ -1,5 +1,6 @@
+import talib
 from logbook import Logger
-from catalyst.utils.run_algo import run_algorithm
+
 from catalyst.api import (
     order,
     order_target_percent,
@@ -7,10 +8,7 @@ from catalyst.api import (
     record,
     get_open_orders,
 )
-from catalyst.errors import ZiplineError
-from catalyst.exchange.exchange_utils import get_exchange_folder, \
-    download_exchange_symbols, get_exchange_auth
-import talib
+from catalyst.utils.run_algo import run_algorithm
 
 algo_namespace = 'buy_the_dip_live'
 log = Logger(algo_namespace)
@@ -48,8 +46,10 @@ def _handle_data(context, data):
         buy_increment = 50
     elif rsi <= 40:
         buy_increment = 20
-    else:
+    elif rsi <= 70:
         buy_increment = 5
+    else:
+        buy_increment = None
 
     cash = context.portfolio.cash
     log.info('base currency available: {cash}'.format(cash=cash))
@@ -84,23 +84,14 @@ def _handle_data(context, data):
             )
         )
 
-        # if position.amount > 0:
-        #     order_target_percent(
-        #         asset=context.asset,
-        #         target=0,
-        #         limit_price=price * (1 - context.SLIPPAGE_ALLOWED),
-        #     )
-        #     log.debug('liquidated the position')
-        #     return
-
         if position.amount >= context.TARGET_POSITIONS:
             log.info('reached positions target: {}'.format(position.amount))
             return
 
         if price < cost_basis:
             is_buy = True
-        elif position > 0 and \
-                (price > cost_basis * (1 + context.PROFIT_TARGET) or rsi > 70):
+        elif position.amount > 0 and \
+                price > cost_basis * (1 + context.PROFIT_TARGET):
             profit = (price * position.amount) - (cost_basis * position.amount)
             log.info('closing position, taking profit: {}'.format(profit))
             order_target_percent(

@@ -7,6 +7,15 @@ log = Logger('ExchangePortfolio')
 
 
 class ExchangePortfolio(Portfolio):
+    """
+    Since the goal is to support multiple exchanges, it makes sense to
+    include additional stats in the portfolio object.
+
+    Instead of relying on the performance tracker, each exchange portfolio
+    tracks its own holding. This offers a separation between tracking an
+    exchange and the statistics of the algorithm.
+    """
+
     def __init__(self, start_date, starting_cash=None):
         self.capital_used = 0.0
         self.starting_cash = starting_cash

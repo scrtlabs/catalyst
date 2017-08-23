@@ -268,6 +268,7 @@ class Exchange:
                 sleep_time = random.uniform(0.5, 0.8)
                 sleep(sleep_time)
                 # TODO: This does not always! Why is that? Open an issue with zipline.
+                # See: https://github.com/zipline-live/zipline/issues/26
                 value = self.minute_reader.get_value(
                     sid=asset.sid,
                     dt=dt,
@@ -281,13 +282,13 @@ class Exchange:
             if field not in ohlc:
                 raise KeyError('Invalid column: %s' % field)
 
-            df = pd.DataFrame(
-                [ohlc],
-                index=pd.DatetimeIndex([dt]),
-                columns=['open', 'high', 'low', 'close', 'volume']
-            )
-
             if self.minute_writer is not None:
+                df = pd.DataFrame(
+                    [ohlc],
+                    index=pd.DatetimeIndex([dt]),
+                    columns=['open', 'high', 'low', 'close', 'volume']
+                )
+
                 try:
                     self.minute_writer.write_sid(
                         sid=asset.sid,
