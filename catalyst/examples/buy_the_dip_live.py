@@ -67,14 +67,6 @@ def _handle_data(context, data):
         log.info('skipping bar until all open orders execute')
         return
 
-    if buy_increment is None:
-        log.info('the rsi is too high to consider buying {}'.format(rsi))
-        return
-
-    if price * buy_increment > cash:
-        log.info('not enough base currency to consider buying')
-        return
-
     is_buy = False
     cost_basis = None
     if context.asset in context.portfolio.positions:
@@ -109,6 +101,14 @@ def _handle_data(context, data):
         is_buy = True
 
     if is_buy:
+        if buy_increment is None:
+            log.info('the rsi is too high to consider buying {}'.format(rsi))
+            return
+
+        if price * buy_increment > cash:
+            log.info('not enough base currency to consider buying')
+            return
+
         log.info(
             'buying position cheaper than cost basis {} < {}'.format(
                 price,
