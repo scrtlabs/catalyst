@@ -67,6 +67,10 @@ def _handle_data(context, data):
         log.info('skipping bar until all open orders execute')
         return
 
+    if buy_increment is None:
+        log.info('the rsi is too high to consider buying {}'.format(rsi))
+        return
+
     if price * buy_increment > cash:
         log.info('not enough base currency to consider buying')
         return
@@ -91,7 +95,7 @@ def _handle_data(context, data):
         if price < cost_basis:
             is_buy = True
         elif position.amount > 0 and \
-                price > cost_basis * (1 + context.PROFIT_TARGET):
+                        price > cost_basis * (1 + context.PROFIT_TARGET):
             profit = (price * position.amount) - (cost_basis * position.amount)
             log.info('closing position, taking profit: {}'.format(profit))
             order_target_percent(
@@ -120,11 +124,11 @@ def _handle_data(context, data):
 
 def handle_data(context, data):
     log.info('handling bar {}'.format(data.current_dt))
-    try:
-        _handle_data(context, data)
-    except Exception as e:
-        log.warn('aborting the bar on error {}'.format(e))
-        context.errors.append(e)
+    # try:
+    _handle_data(context, data)
+    # except Exception as e:
+    #     log.warn('aborting the bar on error {}'.format(e))
+    #     context.errors.append(e)
 
     log.info('completed bar {}, total execution errors {}'.format(
         data.current_dt,
