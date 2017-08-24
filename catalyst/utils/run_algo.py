@@ -488,7 +488,7 @@ def run_algorithm(initialize,
         if exchange_name is not None:
             portfolio = get_algo_object(
                 algo_name=algo_namespace,
-                key='portfolio',
+                key='portfolio_{}'.format(exchange_name),
                 environ=environ
             )
             if portfolio is None:
