@@ -4,11 +4,11 @@ from runpy import run_path
 import sys
 import warnings
 from time import sleep
+from datetime import timedelta
 
 import pandas as pd
 
 import click
-import time
 
 try:
     from pygments import highlight
@@ -142,7 +142,7 @@ def _run(handle_data,
 
     if exchange is not None:
         start = pd.Timestamp.utcnow()
-        end = start + pd.Timedelta('365', 'D')
+        end = start + timedelta(minutes=1439)
 
     open_calendar = get_calendar('OPEN')
     sim_params = create_simulation_parameters(

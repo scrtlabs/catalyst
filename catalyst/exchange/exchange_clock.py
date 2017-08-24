@@ -17,7 +17,8 @@ import pandas as pd
 from catalyst.gens.sim_engine import (
     BAR,
     SESSION_START,
-    MINUTE_END
+    MINUTE_END,
+    SESSION_END
 )
 from logbook import Logger
 
@@ -36,19 +37,9 @@ class ExchangeClock(object):
     the Broker and the live trading machine's clock.
     """
 
-    def __init__(self,
-                 sessions=None,
-                 execution_opens=None,
-                 execution_closes=None,
-                 before_trading_start_minutes=None,
-                 minute_emission=False,
-                 time_skew=pd.Timedelta("0s")):
+    def __init__(self, sessions, time_skew=pd.Timedelta("0s")):
 
         self.sessions = sessions
-        self.execution_opens = execution_opens
-        self.execution_closes = execution_closes
-        self.before_trading_start_minutes = before_trading_start_minutes
-        self.minute_emission = minute_emission
         self.time_skew = time_skew
         self._last_emit = None
         self._before_trading_start_bar_yielded = True
@@ -65,6 +56,5 @@ class ExchangeClock(object):
 
                 self._last_emit = current_minute
                 yield current_minute, BAR
-
             else:
                 sleep(1)

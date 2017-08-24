@@ -13,8 +13,11 @@
 import os
 import signal
 import sys
+import pickle
 from datetime import timedelta
 from time import sleep
+from os import listdir
+from os.path import isfile, join
 
 import logbook
 import pandas as pd
@@ -31,7 +34,7 @@ from catalyst.exchange.exchange_errors import (
     ExchangeTransactionError
 )
 from catalyst.exchange.exchange_utils import get_exchange_minute_writer_root, \
-    save_algo_object, get_algo_object
+    save_algo_object, get_algo_object, get_algo_folder
 from catalyst.finance.performance.period import calc_period_stats
 from catalyst.gens.tradesimulation import AlgorithmSimulator
 from catalyst.utils.api_support import (
@@ -92,39 +95,27 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
 
         log.info('You pressed Ctrl+C!')
 
-        # TODO: load from daily perf pickle files?
-        # See: catalyst.algorithm.TradingAlgorithm#_create_daily_stats
-        # stats = pd.DataFrame(self.minute_perfs)
-        # stats.set_index('period_close', drop=True, inplace=True)
-
+        stats = None
         try:
-            # convert perf dict to pandas dataframe
-            stats = self.prepare_period_stats(
-                start_dt=self.sim_params.start_session,
-                end_dt=pd.Timestamp.utcnow()
-            )
-            self.analyze(stats)
+            algo_folder = get_algo_folder(self.algo_namespace)
+            folder = join(algo_folder, 'daily_perf')
+            files = [f for f in listdir(folder) if isfile(join(folder, f))]
+
+            daily_perf_list = []
+            for item in files:
+                filename = join(folder, item)
+                with open(filename, 'rb') as handle:
+                    daily_perf_list.append(pickle.load(handle))
+
+            stats = pd.DataFrame(daily_perf_list)
+            stats.set_index('period_close', drop=True, inplace=True)
         except Exception as e:
             log.warn('Unable to compute daily stats: {}'.format(e))
 
+        self.analyze(stats)
         sys.exit(0)
 
     def _create_clock(self):
-        # This method is taken from TradingAlgorithm.
-        # The clock has been replaced to use RealtimeClock
-        trading_o_and_c = self.trading_calendar.schedule.ix[
-            self.sim_params.sessions]
-        market_closes = trading_o_and_c['market_close']
-        minutely_emission = False
-
-        if self.sim_params.data_frequency == 'minute':
-            market_opens = trading_o_and_c['market_open']
-
-            minutely_emission = self.sim_params.emission_rate == "minute"
-        else:
-            # in daily mode, we want to have one bar per session, timestamped
-            # as the last minute of the session.
-            market_opens = market_closes
 
         # The calendar's execution times are the minutes over which we actually
         # want to run the clock. Typically the execution times simply adhere to
@@ -132,17 +123,15 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         # for example, we only want to simulate over a subset of the full 24
         # hour calendar, so the execution times dictate a market open time of
         # 6:31am US/Eastern and a close of 5:00pm US/Eastern.
-        execution_opens = \
-            self.trading_calendar.execution_time_from_open(market_opens)
-        execution_closes = \
-            self.trading_calendar.execution_time_from_close(market_closes)
 
+        # In our case, we are trading around the clock, so the market close
+        # corresponds to the last minute of the day.
+
+        # This method is taken from TradingAlgorithm.
+        # The clock has been replaced to use RealtimeClock
+        # TODO: should we apply a time skew? not sure to understand the utility.
         return ExchangeClock(
             self.sim_params.sessions,
-            execution_opens,
-            execution_closes,
-            None,
-            minute_emission=minutely_emission,
             time_skew=self.exchange.time_skew
         )
 
@@ -182,6 +171,19 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
     def _update_portfolio(self, attempt_index=0):
         try:
             self.exchange.update_portfolio()
+
+            # Applying the updated last_sales_price to the positions
+            # in the performance tracker. This seems a bit redundant
+            # but it will make sense when we have multiple exchange portfolios
+            # feeding into the same performance tracker.
+            tracker = self.perf_tracker.todays_performance.position_tracker
+            for asset in self.exchange.portfolio.positions:
+                position = self.exchange.portfolio.positions[asset]
+                tracker.update_position(
+                    asset=asset,
+                    last_sale_date=position.last_sale_date,
+                    last_sale_price=position.last_sale_price
+                )
         except ExchangeRequestError as e:
             log.warn(
                 'update portfolio attempt {}: {}'.format(attempt_index, e)
@@ -221,6 +223,7 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         I rewrote this in an attempt to better control the stats.
         I don't want things to happen magically through complex logic
         pertaining to backtesting.
+
         """
         tracker = self.perf_tracker
         period = tracker.todays_performance
