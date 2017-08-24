@@ -109,6 +109,7 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
 
             stats = pd.DataFrame(daily_perf_list)
             stats.set_index('period_close', drop=True, inplace=True)
+
         except Exception as e:
             log.warn('Unable to compute daily stats: {}'.format(e))
 
