@@ -42,8 +42,7 @@ class PoloniexBundle(BaseCryptoPricingBundle):
     @lazyval
     def tar_url(self):
         return (
-            'https://www.dropbox.com/s/9naqffawnq8o4r2/'
-            'poloniex-bundle.tar?dl=1'
+            'https://s3.amazonaws.com/enigmaco/catalyst-bundles/poloniex/poloniex-bundle.tar.gz'
         )
 
     @lazyval
