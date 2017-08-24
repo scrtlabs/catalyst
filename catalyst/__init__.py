@@ -79,6 +79,7 @@ __all__ = [
     'gens',
     'run_algorithm',
     'utils',
+    'exchange',
 ]
 
 from ._version import get_versions

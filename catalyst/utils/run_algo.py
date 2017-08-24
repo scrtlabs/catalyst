@@ -527,6 +527,7 @@ def run_algorithm(initialize,
         print_algo=False,
         local_namespace=False,
         environ=environ,
+        live=live,
         exchange=exchange,
         algo_namespace=algo_namespace
     )
