@@ -23,7 +23,6 @@ from catalyst.api import (
     get_open_orders,
 )
 
-
 def initialize(context):
     context.ASSET_NAME = 'USDT_BTC'
     context.TARGET_HODL_RATIO = 0.8
@@ -41,8 +40,6 @@ def initialize(context):
 
 def handle_data(context, data):
     context.i += 1
-
-    print 'i:', context.i
 
     starting_cash = context.portfolio.starting_cash
     target_hodl_value = context.TARGET_HODL_RATIO * starting_cash
@@ -73,6 +70,7 @@ def handle_data(context, data):
 
     record(
         price=price,
+        volume=data[context.asset].volume,
         cash=cash,
         starting_cash=context.portfolio.starting_cash,
         leverage=context.account.leverage,
@@ -80,12 +78,13 @@ def handle_data(context, data):
 
 def analyze(context=None, results=None):
     import matplotlib.pyplot as plt
+
     # Plot the portfolio and asset data.
-    ax1 = plt.subplot(511)
+    ax1 = plt.subplot(611)
     results[['portfolio_value']].plot(ax=ax1)
     ax1.set_ylabel('Portfolio Value (USD)')
 
-    ax2 = plt.subplot(512, sharex=ax1)
+    ax2 = plt.subplot(612, sharex=ax1)
     ax2.set_ylabel('{asset} (USD)'.format(asset=context.ASSET_NAME))
     (context.TICK_SIZE * results[['price']]).plot(ax=ax2)
 
@@ -101,11 +100,11 @@ def analyze(context=None, results=None):
         color='g',
     )
 
-    ax3 = plt.subplot(513, sharex=ax1)
+    ax3 = plt.subplot(613, sharex=ax1)
     results[['leverage', 'alpha', 'beta']].plot(ax=ax3)
     ax3.set_ylabel('Leverage ')
 
-    ax4 = plt.subplot(514, sharex=ax1)
+    ax4 = plt.subplot(614, sharex=ax1)
     results[['starting_cash', 'cash']].plot(ax=ax4)
     ax4.set_ylabel('Cash (USD)')
 
@@ -119,13 +118,17 @@ def analyze(context=None, results=None):
         'benchmark_period_return',
     ]]
 
-    ax5 = plt.subplot(515, sharex=ax1)
+    ax5 = plt.subplot(615, sharex=ax1)
     results[[
         'treasury',
         'algorithm',
         'benchmark',
     ]].plot(ax=ax5)
     ax5.set_ylabel('Percent Change')
+
+    ax6 = plt.subplot(616, sharex=ax1)
+    results[['volume']].plot(ax=ax6)
+    ax6.set_ylabel('Volume (mCoins/5min)')
 
     plt.legend(loc=3)
 
