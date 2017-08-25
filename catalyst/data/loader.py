@@ -136,7 +136,7 @@ def load_crypto_market_data(trading_day=None,
     )
     # Override first_date for treasury data since we have it for many more years
     # and is independent of crypto data
-    first_date_treasury = pd.Timestamp('1990-01-01', tz='UTC') 
+    first_date_treasury = pd.Timestamp('1990-01-02', tz='UTC') 
     tc = ensure_treasury_data(
         bm_symbol,
         first_date_treasury,
