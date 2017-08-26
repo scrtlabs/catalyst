@@ -37,7 +37,7 @@ import catalyst.utils.paths as pth
 
 from catalyst.exchange.algorithm_exchange import ExchangeTradingAlgorithm
 from catalyst.exchange.data_portal_exchange import DataPortalExchange
-from catalyst.exchange.bitfinex import Bitfinex
+from catalyst.exchange.bitfinex.bitfinex import Bitfinex
 from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
 from catalyst.exchange.exchange_portfolio import ExchangePortfolio
 from catalyst.exchange.exchange_errors import (
