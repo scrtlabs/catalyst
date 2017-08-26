@@ -210,6 +210,12 @@ def ipython_only(option):
     '--algo-name',
     help='A label assigned to the algorithm for tracking purposes.',
 )
+@click.option(
+    '-c',
+    '--reference-currency',
+    help='The reference currency used to calculate statistics '
+         '(e.g. usd, btc, eth).',
+)
 @click.pass_context
 def run(ctx,
         algofile,
@@ -226,7 +232,8 @@ def run(ctx,
         local_namespace,
         live,
         exchange_name,
-        algo_namespace):
+        algo_namespace,
+        base_currency):
     """Run a backtest for the given algorithm.
     """
 
@@ -237,6 +244,9 @@ def run(ctx,
         if algo_namespace is None:
             ctx.fail("must specify an algorithm name '-n' in live execution "
                      "mode '--live'")
+        if base_currency is None:
+            ctx.fail("must specify a reference currency '-c' in live "
+                     "execution mode '--live'")
     else:
         # check that the start and end dates are passed correctly
         if start is None and end is None:
@@ -278,7 +288,8 @@ def run(ctx,
         environ=os.environ,
         live=live,
         exchange=exchange_name,
-        algo_namespace=algo_namespace
+        algo_namespace=algo_namespace,
+        base_currency=base_currency
     )
 
     if output == '-':

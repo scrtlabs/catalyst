@@ -90,8 +90,10 @@ def _run(handle_data,
          print_algo,
          local_namespace,
          environ,
+         live,
          exchange,
-         algo_namespace):
+         algo_namespace,
+         base_currency):
     """Run a backtest for the given algorithm.
 
     This is shared between the cli and :func:`catalyst.run_algo`.
@@ -238,7 +240,7 @@ def _run(handle_data,
             )
 
     else:
-        if exchange is not None:
+        if live and exchange is not None:
             env = TradingEnvironment(
                 environ=environ,
                 exchange_tz="UTC",
@@ -290,7 +292,7 @@ def _run(handle_data,
     TradingAlgorithmClass = (
         partial(ExchangeTradingAlgorithm, exchange=exchange,
                 algo_namespace=algo_namespace)
-        if exchange else TradingAlgorithm)
+        if live and exchange else TradingAlgorithm)
 
     perf = TradingAlgorithmClass(
         namespace=namespace,
@@ -529,5 +531,6 @@ def run_algorithm(initialize,
         environ=environ,
         live=live,
         exchange=exchange,
-        algo_namespace=algo_namespace
+        algo_namespace=algo_namespace,
+        base_currency=base_currency
     )
