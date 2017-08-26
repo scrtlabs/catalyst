@@ -387,14 +387,14 @@ def ingest(bundle, compile_locally, assets_version, show_progress):
     '--before',
     type=Timestamp(),
     help='Clear all data before TIMESTAMP.'
-         ' This may not be passed with -k / --keep-last',
+    ' This may not be passed with -k / --keep-last',
 )
 @click.option(
     '-a',
     '--after',
     type=Timestamp(),
     help='Clear all data after TIMESTAMP'
-         ' This may not be passed with -k / --keep-last',
+    ' This may not be passed with -k / --keep-last',
 )
 @click.option(
     '-k',
@@ -402,7 +402,7 @@ def ingest(bundle, compile_locally, assets_version, show_progress):
     type=int,
     metavar='N',
     help='Clear all but the last N downloads.'
-         ' This may not be passed with -e / --before or -a / --after',
+    ' This may not be passed with -e / --before or -a / --after',
 )
 def clean(bundle, before, after, keep_last):
     """Clean up data downloaded with the ingest command.
