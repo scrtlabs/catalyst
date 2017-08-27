@@ -9,7 +9,7 @@ from catalyst.exchange.exchange_errors import ExchangeAuthNotFound, \
 from catalyst.utils.paths import data_root, ensure_directory
 
 SYMBOLS_URL = 'https://raw.githubusercontent.com/enigmampc/catalyst/' \
-              'live-trading/catalyst/exchange/symbols/{exchange}.json'
+              'exchange-trading/catalyst/exchange/{exchange}/symbols.json'
 
 
 def get_exchange_folder(exchange_name, environ=None):

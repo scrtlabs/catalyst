@@ -28,9 +28,9 @@ except NameError:
     '--strict-extensions/--non-strict-extensions',
     is_flag=True,
     help='If --strict-extensions is passed then catalyst will not run if it'
-    ' cannot load all of the specified extensions. If this is not passed or'
-    ' --non-strict-extensions is passed then the failure will be logged but'
-    ' execution will continue.',
+         ' cannot load all of the specified extensions. If this is not passed or'
+         ' --non-strict-extensions is passed then the failure will be logged but'
+         ' execution will continue.',
 )
 @click.option(
     '--default-extension/--no-default-extension',
@@ -64,6 +64,7 @@ def extract_option_object(option):
     option_object : click.Option
         The option object that this decorator will create.
     """
+
     @option
     def opt():
         pass
@@ -95,7 +96,9 @@ def ipython_only(option):
         def _(*args, **kwargs):
             kwargs[argname] = None
             return f(*args, **kwargs)
+
         return _
+
     return d
 
 
@@ -117,9 +120,9 @@ def ipython_only(option):
     '--define',
     multiple=True,
     help="Define a name to be bound in the namespace before executing"
-    " the algotext. For example '-Dname=value'. The value may be any python"
-    " expression. These are evaluated in order so they may refer to previously"
-    " defined names.",
+         " the algotext. For example '-Dname=value'. The value may be any python"
+         " expression. These are evaluated in order so they may refer to previously"
+         " defined names.",
 )
 @click.option(
     '--data-frequency',
@@ -149,7 +152,7 @@ def ipython_only(option):
     default=pd.Timestamp.utcnow(),
     show_default=False,
     help='The date to lookup data on or before.\n'
-    '[default: <current-time>]'
+         '[default: <current-time>]'
 )
 @click.option(
     '-s',
@@ -170,7 +173,7 @@ def ipython_only(option):
     metavar='FILENAME',
     show_default=True,
     help="The location to write the perf data. If this is '-' the perf will"
-    " be written to stdout.",
+         " be written to stdout.",
 )
 @click.option(
     '--print-algo/--no-print-algo',
@@ -184,6 +187,29 @@ def ipython_only(option):
     default=None,
     help='Should the algorithm methods be resolved in the local namespace.'
 ))
+@click.option(
+    '--live/--no-live',
+    is_flag=True,
+    default=False,
+    help='Enable live trading.',
+)
+@click.option(
+    '-x',
+    '--exchange-name',
+    type=click.Choice({'bitfinex'}),
+    help='The name of the exchange (supported: bitfinex).',
+)
+@click.option(
+    '-n',
+    '--algo-name',
+    help='A label assigned to the algorithm for tracking purposes.',
+)
+@click.option(
+    '-c',
+    '--reference-currency',
+    help='The reference currency used to calculate statistics '
+         '(e.g. usd, btc, eth).',
+)
 @click.pass_context
 def run(ctx,
         algofile,
@@ -197,21 +223,37 @@ def run(ctx,
         end,
         output,
         print_algo,
-        local_namespace):
+        local_namespace,
+        live,
+        exchange_name,
+        algo_namespace,
+        base_currency):
     """Run a backtest for the given algorithm.
     """
-    # check that the start and end dates are passed correctly
-    if start is None and end is None:
-        # check both at the same time to avoid the case where a user
-        # does not pass either of these and then passes the first only
-        # to be told they need to pass the second argument also
-        ctx.fail(
-            "must specify dates with '-s' / '--start' and '-e' / '--end'",
-        )
-    if start is None:
-        ctx.fail("must specify a start date with '-s' / '--start'")
-    if end is None:
-        ctx.fail("must specify an end date with '-e' / '--end'")
+
+    if live:
+        if exchange_name is None:
+            ctx.fail("must specify an exchange name '-x' in live execution "
+                     "mode '--live'")
+        if algo_namespace is None:
+            ctx.fail("must specify an algorithm name '-n' in live execution "
+                     "mode '--live'")
+        if base_currency is None:
+            ctx.fail("must specify a reference currency '-c' in live "
+                     "execution mode '--live'")
+    else:
+        # check that the start and end dates are passed correctly
+        if start is None and end is None:
+            # check both at the same time to avoid the case where a user
+            # does not pass either of these and then passes the first only
+            # to be told they need to pass the second argument also
+            ctx.fail(
+                "must specify dates with '-s' / '--start' and '-e' / '--end'",
+            )
+        if start is None:
+            ctx.fail("must specify a start date with '-s' / '--start'")
+        if end is None:
+            ctx.fail("must specify an end date with '-e' / '--end'")
 
     if (algotext is not None) == (algofile is not None):
         ctx.fail(
@@ -238,6 +280,10 @@ def run(ctx,
         print_algo=print_algo,
         local_namespace=local_namespace,
         environ=os.environ,
+        live=live,
+        exchange=exchange_name,
+        algo_namespace=algo_namespace,
+        base_currency=base_currency
     )
 
     if output == '-':
@@ -265,11 +311,11 @@ def catalyst_magic(line, cell=None):
                 '--algotext', cell,
                 '--output', os.devnull,  # don't write the results by default
             ] + ([
-                # these options are set when running in line magic mode
-                # set a non None algo text to use the ipython user_ns
-                '--algotext', '',
-                '--local-namespace',
-            ] if cell is None else []) + line.split(),
+                     # these options are set when running in line magic mode
+                     # set a non None algo text to use the ipython user_ns
+                     '--algotext', '',
+                     '--local-namespace',
+                 ] if cell is None else []) + line.split(),
             '%s%%catalyst' % ((cell or '') and '%'),
             # don't use system exit and propogate errors to the caller
             standalone_mode=False,
