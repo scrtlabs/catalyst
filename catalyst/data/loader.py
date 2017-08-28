@@ -96,16 +96,15 @@ def has_data_for_dates(series_or_df, first_date, last_date):
     first, last = dts[[0, -1]].tz_localize(None)
     return (first <= first_date.tz_localize(None)) and (last >= last_date.tz_localize(None))
 
-def load_crypto_market_data(trading_day=None,
-                            trading_days=None,
-                            bm_symbol='USDT_BTC',
-                            environ=None):
+def load_crypto_market_data(trading_day=None, trading_days=None, bm_symbol='USDT_BTC',
+                            bundle=None, bundle_data=None, environ=None):
+
     if trading_day is None:
         trading_day = get_calendar('OPEN').trading_day
     if trading_days is None:
         trading_days = get_calendar('OPEN').all_sessions
 
-    first_date = trading_days[0]
+    first_date = trading_days[1]
     now = pd.Timestamp.utcnow()
 
     # We expect to have benchmark and treasury data that's current up until
@@ -122,8 +121,15 @@ def load_crypto_market_data(trading_day=None,
 
     # We'll attempt to download new data if the latest entry in our cache is
     # before this date.
-    last_date = trading_days[trading_days.get_loc(now, method='ffill') - 2]
-
+    if(bundle_data):
+        # If we are using the bundle to retrieve the cryptobenchmark, find the last
+        # date for which there is trading data in the bundle
+        asset = bundle_data.asset_finder.lookup_symbol(symbol=bm_symbol,as_of_date=None)
+        ix = bundle_data.daily_bar_reader._last_rows[asset.sid]
+        last_date = pd.to_datetime(bundle_data.daily_bar_reader._spot_col('day')[ix],unit='s')
+    else:
+        last_date = trading_days[trading_days.get_loc(now, method='ffill') - 2]
+    
     br = ensure_crypto_benchmark_data(
         bm_symbol,
         first_date,
@@ -132,6 +138,8 @@ def load_crypto_market_data(trading_day=None,
         # We need the trading_day to figure out the close prior to the first
         # date so that we can compute returns for the first date.
         trading_day,
+        bundle,
+        bundle_data,
         environ,
     )
     # Override first_date for treasury data since we have it for many more years
@@ -240,6 +248,8 @@ def ensure_crypto_benchmark_data(symbol,
                                  last_date,
                                  now,
                                  trading_day,
+                                 bundle,
+                                 bundle_data,
                                  environ=None):
 
     filename = get_benchmark_filename(symbol)
@@ -248,7 +258,7 @@ def ensure_crypto_benchmark_data(symbol,
         ('Loading benchmark data for {symbol!r} '
             'from {first_date} to {last_date}'),
         symbol=symbol,
-        first_date=first_date - trading_day,
+        first_date=first_date,
         last_date=last_date
     )
 
@@ -261,34 +271,57 @@ def ensure_crypto_benchmark_data(symbol,
         environ,
     )
 
-
     if data is not None:
         return data
 
     # If no cached data was found or it was missing any dates then download the
     # necessary data.
-    logger.info(
-        ('Downloading benchmark data for {symbol!r} '
-            'from {first_date} to {last_date}'),
-        symbol=symbol,
-        first_date=first_date - trading_day,
-        last_date=last_date
-    )
 
-    # Load benchmark symbol from Poloniex API
-    try:
-        bundle = PoloniexBundle()
-        bench_raw = bundle._fetch_symbol_frame(
-            None,
-            symbol,
-            get_calendar(bundle.calendar_name),
-            first_date - trading_day,
-            last_date,
-            'daily',
-        )
-    except (OSError, IOError, HTTPError):
-        logger.exception('Failed to fetch new crypto benchmark returns')
-        raise
+    if(bundle == 'poloniex'):
+        '''
+        If we're using the Poloniex bundle, we'll get the benchmark from the bundle
+        instead of downloading it from Poloniex every time we need it.
+        Poloniex has a captcha for API queries originating from outside the US that 
+        prevents users abroad from getting Catalyst to work
+        '''
+        logger.info(
+            ('Retrieving benchmark data from bundle for {symbol!r} from {first_date} to {last_date}'),
+            symbol=symbol, first_date=first_date, last_date=last_date)
+
+        asset = bundle_data.asset_finder.lookup_symbol(symbol=symbol,as_of_date=None)
+        fields = ['day', 'close']
+        raw = bundle_data.daily_bar_reader.load_raw_arrays(
+            columns=fields,
+            start_date=first_date - trading_day,
+            end_date=last_date,
+            assets=[asset,])
+        bench_raw = pd.concat([pd.DataFrame(raw[0], columns=['date']),pd.DataFrame(raw[1], columns=['close'])], axis=1)
+        bench_raw['date'] = pd.to_datetime(bench_raw['date'],unit='s')
+        bench_raw.set_index('date', inplace=True)
+        bench_raw.sort_index(inplace=True)
+        bench_raw = bench_raw[pd.to_datetime(first_date - trading_day):pd.to_datetime(last_date)]
+
+    else:
+        # This is how it used to be: downloading the benchmark everytime. 
+        # Leaving this code here to be repurposed in the future for other bundles.
+        logger.info(
+            ('Downloading benchmark data for {symbol!r} from {first_date} to {last_date}'),
+            symbol=symbol, first_date=first_date, last_date=last_date)
+
+        # Load benchmark symbol from Poloniex API
+        try:
+            bundle = PoloniexBundle()
+            bench_raw = bundle._fetch_symbol_frame(
+                None,
+                symbol,
+                get_calendar(bundle.calendar_name),
+                first_date - trading_day,
+                last_date,
+                'daily',
+            )
+        except (OSError, IOError, HTTPError):
+            logger.exception('Failed to fetch new crypto benchmark returns')
+            raise
 
     # select close column and compute percent change between days
     daily_close = bench_raw[['close']]
@@ -518,7 +551,7 @@ def _load_cached_data(filename, first_date, last_date, now, resource_name,
             )
 
     logger.info(
-        "Cache at {path} does not have data from {start} to {end}.\n",
+        "Cache at {path} does not have data from {start} to {end}.",
         start=first_date,
         end=last_date,
         path=path,
