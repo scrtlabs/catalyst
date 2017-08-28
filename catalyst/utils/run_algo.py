@@ -149,7 +149,7 @@ def _run(handle_data,
             open_calendar = get_calendar('OPEN')
 
             env = TradingEnvironment(
-                load=partial(load_crypto_market_data, environ=environ),
+                load=partial(load_crypto_market_data, bundle=b, bundle_data=bundle_data, environ=environ),
                 bm_symbol='USDT_BTC',
                 trading_calendar=open_calendar,
                 asset_db_path=connstr,

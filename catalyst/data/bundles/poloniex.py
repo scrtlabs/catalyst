@@ -42,8 +42,7 @@ class PoloniexBundle(BaseCryptoPricingBundle):
     @lazyval
     def tar_url(self):
         return (
-            'https://www.dropbox.com/s/9naqffawnq8o4r2/'
-            'poloniex-bundle.tar?dl=1'
+            'https://s3.amazonaws.com/enigmaco/catalyst-bundles/poloniex/poloniex-bundle.tar.gz'
         )
 
     @lazyval
@@ -103,7 +102,10 @@ class PoloniexBundle(BaseCryptoPricingBundle):
         )
         raw.set_index('date', inplace=True)
 
-        scale = 1
+        # BcolzDailyBarReader introduces a 1/1000 factor in the way pricing is stored
+        # on disk, which we compensate here to get the right pricing amounts
+        # ref: data/us_equity_pricing.py
+        scale = 1000
         raw.loc[:, 'open'] /= scale
         raw.loc[:, 'high'] /= scale
         raw.loc[:, 'low'] /= scale
