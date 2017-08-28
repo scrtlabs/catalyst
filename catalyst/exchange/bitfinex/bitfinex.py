@@ -301,7 +301,7 @@ class Bitfinex(Exchange):
 
         # Making sure that assets are iterable
         asset_list = [assets] if isinstance(assets, Asset) else assets
-        ohlc_list = dict()
+        ohlc_map = dict()
         for asset in asset_list:
             symbol = self._get_v2_symbol(asset)
             url = '{url}/v2/candles/trade:{frequency}:{symbol}'.format(
@@ -339,8 +339,7 @@ class Bitfinex(Exchange):
                     volume=np.float64(candle[5]),
                     price=np.float64(candle[2]),
                     last_traded=pd.Timestamp.utcfromtimestamp(
-                        candle[0] / 1000.0),
-                    minute_dt=pd.Timestamp.utcnow().floor('1 min')
+                        candle[0] / 1000.0)
                 )
                 return ohlc
 
@@ -351,14 +350,14 @@ class Bitfinex(Exchange):
                     ohlc = ohlc_from_candle(candle)
                     ohlc_bars.append(ohlc)
 
-                ohlc_list[asset] = ohlc_bars
+                ohlc_map[asset] = ohlc_bars
 
             else:
                 ohlc = ohlc_from_candle(candles)
-                ohlc_list[asset] = ohlc
+                ohlc_map[asset] = ohlc
 
-        return ohlc_list[assets] \
-            if isinstance(assets, Asset) else ohlc_list
+        return ohlc_map[assets] \
+            if isinstance(assets, Asset) else ohlc_map
 
     def order(self, asset, amount, limit_price, stop_price, style):
         """Place an order.

@@ -40,6 +40,18 @@ class BittrexTestCase(BaseExchangeTestCase):
 
     def test_get_candles(self):
         log.info('retrieving candles')
+        ohlcv_neo = self.exchange.get_candles(
+            data_frequency='5m',
+            assets=self.exchange.get_asset('neo_btc')
+        )
+        ohlcv_neo_ubq = self.exchange.get_candles(
+            data_frequency='5m',
+            assets=[
+                self.exchange.get_asset('neo_btc'),
+                self.exchange.get_asset('ubq_btc')
+            ],
+            bar_count=14
+        )
         pass
 
     def test_tickers(self):

@@ -1,3 +1,5 @@
+from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
+    ExchangeRequestError
 from logbook import Logger
 from six.moves import urllib
 import json
@@ -5,8 +7,11 @@ import pandas as pd
 
 from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.bittrex.bittrex_api import Bittrex_api
+from catalyst.assets._assets import Asset
 
 log = Logger('Bittrex')
+
+URL2 = 'https://bittrex.com/Api/v2.0'
 
 
 class Bittrex(Exchange):
@@ -90,13 +95,81 @@ class Bittrex(Exchange):
         log.info('cancel order')
         pass
 
-    def get_candles(self):
+    def get_candles(self, data_frequency, assets, bar_count=None):
+        """
+
+        Supported Intervals
+        -------------------
+        day, oneMin, fiveMin, thirtyMin, hour
+        :param data_frequency:
+        :param assets:
+        :param bar_count:
+        :return:
+        """
         log.info('retrieving candles')
-        url = 'https://bittrex.com/Api/v2.0/pub/market/GetTicks?marketName=BTC-NEO&tickInterval=day&_=1499127220008'
-        with urllib.request.urlopen(url) as url:
-            data = json.loads(url.read().decode())
-            result = data['result']
-        pass
+        if data_frequency == 'minute' or data_frequency == '1m':
+            frequency = 'oneMin'
+        elif data_frequency == '5m':
+            frequency = 'fiveMin'
+        elif data_frequency == '30m':
+            frequency = 'thirtyMin'
+        elif data_frequency == '1h':
+            frequency = 'hour'
+        elif data_frequency == 'daily' or data_frequency == '1D':
+            frequency = 'day'
+        else:
+            raise InvalidHistoryFrequencyError(
+                frequency=data_frequency
+            )
+
+        # Making sure that assets are iterable
+        asset_list = [assets] if isinstance(assets, Asset) else assets
+        ohlc_map = dict()
+        for asset in asset_list:
+            url = '{url}/pub/market/GetTicks?marketName={symbol}' \
+                  '&tickInterval={frequency}&_=1499127220008'.format(
+                url=URL2,
+                symbol=self.get_symbol(asset),
+                frequency=frequency
+            )
+
+            try:
+                data = json.loads(urllib.request.urlopen(url).read().decode())
+            except Exception as e:
+                raise ExchangeRequestError(error=e)
+
+            if data['message']:
+                raise ExchangeRequestError(
+                    error='Unable to fetch candles {}'.format(data['message'])
+                )
+
+            candles = data['result']
+
+            def ohlc_from_candle(candle):
+                ohlc = dict(
+                    open=candle['O'],
+                    high=candle['H'],
+                    low=candle['L'],
+                    close=candle['C'],
+                    volume=candle['V'],
+                    price=candle['C'],
+                    last_traded=pd.to_datetime(candle['T'], utc=True)
+                )
+                return ohlc
+
+            ordered_candles = list(reversed(candles))
+            if bar_count is None:
+                ohlc_map[asset] = ohlc_from_candle(ordered_candles[-1])
+            else:
+                ohlc_bars = []
+                for candle in ordered_candles[:bar_count]:
+                    ohlc = ohlc_from_candle(candle)
+                    ohlc_bars.append(ohlc)
+
+                ohlc_map[asset] = ohlc_bars
+
+        return ohlc_map[assets] \
+            if isinstance(assets, Asset) else ohlc_map
 
     def tickers(self):
         log.info('retrieving tickers')
