@@ -7,7 +7,7 @@ import pandas as pd
 
 from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.bittrex.bittrex_api import Bittrex_api
-from catalyst.assets._assets import Asset
+from catalyst.assets._assets import TradingPair
 
 log = Logger('Bittrex')
 
@@ -123,7 +123,7 @@ class Bittrex(Exchange):
             )
 
         # Making sure that assets are iterable
-        asset_list = [assets] if isinstance(assets, Asset) else assets
+        asset_list = [assets] if isinstance(assets, TradingPair) else assets
         ohlc_map = dict()
         for asset in asset_list:
             url = '{url}/pub/market/GetTicks?marketName={symbol}' \
@@ -169,7 +169,7 @@ class Bittrex(Exchange):
                 ohlc_map[asset] = ohlc_bars
 
         return ohlc_map[assets] \
-            if isinstance(assets, Asset) else ohlc_map
+            if isinstance(assets, TradingPair) else ohlc_map
 
     def tickers(self):
         log.info('retrieving tickers')

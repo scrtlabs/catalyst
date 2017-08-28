@@ -81,7 +81,7 @@ class AssetFinderExchange(object):
             there are multiple candidates for the given ``symbol`` on the
             ``as_of_date``.
         """
-        log.info('looking up symbol: {}'.format(symbol))
+        log.debug('looking up symbol: {}'.format(symbol))
 
         if symbol in self._asset_cache:
             return self._asset_cache[symbol]

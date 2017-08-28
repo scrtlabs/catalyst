@@ -7,7 +7,7 @@ from datetime import timedelta
 
 import numpy as np
 import pandas as pd
-from catalyst.assets._assets import Asset
+from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
 from catalyst.data.data_portal import BASE_FIELDS
@@ -138,19 +138,13 @@ class Exchange:
         symbol_map = self.fetch_symbol_map()
         for exchange_symbol in symbol_map:
             asset = symbol_map[exchange_symbol]
-            symbol = asset['symbol']
-            asset_name = ' / '.join(symbol.split('_')).upper()
-
-            asset_obj = Asset(
-                symbol=symbol,
-                asset_name=asset_name,
-                sid=abs(hash(symbol)) % (10 ** 4),
+            trading_pair = TradingPair(
+                symbol=asset['symbol'],
                 exchange=self.name,
-                start_date=pd.to_datetime(asset['start_date'], utc=True),
-                end_date=pd.Timestamp.utcnow() + timedelta(minutes=300000),
+                start_date=pd.to_datetime(asset['start_date']),
             )
 
-            self.assets[exchange_symbol] = asset_obj
+            self.assets[exchange_symbol] = trading_pair
 
     def check_open_orders(self):
         """

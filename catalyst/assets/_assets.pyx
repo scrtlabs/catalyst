@@ -20,15 +20,17 @@ Cythonized Asset object.
 cimport cython
 from cpython.number cimport PyNumber_Index
 from cpython.object cimport (
-    Py_EQ,
-    Py_NE,
-    Py_GE,
-    Py_LE,
-    Py_GT,
-    Py_LT,
+Py_EQ,
+Py_NE,
+Py_GE,
+Py_LE,
+Py_GT,
+Py_LT,
 )
 from cpython cimport bool
 
+import pandas as pd
+from datetime import timedelta
 import numpy as np
 from numpy cimport int64_t
 import warnings
@@ -36,15 +38,12 @@ cimport numpy as np
 
 from catalyst.utils.calendars import get_calendar
 
-
 # IMPORTANT NOTE: You must change this template if you change
 # Asset.__reduce__, or else we'll attempt to unpickle an old version of this
 # class
 CACHE_FILE_TEMPLATE = '/tmp/.%s-%s.v7.cache'
 
-
 cdef class Asset:
-
     cdef readonly int sid
     # Cached hash of self.sid
     cdef int sid_hash
@@ -73,8 +72,8 @@ cdef class Asset:
     })
 
     def __init__(self,
-                 int sid, # sid is required
-                 object exchange, # exchange is required
+                 int sid,  # sid is required
+                 object exchange,  # exchange is required
                  object symbol="",
                  object asset_name="",
                  object start_date=None,
@@ -230,9 +229,7 @@ cdef class Asset:
         calendar = get_calendar(self.exchange)
         return calendar.is_open_on_minute(dt_minute)
 
-
 cdef class Equity(Asset):
-
     def __repr__(self):
         attrs = ('symbol', 'asset_name', 'exchange',
                  'start_date', 'end_date', 'first_traded', 'auto_close_date',
@@ -250,8 +247,8 @@ cdef class Equity(Asset):
         """
         def __get__(self):
             warnings.warn("The security_start_date property will soon be "
-            "retired. Please use the start_date property instead.",
-            DeprecationWarning)
+                          "retired. Please use the start_date property instead.",
+                          DeprecationWarning)
             return self.start_date
 
     property security_end_date:
@@ -261,8 +258,8 @@ cdef class Equity(Asset):
         """
         def __get__(self):
             warnings.warn("The security_end_date property will soon be "
-            "retired. Please use the end_date property instead.",
-            DeprecationWarning)
+                          "retired. Please use the end_date property instead.",
+                          DeprecationWarning)
             return self.end_date
 
     property security_name:
@@ -272,13 +269,11 @@ cdef class Equity(Asset):
         """
         def __get__(self):
             warnings.warn("The security_name property will soon be "
-            "retired. Please use the asset_name property instead.",
-            DeprecationWarning)
+                          "retired. Please use the asset_name property instead.",
+                          DeprecationWarning)
             return self.asset_name
 
-
 cdef class Future(Asset):
-
     cdef readonly object root_symbol
     cdef readonly object notice_date
     cdef readonly object expiration_date
@@ -303,8 +298,8 @@ cdef class Future(Asset):
     })
 
     def __init__(self,
-                 int sid, # sid is required
-                 object exchange, # exchange is required
+                 int sid,  # sid is required
+                 object exchange,  # exchange is required
                  object symbol="",
                  object root_symbol="",
                  object asset_name="",
@@ -388,6 +383,113 @@ cdef class Future(Asset):
         super_dict['multiplier'] = self.multiplier
         return super_dict
 
+cdef class TradingPair(Asset):
+    cdef readonly float leverage
+
+    _kwargnames = frozenset({
+        'sid',
+        'symbol',
+        'asset_name',
+        'start_date',
+        'end_date',
+        'first_traded',
+        'auto_close_date',
+        'exchange',
+        'exchange_full',
+        'leverage',
+    })
+    def __init__(self,
+                 object symbol,
+                 object exchange,
+                 object start_date=None,
+                 object asset_name=None,
+                 int sid=0,
+                 float leverage=1.0,
+                 object end_date=None,
+                 object first_traded=None,
+                 object auto_close_date=None,
+                 object exchange_full=None):
+        """
+        Replicates the Asset constructor with some built-in conventions
+        and a new 'leverage' attribute.
+
+        Symbol
+        ------
+        Catalyst defines its own set of "universal" symbols to reference
+        trading pairs across exchanges. This is required because exchanges
+        are not adhering to a universal symbolism. For example, Bitfinex
+        uses the BTC symbol for Bitcon while Kraken uses XBT. In addition,
+        pairs are sometimes presented differently. For example, Bitfinex
+        puts the market currency before the base currency without a
+        separator, Bittrex puts the base currency first and uses a dash
+        seperator.
+
+        Here is the Catalyst convention: [Market Currency]_[Base Currency]
+        For example: btc_usd, eth_btc, neo_eth, ltc_eur.
+
+        The symbol for each currency (e.g. btc, eth, ltc) is generally
+        aligned with the Bittrex exchange.
+
+        Sid
+        ---
+        The sid of each asset is calculated based on a numeric hash of the
+        universal symbol. This simple approach avoids maintaining a mapping
+        of sids.
+
+        Leverage
+        --------
+        In contrast with equities, crypto exchanges generally assign
+        leverage values to specific trading pairs. Pairs with the
+        highest volume and market cap generally benefit from high leverage.
+        New currencies from ICO generally cannot be leveraged.
+
+        The leverage value is either None or and integer.
+
+        Leverage allows you to open a larger position with a smaller amount
+        of funds. For example, if you open a $5,000 position in BTC/USD
+        with 5:1 leverage, only one-fifth of this amount, or $1000, will be
+        tied to the position from your balance. Your remaining balance will
+        be available for opening more positions. If you open this same
+        position with 2:1 leverage, $2,500 of your balance will be tied to
+        the position. If you open with 1:1 leverage, $5,000 of your balance
+        will be tied to the position.
+
+        :param symbol:
+        :param exchange:
+        :param start_date:
+        :param asset_name:
+        :param sid:
+        :param leverage:
+        :param end_date:
+        :param first_traded:
+        :param auto_close_date:
+        :param exchange_full:
+        """
+
+        asset_name = ' / '.join(symbol.split('_')).upper() \
+            if asset_name is None else asset_name
+
+        start_date = pd.Timestamp.utcnow() \
+            if start_date is None else start_date
+
+        end_date = start_date + timedelta(days=1) \
+            if end_date is None else end_date
+
+        sid = abs(hash(symbol)) % (10 ** 4) \
+            if sid == 0 else sid
+
+        super().__init__(
+            sid,
+            exchange,
+            symbol=symbol,
+            asset_name=asset_name,
+            start_date=start_date,
+            end_date=end_date,
+            first_traded=first_traded,
+            auto_close_date=auto_close_date,
+            exchange_full=exchange_full,
+        )
+        self.leverage = leverage
 
 def make_asset_array(int size, Asset asset):
     cdef np.ndarray out = np.empty([size], dtype=object)

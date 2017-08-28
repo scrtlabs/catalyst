@@ -10,7 +10,7 @@ import pandas as pd
 import pytz
 import requests
 import six
-from catalyst.assets._assets import Asset
+from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
 # from websocket import create_connection
@@ -300,7 +300,7 @@ class Bitfinex(Exchange):
             )
 
         # Making sure that assets are iterable
-        asset_list = [assets] if isinstance(assets, Asset) else assets
+        asset_list = [assets] if isinstance(assets, TradingPair) else assets
         ohlc_map = dict()
         for asset in asset_list:
             symbol = self._get_v2_symbol(asset)
@@ -357,7 +357,7 @@ class Bitfinex(Exchange):
                 ohlc_map[asset] = ohlc
 
         return ohlc_map[assets] \
-            if isinstance(assets, Asset) else ohlc_map
+            if isinstance(assets, TradingPair) else ohlc_map
 
     def order(self, asset, amount, limit_price, stop_price, style):
         """Place an order.
