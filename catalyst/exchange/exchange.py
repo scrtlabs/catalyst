@@ -138,10 +138,13 @@ class Exchange:
         symbol_map = self.fetch_symbol_map()
         for exchange_symbol in symbol_map:
             asset = symbol_map[exchange_symbol]
+            start_date = pd.to_datetime(asset['start_date']) \
+                if 'start_date' in asset else None
+
             trading_pair = TradingPair(
                 symbol=asset['symbol'],
                 exchange=self.name,
-                start_date=pd.to_datetime(asset['start_date']),
+                start_date=start_date,
             )
 
             self.assets[exchange_symbol] = trading_pair

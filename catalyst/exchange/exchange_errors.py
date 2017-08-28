@@ -58,3 +58,12 @@ class InvalidHistoryFrequencyError(ZiplineError):
     msg = (
         'History frequency {frequency} not supported by the exchange.'
     ).strip()
+
+
+class InvalidSymbolError(ZiplineError):
+    msg = (
+        'Invalid trading pair symbol: {symbol}. '
+        'Catalyst symbols must follow this convention: '
+        '[Market Currency]_[Base Currency]. For example: eth_usd, btc_usd, '
+        'neo_eth, ubq_btc. Error details: {error}'
+    ).strip()

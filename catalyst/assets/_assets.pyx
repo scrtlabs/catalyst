@@ -37,6 +37,7 @@ import warnings
 cimport numpy as np
 
 from catalyst.utils.calendars import get_calendar
+from catalyst.exchange.exchange_errors import InvalidSymbolError
 
 # IMPORTANT NOTE: You must change this template if you change
 # Asset.__reduce__, or else we'll attempt to unpickle an old version of this
@@ -385,6 +386,8 @@ cdef class Future(Asset):
 
 cdef class TradingPair(Asset):
     cdef readonly float leverage
+    cdef readonly object market_currency
+    cdef readonly object base_currency
 
     _kwargnames = frozenset({
         'sid',
@@ -397,6 +400,8 @@ cdef class TradingPair(Asset):
         'exchange',
         'exchange_full',
         'leverage',
+        'market_currency',
+        'base_currency'
     })
     def __init__(self,
                  object symbol,
@@ -466,17 +471,23 @@ cdef class TradingPair(Asset):
         :param exchange_full:
         """
 
-        asset_name = ' / '.join(symbol.split('_')).upper() \
-            if asset_name is None else asset_name
+        symbol = symbol.lower()
+        try:
+            self.market_currency, self.base_currency = symbol.split('_')
+        except Exception as e:
+            raise InvalidSymbolError(symbol=symbol, error=e)
 
-        start_date = pd.Timestamp.utcnow() \
-            if start_date is None else start_date
+        if sid == 0:
+            sid = abs(hash(symbol)) % (10 ** 4)
 
-        end_date = start_date + timedelta(days=1) \
-            if end_date is None else end_date
+        if asset_name is None:
+            asset_name = ' / '.join(symbol.split('_')).upper()
 
-        sid = abs(hash(symbol)) % (10 ** 4) \
-            if sid == 0 else sid
+        if start_date is None:
+            start_date = pd.Timestamp.utcnow()
+
+        if end_date is None:
+            end_date = start_date + timedelta(days=365)
 
         super().__init__(
             sid,
@@ -489,7 +500,23 @@ cdef class TradingPair(Asset):
             auto_close_date=auto_close_date,
             exchange_full=exchange_full,
         )
+
         self.leverage = leverage
+
+    def __repr__(self):
+        return 'Trading Pair {symbol}({sid}) Exchange: {exchange}, ' \
+               'Introduced On: {start_date}, ' \
+               'Market Currency: {market_currency}, ' \
+               'Base Currency: {base_currency}, ' \
+               'Exchange Leverage: {leverage}'.format(
+            symbol=self.symbol,
+            sid=self.sid,
+            exchange=self.exchange,
+            start_date=self.start_date,
+            market_currency=self.market_currency,
+            base_currency=self.base_currency,
+            leverage=self.leverage
+        )
 
 def make_asset_array(int size, Asset asset):
     cdef np.ndarray out = np.empty([size], dtype=object)
