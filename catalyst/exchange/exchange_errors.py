@@ -67,3 +67,9 @@ class InvalidSymbolError(ZiplineError):
         '[Market Currency]_[Base Currency]. For example: eth_usd, btc_usd, '
         'neo_eth, ubq_btc. Error details: {error}'
     ).strip()
+
+
+class InvalidOrderType(ZiplineError):
+    msg = (
+        'Order type not found.'
+    ).strip()

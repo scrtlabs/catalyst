@@ -76,7 +76,7 @@ class Bittrex(Exchange):
     def update_portfolio(self):
         pass
 
-    def order(self):
+    def create_order(self, asset, amount, is_buy, style):
         log.info('creating order')
         pass
 

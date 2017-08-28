@@ -24,6 +24,15 @@ class BitfinexTestCase(BaseExchangeTestCase):
 
     def test_order(self):
         log.info('creating order')
+        asset = self.exchange.get_asset('eth_usd')
+        order_id = self.exchange.order(
+         asset=asset,
+         style=LimitOrder(limit_price=200),
+         limit_price=200,
+         amount=0.5,
+         stop_price=None
+        )
+        log.info('order created {}'.format(order_id))
         pass
 
     def test_open_orders(self):

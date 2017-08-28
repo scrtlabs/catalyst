@@ -502,7 +502,7 @@ def run_algorithm(initialize,
             if exchange_name == 'bitfinex':
                 exchange = Bitfinex(
                     key=exchange_auth['key'],
-                    secret=exchange_auth['secret'].encode('UTF-8'),
+                    secret=exchange_auth['secret'],
                     base_currency=base_currency,
                     portfolio=portfolio
                 )

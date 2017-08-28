@@ -17,8 +17,8 @@ from logbook import Logger
 from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
-    InvalidHistoryFrequencyError
-)
+    InvalidHistoryFrequencyError,
+    InvalidOrderType)
 from catalyst.finance.execution import (MarketOrder,
                                         LimitOrder,
                                         StopOrder,
@@ -40,7 +40,7 @@ class Bitfinex(Exchange):
     def __init__(self, key, secret, base_currency, portfolio=None):
         self.url = BITFINEX_URL
         self.key = key
-        self.secret = secret
+        self.secret = secret.encode('UTF-8')
         self.name = 'bitfinex'
         self.assets = {}
         self.load_assets()
@@ -359,89 +359,26 @@ class Bitfinex(Exchange):
         return ohlc_map[assets] \
             if isinstance(assets, TradingPair) else ohlc_map
 
-    def order(self, asset, amount, limit_price, stop_price, style):
-        """Place an order.
-
-        Parameters
-        ----------
-        asset : Asset
-            The asset that this order is for.
-        amount : int
-            The amount of shares to order. If ``amount`` is positive, this is
-            the number of shares to buy or cover. If ``amount`` is negative,
-            this is the number of shares to sell or short.
-        limit_price : float, optional
-            The limit price for the order.
-        stop_price : float, optional
-            The stop price for the order.
-        style : ExecutionStyle, optional
-            The execution style for the order.
-
-        Returns
-        -------
-        order_id : str or None
-            The unique identifier for this order, or None if no order was
-            placed.
-
-        Notes
-        -----
-        The ``limit_price`` and ``stop_price`` arguments provide shorthands for
-        passing common execution styles. Passing ``limit_price=N`` is
-        equivalent to ``style=LimitOrder(N)``. Similarly, passing
-        ``stop_price=M`` is equivalent to ``style=StopOrder(M)``, and passing
-        ``limit_price=N`` and ``stop_price=M`` is equivalent to
-        ``style=StopLimitOrder(N, M)``. It is an error to pass both a ``style``
-        and ``limit_price`` or ``stop_price``.
-
-        Bitfinex Order Types
-        --------------------
-        LIMIT, MARKET, STOP, TRAILING STOP,
-        EXCHANGE MARKET, EXCHANGE LIMIT, EXCHANGE STOP,
-        EXCHANGE TRAILING STOP, FOK, EXCHANGE FOK.
-
-        See Also
-        --------
-        :class:`catalyst.finance.execution.ExecutionStyle`
-        :func:`catalyst.api.order_value`
-        :func:`catalyst.api.order_percent`
+    def create_order(self, asset, amount, is_buy, style):
         """
-        if amount == 0:
-            log.warn('skipping order amount of 0')
-            return None
+        Creating order on the exchange.
 
-        base_currency = asset.symbol.split('_')[1]
-        if base_currency.lower() != self.base_currency.lower():
-            raise NotImplementedError(
-                'Currency pairs must share their base with the exchange.'
-            )
-
-        is_buy = (amount > 0)
-
-        if isinstance(style, MarketOrder):
-            order_type = 'market'
-        elif isinstance(style, LimitOrder):
-            order_type = 'limit'
-            price = limit_price
-        elif isinstance(style, StopOrder):
-            order_type = 'stop'
-            price = stop_price
-        elif isinstance(style, StopLimitOrder):
-            log.warn('using limit order instead of stop/limit')
-            # TODO: Not sure how to do this with the api. Investigate.
-            order_type = 'limit'
-            price = limit_price
-        else:
-            raise NotImplementedError('%s orders not available' % style)
-
-        log.debug(
-            'ordering {amount} {symbol} for {price}'.format(
-                amount=amount,
-                symbol=asset.symbol,
-                price=price
-            )
-        )
-
+        :param asset:
+        :param amount:
+        :param is_buy:
+        :param style:
+        :return:
+        """
         exchange_symbol = self.get_symbol(asset)
+        if isinstance(style, LimitOrder) or isinstance(style, StopLimitOrder):
+            price = style.get_limit_price(is_buy)
+            order_type = 'limit'
+        elif isinstance(style, StopOrder):
+            price = style.get_stop_price(is_buy)
+            order_type = 'stop'
+        else:
+            raise InvalidOrderType()
+
         req = dict(
             symbol=exchange_symbol,
             amount=str(float(abs(amount))),
@@ -479,9 +416,6 @@ class Bitfinex(Exchange):
             limit=style.get_limit_price(is_buy),
             id=order_id
         )
-        # TODO: is this required?
-        order.broker_order_id = order_id
-
         self.portfolio.create_order(order)
 
         return order_id

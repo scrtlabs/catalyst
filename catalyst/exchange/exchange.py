@@ -14,10 +14,15 @@ from catalyst.data.data_portal import BASE_FIELDS
 from catalyst.errors import (
     SymbolNotFound,
 )
+from catalyst.exchange.exchange_errors import InvalidOrderType
 from catalyst.finance.order import ORDER_STATUS
 from catalyst.finance.transaction import Transaction
 from catalyst.exchange.exchange_utils import get_exchange_symbols
 from catalyst.exchange.exchange_portfolio import ExchangePortfolio
+from catalyst.finance.execution import (MarketOrder,
+                                        LimitOrder,
+                                        StopOrder,
+                                        StopLimitOrder)
 
 log = Logger('Exchange')
 
@@ -380,7 +385,10 @@ class Exchange:
         return pd.concat(frames)
 
     @abstractmethod
-    def order(self, asset, amount, limit_price, stop_price, style):
+    def create_order(self, asset, amount, is_buy, style):
+        pass
+
+    def order(self, asset, amount, limit_price, stop_price, style=None):
         """Place an order.
 
         Parameters
@@ -420,7 +428,38 @@ class Exchange:
         :func:`catalyst.api.order_value`
         :func:`catalyst.api.order_percent`
         """
-        pass
+        if amount == 0:
+            log.warn('skipping order amount of 0')
+            return None
+
+        if asset.base_currency != self.base_currency.lower():
+            raise NotImplementedError(
+                'Currency pairs must share their base with the exchange.'
+            )
+
+        is_buy = (amount > 0)
+
+        if limit_price is not None and stop_price is not None:
+            style = StopLimitOrder(limit_price, stop_price,
+                                   exchange=self.name)
+        elif limit_price is not None:
+            style = LimitOrder(limit_price, exchange=self.name)
+        elif stop_price is not None:
+            style = StopOrder(stop_price, exchange=self.name)
+        elif style is None:
+            raise InvalidOrderType()
+
+        display_price = limit_price if limit_price is not None else stop_price
+        log.debug(
+            'issuing {side} order of {amount} {symbol} for {type}: {price}'.format(
+                side='buy' if is_buy else 'sell',
+                amount=amount,
+                symbol=asset.symbol,
+                type=style.__class__.__name__,
+                price='{}{}'.format(display_price, asset.base_currency)
+            )
+        )
+        return self.create_order(asset, amount, is_buy, style)
 
     @abstractmethod
     def get_open_orders(self, asset):
