@@ -41,7 +41,6 @@ class Bitfinex(Exchange):
         self.url = BITFINEX_URL
         self.key = key
         self.secret = secret
-        self.id = 'b'
         self.name = 'bitfinex'
         self.assets = {}
         self.load_assets()
@@ -221,26 +220,6 @@ class Bitfinex(Exchange):
                     portfolio.positions_value + portfolio.cash
 
     @property
-    def portfolio(self):
-        """
-        Return the Portfolio
-
-        :return:
-        """
-        # if self._portfolio is None:
-        #     portfolio = ExchangePortfolio(
-        #         start_date=pd.Timestamp.utcnow()
-        #     )
-        #     self.store.portfolio = portfolio
-        #     self.update_portfolio()
-        #
-        #     portfolio.starting_cash = portfolio.cash
-        # else:
-        #     portfolio = self.store.portfolio
-
-        return self._portfolio
-
-    @property
     def account(self):
         account = Account()
 
@@ -273,8 +252,9 @@ class Bitfinex(Exchange):
         # TODO: research the time skew conditions
         return pd.Timedelta('0s')
 
-    def subscribe_to_market_data(self, symbol):
-        pass
+    def get_account(self):
+        # TODO: fetch account data and keep in cache
+        return None
 
     def get_candles(self, data_frequency, assets, bar_count=None):
         """

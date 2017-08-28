@@ -17,6 +17,7 @@ from catalyst.errors import (
 from catalyst.finance.order import ORDER_STATUS
 from catalyst.finance.transaction import Transaction
 from catalyst.exchange.exchange_utils import get_exchange_symbols
+from catalyst.exchange.exchange_portfolio import ExchangePortfolio
 
 log = Logger('Exchange')
 
@@ -32,10 +33,6 @@ class Exchange:
         self.minute_writer = None
         self.minute_reader = None
 
-    @abstractmethod
-    def subscribe_to_market_data(self, symbol):
-        pass
-
     @abstractproperty
     def positions(self):
         pass
@@ -44,9 +41,20 @@ class Exchange:
     def update_portfolio(self):
         pass
 
-    @abstractproperty
+    @property
     def portfolio(self):
-        pass
+        """
+        Return the Portfolio
+
+        :return:
+        """
+        if self._portfolio is None:
+            self._portfolio = ExchangePortfolio(
+                start_date=pd.Timestamp.utcnow()
+            )
+            self.update_portfolio()
+
+        return self._portfolio
 
     @abstractproperty
     def account(self):
@@ -106,6 +114,9 @@ class Exchange:
 
         return asset
 
+    def fetch_symbol_map(self):
+        return get_exchange_symbols(self.name)
+
     def load_assets(self):
         """
         Populate the 'assets' attribute with a dictionary of Assets.
@@ -124,7 +135,7 @@ class Exchange:
         via its api.
         """
 
-        symbol_map = get_exchange_symbols(self.name)
+        symbol_map = self.fetch_symbol_map()
         for exchange_symbol in symbol_map:
             asset = symbol_map[exchange_symbol]
             symbol = asset['symbol']
@@ -486,4 +497,12 @@ class Exchange:
         :param assets:
         :return:
         """
-        return
+        pass
+
+    @abc.abstractmethod
+    def get_account(self):
+        """
+        Retrieve the account parameters.
+        :return:
+        """
+        pass

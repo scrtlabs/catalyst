@@ -314,6 +314,7 @@ setup(
         'Topic :: System :: Distributed Computing',
     ],
     install_requires=install_requires(conda_format=conda_build),
-    extras_require=extras_requires(conda_format=conda_build),
+    extras_require=extras_requires(conda_format=conda_build,
+                                   install_requires=['six']),
     **conditional_arguments
 )
