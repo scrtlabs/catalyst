@@ -1,14 +1,17 @@
 import json
 
 import pandas as pd
+import pytz
 from catalyst.assets._assets import TradingPair
+from catalyst.finance.order import Order, ORDER_STATUS
 from logbook import Logger
 from six.moves import urllib
 
 from catalyst.exchange.bittrex.bittrex_api import Bittrex_api
 from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
-    ExchangeRequestError, InvalidOrderStyle
+    ExchangeRequestError, InvalidOrderStyle, OrderNotFound, OrderCancelError, \
+    CreateOrderError
 from catalyst.finance.execution import LimitOrder, StopLimitOrder
 
 log = Logger('Bittrex')
@@ -99,7 +102,7 @@ class Bittrex(Exchange):
             if 'uuid' in order:
                 return order['uuid']
             else:
-                raise ExchangeRequestError(error='Order uuid not found.')
+                raise CreateOrderError(exchange=self.name, error=order)
         else:
             raise InvalidOrderStyle(exchange=self.name,
                                     style=style.__class__.__name__)
@@ -111,13 +114,64 @@ class Bittrex(Exchange):
         log.info('retrieving open orders')
         pass
 
-    def get_order(self):
-        log.info('retrieving order')
-        pass
+    def _create_order(self, order_status):
+        log.info(
+            'creating catalyst order from Bittrex {}'.format(order_status))
+        if order_status['CancelInitiated']:
+            status = ORDER_STATUS.CANCELLED
+        elif order_status['Closed'] is not None:
+            status = ORDER_STATUS.FILLED
+        else:
+            status = ORDER_STATUS.OPEN
 
-    def cancel_order(self):
-        log.info('cancel order')
-        pass
+        date = pd.to_datetime(order_status['Opened'], utc=True)
+        amount = order_status['Quantity']
+        filled = amount - order_status['QuantityRemaining']
+        order = Order(
+            dt=date,
+            asset=self.assets[order_status['Exchange']],
+            amount=amount,
+            stop=None,  # Not yet supported by Bittrex
+            limit=order_status['Limit'],
+            filled=filled,
+            id=order_status['OrderUuid'],
+            commission=order_status['CommissionPaid']
+        )
+        order.status = status
+
+        executed_price = order_status['PricePerUnit']
+
+        return order, executed_price
+
+    def get_order(self, order_id):
+        log.info('retrieving order')
+        try:
+            order_status = self.api.getorder(order_id)
+        except Exception as e:
+            raise ExchangeRequestError(error=e)
+
+        if order_status is None:
+            raise OrderNotFound(order_id=order_id, exchange=self.name)
+
+        order, executed_price = self._create_order(order_status)
+        return order
+
+    def cancel_order(self, order_param):
+        order_id = order_param.id \
+            if isinstance(order_param, Order) else order_param
+        log.info('cancelling order {}'.format(order_id))
+
+        try:
+            status = self.api.cancel(order_id)
+        except Exception as e:
+            raise ExchangeRequestError(error=e)
+
+        if 'message' in status:
+            raise OrderCancelError(
+                order_id=order_id,
+                exchange=self.name,
+                error=status['message']
+            )
 
     def get_candles(self, data_frequency, assets, bar_count=None):
         """

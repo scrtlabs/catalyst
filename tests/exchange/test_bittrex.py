@@ -27,7 +27,7 @@ class BittrexTestCase(BaseExchangeTestCase):
         asset = self.exchange.get_asset('neo_btc')
         order_id = self.exchange.order(
             asset=asset,
-            limit_price=0.00055,
+            limit_price=0.0005,
             amount=1,
         )
         log.info('order created {}'.format(order_id))
@@ -39,10 +39,12 @@ class BittrexTestCase(BaseExchangeTestCase):
 
     def test_get_order(self):
         log.info('retrieving order')
+        order = self.exchange.get_order(u'2c584020-9caf-4af5-bde0-332c0bba17e2')
         pass
 
-    def test_cancel_order(self):
+    def test_cancel_order(self,):
         log.info('cancel order')
+        self.exchange.cancel_order(u'dc7bcca2-5219-4145-8848-8a593d2a72f9')
         pass
 
     def test_get_candles(self):

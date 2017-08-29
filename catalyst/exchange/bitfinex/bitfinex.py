@@ -18,7 +18,7 @@ from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     InvalidHistoryFrequencyError,
-    InvalidOrderStyle)
+    InvalidOrderStyle, OrderCancelError)
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder, \
     ExchangeStopLimitOrder, ExchangeStopOrder
 from catalyst.finance.order import Order, ORDER_STATUS
@@ -503,9 +503,10 @@ class Bitfinex(Exchange):
             raise ExchangeRequestError(error=e)
 
         if 'message' in status:
-            raise ExchangeRequestError(
-                error='Unable to cancel order: {} {}'.format(
-                    order_id, status['message'])
+            raise OrderCancelError(
+                order_id=order_id,
+                exchange=self.name,
+                error=status['message']
             )
 
     def tickers(self, assets):

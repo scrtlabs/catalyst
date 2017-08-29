@@ -75,6 +75,24 @@ class InvalidOrderStyle(ZiplineError):
     ).strip()
 
 
+class CreateOrderError(ZiplineError):
+    msg = (
+        'Unable to create order on exchange {exchange} {error}.'
+    ).strip()
+
+
+class OrderNotFound(ZiplineError):
+    msg = (
+        'Order {order_id} not found on exchange {exchange}.'
+    ).strip()
+
+
+class OrderCancelError(ZiplineError):
+    msg = (
+        'Unable to cancel order {order_id} on exchange {exchange} {error}.'
+    ).strip()
+
+
 class SidHashError(ZiplineError):
     msg = (
         'Unable to hash sid from symbol {symbol}.'
