@@ -1,9 +1,8 @@
 import abc
-import random
-from time import sleep
 import collections
+import random
 from abc import ABCMeta, abstractmethod, abstractproperty
-from datetime import timedelta
+from time import sleep
 
 import numpy as np
 import pandas as pd
@@ -14,15 +13,14 @@ from catalyst.data.data_portal import BASE_FIELDS
 from catalyst.errors import (
     SymbolNotFound,
 )
-from catalyst.exchange.exchange_errors import InvalidOrderType
+from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
+    InvalidOrderStyle
+from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
+    ExchangeLimitOrder, ExchangeStopOrder
+from catalyst.exchange.exchange_portfolio import ExchangePortfolio
+from catalyst.exchange.exchange_utils import get_exchange_symbols
 from catalyst.finance.order import ORDER_STATUS
 from catalyst.finance.transaction import Transaction
-from catalyst.exchange.exchange_utils import get_exchange_symbols
-from catalyst.exchange.exchange_portfolio import ExchangePortfolio
-from catalyst.finance.execution import (MarketOrder,
-                                        LimitOrder,
-                                        StopOrder,
-                                        StopLimitOrder)
 
 log = Logger('Exchange')
 
@@ -385,7 +383,8 @@ class Exchange:
     def create_order(self, asset, amount, is_buy, style):
         pass
 
-    def order(self, asset, amount, limit_price, stop_price, style=None):
+    def order(self, asset, amount, limit_price=None, stop_price=None,
+              style=None):
         """Place an order.
 
         Parameters
@@ -430,21 +429,27 @@ class Exchange:
             return None
 
         if asset.base_currency != self.base_currency.lower():
-            raise NotImplementedError(
-                'Currency pairs must share their base with the exchange.'
+            raise MismatchingBaseCurrencies(
+                base_currency=asset.base_currency,
+                algo_currency=self.base_currency
             )
 
         is_buy = (amount > 0)
 
         if limit_price is not None and stop_price is not None:
-            style = StopLimitOrder(limit_price, stop_price,
-                                   exchange=self.name)
+            style = ExchangeStopLimitOrder(limit_price, stop_price,
+                                           exchange=self.name)
         elif limit_price is not None:
-            style = LimitOrder(limit_price, exchange=self.name)
+            style = ExchangeLimitOrder(limit_price, exchange=self.name)
+
         elif stop_price is not None:
-            style = StopOrder(stop_price, exchange=self.name)
-        elif style is None:
-            raise InvalidOrderType()
+            style = ExchangeStopOrder(stop_price, exchange=self.name)
+
+        elif style is not None:
+            raise InvalidOrderStyle(exchange=self.name,
+                                    style=style.__class__.__name__)
+        else:
+            raise ValueError('Incomplete order data.')
 
         display_price = limit_price if limit_price is not None else stop_price
         log.debug(

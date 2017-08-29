@@ -19,18 +19,16 @@ class BittrexTestCase(BaseExchangeTestCase):
         self.exchange = Bittrex(
             key=auth['key'],
             secret=auth['secret'],
-            base_currency='usd'
+            base_currency='btc'
         )
 
     def test_order(self):
         log.info('creating order')
-        asset = self.exchange.get_asset('neo_eth')
+        asset = self.exchange.get_asset('neo_btc')
         order_id = self.exchange.order(
             asset=asset,
-            style=LimitOrder(limit_price=200),
-            limit_price=200,
-            amount=0.5,
-            stop_price=None
+            limit_price=0.00055,
+            amount=1,
         )
         log.info('order created {}'.format(order_id))
         pass

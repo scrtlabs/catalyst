@@ -1,11 +1,11 @@
 import base64
-import numpy as np
 import hashlib
 import hmac
 import json
 import re
 import time
 
+import numpy as np
 import pandas as pd
 import pytz
 import requests
@@ -18,11 +18,9 @@ from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     InvalidHistoryFrequencyError,
-    InvalidOrderType)
-from catalyst.finance.execution import (MarketOrder,
-                                        LimitOrder,
-                                        StopOrder,
-                                        StopLimitOrder)
+    InvalidOrderStyle)
+from catalyst.exchange.exchange_execution import ExchangeLimitOrder, \
+    ExchangeStopLimitOrder, ExchangeStopOrder
 from catalyst.finance.order import Order, ORDER_STATUS
 from catalyst.protocol import Account
 
@@ -368,14 +366,18 @@ class Bitfinex(Exchange):
         :return:
         """
         exchange_symbol = self.get_symbol(asset)
-        if isinstance(style, LimitOrder) or isinstance(style, StopLimitOrder):
+        if isinstance(style, ExchangeLimitOrder) \
+                or isinstance(style, ExchangeStopLimitOrder):
             price = style.get_limit_price(is_buy)
             order_type = 'limit'
-        elif isinstance(style, StopOrder):
+
+        elif isinstance(style, ExchangeStopOrder):
             price = style.get_stop_price(is_buy)
             order_type = 'stop'
+
         else:
-            raise InvalidOrderType()
+            raise InvalidOrderStyle(exchange=self.name,
+                                    style=style.__class__.__name__)
 
         req = dict(
             symbol=exchange_symbol,

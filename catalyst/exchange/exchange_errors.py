@@ -69,13 +69,20 @@ class InvalidSymbolError(ZiplineError):
     ).strip()
 
 
-class InvalidOrderType(ZiplineError):
+class InvalidOrderStyle(ZiplineError):
     msg = (
-        'Order type not found.'
+        'Order style {style} not supported by exchange {exchange}.'
     ).strip()
 
 
 class SidHashError(ZiplineError):
     msg = (
         'Unable to hash sid from symbol {symbol}.'
+    ).strip()
+
+
+class MismatchingBaseCurrencies(ZiplineError):
+    msg = (
+        'Unable to trade with base currency {base_currency} when the '
+        'algorithm uses {algo_currency}.'
     ).strip()

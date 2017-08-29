@@ -1,13 +1,15 @@
-from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
-    ExchangeRequestError
+import json
+
+import pandas as pd
+from catalyst.assets._assets import TradingPair
 from logbook import Logger
 from six.moves import urllib
-import json
-import pandas as pd
 
-from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.bittrex.bittrex_api import Bittrex_api
-from catalyst.assets._assets import TradingPair
+from catalyst.exchange.exchange import Exchange
+from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
+    ExchangeRequestError, InvalidOrderStyle
+from catalyst.finance.execution import LimitOrder, StopLimitOrder
 
 log = Logger('Bittrex')
 
@@ -16,8 +18,10 @@ URL2 = 'https://bittrex.com/Api/v2.0'
 
 class Bittrex(Exchange):
     def __init__(self, key, secret, base_currency, portfolio=None):
-        self.api = Bittrex_api(key=key, secret=secret)
+        self.api = Bittrex_api(key=key, secret=secret.encode('UTF-8'))
         self.name = 'bittrex'
+        self.base_currency = base_currency
+        self._portfolio = portfolio
 
         self.assets = dict()
         self.load_assets()
@@ -78,7 +82,27 @@ class Bittrex(Exchange):
 
     def create_order(self, asset, amount, is_buy, style):
         log.info('creating order')
-        pass
+        exchange_symbol = self.get_symbol(asset)
+        if isinstance(style, LimitOrder) or isinstance(style, StopLimitOrder):
+            if isinstance(style, StopLimitOrder):
+                log.warn('{} will ignore the stop price'.format(self.name))
+
+            price = style.get_limit_price(is_buy)
+            try:
+                if is_buy:
+                    order = self.api.buylimit(exchange_symbol, amount, price)
+                else:
+                    order = self.api.selllimit(exchange_symbol, amount, price)
+            except Exception as e:
+                raise ExchangeRequestError(error=e)
+
+            if 'uuid' in order:
+                return order['uuid']
+            else:
+                raise ExchangeRequestError(error='Order uuid not found.')
+        else:
+            raise InvalidOrderStyle(exchange=self.name,
+                                    style=style.__class__.__name__)
 
     def get_open_orders(self, asset):
         pass
