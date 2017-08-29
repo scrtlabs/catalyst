@@ -8,6 +8,7 @@ from catalyst.api import (
     record,
     get_open_orders,
 )
+from catalyst.exchange.stats_utils import get_pretty_stats
 from catalyst.utils.run_algo import run_algorithm
 
 algo_namespace = 'buy_the_dip_live'
@@ -140,7 +141,7 @@ def handle_data(context, data):
 
 
 def analyze(context, stats):
-    log.info('the full stats:\n{}'.format(stats.head()))
+    log.info('the daily stats:\n{}'.format(get_pretty_stats(stats)))
     pass
 
 

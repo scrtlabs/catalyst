@@ -18,6 +18,7 @@ from datetime import timedelta
 from time import sleep
 from os import listdir
 from os.path import isfile, join
+from collections import deque
 
 import logbook
 import pandas as pd
@@ -35,6 +36,7 @@ from catalyst.exchange.exchange_errors import (
 )
 from catalyst.exchange.exchange_utils import get_exchange_minute_writer_root, \
     save_algo_object, get_algo_object, get_algo_folder
+from catalyst.exchange.stats_utils import get_pretty_stats
 from catalyst.finance.performance.period import calc_period_stats
 from catalyst.gens.tradesimulation import AlgorithmSimulator
 from catalyst.utils.api_support import (
@@ -55,6 +57,7 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         self.exchange = kwargs.pop('exchange', None)
         self.algo_namespace = kwargs.pop('algo_namespace', None)
         self.orders = {}
+        self.minute_stats = deque(maxlen=60)
         self.is_running = True
 
         self.retry_check_open_orders = 5
@@ -62,6 +65,8 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         self.retry_get_open_orders = 5
         self.retry_order = 2
         self.retry_delay = 5
+
+        self.stats_minutes = 5
 
         super(self.__class__, self).__init__(*args, **kwargs)
         self._create_minute_writer()
@@ -93,10 +98,14 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
     def signal_handler(self, signal, frame):
         self.is_running = False
 
-        log.info('You pressed Ctrl+C!')
+        if self._analyze is None:
+            log.info('Interruption signal detected {}, exiting the '
+                     'algorithm'.format(signal))
 
-        stats = None
-        try:
+        else:
+            log.info('Interruption signal detected {}, calling `analyze()` '
+                     'before exiting the algorithm'.format(signal))
+
             algo_folder = get_algo_folder(self.algo_namespace)
             folder = join(algo_folder, 'daily_perf')
             files = [f for f in listdir(folder) if isfile(join(folder, f))]
@@ -108,12 +117,9 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
                     daily_perf_list.append(pickle.load(handle))
 
             stats = pd.DataFrame(daily_perf_list)
-            stats.set_index('period_close', drop=True, inplace=True)
 
-        except Exception as e:
-            log.warn('Unable to compute daily stats: {}'.format(e))
+            self.analyze(stats)
 
-        self.analyze(stats)
         sys.exit(0)
 
     def _create_clock(self):
@@ -306,10 +312,17 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
             # Performance tracker and keep only minute and cumulative
             self.perf_tracker.update_performance()
 
-            # TODO: save for future use?
             minute_stats = self.prepare_period_stats(
                 data.current_dt, data.current_dt + timedelta(minutes=1))
-            log.debug('the minute performance:\n{}'.format(minute_stats))
+            # Saving the last hour in memory
+            self.minute_stats.append(minute_stats)
+
+            print_df = pd.DataFrame(list(self.minute_stats))
+            log.debug(
+                'statistics for the last {stats_minutes} minutes:\n{stats}'.format(
+                    stats_minutes=self.stats_minutes,
+                    stats=get_pretty_stats(print_df, self.stats_minutes)
+                ))
 
             today = pd.to_datetime('today', utc=True)
             daily_stats = self.prepare_period_stats(

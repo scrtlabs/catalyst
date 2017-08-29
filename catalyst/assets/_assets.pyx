@@ -37,7 +37,7 @@ import warnings
 cimport numpy as np
 
 from catalyst.utils.calendars import get_calendar
-from catalyst.exchange.exchange_errors import InvalidSymbolError
+from catalyst.exchange.exchange_errors import InvalidSymbolError, SidHashError
 
 # IMPORTANT NOTE: You must change this template if you change
 # Asset.__reduce__, or else we'll attempt to unpickle an old version of this
@@ -477,8 +477,11 @@ cdef class TradingPair(Asset):
         except Exception as e:
             raise InvalidSymbolError(symbol=symbol, error=e)
 
-        if sid == 0:
-            sid = abs(hash(symbol)) % (10 ** 4)
+        if sid == 0 or sid is None:
+            try:
+                sid = abs(hash(symbol)) % (10 ** 4)
+            except Exception as e:
+                raise SidHashError(symbol=symbol)
 
         if asset_name is None:
             asset_name = ' / '.join(symbol.split('_')).upper()
@@ -517,6 +520,24 @@ cdef class TradingPair(Asset):
             base_currency=self.base_currency,
             leverage=self.leverage
         )
+
+    cpdef __reduce__(self):
+        """
+        Function used by pickle to determine how to serialize/deserialize this
+        class.  Should return a tuple whose first element is self.__class__,
+        and whose second element is a tuple of all the attributes that should
+        be serialized/deserialized during pickling.
+        """
+        return (self.__class__, (self.symbol,
+                                 self.exchange,
+                                 self.start_date,
+                                 self.asset_name,
+                                 self.sid,
+                                 self.leverage,
+                                 self.end_date,
+                                 self.first_traded,
+                                 self.auto_close_date,
+                                 self.exchange_full))
 
 def make_asset_array(int size, Asset asset):
     cdef np.ndarray out = np.empty([size], dtype=object)

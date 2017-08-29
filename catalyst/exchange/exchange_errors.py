@@ -73,3 +73,9 @@ class InvalidOrderType(ZiplineError):
     msg = (
         'Order type not found.'
     ).strip()
+
+
+class SidHashError(ZiplineError):
+    msg = (
+        'Unable to hash sid from symbol {symbol}.'
+    ).strip()

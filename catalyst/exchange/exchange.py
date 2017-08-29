@@ -368,21 +368,18 @@ class Exchange:
             bar_count=bar_count,
         )
 
-        frames = []
+        series = dict()
         for asset in assets:
             asset_candles = candles[asset]
 
-            asset_data = dict()
-            asset_data[asset] = map(lambda candle: candle[field],
-                                    asset_candles)
+            values = map(lambda candle: candle[field], asset_candles)
+            dates = map(lambda candle: candle['last_traded'], asset_candles)
 
-            dates = map(lambda candle: candle['last_traded'],
-                        asset_candles)
+            value_series = pd.Series(values, index=dates)
+            series[asset] = value_series
 
-            df = pd.DataFrame(asset_data, index=dates)
-            frames.append(df)
-
-        return pd.concat(frames)
+        df = pd.concat(series)
+        return df
 
     @abstractmethod
     def create_order(self, asset, amount, is_buy, style):

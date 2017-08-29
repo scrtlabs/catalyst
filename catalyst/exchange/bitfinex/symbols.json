@@ -3,6 +3,10 @@
     "symbol": "btc_usd",
     "start_date": "2010-01-01"
   },
+  "bchusd": {
+    "symbol": "bch_usd",
+    "start_date": "2010-01-01"
+  },
   "ltcusd": {
     "symbol": "ltc_usd",
     "start_date": "2010-01-01"
