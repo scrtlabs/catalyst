@@ -32,6 +32,8 @@ class BittrexTestCase(BaseExchangeTestCase):
 
     def test_open_orders(self):
         log.info('retrieving open orders')
+        asset = self.exchange.get_asset('neo_btc')
+        orders = self.exchange.get_open_orders(asset)
         pass
 
     def test_get_order(self):

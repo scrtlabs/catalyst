@@ -37,9 +37,9 @@ class Exchange:
         self.minute_reader = None
         self.base_currency = None
 
-    @abstractproperty
+    @property
     def positions(self):
-        pass
+        return self.portfolio.positions
 
     @property
     def portfolio(self):
@@ -507,7 +507,11 @@ class Exchange:
                 price='{}{}'.format(display_price, asset.base_currency)
             )
         )
-        return self.create_order(asset, amount, is_buy, style)
+        order = self.create_order(asset, amount, is_buy, style)
+
+        self._portfolio.create_order(order)
+
+        return order.id
 
     @abstractmethod
     def get_open_orders(self, asset):

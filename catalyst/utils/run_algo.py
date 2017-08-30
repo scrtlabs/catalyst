@@ -10,6 +10,8 @@ import pandas as pd
 
 import click
 
+from catalyst.exchange.bittrex.bittrex import Bittrex
+
 try:
     from pygments import highlight
     from pygments.lexers import PythonLexer
@@ -501,6 +503,13 @@ def run_algorithm(initialize,
             exchange_auth = get_exchange_auth(exchange_name)
             if exchange_name == 'bitfinex':
                 exchange = Bitfinex(
+                    key=exchange_auth['key'],
+                    secret=exchange_auth['secret'],
+                    base_currency=base_currency,
+                    portfolio=portfolio
+                )
+            elif exchange_name == 'bittrex':
+                exchange = Bittrex(
                     key=exchange_auth['key'],
                     secret=exchange_auth['secret'],
                     base_currency=base_currency,

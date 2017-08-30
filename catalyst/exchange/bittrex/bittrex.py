@@ -1,9 +1,7 @@
 import json
 
 import pandas as pd
-import pytz
 from catalyst.assets._assets import TradingPair
-from catalyst.finance.order import Order, ORDER_STATUS
 from logbook import Logger
 from six.moves import urllib
 
@@ -13,6 +11,7 @@ from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
     ExchangeRequestError, InvalidOrderStyle, OrderNotFound, OrderCancelError, \
     CreateOrderError
 from catalyst.finance.execution import LimitOrder, StopLimitOrder
+from catalyst.finance.order import Order, ORDER_STATUS
 
 log = Logger('Bittrex')
 
@@ -34,16 +33,9 @@ class Bittrex(Exchange):
         pass
 
     @property
-    def portfolio(self):
-        pass
-
-    @property
-    def positions(self):
-        pass
-
-    @property
     def time_skew(self):
-        pass
+        # TODO: research the time skew conditions
+        return pd.Timedelta('0s')
 
     def sanitize_curency_symbol(self, exchange_symbol):
         """
@@ -102,26 +94,42 @@ class Bittrex(Exchange):
             price = style.get_limit_price(is_buy)
             try:
                 if is_buy:
-                    order = self.api.buylimit(exchange_symbol, amount, price)
+                    order_status = self.api.buylimit(exchange_symbol, amount, price)
                 else:
-                    order = self.api.selllimit(exchange_symbol, amount, price)
+                    order_status = self.api.selllimit(exchange_symbol, amount, price)
             except Exception as e:
                 raise ExchangeRequestError(error=e)
 
-            if 'uuid' in order:
-                return order['uuid']
+            if 'uuid' in order_status:
+                order_id = order_status['uuid']
+                order = Order(
+                    dt=pd.Timestamp.utcnow(),
+                    asset=asset,
+                    amount=amount,
+                    stop=style.get_stop_price(is_buy),
+                    limit=style.get_limit_price(is_buy),
+                    id=order_id
+                )
+                return order
             else:
-                raise CreateOrderError(exchange=self.name, error=order)
+                raise CreateOrderError(exchange=self.name, error=order_status)
         else:
             raise InvalidOrderStyle(exchange=self.name,
                                     style=style.__class__.__name__)
 
     def get_open_orders(self, asset):
-        pass
+        symbol = self.get_symbol(asset)
+        try:
+            open_orders = self.api.getopenorders(symbol)
+        except Exception as e:
+            raise ExchangeRequestError(error=e)
 
-    def open_orders(self):
-        log.info('retrieving open orders')
-        pass
+        orders = list()
+        for order_status in open_orders:
+            order = self._create_order(order_status)
+            orders.append(order)
+
+        return orders
 
     def _create_order(self, order_status):
         log.info(
@@ -184,16 +192,17 @@ class Bittrex(Exchange):
 
     def get_candles(self, data_frequency, assets, bar_count=None):
         """
-
         Supported Intervals
         -------------------
         day, oneMin, fiveMin, thirtyMin, hour
+
         :param data_frequency:
         :param assets:
         :param bar_count:
         :return:
         """
         log.info('retrieving candles')
+
         if data_frequency == 'minute' or data_frequency == '1m':
             frequency = 'oneMin'
         elif data_frequency == '5m':

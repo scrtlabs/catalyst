@@ -211,10 +211,6 @@ class Bitfinex(Exchange):
         return account
 
     @property
-    def positions(self):
-        return self.portfolio.positions
-
-    @property
     def time_skew(self):
         # TODO: research the time skew conditions
         return pd.Timedelta('0s')
@@ -387,9 +383,8 @@ class Bitfinex(Exchange):
             limit=style.get_limit_price(is_buy),
             id=order_id
         )
-        self.portfolio.create_order(order)
 
-        return order_id
+        return order
 
     def get_open_orders(self, asset=None):
         """Retrieve all of the current open orders.
