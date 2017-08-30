@@ -166,13 +166,8 @@ class Bitfinex(Exchange):
 
         return order, executed_price
 
-    def update_portfolio(self):
-        """
-        Update the portfolio cash and position balances based on the
-        latest ticker prices.
-
-        :return:
-        """
+    def get_balances(self):
+        log.debug('retrieving wallets balances')
         try:
             response = self._request('balances', None)
             balances = response.json()
@@ -184,36 +179,12 @@ class Bitfinex(Exchange):
                 error='unable to fetch balance {}'.format(balances['message'])
             )
 
-        base_position = None
-        for position in balances:
-            if not base_position and position['type'] == 'exchange' \
-                    and position['currency'] == self.base_currency:
-                base_position = position
+        std_balances = dict()
+        for balance in balances:
+            currency = balance['currency'].lower()
+            std_balances[currency] = float(balance['available'])
 
-        if position is None:
-            raise ValueError(
-                error='Base currency %s not found in portfolio' % self.base_currency
-            )
-
-        portfolio = self._portfolio
-        portfolio.cash = float(base_position['available'])
-        if portfolio.starting_cash is None:
-            portfolio.starting_cash = portfolio.cash
-
-        if portfolio.positions:
-            assets = portfolio.positions.keys()
-            tickers = self.tickers(assets)
-            portfolio.positions_value = 0.0
-            for ticker in tickers:
-                # TODO: convert if the position is not in the base currency
-                position = portfolio.positions[ticker['asset']]
-                position.last_sale_price = ticker['last_price']
-                position.last_sale_date = ticker['timestamp']
-
-                portfolio.positions_value += \
-                    position.amount * position.last_sale_price
-                portfolio.portfolio_value = \
-                    portfolio.positions_value + portfolio.cash
+        return std_balances
 
     @property
     def account(self):
@@ -397,17 +368,17 @@ class Bitfinex(Exchange):
         date = pd.Timestamp.utcnow()
         try:
             response = self._request('order/new', req)
-            exchange_order = response.json()
+            order_status = response.json()
         except Exception as e:
             raise ExchangeRequestError(error=e)
 
-        if 'message' in exchange_order:
+        if 'message' in order_status:
             raise ExchangeRequestError(
                 error='unable to create Bitfinex order {}'.format(
-                    exchange_order['message'])
+                    order_status['message'])
             )
 
-        order_id = exchange_order['id']
+        order_id = str(order_status['id'])
         order = Order(
             dt=date,
             asset=asset,
@@ -538,15 +509,14 @@ class Bitfinex(Exchange):
 
         tickers = response.json()
 
-        formatted_tickers = []
+        ticks = dict()
         for index, ticker in enumerate(tickers):
             if not len(ticker) == 11:
                 raise ExchangeRequestError(
                     error='Invalid ticker in response: {}'.format(ticker)
                 )
 
-            tick = dict(
-                asset=assets[index],
+            ticks[assets[index]] = dict(
                 timestamp=pd.Timestamp.utcnow(),
                 bid=ticker[1],
                 ask=ticker[3],
@@ -555,7 +525,6 @@ class Bitfinex(Exchange):
                 high=ticker[9],
                 volume=ticker[8],
             )
-            formatted_tickers.append(tick)
 
-        log.debug('got tickers {}'.format(formatted_tickers))
-        return formatted_tickers
+        log.debug('got tickers {}'.format(ticks))
+        return ticks

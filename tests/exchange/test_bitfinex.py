@@ -37,6 +37,7 @@ class BitfinexTestCase(BaseExchangeTestCase):
 
     def test_open_orders(self):
         log.info('retrieving open orders')
+        orders = self.exchange.get_open_orders()
         pass
 
     def test_get_order(self):
@@ -53,10 +54,19 @@ class BitfinexTestCase(BaseExchangeTestCase):
 
     def test_tickers(self):
         log.info('retrieving tickers')
+        tickers = self.exchange.tickers([
+            self.exchange.get_asset('eth_usd'),
+            self.exchange.get_asset('btc_usd')
+        ])
         pass
 
-    def get_account(self):
+    def test_get_account(self):
         log.info('retrieving account data')
+        pass
+
+    def test_get_balances(self):
+        log.info('testing exchange balances')
+        balances = self.exchange.get_balances()
         pass
 
         # def test_order(self):

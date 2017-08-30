@@ -99,6 +99,13 @@ class SidHashError(ZiplineError):
     ).strip()
 
 
+class BaseCurrencyNotFoundError(ZiplineError):
+    msg = (
+        'Algorithm base currency {base_currency} not found in exchange '
+        '{exchange}.'
+    ).strip()
+
+
 class MismatchingBaseCurrencies(ZiplineError):
     msg = (
         'Unable to trade with base currency {base_currency} when the '

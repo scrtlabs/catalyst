@@ -80,8 +80,17 @@ class Bittrex(Exchange):
 
         return symbol_map
 
-    def update_portfolio(self):
-        pass
+    def get_balances(self):
+        try:
+            balances = self.api.getbalances()
+        except Exception as e:
+            raise ExchangeRequestError(error=e)
+
+        std_balances = dict()
+        for balance in balances:
+            currency = balance['Currency'].lower()
+            std_balances[currency] = balance['Available']
+        return std_balances
 
     def create_order(self, asset, amount, is_buy, style):
         log.info('creating order')
@@ -249,9 +258,34 @@ class Bittrex(Exchange):
         return ohlc_map[assets] \
             if isinstance(assets, TradingPair) else ohlc_map
 
-    def tickers(self):
+    def tickers(self, assets):
+        """
+        As of v1.1, Bittrex only allows one ticker at the time.
+        So we have to make multiple calls to fetch multiple assets.
+
+        :param assets:
+        :return:
+        """
         log.info('retrieving tickers')
-        pass
+
+        ticks = dict()
+        for asset in assets:
+            symbol = self.get_symbol(asset)
+            try:
+                ticker = self.api.getticker(symbol)
+            except Exception as e:
+                raise ExchangeRequestError(error=e)
+
+            # TODO: catch invalid ticker
+            ticks[asset] = dict(
+                timestamp=pd.Timestamp.utcnow(),
+                bid=ticker['Bid'],
+                ask=ticker['Ask'],
+                last_price=ticker['Last']
+            )
+
+        log.debug('got tickers {}'.format(ticks))
+        return ticks
 
     def get_account(self):
         log.info('retrieving account data')

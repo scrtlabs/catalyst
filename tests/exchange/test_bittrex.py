@@ -1,11 +1,7 @@
 from catalyst.exchange.bittrex.bittrex import Bittrex
+from catalyst.finance.order import Order
 from .base import BaseExchangeTestCase
 from logbook import Logger
-import pandas as pd
-from catalyst.finance.execution import (MarketOrder,
-                                        LimitOrder,
-                                        StopOrder,
-                                        StopLimitOrder)
 from catalyst.exchange.exchange_utils import get_exchange_auth
 
 log = Logger('test_bittrex')
@@ -31,6 +27,7 @@ class BittrexTestCase(BaseExchangeTestCase):
             amount=1,
         )
         log.info('order created {}'.format(order_id))
+        assert order_id is not None
         pass
 
     def test_open_orders(self):
@@ -39,10 +36,12 @@ class BittrexTestCase(BaseExchangeTestCase):
 
     def test_get_order(self):
         log.info('retrieving order')
-        order = self.exchange.get_order(u'2c584020-9caf-4af5-bde0-332c0bba17e2')
+        order = self.exchange.get_order(
+            u'2c584020-9caf-4af5-bde0-332c0bba17e2')
+        assert isinstance(order, Order)
         pass
 
-    def test_cancel_order(self,):
+    def test_cancel_order(self, ):
         log.info('cancel order')
         self.exchange.cancel_order(u'dc7bcca2-5219-4145-8848-8a593d2a72f9')
         pass
@@ -65,8 +64,18 @@ class BittrexTestCase(BaseExchangeTestCase):
 
     def test_tickers(self):
         log.info('retrieving tickers')
+        tickers = self.exchange.tickers([
+            self.exchange.get_asset('ubq_btc'),
+            self.exchange.get_asset('neo_btc')
+        ])
+        assert len(tickers) == 2
         pass
 
-    def get_account(self):
-        log.info('retrieving account data')
+    def test_get_balances(self):
+        log.info('testing wallet balances')
+        balances = self.exchange.get_balances()
+        pass
+
+    def test_get_account(self):
+        log.info('testing account data')
         pass

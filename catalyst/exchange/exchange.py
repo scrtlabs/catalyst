@@ -14,7 +14,7 @@ from catalyst.errors import (
     SymbolNotFound,
 )
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
-    InvalidOrderStyle
+    InvalidOrderStyle, BaseCurrencyNotFoundError
 from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
     ExchangeLimitOrder, ExchangeStopOrder
 from catalyst.exchange.exchange_portfolio import ExchangePortfolio
@@ -35,13 +35,10 @@ class Exchange:
         self._portfolio = None
         self.minute_writer = None
         self.minute_reader = None
+        self.base_currency = None
 
     @abstractproperty
     def positions(self):
-        pass
-
-    @abstractproperty
-    def update_portfolio(self):
         pass
 
     @property
@@ -113,7 +110,7 @@ class Exchange:
                 asset = self.assets[key]
 
         if not asset:
-            raise SymbolNotFound('Asset not found: %s' % symbol)
+            raise SymbolNotFound(symbol=symbol)
 
         return asset
 
@@ -378,6 +375,55 @@ class Exchange:
 
         df = pd.concat(series)
         return df
+
+    def update_portfolio(self):
+        """
+        Update the portfolio cash and position balances based on the
+        latest ticker prices.
+
+        :return:
+        """
+        balances = self.get_balances()
+
+        base_position_available = balances[self.base_currency] \
+            if self.base_currency in balances else None
+
+        if base_position_available is None:
+            raise BaseCurrencyNotFoundError(
+                base_currency=self.base_currency,
+                exchange=self.name
+            )
+
+        portfolio = self._portfolio
+        portfolio.cash = base_position_available
+
+        if portfolio.starting_cash is None:
+            portfolio.starting_cash = portfolio.cash
+
+        if portfolio.positions:
+            assets = portfolio.positions.keys()
+            tickers = self.tickers(assets)
+
+            portfolio.positions_value = 0.0
+            for asset in tickers:
+                # TODO: convert if the position is not in the base currency
+                ticker = tickers[asset]
+                position = portfolio.positions[asset]
+                position.last_sale_price = ticker['last_price']
+                position.last_sale_date = ticker['timestamp']
+
+                portfolio.positions_value += \
+                    position.amount * position.last_sale_price
+                portfolio.portfolio_value = \
+                    portfolio.positions_value + portfolio.cash
+
+    @abstractmethod
+    def get_balances(self):
+        """
+        Retrieve wallet balances for the exchange
+        :return balances: A dict of currency => available balance
+        """
+        pass
 
     @abstractmethod
     def create_order(self, asset, amount, is_buy, style):

@@ -30,5 +30,9 @@ class BaseExchangeTestCase():
         pass
 
     @abstractmethod
-    def get_account(self):
+    def test_get_balances(self):
+        pass
+
+    @abstractmethod
+    def test_get_account(self):
         pass
