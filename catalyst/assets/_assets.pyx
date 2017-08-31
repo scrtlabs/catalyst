@@ -490,7 +490,7 @@ cdef class TradingPair(Asset):
             start_date = pd.Timestamp.utcnow()
 
         if end_date is None:
-            end_date = start_date + timedelta(days=365)
+            end_date = pd.Timestamp.utcnow() + timedelta(days=365)
 
         super().__init__(
             sid,
