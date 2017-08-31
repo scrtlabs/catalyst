@@ -159,7 +159,7 @@ class Bitfinex(Exchange):
             stop=stop_price,
             limit=limit_price,
             filled=filled,
-            id=order_status['id'],
+            id=str(order_status['id']),
             commission=commission
         )
         order.status = status
