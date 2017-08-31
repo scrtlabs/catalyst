@@ -196,13 +196,13 @@ def ipython_only(option):
 @click.option(
     '-x',
     '--exchange-name',
-    type=click.Choice({'bitfinex'}),
-    help='The name of the exchange (supported: bitfinex).',
+    type=click.Choice({'bitfinex', 'bittrex'}),
+    help='The name of the targeted exchange (supported: bitfinex, bittrex).',
 )
 @click.option(
     '-n',
     '--algo-namespace',
-    help='A label assigned to the algorithm for tracking purposes. '
+    help='A label assigned to the algorithm for data storage purposes.'
 )
 @click.option(
     '-c',

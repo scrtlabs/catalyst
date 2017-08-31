@@ -47,7 +47,7 @@ def _handle_data(context, data):
         buy_increment = 50
     elif rsi <= 40:
         buy_increment = 20
-    elif rsi <= 90:
+    elif rsi <= 70:
         buy_increment = 5
     else:
         buy_increment = None
@@ -72,14 +72,6 @@ def _handle_data(context, data):
     cost_basis = None
     if context.asset in context.portfolio.positions:
         position = context.portfolio.positions[context.asset]
-        # TODO: temp test
-        if position.amount > 0:
-            order_target_percent(
-                asset=context.asset,
-                target=0,
-                limit_price=price * (1 - context.SLIPPAGE_ALLOWED),
-            )
-            return
 
         cost_basis = position.cost_basis
         log.info(
