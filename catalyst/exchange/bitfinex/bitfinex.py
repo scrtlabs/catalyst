@@ -133,6 +133,10 @@ class Bitfinex(Exchange):
         amount = float(order_status['original_amount'])
         filled = float(order_status['executed_amount'])
 
+        if order_status['side'] == 'sell':
+            amount = -amount
+            filled = -filled
+
         price = float(order_status['price'])
         order_type = order_status['type']
 

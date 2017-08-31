@@ -397,9 +397,11 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
                                               style)
 
         order_id = self._order(asset, amount, limit_price, stop_price, style)
-        order = self.portfolio.open_orders[order_id]
 
-        self.perf_tracker.process_order(order)
+        if order_id is not None:
+            order = self.portfolio.open_orders[order_id]
+            self.perf_tracker.process_order(order)
+
         return order
 
     def round_order(self, amount):
