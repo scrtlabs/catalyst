@@ -25,6 +25,9 @@ class Bittrex(Exchange):
         self.base_currency = base_currency
         self._portfolio = portfolio
 
+        self.minute_writer=None
+        self.minute_reader=None
+
         self.assets = dict()
         self.load_assets()
 
@@ -257,7 +260,7 @@ class Bittrex(Exchange):
 
             ordered_candles = list(reversed(candles))
             if bar_count is None:
-                ohlc_map[asset] = ohlc_from_candle(ordered_candles[-1])
+                ohlc_map[asset] = ohlc_from_candle(ordered_candles[0])
             else:
                 ohlc_bars = []
                 for candle in ordered_candles[:bar_count]:

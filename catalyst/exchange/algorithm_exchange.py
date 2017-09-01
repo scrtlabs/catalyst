@@ -69,7 +69,7 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         self.stats_minutes = 5
 
         super(self.__class__, self).__init__(*args, **kwargs)
-        self._create_minute_writer()
+        # self._create_minute_writer()
 
         signal.signal(signal.SIGINT, self.signal_handler)
 

@@ -22,7 +22,7 @@ def initialize(context):
 
     context.TARGET_POSITIONS = 5000
     context.PROFIT_TARGET = 0.1
-    context.SLIPPAGE_ALLOWED = 0.02
+    context.SLIPPAGE_ALLOWED = 0.05
 
     context.retry_check_open_orders = 10
     context.retry_update_portfolio = 10
