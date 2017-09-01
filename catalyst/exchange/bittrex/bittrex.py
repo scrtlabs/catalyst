@@ -85,8 +85,9 @@ class Bittrex(Exchange):
         return std_balances
 
     def create_order(self, asset, amount, is_buy, style):
-        log.info('creating order')
+        log.info('creating {} order'.format('buy' if is_buy else 'sell'))
         exchange_symbol = self.get_symbol(asset)
+
         if isinstance(style, LimitOrder) or isinstance(style, StopLimitOrder):
             if isinstance(style, StopLimitOrder):
                 log.warn('{} will ignore the stop price'.format(self.name))
@@ -94,9 +95,11 @@ class Bittrex(Exchange):
             price = style.get_limit_price(is_buy)
             try:
                 if is_buy:
-                    order_status = self.api.buylimit(exchange_symbol, amount, price)
+                    order_status = self.api.buylimit(exchange_symbol, amount,
+                                                     price)
                 else:
-                    order_status = self.api.selllimit(exchange_symbol, amount, price)
+                    order_status = self.api.selllimit(exchange_symbol,
+                                                      abs(amount), price)
             except Exception as e:
                 raise ExchangeRequestError(error=e)
 
@@ -161,7 +164,7 @@ class Bittrex(Exchange):
         return order, executed_price
 
     def get_order(self, order_id):
-        log.info('retrieving order')
+        log.info('retrieving order {}'.format(order_id))
         try:
             order_status = self.api.getorder(order_id)
         except Exception as e:
@@ -170,8 +173,7 @@ class Bittrex(Exchange):
         if order_status is None:
             raise OrderNotFound(order_id=order_id, exchange=self.name)
 
-        order, executed_price = self._create_order(order_status)
-        return order
+        return self._create_order(order_status)
 
     def cancel_order(self, order_param):
         order_id = order_param.id \
