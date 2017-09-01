@@ -144,9 +144,42 @@ def _run(handle_data,
         else:
             click.echo(algotext)
 
-    if exchange is not None:
+    mode = 'live' if live else 'backtest'
+    log.info('running algo in {mode} mode'.format(mode=mode))
+
+    if live and exchange is not None:
+        exchange_name = exchange
         start = pd.Timestamp.utcnow()
         end = start + timedelta(minutes=1439)
+
+        portfolio = get_algo_object(
+            algo_name=algo_namespace,
+            key='portfolio_{}'.format(exchange_name),
+            environ=environ
+        )
+        if portfolio is None:
+            portfolio = ExchangePortfolio(
+                start_date=pd.Timestamp.utcnow()
+            )
+
+        exchange_auth = get_exchange_auth(exchange_name)
+        if exchange_name == 'bitfinex':
+            exchange = Bitfinex(
+                key=exchange_auth['key'],
+                secret=exchange_auth['secret'],
+                base_currency=base_currency,
+                portfolio=portfolio
+            )
+        elif exchange_name == 'bittrex':
+            exchange = Bittrex(
+                key=exchange_auth['key'],
+                secret=exchange_auth['secret'],
+                base_currency=base_currency,
+                portfolio=portfolio
+            )
+        else:
+            raise NotImplementedError(
+                'exchange not supported: %s' % exchange_name)
 
     open_calendar = get_calendar('OPEN')
     sim_params = create_simulation_parameters(
@@ -464,12 +497,9 @@ def run_algorithm(initialize,
     --------
     catalyst.data.bundles.bundles : The available data bundles.
     """
-    mode = 'live' if live else 'backtest'
-    log.info('running algo in {mode} mode'.format(mode=mode))
     load_extensions(default_extension, extensions, strict_extensions, environ)
 
-    exchange = None
-    if mode == 'backtest':
+    if not live:
         non_none_data = valfilter(bool, {
             'data': data is not None,
             'bundle': bundle is not None,
@@ -488,37 +518,6 @@ def run_algorithm(initialize,
             raise ValueError(
                 'cannot specify `bundle_timestamp` without passing `bundle`',
             )
-    else:
-        if exchange_name is not None:
-            portfolio = get_algo_object(
-                algo_name=algo_namespace,
-                key='portfolio_{}'.format(exchange_name),
-                environ=environ
-            )
-            if portfolio is None:
-                portfolio = ExchangePortfolio(
-                    start_date=pd.Timestamp.utcnow()
-                )
-
-            exchange_auth = get_exchange_auth(exchange_name)
-            if exchange_name == 'bitfinex':
-                exchange = Bitfinex(
-                    key=exchange_auth['key'],
-                    secret=exchange_auth['secret'],
-                    base_currency=base_currency,
-                    portfolio=portfolio
-                )
-            elif exchange_name == 'bittrex':
-                exchange = Bittrex(
-                    key=exchange_auth['key'],
-                    secret=exchange_auth['secret'],
-                    base_currency=base_currency,
-                    portfolio=portfolio
-                )
-            else:
-                raise NotImplementedError(
-                    'exchange not supported: %s' % exchange_name)
-
     return _run(
         handle_data=handle_data,
         initialize=initialize,
@@ -539,7 +538,7 @@ def run_algorithm(initialize,
         local_namespace=False,
         environ=environ,
         live=live,
-        exchange=exchange,
+        exchange=exchange_name,
         algo_namespace=algo_namespace,
         base_currency=base_currency
     )
