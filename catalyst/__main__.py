@@ -206,8 +206,8 @@ def ipython_only(option):
 )
 @click.option(
     '-c',
-    '--reference-currency',
-    help='The reference currency used to calculate statistics '
+    '--base-currency',
+    help='The base currency used to calculate statistics '
          '(e.g. usd, btc, eth).',
 )
 @click.pass_context
@@ -239,7 +239,7 @@ def run(ctx,
             ctx.fail("must specify an algorithm name '-n' in live execution "
                      "mode '--live'")
         if base_currency is None:
-            ctx.fail("must specify a reference currency '-c' in live "
+            ctx.fail("must specify a base currency '-c' in live "
                      "execution mode '--live'")
     else:
         # check that the start and end dates are passed correctly

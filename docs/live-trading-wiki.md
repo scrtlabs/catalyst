@@ -72,7 +72,7 @@ error will occur if the specified trading pair is not trading
 on the exchange.
 
 <h2>Trading an Algorithm</h2>
-There are no special convention to follow when writing an
+There is no special convention to follow when writing an
 algorithm for live trading. The same algorithm should work in
 backtest and live execution mode without modification.
 
@@ -97,7 +97,7 @@ Here is the breakdown of the new arguments:
     (supported values: *bitfinex*, *bittrex*).
 * algo_namespace: A arbitrary label assigned to your algorithm for
     data storage purposes.
-* base_currency: The reference currency used to calculate the
+* base_currency: The base currency used to calculate the
     statistics of your algorithm. Currently, the base currency of all
     trading pairs of your algorithm must match this value.
 
