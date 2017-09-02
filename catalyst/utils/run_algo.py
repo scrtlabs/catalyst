@@ -189,7 +189,54 @@ def _run(handle_data,
         data_frequency=data_frequency,
         emission_rate=data_frequency,
     )
-    if bundle is not None:
+
+    if live and exchange is not None:
+        env = TradingEnvironment(
+            environ=environ,
+            exchange_tz="UTC",
+            asset_db_path=None
+        )
+        env.asset_finder = AssetFinderExchange(exchange)
+
+        data = DataPortalExchange(
+            exchange=exchange,
+            asset_finder=env.asset_finder,
+            trading_calendar=open_calendar,
+            first_trading_day=pd.to_datetime('today', utc=True)
+        )
+        choose_loader = None
+
+        def update_portfolio(attempt_index=0):
+            """
+            Fetch the portfolio for the exchange
+            We can't continue on error because it is required to bootstrap
+            the algorithm.
+            :param attempt_index:
+            :return:
+            """
+            try:
+                exchange.update_portfolio()
+                return exchange.portfolio
+            except ExchangeRequestError as e:
+                if attempt_index < 20:
+                    sleep(5)
+                    return update_portfolio(attempt_index + 1)
+                else:
+                    raise ExchangeRequestErrorTooManyAttempts(
+                        attempts=attempt_index,
+                        error=e
+                    )
+
+        portfolio = update_portfolio()
+        sim_params = create_simulation_parameters(
+            start=start,
+            end=end,
+            capital_base=portfolio.starting_cash,
+            emission_rate='minute',
+            data_frequency='minute'
+        )
+
+    elif bundle is not None:
         bundles = bundle.split(',')
 
         def get_trading_env_and_data(bundles):
@@ -275,54 +322,8 @@ def _run(handle_data,
             )
 
     else:
-        if live and exchange is not None:
-            env = TradingEnvironment(
-                environ=environ,
-                exchange_tz="UTC",
-                asset_db_path=None
-            )
-            env.asset_finder = AssetFinderExchange(exchange)
-
-            data = DataPortalExchange(
-                exchange=exchange,
-                asset_finder=env.asset_finder,
-                trading_calendar=open_calendar,
-                first_trading_day=pd.to_datetime('today', utc=True)
-            )
-            choose_loader = None
-
-            def update_portfolio(attempt_index=0):
-                """
-                Fetch the portfolio for the exchange
-                We can't continue on error because it is required to bootstrap
-                the algorithm.
-                :param attempt_index:
-                :return:
-                """
-                try:
-                    exchange.update_portfolio()
-                    return exchange.portfolio
-                except ExchangeRequestError as e:
-                    if attempt_index < 20:
-                        sleep(5)
-                        return update_portfolio(attempt_index + 1)
-                    else:
-                        raise ExchangeRequestErrorTooManyAttempts(
-                            attempts=attempt_index,
-                            error=e
-                        )
-
-            portfolio = update_portfolio()
-            sim_params = create_simulation_parameters(
-                start=start,
-                end=end,
-                capital_base=portfolio.starting_cash,
-                emission_rate='minute',
-                data_frequency='minute'
-            )
-        else:
-            env = TradingEnvironment(environ=environ)
-            choose_loader = None
+        env = TradingEnvironment(environ=environ)
+        choose_loader = None
 
     TradingAlgorithmClass = (
         partial(ExchangeTradingAlgorithm, exchange=exchange,

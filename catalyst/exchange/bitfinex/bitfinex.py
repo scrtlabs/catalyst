@@ -353,7 +353,7 @@ class Bitfinex(Exchange):
         req = dict(
             symbol=exchange_symbol,
             amount=str(float(abs(amount))),
-            price=str(float(price)),
+            price="{:.20f}".format(float(price)),
             side='buy' if is_buy else 'sell',
             type='exchange ' + order_type,  # TODO: support margin trades
             exchange=self.name,
