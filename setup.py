@@ -38,6 +38,7 @@ class LazyBuildExtCommandClass(dict):
     Lazy command class that defers operations requiring Cython and numpy until
     they've actually been downloaded and installed by setup_requires.
     """
+
     def __contains__(self, key):
         return (
             key == 'build_ext'
@@ -62,6 +63,7 @@ class LazyBuildExtCommandClass(dict):
             Custom build_ext command that lazily adds numpy's include_dir to
             extensions.
             """
+
             def build_extensions(self):
                 """
                 Lazily append numpy's include directory to Extension includes.
@@ -75,6 +77,7 @@ class LazyBuildExtCommandClass(dict):
                     ext.include_dirs.append(numpy_incl)
 
                 super(build_ext, self).build_extensions()
+
         return build_ext
 
 
@@ -100,7 +103,8 @@ ext_modules = [
     window_specialization('label'),
     Extension('catalyst.lib.rank', ['catalyst/lib/rank.pyx']),
     Extension('catalyst.data._equities', ['catalyst/data/_equities.pyx']),
-    Extension('catalyst.data._adjustments', ['catalyst/data/_adjustments.pyx']),
+    Extension('catalyst.data._adjustments',
+              ['catalyst/data/_adjustments.pyx']),
     Extension('catalyst._protocol', ['catalyst/_protocol.pyx']),
     Extension('catalyst.gens.sim_engine', ['catalyst/gens/sim_engine.pyx']),
     Extension(
@@ -116,7 +120,6 @@ ext_modules = [
         ['catalyst/data/_resample.pyx']
     ),
 ]
-
 
 STR_TO_CMP = {
     '<': lt,
@@ -264,6 +267,7 @@ def setup_requirements(requirements_path, module_names, strict_bounds,
         )
     return module_lines
 
+
 conda_build = os.path.basename(sys.argv[0]) in ('conda-build',  # unix
                                                 'conda-build-script.py')  # win
 
@@ -295,7 +299,7 @@ setup(
     ext_modules=ext_modules,
     include_package_data=True,
     package_data={root.replace(os.sep, '.'):
-                  ['*.pyi', '*.pyx', '*.pxi', '*.pxd']
+                      ['*.pyi', '*.pyx', '*.pxi', '*.pxd']
                   for root, dirnames, filenames in os.walk('catalyst')
                   if '__pycache__' not in root},
     license='Apache 2.0',

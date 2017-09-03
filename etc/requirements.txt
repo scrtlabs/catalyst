@@ -9,7 +9,9 @@ Logbook==0.12.5
 # Scientific Libraries
 
 pytz==2016.4
-numpy==1.11.1
+
+# FF: Upgraded numpy because of errors with version 1.11
+numpy==1.13.1
 
 # for pandas-datareader
 requests-file==1.4.1
@@ -77,3 +79,4 @@ lru-dict==1.1.4
 empyrical==0.2.1
 
 tables==3.3.0
+
