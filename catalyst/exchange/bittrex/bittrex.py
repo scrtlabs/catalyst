@@ -25,8 +25,8 @@ class Bittrex(Exchange):
         self.base_currency = base_currency
         self._portfolio = portfolio
 
-        self.minute_writer=None
-        self.minute_reader=None
+        self.minute_writer = None
+        self.minute_reader = None
 
         self.assets = dict()
         self.load_assets()
@@ -77,6 +77,7 @@ class Bittrex(Exchange):
 
     def get_balances(self):
         try:
+            log.debug('retrieving wallet balances')
             balances = self.api.getbalances()
         except Exception as e:
             raise ExchangeRequestError(error=e)

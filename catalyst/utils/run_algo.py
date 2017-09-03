@@ -44,8 +44,8 @@ from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
 from catalyst.exchange.exchange_portfolio import ExchangePortfolio
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
-    ExchangeRequestErrorTooManyAttempts
-)
+    ExchangeRequestErrorTooManyAttempts,
+    BaseCurrencyNotFoundError)
 from catalyst.exchange.exchange_utils import get_exchange_auth, \
     get_algo_object
 from logbook import Logger
@@ -193,7 +193,7 @@ def _run(handle_data,
     if live and exchange is not None:
         env = TradingEnvironment(
             environ=environ,
-            exchange_tz="UTC",
+            exchange_tz='UTC',
             asset_db_path=None
         )
         env.asset_finder = AssetFinderExchange(exchange)
@@ -206,32 +206,43 @@ def _run(handle_data,
         )
         choose_loader = None
 
-        def update_portfolio(attempt_index=0):
+        def fetch_capital_base(attempt_index=0):
             """
-            Fetch the portfolio for the exchange
-            We can't continue on error because it is required to bootstrap
-            the algorithm.
+            Fetch the base currency amount required to bootstrap
+            the algorithm against the exchange.
+
+            The algorithm cannot continue without this value.
+
             :param attempt_index:
-            :return:
+            :return capital_base: the amount of base currency available for
+            trading
             """
             try:
-                exchange.update_portfolio()
-                return exchange.portfolio
+                log.debug('retrieving capital base in {} to bootstrap '
+                          'exchange {}'.format(base_currency, exchange_name))
+                balances = exchange.get_balances()
             except ExchangeRequestError as e:
                 if attempt_index < 20:
                     sleep(5)
-                    return update_portfolio(attempt_index + 1)
+                    return fetch_capital_base(attempt_index + 1)
                 else:
                     raise ExchangeRequestErrorTooManyAttempts(
                         attempts=attempt_index,
                         error=e
                     )
 
-        portfolio = update_portfolio()
+            if base_currency in balances:
+                return balances[base_currency]
+            else:
+                raise BaseCurrencyNotFoundError(
+                    base_currency=base_currency,
+                    exchange=exchange_name
+                )
+
         sim_params = create_simulation_parameters(
             start=start,
             end=end,
-            capital_base=portfolio.starting_cash,
+            capital_base=fetch_capital_base(),
             emission_rate='minute',
             data_frequency='minute'
         )

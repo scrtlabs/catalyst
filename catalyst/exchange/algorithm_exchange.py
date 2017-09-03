@@ -61,7 +61,7 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         self.is_running = True
 
         self.retry_check_open_orders = 5
-        self.retry_update_portfolio = 5
+        self.retry_synchronize_portfolio = 5
         self.retry_get_open_orders = 5
         self.retry_order = 2
         self.retry_delay = 5
@@ -175,9 +175,9 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
     def updated_account(self):
         return self.exchange.account
 
-    def _update_portfolio(self, attempt_index=0):
+    def _synchronize_portfolio(self, attempt_index=0):
         try:
-            self.exchange.update_portfolio()
+            self.exchange.synchronize_portfolio()
 
             # Applying the updated last_sales_price to the positions
             # in the performance tracker. This seems a bit redundant
@@ -195,9 +195,9 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
             log.warn(
                 'update portfolio attempt {}: {}'.format(attempt_index, e)
             )
-            if attempt_index < self.retry_update_portfolio:
+            if attempt_index < self.retry_synchronize_portfolio:
                 sleep(self.retry_delay)
-                self._update_portfolio(attempt_index + 1)
+                self._synchronize_portfolio(attempt_index + 1)
             else:
                 raise ExchangePortfolioDataError(
                     data_type='update-portfolio',
@@ -293,7 +293,7 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         if not self.is_running:
             return
 
-        self._update_portfolio()
+        self._synchronize_portfolio()
 
         transactions = self._check_open_orders()
         for transaction in transactions:

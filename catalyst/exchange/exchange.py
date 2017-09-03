@@ -52,7 +52,7 @@ class Exchange:
             self._portfolio = ExchangePortfolio(
                 start_date=pd.Timestamp.utcnow()
             )
-            self.update_portfolio()
+            self.synchronize_portfolio()
 
         return self._portfolio
 
@@ -397,13 +397,14 @@ class Exchange:
         df = pd.concat(series)
         return df
 
-    def update_portfolio(self):
+    def synchronize_portfolio(self):
         """
         Update the portfolio cash and position balances based on the
         latest ticker prices.
 
         :return:
         """
+        log.debug('synchronizing portfolio with exchange {}'.format(self.name))
         balances = self.get_balances()
 
         base_position_available = balances[self.base_currency] \
@@ -417,6 +418,7 @@ class Exchange:
 
         portfolio = self._portfolio
         portfolio.cash = base_position_available
+        log.debug('found base currency balance: {}'.format(portfolio.cash))
 
         if portfolio.starting_cash is None:
             portfolio.starting_cash = portfolio.cash
