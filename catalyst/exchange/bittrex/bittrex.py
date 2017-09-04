@@ -122,6 +122,10 @@ class Bittrex(Exchange):
                 if order_status == 'INSUFFICIENT_FUNDS':
                     log.warn('not enough funds to create order')
                     return None
+                elif order_status == 'DUST_TRADE_DISALLOWED_MIN_VALUE_50K_SAT':
+                    log.warn('Your order is too small, order at least 50K'
+                             ' Satoshi')
+                    return None
                 else:
                     raise CreateOrderError(
                         exchange=self.name,
