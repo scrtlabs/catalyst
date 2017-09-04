@@ -119,7 +119,14 @@ class Bittrex(Exchange):
                 )
                 return order
             else:
-                raise CreateOrderError(exchange=self.name, error=order_status)
+                if order_status == 'INSUFFICIENT_FUNDS':
+                    log.warn('not enough funds to create order')
+                    return None
+                else:
+                    raise CreateOrderError(
+                        exchange=self.name,
+                        error=order_status
+                    )
         else:
             raise InvalidOrderStyle(exchange=self.name,
                                     style=style.__class__.__name__)
