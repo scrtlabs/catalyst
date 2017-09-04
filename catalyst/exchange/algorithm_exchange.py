@@ -401,8 +401,9 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         if order_id is not None:
             order = self.portfolio.open_orders[order_id]
             self.perf_tracker.process_order(order)
-
-        return order
+            return order
+        else:
+            return None
 
     def round_order(self, amount):
         """

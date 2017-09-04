@@ -531,10 +531,11 @@ class Exchange:
             )
         )
         order = self.create_order(asset, amount, is_buy, style)
-
-        self._portfolio.create_order(order)
-
-        return order.id
+        if order:
+            self._portfolio.create_order(order)
+            return order.id
+        else:
+            return None
 
     @abstractmethod
     def get_open_orders(self, asset):
