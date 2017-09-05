@@ -11,20 +11,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from time import sleep
-
-import numpy as np
-from matplotlib import pyplot as plt
-from matplotlib import style
+import matplotlib.dates as mdates
 import pandas as pd
 from catalyst.gens.sim_engine import (
     BAR,
-    SESSION_START,
-    MINUTE_END,
-    SESSION_END
+    SESSION_START
 )
 from logbook import Logger
-import matplotlib.dates as mdates
+from matplotlib import pyplot as plt
+from matplotlib import style
 
 log = Logger('LiveGraphClock')
 
@@ -164,11 +159,14 @@ class LiveGraphClock(object):
                 self._last_emit = current_minute
                 yield current_minute, BAR
 
-                self.draw_pnl()
-                self.draw_custom_signals()
-                self.draw_exposure()
+                try:
+                    self.draw_pnl()
+                    self.draw_custom_signals()
+                    self.draw_exposure()
 
-                plt.draw()
+                    plt.draw()
+                except Exception as e:
+                    log.warn('Unable to update the graph: {}'.format(e))
 
             else:
                 # I can't use the "animate" reactive approach here because
