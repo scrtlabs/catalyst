@@ -210,6 +210,12 @@ def ipython_only(option):
     help='The base currency used to calculate statistics '
          '(e.g. usd, btc, eth).',
 )
+@click.option(
+    '--live-graph/--no-live-graph',
+    is_flag=True,
+    default=False,
+    help='Display live graph.',
+)
 @click.pass_context
 def run(ctx,
         algofile,
@@ -227,7 +233,8 @@ def run(ctx,
         live,
         exchange_name,
         algo_namespace,
-        base_currency):
+        base_currency,
+        live_graph):
     """Run a backtest for the given algorithm.
     """
 
@@ -283,7 +290,8 @@ def run(ctx,
         live=live,
         exchange=exchange_name,
         algo_namespace=algo_namespace,
-        base_currency=base_currency
+        base_currency=base_currency,
+        live_graph=live_graph
     )
 
     if output == '-':

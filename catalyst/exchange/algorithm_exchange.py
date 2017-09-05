@@ -19,6 +19,7 @@ from time import sleep
 from os import listdir
 from os.path import isfile, join
 from collections import deque
+import numpy as np
 
 import logbook
 import pandas as pd
@@ -28,14 +29,16 @@ from catalyst.algorithm import TradingAlgorithm
 from catalyst.data.minute_bars import BcolzMinuteBarWriter, \
     BcolzMinuteBarReader
 from catalyst.errors import OrderInBeforeTradingStart
-from catalyst.exchange.exchange_clock import ExchangeClock
+from catalyst.exchange.simple_clock import SimpleClock
+from catalyst.exchange.live_graph_clock import LiveGraphClock
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     ExchangePortfolioDataError,
     ExchangeTransactionError
 )
 from catalyst.exchange.exchange_utils import get_exchange_minute_writer_root, \
-    save_algo_object, get_algo_object, get_algo_folder
+    save_algo_object, get_algo_object, get_algo_folder, get_algo_df, \
+    save_algo_df
 from catalyst.exchange.stats_utils import get_pretty_stats
 from catalyst.finance.performance.period import calc_period_stats
 from catalyst.gens.tradesimulation import AlgorithmSimulator
@@ -56,8 +59,19 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
     def __init__(self, *args, **kwargs):
         self.exchange = kwargs.pop('exchange', None)
         self.algo_namespace = kwargs.pop('algo_namespace', None)
-        self.orders = {}
+        self.live_graph = kwargs.pop('live_graph', None)
+
+        self._clock = None
         self.minute_stats = deque(maxlen=60)
+
+        self.pnl_stats = get_algo_df(self.algo_namespace, 'pnl_stats')
+
+        self.custom_signals_stats = \
+            get_algo_df(self.algo_namespace, 'custom_signals_stats')
+
+        self.exposure_stats = \
+            get_algo_df(self.algo_namespace, 'exposure_stats')
+
         self.is_running = True
 
         self.retry_check_open_orders = 5
@@ -122,6 +136,13 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
 
         sys.exit(0)
 
+    @property
+    def clock(self):
+        if self._clock is None:
+            return self._create_clock()
+        else:
+            return self._clock
+
     def _create_clock(self):
 
         # The calendar's execution times are the minutes over which we actually
@@ -137,10 +158,21 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         # This method is taken from TradingAlgorithm.
         # The clock has been replaced to use RealtimeClock
         # TODO: should we apply a time skew? not sure to understand the utility.
-        return ExchangeClock(
-            self.sim_params.sessions,
-            time_skew=self.exchange.time_skew
-        )
+
+        log.debug('creating clock')
+        if self.live_graph:
+            self._clock = LiveGraphClock(
+                self.sim_params.sessions,
+                time_skew=self.exchange.time_skew,
+                context=self
+            )
+        else:
+            self._clock = SimpleClock(
+                self.sim_params.sessions,
+                time_skew=self.exchange.time_skew
+            )
+
+        return self._clock
 
     def _create_generator(self, sim_params):
         if self.perf_tracker is None:
@@ -156,7 +188,7 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
             self,
             sim_params,
             self.data_portal,
-            self._create_clock(),
+            self.clock,
             self._create_benchmark_source(),
             self.restrictions,
             universe_func=self._calculate_universe
@@ -221,6 +253,49 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
                     attempts=attempt_index,
                     error=e
                 )
+
+    def add_pnl_stats(self, period_stats):
+        starting = period_stats['starting_cash']
+        current = period_stats['portfolio_value']
+        appreciation = (current / starting) - 1
+        perc = (appreciation * 100) if current != 0 else 0
+
+        log.debug('adding pnl stats: {:6f}%'.format(perc))
+
+        df = pd.DataFrame(
+            data=[dict(performance=perc)],
+            index=[period_stats['period_close']]
+        )
+        self.pnl_stats = pd.concat([self.pnl_stats, df])
+
+        save_algo_df(self.algo_namespace, 'pnl_stats', self.pnl_stats)
+
+    def add_custom_signals_stats(self, period_stats):
+        log.debug('adding custom signals stats: {}'.format(self.recorded_vars))
+        df = pd.DataFrame(
+            data=[self.recorded_vars],
+            index=[period_stats['period_close']],
+        )
+        self.custom_signals_stats = pd.concat([self.custom_signals_stats, df])
+
+        save_algo_df(self.algo_namespace, 'custom_signals_stats',
+                     self.custom_signals_stats)
+
+    def add_exposure_stats(self, period_stats):
+        data = dict(
+            long_exposure=period_stats['long_exposure'],
+            base_currency=period_stats['ending_cash']
+        )
+        log.debug('adding exposure stats: {}'.format(data))
+
+        df = pd.DataFrame(
+            data=[data],
+            index=[period_stats['period_close']],
+        )
+        self.exposure_stats = pd.concat([self.exposure_stats, df])
+
+        save_algo_df(self.algo_namespace, 'exposure_stats',
+                     self.exposure_stats)
 
     def prepare_period_stats(self, start_dt, end_dt):
         """
@@ -314,8 +389,13 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
 
             minute_stats = self.prepare_period_stats(
                 data.current_dt, data.current_dt + timedelta(minutes=1))
+
             # Saving the last hour in memory
             self.minute_stats.append(minute_stats)
+
+            self.add_pnl_stats(minute_stats)
+            self.add_custom_signals_stats(minute_stats)
+            self.add_exposure_stats(minute_stats)
 
             print_df = pd.DataFrame(list(self.minute_stats))
             log.debug(

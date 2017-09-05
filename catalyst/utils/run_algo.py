@@ -95,7 +95,8 @@ def _run(handle_data,
          live,
          exchange,
          algo_namespace,
-         base_currency):
+         base_currency,
+         live_graph):
     """Run a backtest for the given algorithm.
 
     This is shared between the cli and :func:`catalyst.run_algo`.
@@ -277,7 +278,8 @@ def _run(handle_data,
                 )
 
             env = TradingEnvironment(
-                load=partial(load_crypto_market_data, bundle=b, bundle_data=bundle_data, environ=environ),
+                load=partial(load_crypto_market_data, bundle=b,
+                             bundle_data=bundle_data, environ=environ),
                 bm_symbol='USDT_BTC',
                 trading_calendar=open_calendar,
                 asset_db_path=connstr,
@@ -338,7 +340,7 @@ def _run(handle_data,
 
     TradingAlgorithmClass = (
         partial(ExchangeTradingAlgorithm, exchange=exchange,
-                algo_namespace=algo_namespace)
+                algo_namespace=algo_namespace, live_graph=live_graph)
         if live and exchange else TradingAlgorithm)
 
     perf = TradingAlgorithmClass(
@@ -439,7 +441,8 @@ def run_algorithm(initialize,
                   live=False,
                   exchange_name=None,
                   base_currency=None,
-                  algo_namespace=None):
+                  algo_namespace=None,
+                  live_graph=False):
     """Run a trading algorithm.
 
     Parameters
@@ -552,5 +555,6 @@ def run_algorithm(initialize,
         live=live,
         exchange=exchange_name,
         algo_namespace=algo_namespace,
-        base_currency=base_currency
+        base_currency=base_currency,
+        live_graph=live_graph
     )
