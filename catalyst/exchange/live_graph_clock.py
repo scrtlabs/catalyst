@@ -10,6 +10,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from datetime import timedelta
 
 import matplotlib.dates as mdates
 import pandas as pd
@@ -25,8 +26,6 @@ log = Logger('LiveGraphClock')
 
 style.use('dark_background')
 
-days = mdates.DayLocator()
-hours = mdates.HourLocator()
 fmt = mdates.DateFormatter('%Y-%m-%d %H:%M')
 
 
@@ -36,10 +35,24 @@ class LiveGraphClock(object):
     This class is a drop-in replacement for
     :class:`zipline.gens.sim_engine.MinuteSimulationClock`.
 
-    This is a stripped down version because crypto exchanges run around the clock.
+    This mixes the clock with a live graph.
+
+    Note
+    ----
+    This seemingly awkward approach allows us to run the program using a single
+    thread. This is important because Matplotlib does not play nice with
+    multi-threaded environments. Zipline probably does not either.
+
+
+    Matplotlib has a pause() method which is a wrapper around time.sleep()
+    used in the SimpleClock. The key difference is that users
+    can still interact with the chart during the pause cycles. This is
+    what enables us to keep a single thread. This is also why we are not using
+    the 'animate' callback of Matplotlib. We need to direct access to the
+    __iter__ method in order to yield events to Zipline.
 
     The :param:`time_skew` parameter represents the time difference between
-    the Broker and the live trading machine's clock.
+    the exchange and the live trading machine's clock. It's not used currently.
     """
 
     def __init__(self, sessions, context, time_skew=pd.Timedelta('0s')):
@@ -55,13 +68,15 @@ class LiveGraphClock(object):
             self.context.algo_namespace))
 
         self.ax_pnl = fig.add_subplot(311)
-        self.draw_pnl()
 
         self.ax_custom_signals = fig.add_subplot(312, sharex=self.ax_pnl)
-        self.draw_custom_signals()
 
         self.ax_exposure = fig.add_subplot(313, sharex=self.ax_pnl)
-        self.draw_exposure()
+
+        if len(context.minute_stats) > 0:
+            self.draw_pnl()
+            self.draw_custom_signals()
+            self.draw_exposure()
 
         # rotates and right aligns the x labels, and moves the bottom of the
         # axes up to make room for them
@@ -73,10 +88,28 @@ class LiveGraphClock(object):
         plt.show()
 
     def format_ax(self, ax):
-        ax.xaxis.set_major_locator(hours)
+        """
+        Trying to assign reasonable parameters to the time axis.
+
+        TODO: room for improvement
+
+        :param ax:
+        :return:
+        """
+        ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
         ax.xaxis.set_major_formatter(fmt)
-        ax.xaxis.set_minor_locator(days)
+
+        locator = mdates.HourLocator(interval=4)
+        locator.MAXTICKS = 5000
+        ax.xaxis.set_minor_locator(locator)
+
+        datemin = pd.Timestamp.utcnow()
+        ax.set_xlim(datemin)
+
         ax.grid(True)
+
+    def set_legend(self, ax):
+        ax.legend(loc='upper left', ncol=1, fontsize=10, numpoints=1)
 
     def draw_pnl(self):
         ax = self.ax_pnl
@@ -90,13 +123,12 @@ class LiveGraphClock(object):
                 label='Performance'
                 )
 
-        ax.legend(loc='upper left', ncol=1, fontsize=10, numpoints=1)
-
         def perc(val):
             return '{:2f}'.format(val)
 
         ax.format_ydata = perc
 
+        self.set_legend(ax)
         self.format_ax(ax)
 
     def draw_custom_signals(self):
@@ -113,7 +145,8 @@ class LiveGraphClock(object):
                     linewidth=1.0,
                     label=column
                     )
-        ax.legend(loc='upper left', ncol=1, fontsize=10, numpoints=1)
+
+        self.set_legend(ax)
         self.format_ax(ax)
 
     def draw_exposure(self):
@@ -143,13 +176,14 @@ class LiveGraphClock(object):
                     ', '.join(symbols).upper()
                 )
                 )
-        ax.legend(loc='upper left', ncol=1, fontsize=10, numpoints=1)
+
+        self.set_legend(ax)
         self.format_ax(ax)
 
     def __iter__(self):
         yield pd.Timestamp.utcnow(), SESSION_START
 
-        while True:  # plot x^1, x^2, ..., x^4
+        while True:
             current_time = pd.Timestamp.utcnow()
             current_minute = current_time.floor('1 min')
 
@@ -171,5 +205,6 @@ class LiveGraphClock(object):
             else:
                 # I can't use the "animate" reactive approach here because
                 # I need to yield from the main loop.
+
                 # Workaround: https://stackoverflow.com/a/33050617/814633
                 plt.pause(1)
