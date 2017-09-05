@@ -172,4 +172,4 @@ class LiveGraphClock(object):
                 # I can't use the "animate" reactive approach here because
                 # I need to yield from the main loop.
                 # Workaround: https://stackoverflow.com/a/33050617/814633
-                plt.pause(0.001)
+                plt.pause(1)
