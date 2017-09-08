@@ -34,6 +34,13 @@ class ExchangeTransactionError(ZiplineError):
     ).strip()
 
 
+class ExchangeNotFoundError(ZiplineError):
+    msg = (
+        'Exchange {exchange_name} not found. Please specify exchanges '
+        'supported by Catalyst and verify spelling for accuracy.'
+    ).strip()
+
+
 class ExchangeAuthNotFound(ZiplineError):
     msg = (
         'Please create an auth.json file containing the api token and key for '

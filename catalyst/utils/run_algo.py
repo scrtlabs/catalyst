@@ -45,7 +45,7 @@ from catalyst.exchange.exchange_portfolio import ExchangePortfolio
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     ExchangeRequestErrorTooManyAttempts,
-    BaseCurrencyNotFoundError)
+    BaseCurrencyNotFoundError, ExchangeNotFoundError)
 from catalyst.exchange.exchange_utils import get_exchange_auth, \
     get_algo_object
 from logbook import Logger
@@ -150,37 +150,42 @@ def _run(handle_data,
 
     if live and exchange is not None:
         exchange_name = exchange
+
         start = pd.Timestamp.utcnow()
         end = start + timedelta(minutes=1439)
+        exchange_list = [x.strip().lower() for x in exchange.split(',')]
 
-        portfolio = get_algo_object(
-            algo_name=algo_namespace,
-            key='portfolio_{}'.format(exchange_name),
-            environ=environ
-        )
-        if portfolio is None:
-            portfolio = ExchangePortfolio(
-                start_date=pd.Timestamp.utcnow()
+        exchanges = dict()
+        for exchange_name in exchange_list:
+
+            portfolio = get_algo_object(
+                algo_name=algo_namespace,
+                key='portfolio_{}'.format(exchange_name),
+                environ=environ
             )
 
-        exchange_auth = get_exchange_auth(exchange_name)
-        if exchange_name == 'bitfinex':
-            exchange = Bitfinex(
-                key=exchange_auth['key'],
-                secret=exchange_auth['secret'],
-                base_currency=base_currency,
-                portfolio=portfolio
-            )
-        elif exchange_name == 'bittrex':
-            exchange = Bittrex(
-                key=exchange_auth['key'],
-                secret=exchange_auth['secret'],
-                base_currency=base_currency,
-                portfolio=portfolio
-            )
-        else:
-            raise NotImplementedError(
-                'exchange not supported: %s' % exchange_name)
+            if portfolio is None:
+                portfolio = ExchangePortfolio(
+                    start_date=pd.Timestamp.utcnow()
+                )
+
+            exchange_auth = get_exchange_auth(exchange_name)
+            if exchange_name == 'bitfinex':
+                exchanges[exchange_name] = Bitfinex(
+                    key=exchange_auth['key'],
+                    secret=exchange_auth['secret'],
+                    base_currency=base_currency,
+                    portfolio=portfolio
+                )
+            elif exchange_name == 'bittrex':
+                exchanges[exchange_name] = Bittrex(
+                    key=exchange_auth['key'],
+                    secret=exchange_auth['secret'],
+                    base_currency=base_currency,
+                    portfolio=portfolio
+                )
+            else:
+                raise ExchangeNotFoundError(exchange_name=exchange_name)
 
     open_calendar = get_calendar('OPEN')
     sim_params = create_simulation_parameters(
@@ -197,23 +202,24 @@ def _run(handle_data,
             exchange_tz='UTC',
             asset_db_path=None
         )
-        env.asset_finder = AssetFinderExchange(exchange)
+        env.asset_finder = AssetFinderExchange()
 
         data = DataPortalExchange(
-            exchange=exchange,
+            exchanges=exchanges,
             asset_finder=env.asset_finder,
             trading_calendar=open_calendar,
             first_trading_day=pd.to_datetime('today', utc=True)
         )
         choose_loader = None
 
-        def fetch_capital_base(attempt_index=0):
+        def fetch_capital_base(exchange, attempt_index=0):
             """
             Fetch the base currency amount required to bootstrap
             the algorithm against the exchange.
 
             The algorithm cannot continue without this value.
 
+            :param exchange: the targeted exchange
             :param attempt_index:
             :return capital_base: the amount of base currency available for
             trading
@@ -240,10 +246,15 @@ def _run(handle_data,
                     exchange=exchange_name
                 )
 
+        capital_base = 0
+        for exchange_name in exchanges:
+            exchange = exchanges[exchange_name]
+            capital_base += fetch_capital_base(exchange)
+
         sim_params = create_simulation_parameters(
             start=start,
             end=end,
-            capital_base=fetch_capital_base(),
+            capital_base=capital_base,
             emission_rate='minute',
             data_frequency='minute'
         )
@@ -339,9 +350,9 @@ def _run(handle_data,
         choose_loader = None
 
     TradingAlgorithmClass = (
-        partial(ExchangeTradingAlgorithm, exchange=exchange,
+        partial(ExchangeTradingAlgorithm, exchanges=exchanges,
                 algo_namespace=algo_namespace, live_graph=live_graph)
-        if live and exchange else TradingAlgorithm)
+        if live and exchanges else TradingAlgorithm)
 
     perf = TradingAlgorithmClass(
         namespace=namespace,

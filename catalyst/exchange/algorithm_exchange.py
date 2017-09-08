@@ -23,6 +23,7 @@ import numpy as np
 
 import logbook
 import pandas as pd
+from catalyst.utils.preprocess import preprocess
 
 import catalyst.protocol as zp
 from catalyst.algorithm import TradingAlgorithm
@@ -45,7 +46,7 @@ from catalyst.gens.tradesimulation import AlgorithmSimulator
 from catalyst.utils.api_support import (
     api_method,
     disallowed_in_before_trading_start)
-from catalyst.utils.input_validation import error_keywords
+from catalyst.utils.input_validation import error_keywords, ensure_upper_case
 
 log = logbook.Logger("ExchangeTradingAlgorithm")
 
@@ -57,7 +58,7 @@ class ExchangeAlgorithmExecutor(AlgorithmSimulator):
 
 class ExchangeTradingAlgorithm(TradingAlgorithm):
     def __init__(self, *args, **kwargs):
-        self.exchange = kwargs.pop('exchange', None)
+        self.exchanges = kwargs.pop('exchanges', None)
         self.algo_namespace = kwargs.pop('algo_namespace', None)
         self.live_graph = kwargs.pop('live_graph', None)
 
@@ -83,6 +84,7 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         self.stats_minutes = 5
 
         super(self.__class__, self).__init__(*args, **kwargs)
+        # TODO: fix precision before re-enabling
         # self._create_minute_writer()
 
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -97,6 +99,7 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
             writer = BcolzMinuteBarWriter.open(
                 root, self.sim_params.end_session)
         else:
+            # TODO: need to be able to write more precise numbers
             writer = BcolzMinuteBarWriter(
                 rootdir=root,
                 calendar=self.trading_calendar,
@@ -163,13 +166,11 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         if self.live_graph:
             self._clock = LiveGraphClock(
                 self.sim_params.sessions,
-                time_skew=self.exchange.time_skew,
                 context=self
             )
         else:
             self._clock = SimpleClock(
                 self.sim_params.sessions,
-                time_skew=self.exchange.time_skew
             )
 
         return self._clock
@@ -202,27 +203,31 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         portfolio directly.
         :return:
         """
-        return self.exchange.portfolio
+        # TODO: build cumulative portfolio
+        return self.perf_tracker.get_portfolio(False)
 
     def updated_account(self):
-        return self.exchange.account
+        return self.perf_tracker.get_account(False)
 
     def _synchronize_portfolio(self, attempt_index=0):
         try:
-            self.exchange.synchronize_portfolio()
+            for exchange_name in self.exchanges:
+                exchange = self.exchanges[exchange_name]
 
-            # Applying the updated last_sales_price to the positions
-            # in the performance tracker. This seems a bit redundant
-            # but it will make sense when we have multiple exchange portfolios
-            # feeding into the same performance tracker.
-            tracker = self.perf_tracker.todays_performance.position_tracker
-            for asset in self.exchange.portfolio.positions:
-                position = self.exchange.portfolio.positions[asset]
-                tracker.update_position(
-                    asset=asset,
-                    last_sale_date=position.last_sale_date,
-                    last_sale_price=position.last_sale_price
-                )
+                exchange.synchronize_portfolio()
+
+                # Applying the updated last_sales_price to the positions
+                # in the performance tracker. This seems a bit redundant
+                # but it will make sense when we have multiple exchange portfolios
+                # feeding into the same performance tracker.
+                tracker = self.perf_tracker.todays_performance.position_tracker
+                for asset in exchange.portfolio.positions:
+                    position = exchange.portfolio.positions[asset]
+                    tracker.update_position(
+                        asset=asset,
+                        last_sale_date=position.last_sale_date,
+                        last_sale_price=position.last_sale_price
+                    )
         except ExchangeRequestError as e:
             log.warn(
                 'update portfolio attempt {}: {}'.format(attempt_index, e)
@@ -239,7 +244,14 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
 
     def _check_open_orders(self, attempt_index=0):
         try:
-            return self.exchange.check_open_orders()
+            orders = list()
+            for exchange_name in self.exchanges:
+                exchange = self.exchanges[exchange_name]
+                exchange_orders = exchange.check_open_orders()
+
+                orders += exchange_orders
+
+            return orders
         except ExchangeRequestError as e:
             log.warn(
                 'check open orders attempt {}: {}'.format(attempt_index, e)
@@ -429,11 +441,13 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
             log.warn('unable to save minute perfs to disk: {}'.format(e))
 
         try:
-            save_algo_object(
-                algo_name=self.algo_namespace,
-                key='portfolio_{}'.format(self.exchange.name),
-                obj=self.exchange.portfolio
-            )
+            for exchange_name in self.exchanges:
+                exchange = self.exchanges[exchange_name]
+                save_algo_object(
+                    algo_name=self.algo_namespace,
+                    key='portfolio_{}'.format(exchange_name),
+                    obj=exchange.portfolio
+                )
         except Exception as e:
             log.warn('unable to save portfolio to disk: {}'.format(e))
 
@@ -445,9 +459,10 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
                style=None,
                attempt_index=0):
         try:
-            return self.exchange.order(asset, amount, limit_price,
-                                       stop_price,
-                                       style)
+            exchange = self.exchanges[asset.exchange]
+            return exchange.order(asset, amount, limit_price,
+                                  stop_price,
+                                  style)
         except ExchangeRequestError as e:
             log.warn(
                 'order attempt {}: {}'.format(attempt_index, e)
@@ -500,7 +515,18 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
 
     def _get_open_orders(self, asset=None, attempt_index=0):
         try:
-            return self.exchange.get_open_orders(asset)
+            if asset:
+                exchange = self.exchanges[asset.exchange]
+                return exchange.get_open_orders(asset)
+
+            else:
+                open_orders = []
+                for exchange_name in self.exchanges:
+                    exchange = self.exchanges[exchange_name]
+                    exchange_orders = exchange.get_open_orders()
+                    open_orders.append(exchange_orders)
+
+                return open_orders
         except ExchangeRequestError as e:
             log.warn(
                 'open orders attempt {}: {}'.format(attempt_index, e)
@@ -522,12 +548,54 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         return self._get_open_orders(asset)
 
     @api_method
-    def get_order(self, order_id):
-        return self.exchange.get_order(order_id)
+    def get_order(self, order_id, exchange_name):
+        exchange = self.exchanges[exchange_name]
+        return exchange.get_order(order_id)
 
     @api_method
-    def cancel_order(self, order_param):
+    def cancel_order(self, order_param, exchange_name):
+        exchange = self.exchanges[exchange_name]
+
         order_id = order_param
         if isinstance(order_param, zp.Order):
             order_id = order_param.id
-        self.exchange.cancel_order(order_id)
+
+        exchange.cancel_order(order_id)
+
+    @api_method
+    @preprocess(symbol_str=ensure_upper_case)
+    def symbol(self, symbol_str, exchange_name=None):
+        """Lookup an Equity by its ticker symbol.
+
+        Parameters
+        ----------
+        symbol_str : str
+            The ticker symbol for the equity to lookup.
+
+        Returns
+        -------
+        equity : Equity
+            The equity that held the ticker symbol on the current
+            symbol lookup date.
+
+        Raises
+        ------
+        SymbolNotFound
+            Raised when the symbols was not held on the current lookup date.
+
+        See Also
+        --------
+        :func:`catalyst.api.set_symbol_lookup_date`
+        """
+        # If the user has not set the symbol lookup date,
+        # use the end_session as the date for sybmol->sid resolution.
+        _lookup_date = self._symbol_lookup_date \
+            if self._symbol_lookup_date is not None \
+            else self.sim_params.end_session
+
+        exchange = self.exchanges[exchange_name]
+        return self.asset_finder.lookup_symbol(
+            symbol_str,
+            as_of_date=_lookup_date,
+            exchange=exchange
+        )

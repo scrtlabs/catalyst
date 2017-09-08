@@ -12,7 +12,8 @@
 # limitations under the License.
 
 from time import sleep
-
+import pandas as pd
+from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
 from catalyst.data.data_portal import DataPortal
@@ -25,8 +26,8 @@ log = Logger('DataPortalExchange')
 
 
 class DataPortalExchange(DataPortal):
-    def __init__(self, exchange, *args, **kwargs):
-        self.exchange = exchange
+    def __init__(self, exchanges, *args, **kwargs):
+        self.exchanges = exchanges
 
         # TODO: put somewhere accessible by each algo
         self.retry_get_history_window = 5
@@ -45,14 +46,43 @@ class DataPortalExchange(DataPortal):
                             ffill=True,
                             attempt_index=0):
         try:
-            return self.exchange.get_history_window(
-                assets,
-                end_dt,
-                bar_count,
-                frequency,
-                field,
-                data_frequency,
-                ffill)
+            exchange_assets = dict()
+            for asset in assets:
+                if asset.exchange not in exchange_assets:
+                    exchange_assets[asset.exchange] = list()
+
+                exchange_assets[asset.exchange].append(asset)
+
+            if len(exchange_assets) > 1:
+                df_list = []
+                for exchange_name in exchange_assets:
+                    exchange = self.exchanges[exchange_name]
+                    assets = exchange_assets[exchange_name]
+
+                    df = exchange.get_history_window(
+                        assets,
+                        end_dt,
+                        bar_count,
+                        frequency,
+                        field,
+                        data_frequency,
+                        ffill)
+
+                    df_list.append(df)
+
+                return pd.concat(df_list)
+
+            else:
+                exchange = self.exchanges[exchange_assets.keys()[0]]
+                return exchange.get_history_window(
+                    assets,
+                    end_dt,
+                    bar_count,
+                    frequency,
+                    field,
+                    data_frequency,
+                    ffill)
+
         except ExchangeRequestError as e:
             log.warn(
                 'get history attempt {}: {}'.format(attempt_index, e)
@@ -93,8 +123,30 @@ class DataPortalExchange(DataPortal):
     def _get_spot_value(self, assets, field, dt, data_frequency,
                         attempt_index=0):
         try:
-            return self.exchange.get_spot_value(assets, field, dt,
-                                                data_frequency)
+            if isinstance(assets, TradingPair):
+                exchange = self.exchanges[assets.exchange]
+                return exchange.get_spot_value(
+                    assets, field, dt, data_frequency)
+
+            else:
+                exchange_assets = dict()
+                for asset in assets:
+                    if asset.exchange not in exchange_assets:
+                        exchange_assets[asset.exchange] = list()
+
+                    exchange_assets[asset.exchange].append(asset)
+
+                spot_values = []
+                for exchange_name in exchange_assets:
+                    exchange = self.exchanges[exchange_name]
+                    assets = exchange_assets[exchange_name]
+                    exchange_spot_values = exchange.get_spot_value(
+                        assets, field, dt, data_frequency)
+
+                    spot_values += exchange_spot_values
+
+                return spot_values
+
         except ExchangeRequestError as e:
             log.warn(
                 'get spot value attempt {}: {}'.format(attempt_index, e)

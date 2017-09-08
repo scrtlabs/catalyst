@@ -4,8 +4,7 @@ log = Logger('AssetFinderExchange')
 
 
 class AssetFinderExchange(object):
-    def __init__(self, exchange):
-        self.exchange = exchange
+    def __init__(self):
         self._asset_cache = {}
 
     @property
@@ -47,7 +46,8 @@ class AssetFinderExchange(object):
                 log.info('fetching asset: {}'.format(sid))
         return list()
 
-    def lookup_symbol(self, symbol, as_of_date, fuzzy=False):
+    def lookup_symbol(self, symbol, as_of_date, exchange,
+                      fuzzy=False):
         """Lookup an asset by symbol.
 
         Parameters
@@ -81,11 +81,12 @@ class AssetFinderExchange(object):
             there are multiple candidates for the given ``symbol`` on the
             ``as_of_date``.
         """
-        log.debug('looking up symbol: {}'.format(symbol))
+        log.debug('looking up symbol: {} {}'.format(symbol, exchange.name))
 
-        if symbol in self._asset_cache:
-            return self._asset_cache[symbol]
+        key = ','.join([exchange.name, symbol])
+        if key in self._asset_cache:
+            return self._asset_cache[key]
         else:
-            asset = self.exchange.get_asset(symbol)
-            self._asset_cache[symbol] = asset
+            asset = exchange.get_asset(symbol)
+            self._asset_cache[key] = asset
             return asset
