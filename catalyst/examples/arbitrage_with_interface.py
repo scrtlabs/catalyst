@@ -1,6 +1,7 @@
 from logbook import Logger
 
 from catalyst.api import (
+    record,
     order,
     symbol,
     get_open_orders
@@ -26,12 +27,12 @@ def initialize(context):
         symbol(context.trading_pair_symbol, context.selling_exchange.name)
 
     context.entry_points = [
-        dict(gap=0.01, amount=0.05),
-        dict(gap=0.02, amount=0.1),
+        dict(gap=0.03, amount=0.05),
+        dict(gap=0.04, amount=0.1),
+        dict(gap=0.05, amount=0.5),
     ]
     context.exit_points = [
-        dict(gap=0.01, amount=0.05),
-        dict(gap=-0.02, amount=0.01),
+        dict(gap=-0.02, amount=0.5),
     ]
 
     context.MAX_POSITIONS = 50
@@ -168,6 +169,7 @@ def handle_data(context, data):
             gap_percent=gap * 100
         )
     )
+    record(buying_price=buying_price, selling_price=selling_price, gap=gap)
 
     for exchange in context.trading_pairs:
         asset = context.trading_pairs[exchange]

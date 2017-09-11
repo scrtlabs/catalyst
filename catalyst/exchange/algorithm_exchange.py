@@ -409,6 +409,9 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
             self.add_pnl_stats(minute_stats)
             if self.recorded_vars:
                 self.add_custom_signals_stats(minute_stats)
+                recorded_cols = self.recorded_vars.keys()
+            else:
+                recorded_cols = None
 
             self.add_exposure_stats(minute_stats)
 
@@ -416,7 +419,11 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
             log.debug(
                 'statistics for the last {stats_minutes} minutes:\n{stats}'.format(
                     stats_minutes=self.stats_minutes,
-                    stats=get_pretty_stats(print_df, self.stats_minutes)
+                    stats=get_pretty_stats(
+                        stats_df=print_df,
+                        recorded_cols=recorded_cols,
+                        num_rows=self.stats_minutes
+                    )
                 ))
 
             today = pd.to_datetime('today', utc=True)
