@@ -1,4 +1,16 @@
 {
+  "neobtc": {
+    "symbol": "neo_btc",
+    "start_date": "2017-09-07"
+  },
+  "neousd": {
+    "symbol": "neo_usd",
+    "start_date": "2017-09-07"
+  },
+  "neoeth": {
+    "symbol": "neo_eth",
+    "start_date": "2017-09-07"
+  },
   "btcusd": {
     "symbol": "btc_usd",
     "start_date": "2010-01-01"

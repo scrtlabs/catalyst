@@ -94,6 +94,13 @@ class OrderNotFound(ZiplineError):
     ).strip()
 
 
+class OrphanOrderError(ZiplineError):
+    msg = (
+        'Order {order_id} found in exchange {exchange} but not tracked by '
+        'the algorithm.'
+    ).strip()
+
+
 class OrderCancelError(ZiplineError):
     msg = (
         'Unable to cancel order {order_id} on exchange {exchange} {error}.'
@@ -118,3 +125,18 @@ class MismatchingBaseCurrencies(ZiplineError):
         'Unable to trade with base currency {base_currency} when the '
         'algorithm uses {algo_currency}.'
     ).strip()
+
+
+class MismatchingBaseCurrenciesExchanges(ZiplineError):
+    msg = (
+        'Unable to trade with base currency {base_currency} when the '
+        'exchange {exchange_name} users {exchange_currency}.'
+    ).strip()
+
+
+class SymbolNotFoundOnExchange(ZiplineError):
+    """
+    Raised when a symbol() call contains a non-existant symbol.
+    """
+    msg = ('Symbol {symbol} not found on exchange {exchange}. '
+           'Choose from: {supported_symbols}').strip()

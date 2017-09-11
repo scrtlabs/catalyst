@@ -22,6 +22,9 @@ from logbook import Logger
 from matplotlib import pyplot as plt
 from matplotlib import style
 
+from catalyst.exchange.exchange_errors import \
+    MismatchingBaseCurrenciesExchanges
+
 log = Logger('LiveGraphClock')
 
 style.use('dark_background')
@@ -154,17 +157,31 @@ class LiveGraphClock(object):
         context = self.context
         df = context.exposure_stats
 
+        # TODO: list exchanges in graph
+        base_currency = None
+        positions = []
+        for exchange_name in context.exchanges:
+            exchange = context.exchanges[exchange_name]
+
+            if not base_currency:
+                base_currency = exchange.base_currency
+            elif base_currency != exchange.base_currency:
+                raise MismatchingBaseCurrenciesExchanges(
+                    base_currency=base_currency,
+                    exchange_name=exchange.name,
+                    exchange_currency=exchange.base_currency
+                )
+
+            positions += exchange.portfolio.positions
+
         ax.clear()
         ax.set_title('Exposure')
         ax.plot(df.index, df['base_currency'], '-',
                 color='green',
                 linewidth=1.0,
-                label='Base Currency: {}'.format(
-                    context.exchange.base_currency.upper()
-                )
+                label='Base Currency: {}'.format(base_currency.upper())
                 )
 
-        positions = context.exchange.portfolio.positions
         symbols = []
         for position in positions:
             symbols.append(position.symbol)
@@ -172,10 +189,7 @@ class LiveGraphClock(object):
         ax.plot(df.index, df['long_exposure'], '-',
                 color='blue',
                 linewidth=1.0,
-                label='Long Exposure: {}'.format(
-                    ', '.join(symbols).upper()
-                )
-                )
+                label='Long Exposure: {}'.format(', '.join(symbols).upper()))
 
         self.set_legend(ax)
         self.format_ax(ax)

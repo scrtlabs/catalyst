@@ -22,6 +22,7 @@ class Bittrex(Exchange):
     def __init__(self, key, secret, base_currency, portfolio=None):
         self.api = Bittrex_api(key=key, secret=secret.encode('UTF-8'))
         self.name = 'bittrex'
+        self.color = 'blue'
         self.base_currency = base_currency
         self._portfolio = portfolio
 

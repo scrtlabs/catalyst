@@ -14,7 +14,7 @@ from catalyst.errors import (
     SymbolNotFound,
 )
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
-    InvalidOrderStyle, BaseCurrencyNotFoundError
+    InvalidOrderStyle, BaseCurrencyNotFoundError, SymbolNotFoundOnExchange
 from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
     ExchangeLimitOrder, ExchangeStopOrder
 from catalyst.exchange.exchange_portfolio import ExchangePortfolio
@@ -30,7 +30,6 @@ class Exchange:
 
     def __init__(self):
         self.name = None
-        self.trading_pairs = None
         self.assets = {}
         self._portfolio = None
         self.minute_writer = None
@@ -110,7 +109,12 @@ class Exchange:
                 asset = self.assets[key]
 
         if not asset:
-            raise SymbolNotFound(symbol=symbol)
+            supported_symbols = [pair.symbol for pair in self.assets.values()]
+            raise SymbolNotFoundOnExchange(
+                symbol=symbol,
+                exchange=self.name,
+                supported_symbols=supported_symbols
+            )
 
         return asset
 

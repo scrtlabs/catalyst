@@ -11,42 +11,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+import pickle
 import signal
 import sys
-import pickle
+from collections import deque
 from datetime import timedelta
-from time import sleep
 from os import listdir
 from os.path import isfile, join
-from collections import deque
-import numpy as np
+from time import sleep
 
 import logbook
 import pandas as pd
-from catalyst.utils.preprocess import preprocess
+from catalyst.assets._assets import TradingPair
 
 import catalyst.protocol as zp
 from catalyst.algorithm import TradingAlgorithm
 from catalyst.data.minute_bars import BcolzMinuteBarWriter, \
     BcolzMinuteBarReader
 from catalyst.errors import OrderInBeforeTradingStart
-from catalyst.exchange.simple_clock import SimpleClock
-from catalyst.exchange.live_graph_clock import LiveGraphClock
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     ExchangePortfolioDataError,
-    ExchangeTransactionError
-)
+    ExchangeTransactionError,
+    OrphanOrderError)
 from catalyst.exchange.exchange_utils import get_exchange_minute_writer_root, \
     save_algo_object, get_algo_object, get_algo_folder, get_algo_df, \
     save_algo_df
+from catalyst.exchange.live_graph_clock import LiveGraphClock
+from catalyst.exchange.simple_clock import SimpleClock
 from catalyst.exchange.stats_utils import get_pretty_stats
 from catalyst.finance.performance.period import calc_period_stats
 from catalyst.gens.tradesimulation import AlgorithmSimulator
 from catalyst.utils.api_support import (
     api_method,
     disallowed_in_before_trading_start)
-from catalyst.utils.input_validation import error_keywords, ensure_upper_case
+from catalyst.utils.input_validation import error_keywords, ensure_upper_case, \
+    expect_types
+from catalyst.utils.preprocess import preprocess
 
 log = logbook.Logger("ExchangeTradingAlgorithm")
 
@@ -406,7 +407,9 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
             self.minute_stats.append(minute_stats)
 
             self.add_pnl_stats(minute_stats)
-            self.add_custom_signals_stats(minute_stats)
+            if self.recorded_vars:
+                self.add_custom_signals_stats(minute_stats)
+
             self.add_exposure_stats(minute_stats)
 
             print_df = pd.DataFrame(list(self.minute_stats))
@@ -481,23 +484,50 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
 
     @api_method
     @disallowed_in_before_trading_start(OrderInBeforeTradingStart())
+    @expect_types(asset=TradingPair)
     def order(self,
               asset,
               amount,
               limit_price=None,
               stop_price=None,
               style=None):
+        """
+        We use the exchange specific portfolio to place orders.
+        The cumulative portfolio does not contain open orders but exchange
+        portfolios do.
+
+        :param asset: TradingPair
+        :param amount: float
+        :param limit_price: float
+        :param stop_price: float
+        :param style: Style
+        :return order: Order
+            The catalyst order object or None
+        """
+
         amount, style = self._calculate_order(asset, amount,
                                               limit_price, stop_price,
                                               style)
 
         order_id = self._order(asset, amount, limit_price, stop_price, style)
 
+        exchange = self.exchanges[asset.exchange]
+        exchange_portfolio = exchange.portfolio
         if order_id is not None:
-            order = self.portfolio.open_orders[order_id]
-            self.perf_tracker.process_order(order)
-            return order
+
+            if order_id in exchange_portfolio.open_orders:
+                order = exchange_portfolio.open_orders[order_id]
+                self.perf_tracker.process_order(order)
+                return order
+
+            else:
+                raise OrphanOrderError(
+                    order_id=order_id,
+                    exchange=exchange.name
+                )
         else:
+            log.warn('unable to order {} {} on exchange {}'.format(
+                amount, asset.symbol, asset.exchange))
             return None
 
     def round_order(self, amount):
