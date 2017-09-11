@@ -1,12 +1,9 @@
-import talib
 from logbook import Logger
 
 from catalyst.api import (
     order,
-    order_target_percent,
     symbol,
-    record,
-    get_open_orders,
+    get_open_orders
 )
 from catalyst.exchange.stats_utils import get_pretty_stats
 from catalyst.utils.run_algo import run_algorithm
@@ -18,23 +15,23 @@ log = Logger(algo_namespace)
 def initialize(context):
     log.info('initializing arbitrage algorithm')
 
-    context.buying_exchange = 'bittrex'
-    context.selling_exchange = 'bitfinex'
+    context.buying_exchange = context.exchanges['bittrex']
+    context.selling_exchange = context.exchanges['bitfinex']
 
     context.trading_pair_symbol = 'neo_eth'
     context.trading_pairs = dict()
     context.trading_pairs[context.buying_exchange] = \
-        symbol(context.trading_pair_symbol, context.buying_exchange)
+        symbol(context.trading_pair_symbol, context.buying_exchange.name)
     context.trading_pairs[context.selling_exchange] = \
-        symbol(context.trading_pair_symbol, context.selling_exchange)
+        symbol(context.trading_pair_symbol, context.selling_exchange.name)
 
     context.entry_points = [
-        dict(gap=0.001, amount=0.05),
-        dict(gap=0.002, amount=0.1),
+        dict(gap=0.01, amount=0.05),
+        dict(gap=0.02, amount=0.1),
     ]
     context.exit_points = [
-        dict(gap=0, amount=0.05),
-        dict(gap=-0.001, amount=0.01),
+        dict(gap=0.01, amount=0.05),
+        dict(gap=-0.02, amount=0.01),
     ]
 
     context.MAX_POSITIONS = 50
@@ -43,66 +40,95 @@ def initialize(context):
     pass
 
 
-def place_order(context, amount, buying_price, selling_price,
-                action):
+def place_order(context, amount, buying_price, selling_price, action):
     if action == 'enter':
-        buying_exchange = context.exchanges[context.buying_exchange]
-        buy_price = buying_price
+        enter_exchange = context.buying_exchange
+        entry_price = buying_price
 
-        selling_exchange = context.exchanges[context.selling_exchange]
-        sell_price = selling_price
+        exit_exchange = context.selling_exchange
+        exit_price = selling_price
 
     elif action == 'exit':
-        buying_exchange = context.exchanges[context.selling_exchange]
-        buy_price = selling_price
+        enter_exchange = context.selling_exchange
+        entry_price = selling_price
 
-        selling_exchange = context.exchanges[context.buying_exchange]
-        sell_price = buying_price
+        exit_exchange = context.buying_exchange
+        exit_price = buying_price
 
     else:
         raise ValueError('invalid order action')
 
-    base_currency = buying_exchange.base_currency
-    base_currency_amount = buying_exchange.portfolio.cash
+    base_currency = enter_exchange.base_currency
+    base_currency_amount = enter_exchange.portfolio.cash
 
-    sell_balances = selling_exchange.get_balances()
-    sell_currency = context.trading_pairs[
+    exit_balances = exit_exchange.get_balances()
+    exit_currency = context.trading_pairs[
         context.selling_exchange].market_currency
 
-    if sell_currency in sell_balances:
-        market_currency_amount = sell_balances[sell_currency]
+    if exit_currency in exit_balances:
+        market_currency_amount = exit_balances[exit_currency]
     else:
-        log.warn('the selling exchange {} does not hold currency {}'.format(
-            selling_exchange.name, sell_currency
-        ))
+        log.warn(
+            'the selling exchange {exchange_name} does not hold '
+            'currency {currency}'.format(
+                exchange_name=exit_exchange.name,
+                currency=exit_currency
+            )
+        )
         return
 
-    if base_currency_amount < amount:
-        log.warn('not enough {} ({}) to buy {}, adjusting the amount'.format(
-            base_currency, base_currency_amount, amount))
-        amount = base_currency_amount
+    if base_currency_amount < (amount * entry_price):
+        adj_amount = base_currency_amount / entry_price
+        log.warn(
+            'not enough {base_currency} ({base_currency_amount}) to buy '
+            '{amount}, adjusting the amount to {adj_amount}'.format(
+                base_currency=base_currency,
+                base_currency_amount=base_currency_amount,
+                amount=amount,
+                adj_amount=adj_amount
+            )
+        )
+        amount = adj_amount
     elif market_currency_amount < amount:
-        log.warn('not enough {} ({}) to sell {}, aborting'.format(
-            sell_currency, market_currency_amount, amount))
+        log.warn(
+            'not enough {currency} ({currency_amount}) to sell '
+            '{amount}, aborting'.format(
+                currency=exit_currency,
+                currency_amount=market_currency_amount,
+                amount=amount
+            )
+        )
         return
 
-    adj_buy_price = buy_price * (1 + context.SLIPPAGE_ALLOWED)
-    log.info('buying {} limit at {}{} on {}'.format(
-        amount, buying_price, context.trading_pair_symbol,
-        buying_exchange.name))
+    adj_buy_price = entry_price * (1 + context.SLIPPAGE_ALLOWED)
+    log.info(
+        'buying {amount} {trading_pair} on {exchange_name} with price '
+        'limit {limit_price}'.format(
+            amount=amount,
+            trading_pair=context.trading_pair_symbol,
+            exchange_name=enter_exchange.name,
+            limit_price=adj_buy_price
+        )
+    )
     order(
-        asset=context.trading_pairs[buying_exchange],
+        asset=context.trading_pairs[enter_exchange],
         amount=amount,
         limit_price=adj_buy_price
     )
 
-    adj_sell_price = sell_price * (1 - context.SLIPPAGE_ALLOWED)
-    log.info('selling {} limit at {}{} on {}'.format(
-        amount, adj_sell_price, context.trading_pair_symbol,
-        selling_exchange.name))
+    adj_sell_price = exit_price * (1 - context.SLIPPAGE_ALLOWED)
+    log.info(
+        'selling {amount} {trading_pair} on {exchange_name} with price '
+        'limit {limit_price}'.format(
+            amount=-amount,
+            trading_pair=context.trading_pair_symbol,
+            exchange_name=exit_exchange.name,
+            limit_price=adj_sell_price
+        )
+    )
     order(
-        asset=context.trading_pairs[selling_exchange],
-        amount=amount,
+        asset=context.trading_pairs[exit_exchange],
+        amount=-amount,
         limit_price=adj_sell_price
     )
     pass
@@ -113,8 +139,9 @@ def handle_data(context, data):
 
     buying_price = data.current(
         context.trading_pairs[context.buying_exchange], 'price')
+
     log.info('price on buying exchange {exchange}: {price}'.format(
-        exchange=context.buying_exchange.upper(),
+        exchange=context.buying_exchange.name.upper(),
         price=buying_price,
     ))
 
@@ -122,7 +149,7 @@ def handle_data(context, data):
         context.trading_pairs[context.selling_exchange], 'price')
 
     log.info('price on selling exchange {exchange}: {price}'.format(
-        exchange=context.selling_exchange.upper(),
+        exchange=context.selling_exchange.name.upper(),
         price=selling_price,
     ))
 
@@ -135,7 +162,26 @@ def handle_data(context, data):
     #   selling price - buying price / buying price
     #   50 - 25 / 25 = 1
     gap = (selling_price - buying_price) / buying_price
-    log.info('the price gap: {} ({}%)'.format(gap, gap * 100))
+    log.info(
+        'the price gap: {gap} ({gap_percent}%)'.format(
+            gap=gap,
+            gap_percent=gap * 100
+        )
+    )
+
+    for exchange in context.trading_pairs:
+        asset = context.trading_pairs[exchange]
+
+        orders = get_open_orders(asset)
+        if orders:
+            log.info(
+                'found {order_count} open orders on {exchange_name} '
+                'skipping bar until all open orders execute'.format(
+                    order_count=len(orders),
+                    exchange_name=exchange.name
+                )
+            )
+            return
 
     # Consider the least ambitious entry point first
     # Override of wider gap is found
@@ -151,7 +197,13 @@ def handle_data(context, data):
 
     if buy_amount:
         log.info('found buy trigger for amount: {}'.format(buy_amount))
-        place_order(context, buy_amount, buying_price, selling_price, 'enter')
+        place_order(
+            context=context,
+            amount=buy_amount,
+            buying_price=buying_price,
+            selling_price=selling_price,
+            action='enter'
+        )
 
     else:
         # Consider the narrowest exit gap first
@@ -169,8 +221,13 @@ def handle_data(context, data):
 
         if sell_amount:
             log.info('found sell trigger for amount: {}'.format(sell_amount))
-            place_order(context, sell_amount, buying_price, selling_price,
-                        'exit')
+            place_order(
+                context=context,
+                amount=sell_amount,
+                buying_price=buying_price,
+                selling_price=selling_price,
+                action='exit'
+            )
 
 
 def analyze(context, stats):
