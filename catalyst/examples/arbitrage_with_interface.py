@@ -16,13 +16,22 @@ log = Logger(algo_namespace)
 def initialize(context):
     log.info('initializing arbitrage algorithm')
 
+    # The context contains a new "exchanges" attribute which is a dictionary
+    # of exchange objects by exchange name. This allow easy access to the
+    # exchanges.
     context.buying_exchange = context.exchanges['bittrex']
     context.selling_exchange = context.exchanges['bitfinex']
 
     context.trading_pair_symbol = 'neo_eth'
     context.trading_pairs = dict()
+
+    # Note the second parameter of the symbol() method
+    # Passing the exchange name here returns a TradingPair object including
+    # the exchange information. This allow all other operations using
+    # the TradingPair to target the correct exchange.
     context.trading_pairs[context.buying_exchange] = \
         symbol(context.trading_pair_symbol, context.buying_exchange.name)
+
     context.trading_pairs[context.selling_exchange] = \
         symbol(context.trading_pair_symbol, context.selling_exchange.name)
 
@@ -35,13 +44,28 @@ def initialize(context):
         dict(gap=-0.02, amount=0.5),
     ]
 
-    context.MAX_POSITIONS = 50
     context.SLIPPAGE_ALLOWED = 0.02
-
     pass
 
 
-def place_order(context, amount, buying_price, selling_price, action):
+def place_orders(context, amount, buying_price, selling_price, action):
+    """
+    This method will always place two orders of the same amount to keep
+    the currency position the same as it moves between the two exchanges.
+
+    :param context: TradingAlgorithm
+    :param amount: float
+        The trading pair amount to trade on both exchanges.
+    :param buying_price: float
+        The current trading pair price on the buying exchange.
+    :param selling_price: float
+        The current trading pair price on the selling exchange.
+    :param action: string
+        "enter": buys on the buying exchange and sells on the selling exchange
+        "exit": buys on the selling exchange and sells on the buying exchange
+
+    :return:
+    """
     if action == 'enter':
         enter_exchange = context.buying_exchange
         entry_price = buying_price
@@ -90,6 +114,7 @@ def place_order(context, amount, buying_price, selling_price, action):
             )
         )
         amount = adj_amount
+
     elif market_currency_amount < amount:
         log.warn(
             'not enough {currency} ({currency_amount}) to sell '
@@ -171,6 +196,7 @@ def handle_data(context, data):
     )
     record(buying_price=buying_price, selling_price=selling_price, gap=gap)
 
+    # Waiting for orders to close before initiating new ones
     for exchange in context.trading_pairs:
         asset = context.trading_pairs[exchange]
 
@@ -199,7 +225,7 @@ def handle_data(context, data):
 
     if buy_amount:
         log.info('found buy trigger for amount: {}'.format(buy_amount))
-        place_order(
+        place_orders(
             context=context,
             amount=buy_amount,
             buying_price=buying_price,
@@ -223,7 +249,7 @@ def handle_data(context, data):
 
         if sell_amount:
             log.info('found sell trigger for amount: {}'.format(sell_amount))
-            place_order(
+            place_orders(
                 context=context,
                 amount=sell_amount,
                 buying_price=buying_price,
