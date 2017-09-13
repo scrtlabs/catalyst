@@ -105,7 +105,7 @@ class PoloniexBundle(BaseCryptoPricingBundle):
         # BcolzDailyBarReader introduces a 1/1000 factor in the way pricing is stored
         # on disk, which we compensate here to get the right pricing amounts
         # ref: data/us_equity_pricing.py
-        scale = 1000
+        scale = 1
         raw.loc[:, 'open'] /= scale
         raw.loc[:, 'high'] /= scale
         raw.loc[:, 'low'] /= scale
