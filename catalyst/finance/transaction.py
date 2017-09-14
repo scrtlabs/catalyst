@@ -68,7 +68,7 @@ def create_transaction(order, dt, price, amount):
 
     transaction = Transaction(
         asset=order.asset,
-        amount=amounts,
+        amount=amount,
         dt=dt,
         price=price,
         order_id=order.id
