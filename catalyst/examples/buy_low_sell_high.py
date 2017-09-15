@@ -38,6 +38,8 @@ def initialize(context):
     context.retry_update_portfolio = 10
     context.retry_order = 5
 
+    context.swallow_errors = True
+
     context.errors = []
     pass
 
@@ -49,6 +51,7 @@ def _handle_data(context, data):
         bar_count=20,
         frequency='15m'
     )
+
     rsi = talib.RSI(prices.values, timeperiod=14)[-1]
     log.info('got rsi: {}'.format(rsi))
 
@@ -135,11 +138,11 @@ def _handle_data(context, data):
 
 def handle_data(context, data):
     log.info('handling bar {}'.format(data.current_dt))
-    # try:
-    _handle_data(context, data)
-    # except Exception as e:
-    #     log.warn('aborting the bar on error {}'.format(e))
-    #     context.errors.append(e)
+    try:
+        _handle_data(context, data)
+    except Exception as e:
+        log.warn('aborting the bar on error {}'.format(e))
+        context.errors.append(e)
 
     log.info('completed bar {}, total execution errors {}'.format(
         data.current_dt,

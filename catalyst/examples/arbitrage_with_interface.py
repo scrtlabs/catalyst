@@ -30,7 +30,7 @@ def initialize(context):
     # the exchange information. This allow all other operations using
     # the TradingPair to target the correct exchange.
     context.trading_pairs[context.buying_exchange] = \
-        symbol(context.trading_pair_symbol, context.buying_exchange.name)
+        symbol('neo_eth', context.buying_exchange.name)
 
     context.trading_pairs[context.selling_exchange] = \
         symbol(context.trading_pair_symbol, context.selling_exchange.name)

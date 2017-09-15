@@ -70,6 +70,7 @@ class DataPortalExchange(DataPortal):
 
                     df_list.append(df)
 
+                # Merging the values values of each exchange
                 return pd.concat(df_list)
 
             else:

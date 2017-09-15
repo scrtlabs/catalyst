@@ -27,8 +27,6 @@ from catalyst.exchange.exchange_errors import \
 
 log = Logger('LiveGraphClock')
 
-style.use('dark_background')
-
 fmt = mdates.DateFormatter('%Y-%m-%d %H:%M')
 
 
@@ -59,6 +57,8 @@ class LiveGraphClock(object):
     """
 
     def __init__(self, sessions, context, time_skew=pd.Timedelta('0s')):
+
+        style.use('dark_background')
 
         self.sessions = sessions
         self.time_skew = time_skew

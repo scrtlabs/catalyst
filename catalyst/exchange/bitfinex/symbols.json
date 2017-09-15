@@ -1,7 +1,8 @@
 {
   "neobtc": {
     "symbol": "neo_btc",
-    "start_date": "2017-09-07"
+    "start_date": "2017-09-07",
+    "precision":5
   },
   "neousd": {
     "symbol": "neo_usd",

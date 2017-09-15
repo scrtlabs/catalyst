@@ -208,7 +208,7 @@ class Bittrex(Exchange):
                 error=status['message']
             )
 
-    def get_candles(self, data_frequency, assets, bar_count=None):
+    def get_candles(self, data_frequency, assets, bar_count=None, start_date=None):
         """
         Supported Intervals
         -------------------

@@ -323,6 +323,7 @@ class Exchange:
                 )
 
                 try:
+                    #TODO: use victor's modified branch using int64
                     self.minute_writer.write_sid(
                         sid=asset.sid,
                         df=df
@@ -592,7 +593,8 @@ class Exchange:
         pass
 
     @abstractmethod
-    def get_candles(self, data_frequency, assets, bar_count=None):
+    def get_candles(self, data_frequency, assets, bar_count=None,
+                    start_date=None):
         """
         Retrieve OHLCV candles for the given assets
 
@@ -601,6 +603,7 @@ class Exchange:
         :param end_dt:
         :param bar_count:
         :param limit:
+        :param start_date:
         :return:
         """
         pass

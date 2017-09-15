@@ -152,12 +152,16 @@ def _run(handle_data,
         exchange_name = exchange
 
         start = pd.Timestamp.utcnow()
-        end = start + timedelta(minutes=1439)
+
+        # TODO: fix the end data.
+        end = start + timedelta(hours=8760)
+
         exchange_list = [x.strip().lower() for x in exchange.split(',')]
 
         exchanges = dict()
         for exchange_name in exchange_list:
 
+            # Looking for the portfolio from the cache first
             portfolio = get_algo_object(
                 algo_name=algo_namespace,
                 key='portfolio_{}'.format(exchange_name),
@@ -169,6 +173,7 @@ def _run(handle_data,
                     start_date=pd.Timestamp.utcnow()
                 )
 
+            # This corresponds to the json file containing api token info
             exchange_auth = get_exchange_auth(exchange_name)
             if exchange_name == 'bitfinex':
                 exchanges[exchange_name] = Bitfinex(
@@ -352,7 +357,7 @@ def _run(handle_data,
     TradingAlgorithmClass = (
         partial(ExchangeTradingAlgorithm, exchanges=exchanges,
                 algo_namespace=algo_namespace, live_graph=live_graph)
-        if live and exchanges else TradingAlgorithm)
+        if live and exchanges else TradingAlgorithm) # TODO: backtest trading algo class
 
     perf = TradingAlgorithmClass(
         namespace=namespace,

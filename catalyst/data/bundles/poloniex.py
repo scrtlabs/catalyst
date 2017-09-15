@@ -90,6 +90,8 @@ class PoloniexBundle(BaseCryptoPricingBundle):
                                start_date,
                                end_date,
                                frequency):
+        # TODO: replace this with direct exchange call
+        # The end date and frequency should be used to calculate the number of bars
         raw = pd.read_json(
             self._format_data_url(
                 api_key,
@@ -153,6 +155,7 @@ class PoloniexBundle(BaseCryptoPricingBundle):
         return self._format_polo_query(query_params)
     
     def _format_polo_query(self, query_params):
+        # TODO: got against the exchange object
         return 'https://poloniex.com/public?{query}'.format(
             query=urlencode(query_params),
         )

@@ -224,7 +224,8 @@ class Bitfinex(Exchange):
         # TODO: fetch account data and keep in cache
         return None
 
-    def get_candles(self, data_frequency, assets, bar_count=None):
+    def get_candles(self, data_frequency, assets, bar_count=None,
+                    start_date=None):
         """
         Retrieve OHLVC candles from Bitfinex
 
@@ -239,7 +240,6 @@ class Bitfinex(Exchange):
          '1M'
         """
 
-        # TODO: use BcolzMinuteBarReader to read from cache
         freq_match = re.match(r'([0-9].*)(m|h|d)', data_frequency, re.M | re.I)
         if freq_match:
             number = int(freq_match.group(1))

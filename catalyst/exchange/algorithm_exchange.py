@@ -544,6 +544,7 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         :param amount:
         :return:
         """
+        # TODO: is this good enough? Victor has a better solution.
         return amount
 
     @api_method
