@@ -24,6 +24,7 @@ class BasePricingBundle(BaseBundle):
             ('start_date', 'datetime64[ns]'),
             ('end_date', 'datetime64[ns]'),
             ('ac_date', 'datetime64[ns]'),
+            ('min_trade_size', 'float'),
         ]
 
     @lazyval

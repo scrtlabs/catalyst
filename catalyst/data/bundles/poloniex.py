@@ -77,12 +77,14 @@ class PoloniexBundle(BaseCryptoPricingBundle):
         start_date = sym_data.index[0]
         end_date = sym_data.index[-1]
         ac_date = end_date + pd.Timedelta(days=1)
+        min_trade_size = 0.00000001
 
         return (
             sym_md.symbol,
             start_date,
             end_date,
             ac_date,
+            min_trade_size,
         )
 
     def fetch_raw_symbol_frame(self,

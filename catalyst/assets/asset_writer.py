@@ -73,6 +73,7 @@ _equities_defaults = {
     'exchange': None,
     # optional, something like "New York Stock Exchange"
     'exchange_full': None,
+    'min_trade_size': 1
 }
 
 # Default values for the futures DataFrame
@@ -390,6 +391,8 @@ class AssetDBWriter(object):
                   The date on which to close any positions in this asset.
               exchange : str
                   The exchange where this asset is traded.
+              min_trade_size: float, optional
+                  The minimum denomination this asset can be traded.
 
             The index of this dataframe should contain the sids.
         futures : pd.DataFrame, optional
