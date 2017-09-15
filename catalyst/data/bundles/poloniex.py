@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
+
 from datetime import datetime
 
 import pandas as pd
@@ -166,4 +168,9 @@ register_bundle(PoloniexBundle, ['USDT_BTC',])
 For a production environment make sure to use (to bundle all pairs):
 register_bundle(PoloniexBundle)
 '''
-register_bundle(PoloniexBundle, create_writers=False)
+
+if 'ingest' in sys.argv and '-c' in sys.argv:
+    register_bundle(PoloniexBundle)
+else:
+    register_bundle(PoloniexBundle, create_writers=False)
+
