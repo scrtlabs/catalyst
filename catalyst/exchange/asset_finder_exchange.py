@@ -46,8 +46,7 @@ class AssetFinderExchange(object):
                 log.info('fetching asset: {}'.format(sid))
         return list()
 
-    def lookup_symbol(self, symbol, as_of_date, exchange,
-                      fuzzy=False):
+    def lookup_symbol(self, symbol, exchange, as_of_date=None, fuzzy=False):
         """Lookup an asset by symbol.
 
         Parameters

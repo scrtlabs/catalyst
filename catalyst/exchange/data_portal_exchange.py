@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import abc
 from time import sleep
 import pandas as pd
 from catalyst.assets._assets import TradingPair
@@ -25,7 +26,7 @@ from catalyst.exchange.exchange_errors import (
 log = Logger('DataPortalExchange')
 
 
-class DataPortalExchange(DataPortal):
+class DataPortalExchangeBase(DataPortal):
     def __init__(self, exchanges, *args, **kwargs):
         self.exchanges = exchanges
 
@@ -34,7 +35,7 @@ class DataPortalExchange(DataPortal):
         self.retry_get_spot_value = 5
         self.retry_delay = 5
 
-        super(DataPortalExchange, self).__init__(*args, **kwargs)
+        super(self.__class__, self).__init__(*args, **kwargs)
 
     def _get_history_window(self,
                             assets,
@@ -59,7 +60,8 @@ class DataPortalExchange(DataPortal):
                     exchange = self.exchanges[exchange_name]
                     assets = exchange_assets[exchange_name]
 
-                    df = exchange.get_history_window(
+                    df = self.get_exchange_spot_value_history_window(
+                        exchange,
                         assets,
                         end_dt,
                         bar_count,
@@ -121,6 +123,18 @@ class DataPortalExchange(DataPortal):
                                         data_frequency,
                                         ffill)
 
+    @abc.abstractmethod
+    def get_exchange_spot_value_history_window(self,
+                                               exchange,
+                                               assets,
+                                               end_dt,
+                                               bar_count,
+                                               frequency,
+                                               field,
+                                               data_frequency,
+                                               ffill=True):
+        pass
+
     def _get_spot_value(self, assets, field, dt, data_frequency,
                         attempt_index=0):
         try:
@@ -141,9 +155,13 @@ class DataPortalExchange(DataPortal):
                 for exchange_name in exchange_assets:
                     exchange = self.exchanges[exchange_name]
                     assets = exchange_assets[exchange_name]
-                    exchange_spot_values = exchange.get_spot_value(
-                        assets, field, dt, data_frequency)
-
+                    exchange_spot_values = self.get_exchange_spot_value(
+                        exchange,
+                        assets,
+                        field,
+                        dt,
+                        data_frequency
+                    )
                     spot_values += exchange_spot_values
 
                 return spot_values
@@ -166,9 +184,77 @@ class DataPortalExchange(DataPortal):
     def get_spot_value(self, assets, field, dt, data_frequency):
         return self._get_spot_value(assets, field, dt, data_frequency)
 
+    @abc.abstractmethod
+    def get_exchange_spot_value(self, exchange, assets, field, dt,
+                                data_frequency):
+        return
+
     def get_adjusted_value(self, asset, field, dt,
                            perspective_dt,
                            data_frequency,
                            spot_value=None):
         # TODO: does this pertain to cryptocurrencies?
-        raise NotImplementedError("get_adjusted_value is not implemented yet!")
+        log.warn('get_adjusted_value is not implemented yet!')
+        return spot_value
+
+
+class DataPortalExchangeLive(DataPortalExchangeBase):
+    def __init__(self, exchanges, *args, **kwargs):
+        super(self.__class__, self).__init__(exchanges, *args, **kwargs)
+
+    def get_exchange_spot_value_history_window(self,
+                                               exchange,
+                                               assets,
+                                               end_dt,
+                                               bar_count,
+                                               frequency,
+                                               field,
+                                               data_frequency,
+                                               ffill=True):
+        df = exchange.get_history_window(
+            assets,
+            end_dt,
+            bar_count,
+            frequency,
+            field,
+            data_frequency,
+            ffill)
+        return df
+
+    def get_exchange_spot_value(self, exchange, assets, field, dt,
+                                data_frequency):
+        exchange_spot_values = exchange.get_spot_value(
+            assets, field, dt, data_frequency)
+
+        return exchange_spot_values
+
+
+class DataPortalExchangeBacktest(DataPortalExchangeBase):
+    def __init__(self, exchanges, *args, **kwargs):
+        super(self.__class__, self).__init__(exchanges, *args, **kwargs)
+
+    def get_exchange_spot_value_history_window(self,
+                                               exchange,
+                                               assets,
+                                               end_dt,
+                                               bar_count,
+                                               frequency,
+                                               field,
+                                               data_frequency,
+                                               ffill=True):
+        df = exchange.get_history_window(
+            assets,
+            end_dt,
+            bar_count,
+            frequency,
+            field,
+            data_frequency,
+            ffill)
+        return df
+
+    def get_exchange_spot_value(self, exchange, assets, field, dt,
+                                data_frequency):
+        exchange_spot_values = exchange.get_spot_value(
+            assets, field, dt, data_frequency)
+
+        return exchange_spot_values
