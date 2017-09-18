@@ -96,11 +96,15 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
             if self._symbol_lookup_date is not None \
             else self.sim_params.end_session
 
-        exchange = self.exchanges[exchange_name]
+        if exchange_name is None:
+            exchange = self.exchanges.values()[0]
+        else:
+            exchange = self.exchanges[exchange_name]
+
         return self.asset_finder.lookup_symbol(
-            symbol_str,
-            as_of_date=_lookup_date,
-            exchange=exchange
+            symbol=symbol_str,
+            exchange=exchange,
+            as_of_date=_lookup_date
         )
 
 

@@ -38,7 +38,7 @@ from catalyst.utils.factory import create_simulation_parameters
 import catalyst.utils.paths as pth
 
 from catalyst.exchange.algorithm_exchange import ExchangeTradingAlgorithm
-from catalyst.exchange.data_portal_exchange import DataPortalExchange
+from catalyst.exchange.data_portal_exchange import DataPortalExchangeLive
 from catalyst.exchange.bitfinex.bitfinex import Bitfinex
 from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
 from catalyst.exchange.exchange_portfolio import ExchangePortfolio
@@ -209,7 +209,7 @@ def _run(handle_data,
         )
         env.asset_finder = AssetFinderExchange()
 
-        data = DataPortalExchange(
+        data = DataPortalExchangeLive(
             exchanges=exchanges,
             asset_finder=env.asset_finder,
             trading_calendar=open_calendar,

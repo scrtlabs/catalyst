@@ -14,7 +14,7 @@ log = Logger('test_bitfinex')
 class BitfinexTestCase(BaseExchangeTestCase):
     @classmethod
     def setup(self):
-        print ('creating bitfinex object')
+        log.info('creating bitfinex object')
         auth = get_exchange_auth('bitfinex')
         self.exchange = Bitfinex(
             key=auth['key'],
