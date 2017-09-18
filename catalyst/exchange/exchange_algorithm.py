@@ -57,7 +57,54 @@ class ExchangeAlgorithmExecutor(AlgorithmSimulator):
         super(self.__class__, self).__init__(*args, **kwargs)
 
 
-class ExchangeTradingAlgorithm(TradingAlgorithm):
+class ExchangeTradingAlgorithmBase(TradingAlgorithm):
+    def __init__(self, *args, **kwargs):
+        self.exchanges = kwargs.pop('exchanges', None)
+        super(self.__class__, self).__init__(*args, **kwargs)
+
+    @api_method
+    @preprocess(symbol_str=ensure_upper_case)
+    def symbol(self, symbol_str, exchange_name=None):
+        """Lookup an Equity by its ticker symbol.
+
+        Parameters
+        ----------
+        symbol_str : str
+            The ticker symbol for the equity to lookup.
+        exchange_name: str
+            The name of the exchange containing the symbol
+
+        Returns
+        -------
+        equity : Equity
+            The equity that held the ticker symbol on the current
+            symbol lookup date.
+
+        Raises
+        ------
+        SymbolNotFound
+            Raised when the symbols was not held on the current lookup date.
+
+        See Also
+        --------
+        :func:`catalyst.api.set_symbol_lookup_date`
+        """
+        # If the user has not set the symbol lookup date,
+        # use the end_session as the date for sybmol->sid resolution.
+
+        _lookup_date = self._symbol_lookup_date \
+            if self._symbol_lookup_date is not None \
+            else self.sim_params.end_session
+
+        exchange = self.exchanges[exchange_name]
+        return self.asset_finder.lookup_symbol(
+            symbol_str,
+            as_of_date=_lookup_date,
+            exchange=exchange
+        )
+
+
+class ExchangeTradingAlgorithm(ExchangeTradingAlgorithmBase):
     def __init__(self, *args, **kwargs):
         self.exchanges = kwargs.pop('exchanges', None)
         self.algo_namespace = kwargs.pop('algo_namespace', None)
@@ -599,41 +646,3 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
             order_id = order_param.id
 
         exchange.cancel_order(order_id)
-
-    @api_method
-    @preprocess(symbol_str=ensure_upper_case)
-    def symbol(self, symbol_str, exchange_name=None):
-        """Lookup an Equity by its ticker symbol.
-
-        Parameters
-        ----------
-        symbol_str : str
-            The ticker symbol for the equity to lookup.
-
-        Returns
-        -------
-        equity : Equity
-            The equity that held the ticker symbol on the current
-            symbol lookup date.
-
-        Raises
-        ------
-        SymbolNotFound
-            Raised when the symbols was not held on the current lookup date.
-
-        See Also
-        --------
-        :func:`catalyst.api.set_symbol_lookup_date`
-        """
-        # If the user has not set the symbol lookup date,
-        # use the end_session as the date for sybmol->sid resolution.
-        _lookup_date = self._symbol_lookup_date \
-            if self._symbol_lookup_date is not None \
-            else self.sim_params.end_session
-
-        exchange = self.exchanges[exchange_name]
-        return self.asset_finder.lookup_symbol(
-            symbol_str,
-            as_of_date=_lookup_date,
-            exchange=exchange
-        )
