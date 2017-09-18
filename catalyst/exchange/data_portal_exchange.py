@@ -27,15 +27,15 @@ log = Logger('DataPortalExchange')
 
 
 class DataPortalExchangeBase(DataPortal):
-    def __init__(self, exchanges, *args, **kwargs):
-        self.exchanges = exchanges
+    def __init__(self, *args, **kwargs):
 
+        self.exchanges = kwargs.pop('exchanges', None)
         # TODO: put somewhere accessible by each algo
         self.retry_get_history_window = 5
         self.retry_get_spot_value = 5
         self.retry_delay = 5
 
-        super(self.__class__, self).__init__(*args, **kwargs)
+        super(DataPortalExchangeBase, self).__init__(*args, **kwargs)
 
     def _get_history_window(self,
                             assets,
@@ -199,8 +199,8 @@ class DataPortalExchangeBase(DataPortal):
 
 
 class DataPortalExchangeLive(DataPortalExchangeBase):
-    def __init__(self, exchanges, *args, **kwargs):
-        super(self.__class__, self).__init__(exchanges, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(DataPortalExchangeLive, self).__init__(*args, **kwargs)
 
     def get_exchange_spot_value_history_window(self,
                                                exchange,

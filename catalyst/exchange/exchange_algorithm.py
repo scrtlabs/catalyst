@@ -59,8 +59,7 @@ class ExchangeAlgorithmExecutor(AlgorithmSimulator):
 
 class ExchangeTradingAlgorithmBase(TradingAlgorithm):
     def __init__(self, *args, **kwargs):
-        self.exchanges = kwargs.pop('exchanges', None)
-        super(self.__class__, self).__init__(*args, **kwargs)
+        super(ExchangeTradingAlgorithmBase, self).__init__(*args, **kwargs)
 
     @api_method
     @preprocess(symbol_str=ensure_upper_case)
@@ -135,7 +134,7 @@ class ExchangeTradingAlgorithm(ExchangeTradingAlgorithmBase):
 
         self.stats_minutes = 5
 
-        super(self.__class__, self).__init__(*args, **kwargs)
+        super(ExchangeTradingAlgorithm, self).__init__(*args, **kwargs)
         # TODO: fix precision before re-enabling
         # self._create_minute_writer()
 
