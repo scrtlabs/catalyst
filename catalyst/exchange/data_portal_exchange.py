@@ -60,7 +60,7 @@ class DataPortalExchangeBase(DataPortal):
                     exchange = self.exchanges[exchange_name]
                     assets = exchange_assets[exchange_name]
 
-                    df = self.get_exchange_spot_value_history_window(
+                    df_exchange = self.get_exchange_history_window(
                         exchange,
                         assets,
                         end_dt,
@@ -70,7 +70,7 @@ class DataPortalExchangeBase(DataPortal):
                         data_frequency,
                         ffill)
 
-                    df_list.append(df)
+                    df_list.append(df_exchange)
 
                 # Merging the values values of each exchange
                 return pd.concat(df_list)
@@ -113,7 +113,7 @@ class DataPortalExchangeBase(DataPortal):
                            bar_count,
                            frequency,
                            field,
-                           data_frequency,
+                           data_frequency=None,
                            ffill=True):
         return self._get_history_window(assets,
                                         end_dt,
@@ -124,15 +124,15 @@ class DataPortalExchangeBase(DataPortal):
                                         ffill)
 
     @abc.abstractmethod
-    def get_exchange_spot_value_history_window(self,
-                                               exchange,
-                                               assets,
-                                               end_dt,
-                                               bar_count,
-                                               frequency,
-                                               field,
-                                               data_frequency,
-                                               ffill=True):
+    def get_exchange_history_window(self,
+                                    exchange,
+                                    assets,
+                                    end_dt,
+                                    bar_count,
+                                    frequency,
+                                    field,
+                                    data_frequency,
+                                    ffill=True):
         pass
 
     def _get_spot_value(self, assets, field, dt, data_frequency,
@@ -202,15 +202,15 @@ class DataPortalExchangeLive(DataPortalExchangeBase):
     def __init__(self, *args, **kwargs):
         super(DataPortalExchangeLive, self).__init__(*args, **kwargs)
 
-    def get_exchange_spot_value_history_window(self,
-                                               exchange,
-                                               assets,
-                                               end_dt,
-                                               bar_count,
-                                               frequency,
-                                               field,
-                                               data_frequency,
-                                               ffill=True):
+    def get_exchange_history_window(self,
+                                    exchange,
+                                    assets,
+                                    end_dt,
+                                    bar_count,
+                                    frequency,
+                                    field,
+                                    data_frequency,
+                                    ffill=True):
         df = exchange.get_history_window(
             assets,
             end_dt,
@@ -233,15 +233,15 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
     def __init__(self, exchanges, *args, **kwargs):
         super(self.__class__, self).__init__(exchanges, *args, **kwargs)
 
-    def get_exchange_spot_value_history_window(self,
-                                               exchange,
-                                               assets,
-                                               end_dt,
-                                               bar_count,
-                                               frequency,
-                                               field,
-                                               data_frequency,
-                                               ffill=True):
+    def get_exchange_history_window(self,
+                                    exchange,
+                                    assets,
+                                    end_dt,
+                                    bar_count,
+                                    frequency,
+                                    field,
+                                    data_frequency,
+                                    ffill=True):
         df = exchange.get_history_window(
             assets,
             end_dt,

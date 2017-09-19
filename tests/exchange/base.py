@@ -2,7 +2,7 @@ import unittest
 from abc import ABCMeta, abstractmethod
 
 
-class BaseExchangeTestCase():
+class BaseExchangeTestCase:
     __metaclass__ = ABCMeta
 
     @abstractmethod

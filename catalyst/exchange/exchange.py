@@ -346,7 +346,7 @@ class Exchange:
                            bar_count,
                            frequency,
                            field,
-                           data_frequency,
+                           data_frequency=None,
                            ffill=True):
 
         """
@@ -399,7 +399,7 @@ class Exchange:
             value_series = pd.Series(values, index=dates)
             series[asset] = value_series
 
-        df = pd.concat(series)
+        df = pd.DataFrame(series)
         return df
 
     def synchronize_portfolio(self):

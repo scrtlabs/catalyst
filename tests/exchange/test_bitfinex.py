@@ -1,7 +1,6 @@
 from catalyst.exchange.bitfinex.bitfinex import Bitfinex
-from .base import BaseExchangeTestCase
+from base import BaseExchangeTestCase
 from logbook import Logger
-import pandas as pd
 from catalyst.finance.execution import (MarketOrder,
                                         LimitOrder,
                                         StopOrder,

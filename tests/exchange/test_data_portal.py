@@ -1,5 +1,5 @@
 import pandas as pd
-# from catalyst import get_calendar
+from catalyst import get_calendar
 from logbook import Logger
 
 from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
@@ -31,8 +31,7 @@ class ExchangeDataPortalTestCase:
             base_currency='usd'
         )
 
-        # open_calendar = get_calendar('OPEN')
-        open_calendar = None
+        open_calendar = get_calendar('OPEN')
         asset_finder = AssetFinderExchange()
         self.data_portal_live = DataPortalExchangeLive(
             exchanges=dict(bitfinex=self.bitfinex, bittrex=self.bittrex),
@@ -42,14 +41,27 @@ class ExchangeDataPortalTestCase:
         )
 
     def test_get_history_window_live(self):
+        asset_finder = self.data_portal_live.asset_finder
+
+        assets = [
+            asset_finder.lookup_symbol('eth_btc', self.bitfinex),
+            asset_finder.lookup_symbol('eth_btc', self.bittrex)
+        ]
+        now = pd.Timestamp.utcnow()
+        data = self.data_portal_live.get_history_window(
+                           assets,
+                           now,
+                           10,
+                           '1m',
+                           'price')
         pass
 
     def test_get_spot_value_live(self):
         asset_finder = self.data_portal_live.asset_finder
 
         assets = [
-            asset_finder.lookup_symbol('eth_usd', self.bitfinex),
-            asset_finder.lookup_symbol('eth_usd', self.bittrex)
+            asset_finder.lookup_symbol('eth_btc', self.bitfinex),
+            asset_finder.lookup_symbol('eth_btc', self.bittrex)
         ]
         now = pd.Timestamp.utcnow()
         value = self.data_portal_live.get_spot_value(
