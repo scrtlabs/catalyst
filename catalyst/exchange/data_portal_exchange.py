@@ -13,15 +13,20 @@
 
 import abc
 from time import sleep
+
+import os
 import pandas as pd
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
 from catalyst.data.data_portal import DataPortal
+from catalyst.data.minute_bars import BcolzMinuteBarReader
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     ExchangeBarDataError
 )
+from catalyst.data.bundles.core import load
+from catalyst.exchange.exchange_utils import get_exchange_minute_writer_root
 
 log = Logger('DataPortalExchange')
 
@@ -230,8 +235,14 @@ class DataPortalExchangeLive(DataPortalExchangeBase):
 
 
 class DataPortalExchangeBacktest(DataPortalExchangeBase):
-    def __init__(self, exchanges, *args, **kwargs):
-        super(self.__class__, self).__init__(exchanges, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+
+        super(DataPortalExchangeBacktest, self).__init__(*args, **kwargs)
+
+        self.minute_readers = dict()
+        for exchange_name in self.exchanges:
+            root = get_exchange_minute_writer_root(exchange_name)
+            self.minute_readers[exchange_name] = BcolzMinuteBarReader(root)
 
     def get_exchange_history_window(self,
                                     exchange,
@@ -254,7 +265,23 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
 
     def get_exchange_spot_value(self, exchange, assets, field, dt,
                                 data_frequency):
-        exchange_spot_values = exchange.get_spot_value(
-            assets, field, dt, data_frequency)
 
-        return exchange_spot_values
+        if data_frequency == 'minute':
+            reader = self.minute_readers[exchange.name]
+        else:
+            raise ValueError('Unsupported frequency')
+
+        values = []
+        for asset in assets:
+            try:
+                value = reader.get_value(
+                    sid=asset.sid,
+                    dt=dt,
+                    field=field
+                )
+                values.append(value)
+            except Exception as e:
+                log.warn('minute data not found: {}'.format(e))
+                values.append(None)
+
+        return values

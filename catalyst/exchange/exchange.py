@@ -35,6 +35,7 @@ class Exchange:
         self.minute_writer = None
         self.minute_reader = None
         self.base_currency = None
+        self.num_candles_limit = 100
 
     @property
     def positions(self):
@@ -95,6 +96,15 @@ class Exchange:
             symbols.append(self.get_symbol(asset))
 
         return symbols
+
+    def get_assets(self, symbols):
+        assets = []
+
+        for symbol in symbols:
+            asset = self.get_asset(symbol)
+            assets.append(asset)
+
+        return assets
 
     def get_asset(self, symbol):
         """
@@ -323,7 +333,7 @@ class Exchange:
                 )
 
                 try:
-                    #TODO: use victor's modified branch using int64
+                    # TODO: use victor's modified branch using int64
                     self.minute_writer.write_sid(
                         sid=asset.sid,
                         df=df

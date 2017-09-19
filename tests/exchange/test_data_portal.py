@@ -1,7 +1,10 @@
+from datetime import timedelta
+
 import pandas as pd
 from catalyst import get_calendar
 from logbook import Logger
 
+from catalyst.data.minute_bars import BcolzMinuteBarReader
 from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
 from catalyst.exchange.bitfinex.bitfinex import Bitfinex
 from catalyst.exchange.bittrex.bittrex import Bittrex
@@ -33,7 +36,14 @@ class ExchangeDataPortalTestCase:
 
         open_calendar = get_calendar('OPEN')
         asset_finder = AssetFinderExchange()
+
         self.data_portal_live = DataPortalExchangeLive(
+            exchanges=dict(bitfinex=self.bitfinex, bittrex=self.bittrex),
+            asset_finder=asset_finder,
+            trading_calendar=open_calendar,
+            first_trading_day=pd.to_datetime('today', utc=True)
+        )
+        self.data_portal_backtest = DataPortalExchangeBacktest(
             exchanges=dict(bitfinex=self.bitfinex, bittrex=self.bittrex),
             asset_finder=asset_finder,
             trading_calendar=open_calendar,
@@ -49,11 +59,11 @@ class ExchangeDataPortalTestCase:
         ]
         now = pd.Timestamp.utcnow()
         data = self.data_portal_live.get_history_window(
-                           assets,
-                           now,
-                           10,
-                           '1m',
-                           'price')
+            assets,
+            now,
+            10,
+            '1m',
+            'price')
         pass
 
     def test_get_spot_value_live(self):
@@ -66,4 +76,19 @@ class ExchangeDataPortalTestCase:
         now = pd.Timestamp.utcnow()
         value = self.data_portal_live.get_spot_value(
             assets, 'price', now, '1m')
+        pass
+
+    def test_get_spot_value_backtest(self):
+        asset_finder = self.data_portal_backtest.asset_finder
+
+        assets = [
+            asset_finder.lookup_symbol('btc_usd', self.bitfinex),
+        ]
+
+        date = pd.Timestamp.utcnow() - timedelta(hours=2)
+        value = self.data_portal_backtest.get_spot_value(
+            assets, 'close', date, 'minute')
+        pass
+
+    def test_get_history_window_backtest(self):
         pass

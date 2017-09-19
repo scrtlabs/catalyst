@@ -4,6 +4,7 @@ import hmac
 import json
 import re
 import time
+import datetime
 
 import numpy as np
 import pandas as pd
@@ -47,6 +48,7 @@ class Bitfinex(Exchange):
         self._portfolio = portfolio
         self.minute_writer = None
         self.minute_reader = None
+        self.num_candles_limit = 100
 
     def _request(self, operation, data, version='v1'):
         payload_object = {
@@ -224,8 +226,7 @@ class Bitfinex(Exchange):
         # TODO: fetch account data and keep in cache
         return None
 
-    def get_candles(self, data_frequency, assets, bar_count=None,
-                    start_date=None):
+    def get_candles(self, data_frequency, assets, bar_count=None, end_dt=None):
         """
         Retrieve OHLVC candles from Bitfinex
 
@@ -281,6 +282,14 @@ class Bitfinex(Exchange):
             if bar_count:
                 is_list = True
                 url += '/hist?limit={}'.format(int(bar_count))
+
+                if end_dt is not None:
+                    epoch = datetime.datetime.utcfromtimestamp(0)
+                    epoch = epoch.replace(tzinfo=pytz.UTC)
+
+                    end_ms = (end_dt - epoch).total_seconds() * 1000.0
+                    url += '&end={0:f}'.format(end_ms)
+
             else:
                 is_list = False
                 url += '/last'
