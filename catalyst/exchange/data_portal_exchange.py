@@ -331,20 +331,29 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
         else:
             raise ValueError('Unsupported frequency')
 
-        values = []
-        for asset in assets:
+        if isinstance(assets, TradingPair):
             try:
                 value = reader.get_value(
-                    sid=asset.sid,
+                    sid=assets.sid,
                     dt=dt,
                     field=field
                 )
-                values.append(value)
+                return value
             except Exception as e:
                 log.warn('minute data not found: {}'.format(e))
-                values.append(None)
-
-        if len(assets) == 1:
-            return values[0]
+                return None
         else:
-            return values
+            values = []
+            for asset in assets:
+                try:
+                    value = reader.get_value(
+                        sid=asset.sid,
+                        dt=dt,
+                        field=field
+                    )
+                    values.append(value)
+                except Exception as e:
+                    log.warn('minute data not found: {}'.format(e))
+                    values.append(None)
+
+                return values

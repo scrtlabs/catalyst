@@ -1,17 +1,12 @@
 from datetime import timedelta
 
-from time import sleep
-
-import os
 import pandas as pd
-from catalyst.data.bundles.base_pricing import BaseCryptoPricingBundle
-
-from catalyst import get_calendar
+import numpy as np
 from logbook import Logger, INFO
 
+from catalyst import get_calendar
 from catalyst.data.five_minute_bars import BcolzFiveMinuteOverlappingData
-from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
-    BcolzMinuteBarReader
+from catalyst.data.minute_bars import BcolzMinuteOverlappingData
 from catalyst.exchange.bitfinex.bitfinex import Bitfinex
 from catalyst.exchange.bittrex.bittrex import Bittrex
 from catalyst.exchange.exchange_errors import ExchangeNotFoundError
@@ -27,10 +22,12 @@ log = Logger('exchange_bundle')
 
 
 def fetch_candles_chunk(exchange, assets, data_frequency, end_dt, bar_count):
+    calc_start_dt = end_dt - timedelta(minutes=bar_count)
     candles = exchange.get_candles(
         data_frequency=data_frequency,
         assets=assets,
         bar_count=bar_count,
+        start_dt=calc_start_dt,
         end_dt=end_dt
     )
 
@@ -39,10 +36,34 @@ def fetch_candles_chunk(exchange, assets, data_frequency, end_dt, bar_count):
     for asset in assets:
         asset_candles = candles[asset]
 
+        candle_start_dt = None
+        candle_end_dt = None
+        for candle in asset_candles:
+            last_traded = candle['last_traded']
+
+            if candle_start_dt is None or candle_start_dt > last_traded:
+                candle_start_dt = last_traded
+
+            if candle_end_dt is None or candle_end_dt < last_traded:
+                candle_end_dt = last_traded
+
+        if candle_end_dt < end_dt:
+            asset_candles.append(
+                dict(
+                    open=None,
+                    high=None,
+                    close=None,
+                    low=None,
+                    volume=None,
+                    last_traded=end_dt
+                )
+            )
+
         asset_df = pd.DataFrame(asset_candles)
         if not asset_df.empty:
             asset_df.set_index('last_traded', inplace=True, drop=True)
             asset_df.sort_index(inplace=True)
+            asset_df = asset_df.resample('1T').ffill()
 
             series[asset] = asset_df
 
@@ -77,12 +98,13 @@ def process_bar_data(exchange, assets, writer, data_frequency,
         bar_count = exchange.num_candles_limit
 
         chunks = []
-        last_chunk_date = end
+        last_chunk_date = end.floor('1 min')
         while last_chunk_date > start + timedelta(minutes=bar_count):
             # TODO: account for the partial last bar
             chunk = dict(end=last_chunk_date, bar_count=bar_count)
             chunks.append(chunk)
 
+            # TODO: base on frequency
             last_chunk_date = \
                 last_chunk_date - timedelta(minutes=(bar_count + 1))
 
@@ -119,20 +141,29 @@ def process_bar_data(exchange, assets, writer, data_frequency,
                 )
                 continue
 
+            num_candles = 0
             data = []
             for asset in assets_candles_dict:
                 df = assets_candles_dict[asset]
                 sid = asset.sid
+
+                num_candles += len(df.values)
                 data.append((sid, df))
 
             try:
-                log.debug(
-                    'writing chunk {start} to {end}'.format(
-                        start=chunk['end'] - timedelta(
-                            minutes=chunk['bar_count']),
+                log.info(
+                    'writing {num_candles} candles from {start} to {end}'.format(
+                        num_candles=num_candles,
+                        start=chunk['end'] - \
+                              timedelta(minutes=chunk['bar_count']),
                         end=chunk['end']
                     )
                 )
+
+                for pair in data:
+                    log.info('data for sid {}\n{}\n{}'.format(
+                        pair[0], pair[1].head(2), pair[1].tail(2)))
+
                 writer.write(
                     data=data,
                     show_progress=False,
@@ -258,27 +289,27 @@ def exchange_bundle(exchange_name, symbols=None, start=None, end=None,
         if start >= end:
             raise ValueError('start date cannot be after end date')
 
-        if daily_bar_writer is not None:
-            process_bar_data(
-                exchange=exchange,
-                assets=assets,
-                writer=daily_bar_writer,
-                data_frequency='daily',
-                show_progress=show_progress,
-                start=start,
-                end=end
-            )
-
-        if five_minute_bar_writer is not None:
-            process_bar_data(
-                exchange=exchange,
-                assets=assets,
-                writer=five_minute_bar_writer,
-                data_frequency='5-minute',
-                show_progress=show_progress,
-                start=start,
-                end=end
-            )
+        # if daily_bar_writer is not None:
+        #     process_bar_data(
+        #         exchange=exchange,
+        #         assets=assets,
+        #         writer=daily_bar_writer,
+        #         data_frequency='daily',
+        #         show_progress=show_progress,
+        #         start=start,
+        #         end=end
+        #     )
+        #
+        # if five_minute_bar_writer is not None:
+        #     process_bar_data(
+        #         exchange=exchange,
+        #         assets=assets,
+        #         writer=five_minute_bar_writer,
+        #         data_frequency='5-minute',
+        #         show_progress=show_progress,
+        #         start=start,
+        #         end=end
+        #     )
 
         if minute_bar_writer is not None:
             process_bar_data(
@@ -292,5 +323,3 @@ def exchange_bundle(exchange_name, symbols=None, start=None, end=None,
             )
 
     return ingest
-
-

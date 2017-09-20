@@ -49,7 +49,7 @@ from catalyst.utils.input_validation import error_keywords, ensure_upper_case, \
     expect_types
 from catalyst.utils.preprocess import preprocess
 
-log = logbook.Logger("ExchangeTradingAlgorithm")
+log = logbook.Logger('exchange_algorithm')
 
 
 class ExchangeAlgorithmExecutor(AlgorithmSimulator):
@@ -59,6 +59,8 @@ class ExchangeAlgorithmExecutor(AlgorithmSimulator):
 
 class ExchangeTradingAlgorithmBase(TradingAlgorithm):
     def __init__(self, *args, **kwargs):
+        self.exchanges = kwargs.pop('exchanges', None)
+
         super(ExchangeTradingAlgorithmBase, self).__init__(*args, **kwargs)
 
     @api_method
@@ -106,10 +108,83 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
             as_of_date=_lookup_date
         )
 
+    def prepare_period_stats(self, start_dt, end_dt):
+        """
+        Creates a dictionary representing the state of the tracker.
 
-class ExchangeTradingAlgorithm(ExchangeTradingAlgorithmBase):
+
+        I rewrote this in an attempt to better control the stats.
+        I don't want things to happen magically through complex logic
+        pertaining to backtesting.
+
+        """
+        tracker = self.perf_tracker
+        period = tracker.todays_performance
+
+        pos_stats = period.position_tracker.stats()
+        period_stats = calc_period_stats(pos_stats, period.ending_cash)
+
+        stats = dict(
+            period_start=tracker.period_start,
+            period_end=tracker.period_end,
+            capital_base=tracker.capital_base,
+            progress=tracker.progress,
+            ending_value=period.ending_value,
+            ending_exposure=period.ending_exposure,
+            capital_used=period.cash_flow,
+            starting_value=period.starting_value,
+            starting_exposure=period.starting_exposure,
+            starting_cash=period.starting_cash,
+            ending_cash=period.ending_cash,
+            portfolio_value=period.ending_cash + period.ending_value,
+            pnl=period.pnl,
+            returns=period.returns,
+            period_open=period.period_open,
+            period_close=period.period_close,
+            gross_leverage=period_stats.gross_leverage,
+            net_leverage=period_stats.net_leverage,
+            short_exposure=pos_stats.short_exposure,
+            long_exposure=pos_stats.long_exposure,
+            short_value=pos_stats.short_value,
+            long_value=pos_stats.long_value,
+            longs_count=pos_stats.longs_count,
+            shorts_count=pos_stats.shorts_count,
+        )
+
+        # Merging cumulative risk
+        stats.update(tracker.cumulative_risk_metrics.to_dict())
+
+        # Merging latest recorded variables
+        stats.update(self.recorded_vars)
+
+        stats['positions'] = period.position_tracker.get_positions_list()
+
+        # we want the key to be absent, not just empty
+        # Only include transactions for given dt
+        stats['transactions'] = dict()
+        for date in period.processed_transactions:
+            if start_dt <= date < end_dt:
+                stats['transactions'][date] = \
+                    period.processed_transactions[date]
+
+        stats['orders'] = dict()
+        for date in period.orders_by_modified:
+            if start_dt <= date < end_dt:
+                stats['orders'][date] = \
+                    period.orders_by_modified[date]
+
+        return stats
+
+
+class ExchangeTradingAlgorithmBacktest(ExchangeTradingAlgorithmBase):
     def __init__(self, *args, **kwargs):
-        self.exchanges = kwargs.pop('exchanges', None)
+        super(ExchangeTradingAlgorithmBacktest, self).__init__(*args, **kwargs)
+
+        log.info('initialized trading algorithm in backtest mode')
+
+
+class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
+    def __init__(self, *args, **kwargs):
         self.algo_namespace = kwargs.pop('algo_namespace', None)
         self.live_graph = kwargs.pop('live_graph', None)
 
@@ -134,13 +209,13 @@ class ExchangeTradingAlgorithm(ExchangeTradingAlgorithmBase):
 
         self.stats_minutes = 5
 
-        super(ExchangeTradingAlgorithm, self).__init__(*args, **kwargs)
+        super(ExchangeTradingAlgorithmLive, self).__init__(*args, **kwargs)
         # TODO: fix precision before re-enabling
         # self._create_minute_writer()
 
         signal.signal(signal.SIGINT, self.signal_handler)
 
-        log.info('exchange trading algorithm successfully initialized')
+        log.info('initialized trading algorithm in live mode')
 
     def _create_minute_writer(self):
         root = get_exchange_minute_writer_root(self.exchange.name)
@@ -359,73 +434,6 @@ class ExchangeTradingAlgorithm(ExchangeTradingAlgorithmBase):
 
         save_algo_df(self.algo_namespace, 'exposure_stats',
                      self.exposure_stats)
-
-    def prepare_period_stats(self, start_dt, end_dt):
-        """
-        Creates a dictionary representing the state of the tracker.
-
-
-        I rewrote this in an attempt to better control the stats.
-        I don't want things to happen magically through complex logic
-        pertaining to backtesting.
-
-        """
-        tracker = self.perf_tracker
-        period = tracker.todays_performance
-
-        pos_stats = period.position_tracker.stats()
-        period_stats = calc_period_stats(pos_stats, period.ending_cash)
-
-        stats = dict(
-            period_start=tracker.period_start,
-            period_end=tracker.period_end,
-            capital_base=tracker.capital_base,
-            progress=tracker.progress,
-            ending_value=period.ending_value,
-            ending_exposure=period.ending_exposure,
-            capital_used=period.cash_flow,
-            starting_value=period.starting_value,
-            starting_exposure=period.starting_exposure,
-            starting_cash=period.starting_cash,
-            ending_cash=period.ending_cash,
-            portfolio_value=period.ending_cash + period.ending_value,
-            pnl=period.pnl,
-            returns=period.returns,
-            period_open=period.period_open,
-            period_close=period.period_close,
-            gross_leverage=period_stats.gross_leverage,
-            net_leverage=period_stats.net_leverage,
-            short_exposure=pos_stats.short_exposure,
-            long_exposure=pos_stats.long_exposure,
-            short_value=pos_stats.short_value,
-            long_value=pos_stats.long_value,
-            longs_count=pos_stats.longs_count,
-            shorts_count=pos_stats.shorts_count,
-        )
-
-        # Merging cumulative risk
-        stats.update(tracker.cumulative_risk_metrics.to_dict())
-
-        # Merging latest recorded variables
-        stats.update(self.recorded_vars)
-
-        stats['positions'] = period.position_tracker.get_positions_list()
-
-        # we want the key to be absent, not just empty
-        # Only include transactions for given dt
-        stats['transactions'] = dict()
-        for date in period.processed_transactions:
-            if start_dt <= date < end_dt:
-                stats['transactions'][date] = \
-                    period.processed_transactions[date]
-
-        stats['orders'] = dict()
-        for date in period.orders_by_modified:
-            if start_dt <= date < end_dt:
-                stats['orders'][date] = \
-                    period.orders_by_modified[date]
-
-        return stats
 
     def handle_data(self, data):
         if not self.is_running:

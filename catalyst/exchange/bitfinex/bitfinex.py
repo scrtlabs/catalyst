@@ -232,7 +232,8 @@ class Bitfinex(Exchange):
         # TODO: fetch account data and keep in cache
         return None
 
-    def get_candles(self, data_frequency, assets, bar_count=None, end_dt=None):
+    def get_candles(self, data_frequency, assets, bar_count=None,
+                    start_dt=None, end_dt=None):
         """
         Retrieve OHLVC candles from Bitfinex
 
@@ -289,11 +290,18 @@ class Bitfinex(Exchange):
                 is_list = True
                 url += '/hist?limit={}'.format(int(bar_count))
 
-                if end_dt is not None:
+                def get_ms(date):
                     epoch = datetime.datetime.utcfromtimestamp(0)
                     epoch = epoch.replace(tzinfo=pytz.UTC)
 
-                    end_ms = (end_dt - epoch).total_seconds() * 1000.0
+                    return (date - epoch).total_seconds() * 1000.0
+
+                if start_dt is not None:
+                    start_ms = get_ms(start_dt)
+                    url += '&start={0:f}'.format(start_ms)
+
+                if end_dt is not None:
+                    end_ms = get_ms(end_dt)
                     url += '&end={0:f}'.format(end_ms)
 
             else:
@@ -315,6 +323,9 @@ class Bitfinex(Exchange):
             candles = response.json()
 
             def ohlc_from_candle(candle):
+                last_traded = pd.Timestamp.utcfromtimestamp(
+                    candle[0] / 1000.0)
+                last_traded = last_traded.replace(tzinfo=pytz.UTC)
                 ohlc = dict(
                     open=np.float64(candle[1]),
                     high=np.float64(candle[3]),
@@ -322,8 +333,7 @@ class Bitfinex(Exchange):
                     close=np.float64(candle[2]),
                     volume=np.float64(candle[5]),
                     price=np.float64(candle[2]),
-                    last_traded=pd.Timestamp.utcfromtimestamp(
-                        candle[0] / 1000.0)
+                    last_traded=last_traded
                 )
                 return ohlc
 
