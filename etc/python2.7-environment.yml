@@ -1,0 +1,58 @@
+name: catalyst
+channels:
+- defaults
+dependencies:
+- certifi=2016.2.28=py27_0
+- openssl=1.0.2l=0
+- pip=9.0.1=py27_1
+- python=2.7.13=0
+- readline=6.2=2
+- setuptools=36.4.0=py27_0
+- sqlite=3.13.0=0
+- tk=8.5.18=0
+- wheel=0.29.0=py27_0
+- zlib=1.2.11=0
+- pip:
+  - alembic==0.9.5
+  - bcolz==0.12.1
+  - bottleneck==1.2.1
+  - chardet==3.0.4
+  - click==6.7
+  - contextlib2==0.5.5
+  - cycler==0.10.0
+  - cyordereddict==1.0.0
+  - cython==0.26.1
+  - decorator==4.1.2
+  - empyrical==0.2.1
+  - enigma-catalyst==0.2.dev2
+  - functools32==3.2.3.post2
+  - idna==2.6
+  - intervaltree==2.1.0
+  - logbook==1.1.0
+  - lru-dict==1.1.6
+  - mako==1.0.7
+  - markupsafe==1.0
+  - matplotlib==2.0.2
+  - multipledispatch==0.4.9
+  - networkx==1.11
+  - numexpr==2.6.4
+  - numpy==1.13.1
+  - pandas==0.19.2
+  - pandas-datareader==0.5.0
+  - patsy==0.4.1
+  - pyparsing==2.2.0
+  - python-dateutil==2.6.1
+  - python-editor==1.0.3
+  - pytz==2017.2
+  - requests==2.18.4
+  - requests-file==1.4.2
+  - requests-ftp==0.3.1
+  - scipy==0.19.1
+  - six==1.11.0
+  - sortedcontainers==1.5.7
+  - sqlalchemy==1.1.14
+  - statsmodels==0.8.0
+  - subprocess32==3.2.7
+  - tables==3.4.2
+  - toolz==0.8.2
+  - urllib3==1.22
