@@ -25,6 +25,8 @@ from catalyst.data.bundles.core import register_bundle
 from catalyst.data.bundles.base_pricing import BaseCryptoPricingBundle
 from catalyst.utils.memoize import lazyval
 
+from catalyst.curate.poloniex import PoloniexCurator
+
 class PoloniexBundle(BaseCryptoPricingBundle):
     @lazyval
     def name(self):
@@ -38,7 +40,7 @@ class PoloniexBundle(BaseCryptoPricingBundle):
     def frequencies(self):
         return set((
             'daily',
-            #'5-minute',
+            'minute',
         ))
 
     @lazyval
@@ -94,17 +96,23 @@ class PoloniexBundle(BaseCryptoPricingBundle):
                                start_date,
                                end_date,
                                frequency):
-        raw = pd.read_json(
-            self._format_data_url(
-                api_key,
-                symbol,
-                start_date,
-                end_date,
-                frequency,
-            ),
-            orient='records',
-        )
-        raw.set_index('date', inplace=True)
+
+        if(frequency == 'minute'):
+            pc = PoloniexCurator()
+            raw = pc.onemin_to_dataframe(symbol, start_date, end_date)
+
+        else:
+            raw = pd.read_json(
+                self._format_data_url(
+                    api_key,
+                    symbol,
+                    start_date,
+                    end_date,
+                    frequency,
+                ),
+                orient='records',
+            )
+            raw.set_index('date', inplace=True)
 
         # BcolzDailyBarReader introduces a 1/1000 factor in the way pricing is stored
         # on disk, which we compensate here to get the right pricing amounts
