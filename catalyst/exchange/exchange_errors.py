@@ -140,3 +140,10 @@ class SymbolNotFoundOnExchange(ZiplineError):
     """
     msg = ('Symbol {symbol} not found on exchange {exchange}. '
            'Choose from: {supported_symbols}').strip()
+
+
+class BundleNotFoundError(ZiplineError):
+    msg = ('Unable to find bundle data for exchange {exchange}. '
+           'Please ingest data using the command '
+           '`catalyst ingest -b exchange_{exchange}`. '
+           'See catalyst documentation for details.').strip()

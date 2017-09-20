@@ -12,21 +12,25 @@
 # limitations under the License.
 
 import abc
+import os
 from time import sleep
 
-import os
+import collections
 import pandas as pd
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
+from catalyst.data.bundles.core import load, from_bundle_ingest_dirname, \
+    BundleData, minute_path, five_minute_path, daily_path
 from catalyst.data.data_portal import DataPortal
+from catalyst.data.five_minute_bars import BcolzFiveMinuteBarReader
 from catalyst.data.minute_bars import BcolzMinuteBarReader
+from catalyst.data.us_equity_pricing import BcolzDailyBarReader
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
-    ExchangeBarDataError
-)
-from catalyst.data.bundles.core import load
-from catalyst.exchange.exchange_utils import get_exchange_minute_writer_root
+    ExchangeBarDataError,
+    BundleNotFoundError)
+from catalyst.utils.paths import data_path
 
 log = Logger('DataPortalExchange')
 
@@ -145,8 +149,8 @@ class DataPortalExchangeBase(DataPortal):
         try:
             if isinstance(assets, TradingPair):
                 exchange = self.exchanges[assets.exchange]
-                return exchange.get_spot_value(
-                    assets, field, dt, data_frequency)
+                return self.get_exchange_spot_value(
+                    exchange, assets, field, dt, data_frequency)
 
             else:
                 exchange_assets = dict()
@@ -156,20 +160,29 @@ class DataPortalExchangeBase(DataPortal):
 
                     exchange_assets[asset.exchange].append(asset)
 
-                spot_values = []
-                for exchange_name in exchange_assets:
-                    exchange = self.exchanges[exchange_name]
-                    assets = exchange_assets[exchange_name]
-                    exchange_spot_values = self.get_exchange_spot_value(
-                        exchange,
-                        assets,
-                        field,
-                        dt,
-                        data_frequency
-                    )
-                    spot_values += exchange_spot_values
+                if len(exchange_assets.keys()) == 1:
+                    exchange = self.exchanges[exchange_assets.keys()[0]]
+                    return self.get_exchange_spot_value(
+                        exchange, assets, field, dt, data_frequency)
 
-                return spot_values
+                else:
+                    spot_values = []
+                    for exchange_name in exchange_assets:
+                        exchange = self.exchanges[exchange_name]
+                        assets = exchange_assets[exchange_name]
+                        exchange_spot_values = self.get_exchange_spot_value(
+                            exchange,
+                            assets,
+                            field,
+                            dt,
+                            data_frequency
+                        )
+                        if len(assets) == 1:
+                            spot_values.append(exchange_spot_values)
+                        else:
+                            spot_values += exchange_spot_values
+
+                    return spot_values
 
         except ExchangeRequestError as e:
             log.warn(
@@ -239,10 +252,53 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
 
         super(DataPortalExchangeBacktest, self).__init__(*args, **kwargs)
 
-        self.minute_readers = dict()
+        self.daily_bar_readers = dict()
+        self.minute_bar_readers = dict()
+        self.five_minute_bar_readers = dict()
         for exchange_name in self.exchanges:
-            root = get_exchange_minute_writer_root(exchange_name)
-            self.minute_readers[exchange_name] = BcolzMinuteBarReader(root)
+            name = 'exchange_{}'.format(exchange_name)
+            time_folder = \
+                DataPortalExchangeBacktest.find_most_recent_time(name)
+
+            if time_folder is None:
+                raise BundleNotFoundError(exchange=exchange_name)
+
+            self.daily_bar_readers[exchange_name] = \
+                BcolzDailyBarReader(
+                    daily_path(name, time_folder),
+                )
+
+            self.five_minute_bar_readers[exchange_name] = \
+                BcolzFiveMinuteBarReader(
+                    five_minute_path(name, time_folder),
+                )
+
+            self.minute_bar_readers[exchange_name] = \
+                BcolzMinuteBarReader(
+                    minute_path(name, time_folder),
+                )
+
+    @staticmethod
+    def find_most_recent_time(bundle_name):
+        try:
+            bundle_folders = os.listdir(
+                data_path([bundle_name]),
+            )
+        except OSError:
+            return None
+
+        most_recent_bundle = dict()
+        for folder in bundle_folders:
+            date = from_bundle_ingest_dirname(folder)
+            if not most_recent_bundle or date > \
+                    most_recent_bundle[most_recent_bundle.keys()[0]]:
+                most_recent_bundle = dict()
+                most_recent_bundle[folder] = date
+
+        if most_recent_bundle:
+            return most_recent_bundle.keys()[0]
+        else:
+            return None
 
     def get_exchange_history_window(self,
                                     exchange,
@@ -267,7 +323,11 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
                                 data_frequency):
 
         if data_frequency == 'minute':
-            reader = self.minute_readers[exchange.name]
+            reader = self.minute_bar_readers[exchange.name]
+        elif data_frequency == '5-minute':
+            reader = self.five_minute_bar_readers[exchange.name]
+        elif data_frequency == 'daily':
+            reader = self.daily_bar_readers[exchange.name]
         else:
             raise ValueError('Unsupported frequency')
 
@@ -284,4 +344,7 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
                 log.warn('minute data not found: {}'.format(e))
                 values.append(None)
 
-        return values
+        if len(assets) == 1:
+            return values[0]
+        else:
+            return values

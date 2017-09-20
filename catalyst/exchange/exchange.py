@@ -2,6 +2,7 @@ import abc
 import collections
 import random
 from abc import ABCMeta, abstractmethod, abstractproperty
+from datetime import timedelta
 from time import sleep
 
 import numpy as np
@@ -10,9 +11,6 @@ from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
 from catalyst.data.data_portal import BASE_FIELDS
-from catalyst.errors import (
-    SymbolNotFound,
-)
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     InvalidOrderStyle, BaseCurrencyNotFoundError, SymbolNotFoundOnExchange
 from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
@@ -35,7 +33,10 @@ class Exchange:
         self.minute_writer = None
         self.minute_reader = None
         self.base_currency = None
-        self.num_candles_limit = 100
+
+        self.num_candles_limit = None
+        self.max_requests_per_minute = None
+        self.request_cpt = None
 
     @property
     def positions(self):
@@ -63,6 +64,50 @@ class Exchange:
     @abstractproperty
     def time_skew(self):
         pass
+
+    def ask_request(self):
+        """
+        Asks permission to issue a request to the exchange.
+        The primary purpose is to avoid hitting rate limits.
+
+        The application will pause if the maximum requests per minute
+        permitted by the exchange is exceeded.
+
+        :return boolean:
+
+        """
+        now = pd.Timestamp.utcnow()
+        if not self.request_cpt:
+            self.request_cpt = dict()
+            self.request_cpt[now] = 0
+            return True
+
+        cpt_date = self.request_cpt.keys()[0]
+        cpt = self.request_cpt[cpt_date]
+
+        if now > cpt_date + timedelta(minutes=1):
+            self.request_cpt = dict()
+            self.request_cpt[now] = 0
+            return True
+
+        if cpt >= self.max_requests_per_minute:
+            delta = now - cpt_date
+
+            sleep_period = 60 - delta.total_seconds()
+
+            # log.debug(
+            #     'max requests {} reached, sleeping for {} seconds'.format(
+            #         self.max_requests_per_minute,
+            #         sleep_period
+            #     ))
+            sleep(sleep_period)
+
+            now = pd.Timestamp.utcnow()
+            self.request_cpt = dict()
+            self.request_cpt[now] = 0
+            return True
+        else:
+            self.request_cpt[cpt_date] += 1
 
     def get_symbol(self, asset):
         """

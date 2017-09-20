@@ -48,7 +48,12 @@ class Bitfinex(Exchange):
         self._portfolio = portfolio
         self.minute_writer = None
         self.minute_reader = None
-        self.num_candles_limit = 100
+        self.num_candles_limit = 1000
+
+        # Max is 90 but playing it safe
+        # https://www.bitfinex.com/posts/188
+        self.max_requests_per_minute = 20
+        self.request_cpt = dict()
 
     def _request(self, operation, data, version='v1'):
         payload_object = {
@@ -176,6 +181,7 @@ class Bitfinex(Exchange):
     def get_balances(self):
         log.debug('retrieving wallets balances')
         try:
+            self.ask_request()
             response = self._request('balances', None)
             balances = response.json()
         except Exception as e:
@@ -295,6 +301,7 @@ class Bitfinex(Exchange):
                 url += '/last'
 
             try:
+                self.ask_request()
                 response = requests.get(url)
             except Exception as e:
                 raise ExchangeRequestError(error=e)
@@ -377,6 +384,7 @@ class Bitfinex(Exchange):
 
         date = pd.Timestamp.utcnow()
         try:
+            self.ask_request()
             response = self._request('order/new', req)
             order_status = response.json()
         except Exception as e:
@@ -418,6 +426,7 @@ class Bitfinex(Exchange):
             orders for this asset.
         """
         try:
+            self.ask_request()
             response = self._request('orders', None)
             order_statuses = response.json()
         except Exception as e:
@@ -452,6 +461,7 @@ class Bitfinex(Exchange):
             The order object.
         """
         try:
+            self.ask_request()
             response = self._request(
                 'order/status', {'order_id': int(order_id)})
             order_status = response.json()
@@ -477,6 +487,7 @@ class Bitfinex(Exchange):
             if isinstance(order_param, Order) else order_param
 
         try:
+            self.ask_request()
             response = self._request('order/cancel', {'order_id': order_id})
             status = response.json()
         except Exception as e:
@@ -501,6 +512,7 @@ class Bitfinex(Exchange):
         log.debug('fetching tickers {}'.format(symbols))
 
         try:
+            self.ask_request()
             response = requests.get(
                 '{url}/v2/tickers?symbols={symbols}'.format(
                     url=self.url,

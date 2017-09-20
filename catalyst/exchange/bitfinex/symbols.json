@@ -2,7 +2,7 @@
   "neobtc": {
     "symbol": "neo_btc",
     "start_date": "2017-09-07",
-    "precision":5
+    "precision": 5
   },
   "neousd": {
     "symbol": "neo_usd",
@@ -30,19 +30,19 @@
   },
   "ethusd": {
     "symbol": "eth_usd",
-    "start_date": "2010-01-01"
+    "start_date": "2017-01-01"
   },
   "ethbtc": {
     "symbol": "eth_btc",
-    "start_date": "2010-01-01"
+    "start_date": "2017-01-01"
   },
   "etcbtc": {
     "symbol": "etc_btc",
-    "start_date": "2010-01-01"
+    "start_date": "2017-01-01"
   },
   "etcusd": {
     "symbol": "etc_usd",
-    "start_date": "2010-01-01"
+    "start_date": "2017-01-01"
   },
   "rrtusd": {
     "symbol": "rrt_usd",

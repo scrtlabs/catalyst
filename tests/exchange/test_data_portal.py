@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+import os
 import pandas as pd
 from catalyst import get_calendar
 from logbook import Logger
@@ -10,7 +11,9 @@ from catalyst.exchange.bitfinex.bitfinex import Bitfinex
 from catalyst.exchange.bittrex.bittrex import Bittrex
 from catalyst.exchange.data_portal_exchange import DataPortalExchangeBacktest, \
     DataPortalExchangeLive
+from catalyst.exchange.exchange_bundle import exchange_bundle
 from catalyst.exchange.exchange_utils import get_exchange_auth
+from catalyst.utils.run_algo import load_extensions
 
 log = Logger('test_bitfinex')
 
@@ -44,13 +47,14 @@ class ExchangeDataPortalTestCase:
             first_trading_day=pd.to_datetime('today', utc=True)
         )
         self.data_portal_backtest = DataPortalExchangeBacktest(
-            exchanges=dict(bitfinex=self.bitfinex, bittrex=self.bittrex),
+            exchanges=dict(bitfinex=self.bitfinex),
             asset_finder=asset_finder,
             trading_calendar=open_calendar,
             first_trading_day=pd.to_datetime('today', utc=True)
         )
 
     def test_get_history_window_live(self):
+
         asset_finder = self.data_portal_live.asset_finder
 
         assets = [
@@ -79,13 +83,14 @@ class ExchangeDataPortalTestCase:
         pass
 
     def test_get_spot_value_backtest(self):
+
         asset_finder = self.data_portal_backtest.asset_finder
 
         assets = [
-            asset_finder.lookup_symbol('btc_usd', self.bitfinex),
+            asset_finder.lookup_symbol('neo_btc', self.bitfinex),
         ]
 
-        date = pd.Timestamp.utcnow() - timedelta(hours=2)
+        date = pd.Timestamp.utcnow() - timedelta(hours=8)
         value = self.data_portal_backtest.get_spot_value(
             assets, 'close', date, 'minute')
         pass

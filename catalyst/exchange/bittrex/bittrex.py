@@ -26,6 +26,11 @@ class Bittrex(Exchange):
         self.base_currency = base_currency
         self._portfolio = portfolio
 
+        # Not sure what the rate limit is but trying to play it safe
+        # https://bitcoin.stackexchange.com/questions/53778/bittrex-api-rate-limit
+        self.max_requests_per_minute = 60
+        self.request_cpt = dict()
+
         self.minute_writer = None
         self.minute_reader = None
 
@@ -62,6 +67,7 @@ class Bittrex(Exchange):
         """
         symbol_map = dict()
 
+        self.ask_request()
         markets = self.api.getmarkets()
         for market in markets:
             exchange_symbol = market['MarketName']
@@ -79,6 +85,7 @@ class Bittrex(Exchange):
     def get_balances(self):
         try:
             log.debug('retrieving wallet balances')
+            self.ask_request()
             balances = self.api.getbalances()
         except Exception as e:
             raise ExchangeRequestError(error=e)
@@ -99,6 +106,7 @@ class Bittrex(Exchange):
 
             price = style.get_limit_price(is_buy)
             try:
+                self.ask_request()
                 if is_buy:
                     order_status = self.api.buylimit(exchange_symbol, amount,
                                                      price)
@@ -139,6 +147,7 @@ class Bittrex(Exchange):
     def get_open_orders(self, asset):
         symbol = self.get_symbol(asset)
         try:
+            self.ask_request()
             open_orders = self.api.getopenorders(symbol)
         except Exception as e:
             raise ExchangeRequestError(error=e)
@@ -182,6 +191,7 @@ class Bittrex(Exchange):
     def get_order(self, order_id):
         log.info('retrieving order {}'.format(order_id))
         try:
+            self.ask_request()
             order_status = self.api.getorder(order_id)
         except Exception as e:
             raise ExchangeRequestError(error=e)
@@ -197,6 +207,7 @@ class Bittrex(Exchange):
         log.info('cancelling order {}'.format(order_id))
 
         try:
+            self.ask_request()
             status = self.api.cancel(order_id)
         except Exception as e:
             raise ExchangeRequestError(error=e)
@@ -208,7 +219,8 @@ class Bittrex(Exchange):
                 error=status['message']
             )
 
-    def get_candles(self, data_frequency, assets, bar_count=None, start_date=None):
+    def get_candles(self, data_frequency, assets, bar_count=None,
+                    start_date=None):
         """
         Supported Intervals
         -------------------
@@ -299,6 +311,7 @@ class Bittrex(Exchange):
         for asset in assets:
             symbol = self.get_symbol(asset)
             try:
+                self.ask_request()
                 ticker = self.api.getticker(symbol)
             except Exception as e:
                 raise ExchangeRequestError(error=e)
