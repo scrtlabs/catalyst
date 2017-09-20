@@ -25,7 +25,7 @@ from logbook import Logger
 log = Logger('ExchangeClock')
 
 
-class ExchangeClock(object):
+class SimpleClock(object):
     """Realtime clock for live trading.
 
     This class is a drop-in replacement for

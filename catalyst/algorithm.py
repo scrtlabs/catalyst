@@ -125,6 +125,7 @@ from catalyst.utils.factory import create_simulation_parameters
 from catalyst.utils.math_utils import (
     tolerant_equals,
     round_if_near_integer,
+    round_nearest
 )
 from catalyst.utils.pandas_utils import clear_dataframe_indexer_caches
 from catalyst.utils.preprocess import preprocess
@@ -1488,7 +1489,7 @@ class TradingAlgorithm(object):
 
     def _calculate_order(self, asset, amount,
                          limit_price=None, stop_price=None, style=None):
-        amount = self.round_order(amount)
+        amount = self.round_order(amount, asset)
 
         # Raises a ZiplineError if invalid parameters are detected.
         self.validate_order_params(asset,
@@ -1505,16 +1506,13 @@ class TradingAlgorithm(object):
         return amount, style
 
     @staticmethod
-    def round_order(amount):
+    def round_order(amount, asset):
         """
-        Convert number of shares to an integer.
-
-        By default, truncates to the integer share count that's either within
-        .0001 of amount or closer to zero.
-
-        E.g. 3.9999 -> 4.0; 5.5 -> 5.0; -5.5 -> -5.0
+        Converts the number of shares to the smallest tradable lot size for
+        the asset being ordered.
+        
         """
-        return int(round_if_near_integer(amount))
+        return round_nearest(amount, asset.min_trade_size)
 
     def validate_order_params(self,
                               asset,
@@ -1550,7 +1548,6 @@ class TradingAlgorithm(object):
                              self.updated_portfolio(),
                              self.get_datetime(),
                              self.trading_client.current_data)
-
     @staticmethod
     def __convert_order_params_for_blotter(limit_price, stop_price, style):
         """

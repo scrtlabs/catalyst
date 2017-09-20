@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
+
 from datetime import datetime
 
 import pandas as pd
@@ -22,6 +24,8 @@ from six.moves.urllib.parse import urlencode
 from catalyst.data.bundles.core import register_bundle
 from catalyst.data.bundles.base_pricing import BaseCryptoPricingBundle
 from catalyst.utils.memoize import lazyval
+
+from catalyst.curate.poloniex import PoloniexCurator
 
 class PoloniexBundle(BaseCryptoPricingBundle):
     @lazyval
@@ -36,7 +40,7 @@ class PoloniexBundle(BaseCryptoPricingBundle):
     def frequencies(self):
         return set((
             'daily',
-            #'5-minute',
+            'minute',
         ))
 
     @lazyval
@@ -75,12 +79,14 @@ class PoloniexBundle(BaseCryptoPricingBundle):
         start_date = sym_data.index[0]
         end_date = sym_data.index[-1]
         ac_date = end_date + pd.Timedelta(days=1)
+        min_trade_size = 0.00000001
 
         return (
             sym_md.symbol,
             start_date,
             end_date,
             ac_date,
+            min_trade_size,
         )
 
     def fetch_raw_symbol_frame(self,
@@ -90,22 +96,28 @@ class PoloniexBundle(BaseCryptoPricingBundle):
                                start_date,
                                end_date,
                                frequency):
-        raw = pd.read_json(
-            self._format_data_url(
-                api_key,
-                symbol,
-                start_date,
-                end_date,
-                frequency,
-            ),
-            orient='records',
-        )
-        raw.set_index('date', inplace=True)
+
+        if(frequency == 'minute'):
+            pc = PoloniexCurator()
+            raw = pc.onemin_to_dataframe(symbol, start_date, end_date)
+
+        else:
+            raw = pd.read_json(
+                self._format_data_url(
+                    api_key,
+                    symbol,
+                    start_date,
+                    end_date,
+                    frequency,
+                ),
+                orient='records',
+            )
+            raw.set_index('date', inplace=True)
 
         # BcolzDailyBarReader introduces a 1/1000 factor in the way pricing is stored
         # on disk, which we compensate here to get the right pricing amounts
         # ref: data/us_equity_pricing.py
-        scale = 1000
+        scale = 1
         raw.loc[:, 'open'] /= scale
         raw.loc[:, 'high'] /= scale
         raw.loc[:, 'low'] /= scale
@@ -166,4 +178,9 @@ register_bundle(PoloniexBundle, ['USDT_BTC',])
 For a production environment make sure to use (to bundle all pairs):
 register_bundle(PoloniexBundle)
 '''
-register_bundle(PoloniexBundle, create_writers=False)
+
+if 'ingest' in sys.argv and '-c' in sys.argv:
+    register_bundle(PoloniexBundle)
+else:
+    register_bundle(PoloniexBundle, create_writers=False)
+

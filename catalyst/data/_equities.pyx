@@ -217,7 +217,7 @@ cpdef _read_bcolz_data(ctable_t table,
 
         if column_name in ['open', 'high', 'low', 'close']:
             where_nan = (outbuf == 0)
-            outbuf_as_float = outbuf.astype(float64) * .000001
+            outbuf_as_float = outbuf.astype(float64) * .000000001
             outbuf_as_float[where_nan] = NAN
             results.append(outbuf_as_float)
         elif column_name != 'volume':

@@ -3,6 +3,7 @@ import os
 import pickle
 import urllib
 from datetime import date, datetime
+import pandas as pd
 
 from catalyst.exchange.exchange_errors import ExchangeAuthNotFound, \
     ExchangeSymbolsNotFound
@@ -115,6 +116,37 @@ def append_algo_object(algo_name, key, obj, environ=None):
     mode = 'a+b' if os.path.isfile(filename) else 'wb'
     with open(filename, mode) as handle:
         pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def get_algo_df(algo_name, key, environ=None, rel_path=None):
+    folder = get_algo_folder(algo_name, environ)
+
+    if rel_path is not None:
+        folder = os.path.join(folder, rel_path)
+
+    filename = os.path.join(folder, key + '.csv')
+
+    if os.path.isfile(filename):
+        try:
+            with open(filename, 'rb') as handle:
+                return pd.read_csv(handle, index_col=0, parse_dates=True)
+        except IOError:
+            return pd.DataFrame()
+    else:
+        return pd.DataFrame()
+
+
+def save_algo_df(algo_name, key, df, environ=None, rel_path=None):
+    folder = get_algo_folder(algo_name, environ)
+
+    if rel_path is not None:
+        folder = os.path.join(folder, rel_path)
+        ensure_directory(folder)
+
+    filename = os.path.join(folder, key + '.csv')
+
+    with open(filename, 'wb') as handle:
+        df.to_csv(handle)
 
 
 def get_exchange_minute_writer_root(exchange_name, environ=None):
