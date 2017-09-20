@@ -24,8 +24,6 @@ from matplotlib import style
 
 log = Logger('LiveGraphClock')
 
-style.use('dark_background')
-
 fmt = mdates.DateFormatter('%Y-%m-%d %H:%M')
 
 
@@ -62,6 +60,8 @@ class LiveGraphClock(object):
         self._last_emit = None
         self._before_trading_start_bar_yielded = True
         self.context = context
+
+        style.use('dark_background')
 
         fig = plt.figure()
         fig.canvas.set_window_title('Enigma Catalyst: {}'.format(
