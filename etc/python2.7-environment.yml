@@ -35,7 +35,7 @@ dependencies:
   - cython==0.26.1
   - decorator==4.1.2
   - empyrical==0.2.1
-  - enigma-catalyst==0.2.dev2
+  - enigma-catalyst>=0.2.dev2
   - enum34==1.1.6
   - functools32==3.2.3.post2
   - idna==2.6
