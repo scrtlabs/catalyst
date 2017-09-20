@@ -1,15 +1,15 @@
 import json, time, csv
 from datetime import datetime
 import pandas as pd
-import os
-import time
-import requests
-import logbook
+import os, time, shutil, requests, logbook
 
-DT_START        = time.mktime(datetime(2010, 1, 1, 0, 0).timetuple())
+DT_START        = int(time.mktime(datetime(2010, 1, 1, 0, 0).timetuple()))
+DT_END          = int(time.time())
 CSV_OUT_FOLDER  = '/var/tmp/catalyst/data/poloniex/'
+CSV_OUT_FOLDER  = '/Volumes/enigma/data/poloniex/'
 CONN_RETRIES    = 2
 COINS           = ['USDT_BTC','USDT_DASH','USDT_ETC','USDT_ETH','USDT_LTC','USDT_NXT','USDT_REP','USDT_STR','USDT_XMR','USDT_XRP','USDT_ZEC']
+COINS           = ['USDT_BTC',]
 
 
 logbook.StderrHandler().push_application()
@@ -116,36 +116,44 @@ class PoloniexCurator(object):
         df = self.get_data( currencyPair, start, first, df )
         return df
 
-    def retrieve_trade_history(self, currencyPair, start, end=9999999999):
+    def _retrieve_tradeID_date(self, row):
+        tId = int(row.split(',')[0])
+        d   = pd.to_datetime( row.split(',')[1], infer_datetime_format=True).value // 10 ** 9
+        return tId, d
+
+
+    def retrieve_trade_history(self, currencyPair, start=DT_START, end=DT_END, temp=None):
         csv_fn = CSV_OUT_FOLDER + 'crypto_trades-' + currencyPair + '.csv'
 
         try:
             with open(csv_fn, 'ab+') as f: 
                 f.seek(0, os.SEEK_END)
-                if(f.tell() > 2):                       # First check file is not zero size
+                if(f.tell() > 2):                           # First check file is not zero size
+                    f.seek(0)                               # Go to the beginning to read first line
+                    last_tradeID, end_file    = self._retrieve_tradeID_date(f.readline())
                     f.seek(-2, os.SEEK_END)                 # Jump to the second last byte.
                     while f.read(1) != b"\n":               # Until EOL is found...
                         f.seek(-2, os.SEEK_CUR)             # ...jump back the read byte plus one more.
-                    lastrow = f.readline()                  # read last line
-                    last_tradeID = int(lastrow.split(',')[0])
-                    end          = pd.to_datetime( lastrow.split(',')[1], infer_datetime_format=True).value // 10 ** 9
+                    first_tradeID, start_file = self._retrieve_tradeID_date(f.readline())
+
+                    if( first_tradeID == 1 and end_file + 3600 > DT_END ):
+                        return
 
         except Exception as e:
             log.error('Error opening file: %s' % csv_fn)
             log.exception(e)
 
         '''
-        Poloniex API limits querying TradeHistory to intervals smaller than 1 year,
-        so we make sure that start date is never more than 1 year apart from end date
+        Poloniex API limits querying TradeHistory to intervals smaller than 1 month,
+        so we make sure that start date is never more than 1 month apart from end date
         '''
-        if( end == 9999999999 and time.time() - start > 365*86400 ):     
-            newstart = time.time() - 360*86400
-        elif( end != 9999999999 and end - start > 365*86400 ):
-            newstart = end - 360*86400
+        if( end - start > 2419200 ):       # 60 s/min * 60 min/hr * 24 hr/day * 28 days     
+            newstart = end - 2419200
         else:
             newstart = start
 
-        log.debug(currencyPair+': Retrieving from '+str(newstart)+' to '+str(end))
+        log.debug(currencyPair+': Retrieving from '+str(newstart)+' to '+str(end) +'\t '
+                    + time.ctime(newstart) + ' - '+ time.ctime(end))
 
         url = self._api_path + 'command=returnTradeHistory&currencyPair=' + currencyPair + '&start=' + str(newstart) + '&end=' + str(end)
 
@@ -155,30 +163,62 @@ class PoloniexCurator(object):
             log.error('Failed to retrieve trade history data for %s' % currencyPair)
             log.exception(e)
             return None
+        else:
+            if isinstance(response.json(), dict) and response.json()['error']:
+                log.error('Failed to to retrieve trade history data for %s: %s' % (currencyPair,response.json()['error']))
+                exit(1)
 
-        if('last_tradeID' in locals() and response.json()[-1]['tradeID'] == last_tradeID):             # Got to the end of TradingHistory for this coin
+        if('first_tradeID' in locals() and response.json()[-1]['tradeID'] == first_tradeID):    # Got to the end of TradingHistory for this coin
             return
 
         try: 
-            with open(csv_fn, 'ab') as csvfile:
-                csvwriter = csv.writer(csvfile)
+            if( 'end_file' in locals() and end_file + 3600 < end):
+                if (temp is None):
+                    temp = os.tmpfile()
+                tempcsv = csv.writer(temp)
                 for item in response.json():
-                    if( 'last_tradeID' in locals() and item['tradeID'] >= last_tradeID ):
+                    if( item['tradeID'] <= last_tradeID ):
                         continue
-                    csvwriter.writerow([
+                    tempcsv.writerow([
                         item['tradeID'],
                         item['date'],
                         item['type'],
                         item['rate'],
                         item['amount'],
                         item['total'],
-                        item['globalTradeID']
+                        item['globalTradeID']        
                     ])
+                if( response.json()[-1]['tradeID'] > last_tradeID ):
+                    end = pd.to_datetime( response.json()[-1]['date'], infer_datetime_format=True).value // 10 ** 9
+                    self.retrieve_trade_history(currencyPair, start, end, temp=temp) 
+                else:
+                    with open(csv_fn,'rb+') as f:
+                        shutil.copyfileobj(f,temp)
+                        f.seek(0)
+                        temp.seek(0)
+                        shutil.copyfileobj(temp,f)
+                    temp.close()
+                    end = start_file
+            else:
+                with open(csv_fn, 'ab') as csvfile:
+                    csvwriter = csv.writer(csvfile)
+                    for item in response.json():
+                        if( 'first_tradeID' in locals() and item['tradeID'] >= first_tradeID ):
+                            continue
+                        csvwriter.writerow([
+                            item['tradeID'],
+                            item['date'],
+                            item['type'],
+                            item['rate'],
+                            item['amount'],
+                            item['total'],
+                            item['globalTradeID']
+                        ])
+                end = pd.to_datetime( response.json()[-1]['date'], infer_datetime_format=True).value // 10 ** 9
+
         except Exception as e:
             log.error('Error opening %s' % csv_fn)
             log.exception(e)
-
-        end = pd.to_datetime( response.json()[-1]['date'], infer_datetime_format=True).value // 10 ** 9
 
         self.retrieve_trade_history(currencyPair, start, end)             # If we get here, we aren't done. Repeat
 
@@ -189,7 +229,8 @@ class PoloniexCurator(object):
         if( os.path.isfile(csv_1min) ):
             log.debug(currencyPair+': 1min data already present. Delete the file if you want to rebuild it.')
         else:
-            df = pd.read_csv(csv_trades, names=['tradeID','date','type','rate','amount','total','globalTradeID'] )
+            df = pd.read_csv(csv_trades, names=['tradeID','date','type','rate','amount','total','globalTradeID'], 
+                    dtype = {'tradeID': int, 'date': str, 'type': str, 'rate': float, 'amount': float, 'total': float, 'globalTradeID': int } )
             df.drop(['tradeID','type','amount','globalTradeID'], axis=1, inplace=True)
             df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True) 
             ohlcv = self.generate_ohlcv(df)
@@ -288,11 +329,23 @@ class PoloniexCurator(object):
 
         return df[datetime.fromtimestamp(start):datetime.fromtimestamp(end-1)]
 
+    def onemin_to_dataframe(self, currencyPair, start, end):
+        csv_fn     = CSV_OUT_FOLDER + 'crypto_1min-' + currencyPair + '.csv'
+        df         = pd.read_csv(csv_fn, names=['date', 'open', 'high', 'low', 'close', 'volume'])
+        df['date'] = pd.to_datetime(df['date'],unit='s')
+        df.set_index('date', inplace=True)
+        return df[start : end]
+
 if __name__ == '__main__':
     pc = PoloniexCurator()
-    #pc.get_currency_pairs()
+    pc.get_currency_pairs()
     #pc.append_data()
 
-    for coin in COINS:
-    #    pc.retrieve_trade_history(coin,DT_START)
-        pc.write_ohlcv_file(coin)
+    #for coin in COINS:
+    for currencyPair in pc.currency_pairs:
+        #csv_1min   = CSV_OUT_FOLDER + 'crypto_1min-' + currencyPair + '.csv'
+        #if( os.path.isfile(csv_1min) ):
+        #    log.debug(currencyPair+': 1min data already present. Delete the file if you want to rebuild it.')
+        #else:
+        pc.retrieve_trade_history(currencyPair)
+        pc.write_ohlcv_file(currencyPair)
