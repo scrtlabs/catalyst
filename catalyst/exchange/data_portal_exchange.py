@@ -15,13 +15,12 @@ import abc
 import os
 from time import sleep
 
-import collections
 import pandas as pd
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
-from catalyst.data.bundles.core import load, from_bundle_ingest_dirname, \
-    BundleData, minute_path, five_minute_path, daily_path
+from catalyst.data.bundles.core import from_bundle_ingest_dirname, \
+    minute_path, five_minute_path, daily_path
 from catalyst.data.data_portal import DataPortal
 from catalyst.data.five_minute_bars import BcolzFiveMinuteBarReader
 from catalyst.data.minute_bars import BcolzMinuteBarReader
@@ -200,6 +199,9 @@ class DataPortalExchangeBase(DataPortal):
                 )
 
     def get_spot_value(self, assets, field, dt, data_frequency):
+        if field == 'price':
+            field = 'close'
+
         return self._get_spot_value(assets, field, dt, data_frequency)
 
     @abc.abstractmethod
@@ -263,20 +265,29 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
             if time_folder is None:
                 raise BundleNotFoundError(exchange=exchange_name)
 
-            self.daily_bar_readers[exchange_name] = \
-                BcolzDailyBarReader(
-                    daily_path(name, time_folder),
-                )
+            try:
+                self.daily_bar_readers[exchange_name] = \
+                    BcolzDailyBarReader(
+                        daily_path(name, time_folder),
+                    )
+            except IOError:
+                self.daily_bar_readers[exchange_name] = None
 
-            self.five_minute_bar_readers[exchange_name] = \
-                BcolzFiveMinuteBarReader(
-                    five_minute_path(name, time_folder),
-                )
+            try:
+                self.five_minute_bar_readers[exchange_name] = \
+                    BcolzFiveMinuteBarReader(
+                        five_minute_path(name, time_folder),
+                    )
+            except IOError:
+                self.five_minute_bar_readers[exchange_name] = None
 
-            self.minute_bar_readers[exchange_name] = \
-                BcolzMinuteBarReader(
-                    minute_path(name, time_folder),
-                )
+            try:
+                self.minute_bar_readers[exchange_name] = \
+                    BcolzMinuteBarReader(
+                        minute_path(name, time_folder),
+                    )
+            except IOError:
+                self.minute_bar_readers[exchange_name] = None
 
     @staticmethod
     def find_most_recent_time(bundle_name):
@@ -309,6 +320,7 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
                                     field,
                                     data_frequency,
                                     ffill=True):
+        # TODO: implement in the bundle
         df = exchange.get_history_window(
             assets,
             end_dt,

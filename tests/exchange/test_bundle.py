@@ -16,12 +16,12 @@ class ExchangeBundleTestCase:
     def test_ingest(self):
         exchange_name = 'bitfinex'
 
-        start = pd.Timestamp.utcnow() - timedelta(days=365)
+        start = pd.to_datetime('2017-09-01', utc=True)
         end = pd.Timestamp.utcnow()
         open_calendar = get_calendar('OPEN')
 
         root = data_root(os.environ)
-        output_dir = '{root}/exchange_{exchange}/test'.format(
+        output_dir = '{root}/exchange_{exchange}/2017-09-21T05;34;37.274482'.format(
             root=root,
             exchange=exchange_name
         )
@@ -40,7 +40,8 @@ class ExchangeBundleTestCase:
                 minutes_per_day=1440,
                 start_session=start_session,
                 end_session=end,
-                write_metadata=True
+                write_metadata=True,
+                default_ohlc_ratio=1000000
             )
 
         ingest = exchange_bundle(

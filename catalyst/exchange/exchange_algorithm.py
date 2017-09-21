@@ -35,12 +35,15 @@ from catalyst.exchange.exchange_errors import (
     ExchangePortfolioDataError,
     ExchangeTransactionError,
     OrphanOrderError)
+from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
+    ExchangeLimitOrder, ExchangeStopOrder
 from catalyst.exchange.exchange_utils import get_exchange_minute_writer_root, \
     save_algo_object, get_algo_object, get_algo_folder, get_algo_df, \
     save_algo_df
 from catalyst.exchange.live_graph_clock import LiveGraphClock
 from catalyst.exchange.simple_clock import SimpleClock
 from catalyst.exchange.stats_utils import get_pretty_stats
+from catalyst.finance.execution import MarketOrder
 from catalyst.finance.performance.period import calc_period_stats
 from catalyst.gens.tradesimulation import AlgorithmSimulator
 from catalyst.utils.api_support import (
@@ -197,6 +200,43 @@ class ExchangeTradingAlgorithmBacktest(ExchangeTradingAlgorithmBase):
             cancel_policy=self.cancel_policy,
         )
         log.info('initialized trading algorithm in backtest mode')
+
+    def _calculate_order(self, asset, amount,
+                         limit_price=None, stop_price=None, style=None):
+        # Raises a ZiplineError if invalid parameters are detected.
+        self.validate_order_params(asset,
+                                   amount,
+                                   limit_price,
+                                   stop_price,
+                                   style)
+
+        # Convert deprecated limit_price and stop_price parameters to use
+        # ExecutionStyle objects.
+        style = self.__convert_order_params_for_blotter(limit_price,
+                                                        stop_price,
+                                                        style)
+        return amount, style
+
+    @staticmethod
+    def __convert_order_params_for_blotter(limit_price, stop_price, style):
+        """
+        Helper method for converting deprecated limit_price and stop_price
+        arguments into ExecutionStyle instances.
+
+        This function assumes that either style == None or (limit_price,
+        stop_price) == (None, None).
+        """
+        if style:
+            assert (limit_price, stop_price) == (None, None)
+            return style
+        if limit_price and stop_price:
+            return ExchangeStopLimitOrder(limit_price, stop_price)
+        if limit_price:
+            return ExchangeLimitOrder(limit_price)
+        if stop_price:
+            return ExchangeStopOrder(stop_price)
+        else:
+            return MarketOrder()
 
 
 class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):

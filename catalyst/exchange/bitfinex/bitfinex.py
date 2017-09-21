@@ -448,7 +448,7 @@ class Bitfinex(Exchange):
                     order_statuses['message'])
             )
 
-        orders = list()
+        orders = []
         for order_status in order_statuses:
             order, executed_price = self._create_order(order_status)
             if asset is None or asset == order.sid:

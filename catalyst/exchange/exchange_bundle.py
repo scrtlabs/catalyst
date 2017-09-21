@@ -64,6 +64,7 @@ def process_bar_data(exchange, assets, writer, data_frequency,
                      show_progress, start, end):
     open_calendar = get_calendar('OPEN')
 
+    writer.default_ohlc_ratio = 1000000
     writer.calendar = open_calendar
     writer.minutes_per_day = 1440
     writer.write_metadata = True

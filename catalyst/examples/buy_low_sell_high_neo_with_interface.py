@@ -33,24 +33,25 @@ def initialize(context):
 
 
 def _handle_data(context, data):
-    prices = data.history(
-        context.asset,
-        fields='price',
-        bar_count=20,
-        frequency='30m'
-    )
-    rsi = talib.RSI(prices.values, timeperiod=14)[-1]
-    log.info('got rsi: {}'.format(rsi))
+    # prices = data.history(
+    #     context.asset,
+    #     fields='price',
+    #     bar_count=20,
+    #     frequency='30m'
+    # )
+    # rsi = talib.RSI(prices.values, timeperiod=14)[-1]
+    # log.info('got rsi: {}'.format(rsi))
 
     # Buying more when RSI is low, this should lower our cost basis
-    if rsi <= 30:
-        buy_increment = 1
-    elif rsi <= 40:
-        buy_increment = 0.5
-    elif rsi <= 70:
-        buy_increment = 0.1
-    else:
-        buy_increment = None
+    # if rsi <= 30:
+    #     buy_increment = 1
+    # elif rsi <= 40:
+    #     buy_increment = 0.5
+    # elif rsi <= 70:
+    #     buy_increment = 0.1
+    # else:
+    #     buy_increment = None
+    buy_increment = 0.1
 
     cash = context.portfolio.cash
     log.info('base currency available: {cash}'.format(cash=cash))
@@ -62,10 +63,10 @@ def _handle_data(context, data):
         log.warn('no pricing data')
         return
 
-    record(price=price, rsi=rsi)
+    record(price=price)
 
     orders = get_open_orders(context.asset)
-    if orders:
+    if len(orders) > 0:
         log.info('skipping bar until all open orders execute')
         return
 
@@ -104,7 +105,6 @@ def _handle_data(context, data):
 
     if is_buy:
         if buy_increment is None:
-            log.info('the rsi is too high to consider buying {}'.format(rsi))
             return
 
         if price * buy_increment > cash:
@@ -117,11 +117,13 @@ def _handle_data(context, data):
                 cost_basis
             )
         )
+        limit_price = price * (1 + context.SLIPPAGE_ALLOWED)
         order(
             asset=context.asset,
             amount=buy_increment,
-            limit_price=price * (1 + context.SLIPPAGE_ALLOWED)
+            limit_price=limit_price
         )
+        pass
 
 
 def handle_data(context, data):
