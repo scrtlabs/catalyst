@@ -29,6 +29,7 @@ from catalyst.algorithm import TradingAlgorithm
 from catalyst.data.minute_bars import BcolzMinuteBarWriter, \
     BcolzMinuteBarReader
 from catalyst.errors import OrderInBeforeTradingStart
+from catalyst.exchange.exchange_blotter import ExchangeBlotter
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     ExchangePortfolioDataError,
@@ -190,6 +191,11 @@ class ExchangeTradingAlgorithmBacktest(ExchangeTradingAlgorithmBase):
     def __init__(self, *args, **kwargs):
         super(ExchangeTradingAlgorithmBacktest, self).__init__(*args, **kwargs)
 
+        self.blotter = ExchangeBlotter(
+            data_frequency=self.data_frequency,
+            # Default to NeverCancel in catalyst
+            cancel_policy=self.cancel_policy,
+        )
         log.info('initialized trading algorithm in backtest mode')
 
 
