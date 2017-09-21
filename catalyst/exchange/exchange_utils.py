@@ -9,9 +9,8 @@ from catalyst.exchange.exchange_errors import ExchangeAuthNotFound, \
     ExchangeSymbolsNotFound
 from catalyst.utils.paths import data_root, ensure_directory
 
-# TODO: move to aws
-SYMBOLS_URL = 'https://raw.githubusercontent.com/enigmampc/catalyst/' \
-              'master/catalyst/exchange/{exchange}/symbols.json'
+SYMBOLS_URL = 'https://s3.amazonaws.com/enigmaco/catalyst-exchanges/' \
+              '{exchange}/symbols.json'
 
 
 def get_exchange_folder(exchange_name, environ=None):
