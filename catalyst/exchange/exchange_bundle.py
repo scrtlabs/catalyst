@@ -30,44 +30,34 @@ def fetch_candles_chunk(exchange, assets, data_frequency, end_dt, bar_count):
         start_dt=calc_start_dt,
         end_dt=end_dt
     )
+    return candles
 
-    series = dict()
-
-    for asset in assets:
-        asset_candles = candles[asset]
-
-        candle_start_dt = None
-        candle_end_dt = None
-        for candle in asset_candles:
-            last_traded = candle['last_traded']
-
-            if candle_start_dt is None or candle_start_dt > last_traded:
-                candle_start_dt = last_traded
-
-            if candle_end_dt is None or candle_end_dt < last_traded:
-                candle_end_dt = last_traded
-
-        if candle_end_dt < end_dt:
-            asset_candles.append(
-                dict(
-                    open=None,
-                    high=None,
-                    close=None,
-                    low=None,
-                    volume=None,
-                    last_traded=end_dt
-                )
-            )
-
-        asset_df = pd.DataFrame(asset_candles)
-        if not asset_df.empty:
-            asset_df.set_index('last_traded', inplace=True, drop=True)
-            asset_df.sort_index(inplace=True)
-            asset_df = asset_df.resample('1T').ffill()
-
-            series[asset] = asset_df
-
-    return series
+    # series = dict()
+    #
+    # for asset in assets:
+    #     asset_candles = candles[asset]
+    #
+    #     candle_start_dt = None
+    #     candle_end_dt = None
+    #     for candle in asset_candles:
+    #         last_traded = candle['last_traded']
+    #
+    #         if candle_start_dt is None or candle_start_dt > last_traded:
+    #             candle_start_dt = last_traded
+    #
+    #         if candle_end_dt is None or candle_end_dt < last_traded:
+    #             candle_end_dt = last_traded
+    #
+    #
+    #     asset_df = pd.DataFrame(asset_candles)
+    #     if not asset_df.empty:
+    #         asset_df.set_index('last_traded', inplace=True, drop=True)
+    #         asset_df.sort_index(inplace=True)
+    #         asset_df = asset_df.resample('1T').ffill()
+    #
+    #         series[asset] = asset_df
+    #
+    # return series
 
 
 def process_bar_data(exchange, assets, writer, data_frequency,
@@ -121,47 +111,73 @@ def process_bar_data(exchange, assets, writer, data_frequency,
                 frequency=data_frequency
             )) as it:
 
+        previous_candle = dict()
         for chunk in it:
-            assets_candles_dict = fetch_candles_chunk(
+            chunk_end = chunk['end']
+            chunk_start = chunk_end - timedelta(minutes=chunk['bar_count'])
+
+            candles = fetch_candles_chunk(
                 exchange=exchange,
                 assets=assets,
                 data_frequency=frequency,
-                end_dt=chunk['end'],
+                end_dt=chunk_end,
                 bar_count=chunk['bar_count']
             )
             log.debug('requests counter {}'.format(exchange.request_cpt))
 
-            if not assets_candles_dict.keys():
-                log.debug(
-                    'no data: {symbols} on {exchange}, date {end}'.format(
-                        symbols=assets,
-                        exchange=exchange.name,
-                        end=chunk['end']
-                    )
-                )
-                continue
-
             num_candles = 0
             data = []
-            for asset in assets_candles_dict:
-                df = assets_candles_dict[asset]
-                sid = asset.sid
+            for asset in candles:
+                asset_candles = candles[asset]
+                if not asset_candles:
+                    log.debug(
+                        'no data: {symbols} on {exchange}, date {end}'.format(
+                            symbols=assets,
+                            exchange=exchange.name,
+                            end=chunk_end
+                        )
+                    )
+                    continue
 
-                num_candles += len(df.values)
-                data.append((sid, df))
+                all_dates = []
+                all_candles = []
+                date = chunk_start
+                while date <= chunk_end:
+
+                    previous = previous_candle[asset] \
+                        if asset in previous_candle else None
+
+                    candle = next((candle for candle in asset_candles \
+                                   if candle['last_traded'] == date), previous)
+
+                    if candle is not None:
+                        all_dates.append(date)
+                        all_candles.append(candle)
+
+                        previous_candle[asset] = candle
+
+                    date += timedelta(minutes=1)
+
+                df = pd.DataFrame(all_candles, index=all_dates)
+                if not df.empty:
+                    df.sort_index(inplace=True)
+
+                    sid = asset.sid
+                    num_candles += len(df.values)
+
+                    data.append((sid, df))
 
             try:
-                log.info(
+                log.debug(
                     'writing {num_candles} candles from {start} to {end}'.format(
                         num_candles=num_candles,
-                        start=chunk['end'] - \
-                              timedelta(minutes=chunk['bar_count']),
-                        end=chunk['end']
+                        start=chunk_start,
+                        end=chunk_end
                     )
                 )
 
                 for pair in data:
-                    log.info('data for sid {}\n{}\n{}'.format(
+                    log.debug('data for sid {}\n{}\n{}'.format(
                         pair[0], pair[1].head(2), pair[1].tail(2)))
 
                 writer.write(

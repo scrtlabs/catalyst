@@ -90,7 +90,7 @@ class ExchangeDataPortalTestCase:
             asset_finder.lookup_symbol('neo_btc', self.bitfinex),
         ]
 
-        date = pd.to_datetime('2017-09-10 9:00', utc=True)
+        date = pd.to_datetime('2017-09-10', utc=True)
         value = self.data_portal_backtest.get_spot_value(
             assets, 'close', date, 'minute')
         pass

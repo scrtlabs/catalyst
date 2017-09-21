@@ -63,6 +63,16 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
 
         super(ExchangeTradingAlgorithmBase, self).__init__(*args, **kwargs)
 
+    def round_order(self, amount):
+        """
+        We need fractions with cryptocurrencies
+
+        :param amount:
+        :return:
+        """
+        # TODO: is this good enough? Victor has a better solution.
+        return amount
+
     @api_method
     @preprocess(symbol_str=ensure_upper_case)
     def symbol(self, symbol_str, exchange_name=None):
@@ -594,16 +604,6 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             log.warn('unable to order {} {} on exchange {}'.format(
                 amount, asset.symbol, asset.exchange))
             return None
-
-    def round_order(self, amount):
-        """
-        We need fractions with cryptocurrencies
-
-        :param amount:
-        :return:
-        """
-        # TODO: is this good enough? Victor has a better solution.
-        return amount
 
     @api_method
     def batch_market_order(self, share_counts):
