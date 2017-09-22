@@ -12,7 +12,6 @@
 # limitations under the License.
 from datetime import timedelta
 
-import matplotlib.dates as mdates
 import pandas as pd
 from catalyst.gens.sim_engine import (
     BAR,
@@ -23,8 +22,6 @@ from matplotlib import pyplot as plt
 from matplotlib import style
 
 log = Logger('LiveGraphClock')
-
-fmt = mdates.DateFormatter('%Y-%m-%d %H:%M')
 
 
 class LiveGraphClock(object):
@@ -55,11 +52,17 @@ class LiveGraphClock(object):
 
     def __init__(self, sessions, context, time_skew=pd.Timedelta('0s')):
 
+        import matplotlib.dates as mdates
+        from matplotlib import pyplot as plt
+        from matplotlib import style
+
+
         self.sessions = sessions
         self.time_skew = time_skew
         self._last_emit = None
         self._before_trading_start_bar_yielded = True
         self.context = context
+        self.fmt = mdates.DateFormatter('%Y-%m-%d %H:%M')
 
         style.use('dark_background')
 
@@ -97,7 +100,7 @@ class LiveGraphClock(object):
         :return:
         """
         ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
-        ax.xaxis.set_major_formatter(fmt)
+        ax.xaxis.set_major_formatter(self.fmt)
 
         locator = mdates.HourLocator(interval=4)
         locator.MAXTICKS = 5000
