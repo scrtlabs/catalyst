@@ -18,8 +18,6 @@ from catalyst.gens.sim_engine import (
     SESSION_START
 )
 from logbook import Logger
-from matplotlib import pyplot as plt
-from matplotlib import style
 
 log = Logger('LiveGraphClock')
 
