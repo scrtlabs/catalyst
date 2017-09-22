@@ -12,6 +12,8 @@ from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
     CreateOrderError
 from catalyst.finance.execution import LimitOrder, StopLimitOrder
 from catalyst.finance.order import Order, ORDER_STATUS
+from catalyst.exchange.exchange_utils import get_exchange_symbols_filename
+
 
 log = Logger('Bittrex')
 
@@ -49,31 +51,6 @@ class Bittrex(Exchange):
         :return universal_symbol:
         """
         return exchange_symbol.lower()
-
-    def fetch_symbol_map(self):
-        """
-        Since Bittrex gives us a complete dictionary of symbols,
-        we can build the symbol map ad-hoc as opposed to maintaining
-        a static file. We must be careful with mapping any unconventional
-        symbol name as appropriate.
-
-        :return symbol_map:
-        """
-        symbol_map = dict()
-
-        markets = self.api.getmarkets()
-        for market in markets:
-            exchange_symbol = market['MarketName']
-            symbol = '{market}_{base}'.format(
-                market=self.sanitize_curency_symbol(market['MarketCurrency']),
-                base=self.sanitize_curency_symbol(market['BaseCurrency'])
-            )
-            symbol_map[exchange_symbol] = dict(
-                symbol=symbol,
-                start_date=pd.to_datetime(market['Created'], utc=True)
-            )
-
-        return symbol_map
 
     def get_balances(self):
         try:
@@ -316,3 +293,23 @@ class Bittrex(Exchange):
     def get_account(self):
         log.info('retrieving account data')
         pass
+
+    def generate_symbols_json(self, filename=None):
+        symbol_map = {}
+        markets = self.api.getmarkets()
+        for market in markets:
+            exchange_symbol = market['MarketName']
+            symbol = '{market}_{base}'.format(
+                market=self.sanitize_curency_symbol(market['MarketCurrency']),
+                base=self.sanitize_curency_symbol(market['BaseCurrency'])
+            )
+            symbol_map[exchange_symbol] = dict(
+                symbol=symbol,
+                start_date=pd.to_datetime(market['Created'], utc=True).strftime("%Y-%m-%d")
+            )
+
+        if(filename is None):
+            filename = get_exchange_symbols_filename(self.name)
+
+        with open(filename,'w') as f:
+            json.dump(symbol_map, f, sort_keys=True, indent=2, separators=(',',':'))

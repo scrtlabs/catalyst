@@ -23,6 +23,7 @@ from catalyst.exchange.exchange_execution import ExchangeLimitOrder, \
     ExchangeStopLimitOrder, ExchangeStopOrder
 from catalyst.finance.order import Order, ORDER_STATUS
 from catalyst.protocol import Account
+from catalyst.exchange.exchange_utils import get_exchange_symbols_filename
 
 # Trying to account for REST api instability
 # https://stackoverflow.com/questions/15431044/can-i-set-max-retries-for-requests-request
@@ -527,3 +528,15 @@ class Bitfinex(Exchange):
 
         log.debug('got tickers {}'.format(ticks))
         return ticks
+
+    def generate_symbols_json(self, filename=None):
+        symbol_map = {}
+        response = self._request('symbols', None)
+        for symbol in response.json():
+            symbol_map[symbol]= {"symbol":symbol[:-3]+'_'+symbol[-3:], "start_date": "2010-01-01"}
+
+        if(filename is None):
+            filename = get_exchange_symbols_filename(self.name)
+
+        with open(filename,'w') as f:
+            json.dump(symbol_map, f, sort_keys=True, indent=2, separators=(',',':'))
