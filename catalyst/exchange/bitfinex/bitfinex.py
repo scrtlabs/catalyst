@@ -530,13 +530,13 @@ class Bitfinex(Exchange):
         return ticks
 
     def generate_symbols_json(self, filename=None):
+        symbol_map = {}
         response = self._request('symbols', None)
-        symbols={}
         for symbol in response.json():
-            symbols[symbol]= {"symbol":symbol[:-3]+'_'+symbol[-3:], "start_date": "2010-01-01"}
+            symbol_map[symbol]= {"symbol":symbol[:-3]+'_'+symbol[-3:], "start_date": "2010-01-01"}
 
         if(filename is None):
             filename = get_exchange_symbols_filename(self.name)
 
         with open(filename,'w') as f:
-            json.dump(symbols, f, sort_keys=True, indent=2, separators=(',',':'))
+            json.dump(symbol_map, f, sort_keys=True, indent=2, separators=(',',':'))
