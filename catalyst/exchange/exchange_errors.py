@@ -147,3 +147,17 @@ class BundleNotFoundError(ZiplineError):
            'Please ingest data using the command '
            '`catalyst ingest -b exchange_{exchange}`. '
            'See catalyst documentation for details.').strip()
+
+
+class PricingDataBeforeTradingError(ZiplineError):
+    msg = ('Pricing data for trading pairs {symbols} on exchange {exchange} '
+           'starts on {first_trading_day}.').strip()
+
+
+class PricingDataNotLoadedError(ZiplineError):
+    msg = ('Pricing data {field} for trading pairs {symbols} trading on '
+           'exchange {exchange} since {first_trading_day} is unavailable. '
+           'The bundle data is either out-of-date or has not been loaded yet.'
+           'Please ingest data using the command '
+           '`catalyst ingest -b exchange_{exchange}`. '
+           'See catalyst documentation for details.').strip()

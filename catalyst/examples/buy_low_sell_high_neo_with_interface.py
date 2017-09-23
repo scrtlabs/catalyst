@@ -20,7 +20,7 @@ def initialize(context):
     log.info('initializing algo')
     context.asset = symbol('neo_btc', 'bitfinex')
 
-    context.TARGET_POSITIONS = 50
+    context.TARGET_POSITIONS = 50000
     context.PROFIT_TARGET = 0.1
     context.SLIPPAGE_ALLOWED = 0.02
 
@@ -33,25 +33,24 @@ def initialize(context):
 
 
 def _handle_data(context, data):
-    # prices = data.history(
-    #     context.asset,
-    #     fields='price',
-    #     bar_count=20,
-    #     frequency='30m'
-    # )
-    # rsi = talib.RSI(prices.values, timeperiod=14)[-1]
-    # log.info('got rsi: {}'.format(rsi))
+    prices = data.history(
+        context.asset,
+        fields='price',
+        bar_count=30,
+        frequency='30m'
+    )
+    rsi = talib.RSI(prices.values, timeperiod=14)[-1]
+    log.info('got rsi: {}'.format(rsi))
 
     # Buying more when RSI is low, this should lower our cost basis
-    # if rsi <= 30:
-    #     buy_increment = 1
-    # elif rsi <= 40:
-    #     buy_increment = 0.5
-    # elif rsi <= 70:
-    #     buy_increment = 0.1
-    # else:
-    #     buy_increment = None
-    buy_increment = 0.1
+    if rsi <= 30:
+        buy_increment = 1
+    elif rsi <= 40:
+        buy_increment = 0.5
+    elif rsi <= 70:
+        buy_increment = 0.1
+    else:
+        buy_increment = None
 
     cash = context.portfolio.cash
     log.info('base currency available: {cash}'.format(cash=cash))
@@ -159,8 +158,8 @@ def analyze(context, stats):
 #     live_graph=True
 # )
 run_algorithm(
-    capital_base=10000,
-    start=pd.to_datetime('2017-09-10', utc=True),
+    capital_base=250,
+    start=pd.to_datetime('2017-09-08', utc=True),
     end=pd.to_datetime('2017-09-15', utc=True),
     data_frequency='minute',
     initialize=initialize,

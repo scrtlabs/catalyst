@@ -28,7 +28,8 @@ from catalyst.data.us_equity_pricing import BcolzDailyBarReader
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     ExchangeBarDataError,
-    BundleNotFoundError)
+    BundleNotFoundError, PricingDataBeforeTradingError,
+    PricingDataNotLoadedError)
 from catalyst.utils.paths import data_path
 
 log = Logger('DataPortalExchange')
@@ -85,7 +86,8 @@ class DataPortalExchangeBase(DataPortal):
 
             else:
                 exchange = self.exchanges[exchange_assets.keys()[0]]
-                return exchange.get_history_window(
+                return self.get_exchange_history_window(
+                    exchange,
                     assets,
                     end_dt,
                     bar_count,
@@ -123,6 +125,10 @@ class DataPortalExchangeBase(DataPortal):
                            field,
                            data_frequency=None,
                            ffill=True):
+
+        if field == 'price':
+            field = 'close'
+
         return self._get_history_window(assets,
                                         end_dt,
                                         bar_count,
@@ -251,12 +257,14 @@ class DataPortalExchangeLive(DataPortalExchangeBase):
 
 class DataPortalExchangeBacktest(DataPortalExchangeBase):
     def __init__(self, *args, **kwargs):
-
         super(DataPortalExchangeBacktest, self).__init__(*args, **kwargs)
 
         self.daily_bar_readers = dict()
         self.minute_bar_readers = dict()
         self.five_minute_bar_readers = dict()
+
+        self.history_loaders = dict()
+        self.minute_history_loaders = dict()
         for exchange_name in self.exchanges:
             name = 'exchange_{}'.format(exchange_name)
             time_folder = \
@@ -289,6 +297,13 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
             except IOError:
                 self.minute_bar_readers[exchange_name] = None
 
+    def _get_first_trading_day(self, assets):
+        first_date = None
+        for asset in assets:
+            if first_date is None or asset.start_date > first_date:
+                first_date = asset.start_date
+        return first_date
+
     @staticmethod
     def find_most_recent_time(bundle_name):
         try:
@@ -320,30 +335,76 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
                                     field,
                                     data_frequency,
                                     ffill=True):
-        # TODO: implement in the bundle
-        df = exchange.get_history_window(
-            assets,
-            end_dt,
-            bar_count,
-            frequency,
-            field,
-            data_frequency,
-            ffill)
+        if data_frequency == 'minute' or data_frequency == '1m':
+            reader = self.minute_bar_readers[exchange.name]
+            dts = self.trading_calendar.minutes_window(
+                end_dt, -bar_count
+            )
+
+            self.ensure_after_first_day(dts[0], assets)
+
+        elif data_frequency == '5-minute' or data_frequency == '5m':
+            reader = self.five_minute_bar_readers[exchange.name]
+        elif data_frequency == 'daily' or data_frequency == '1d':
+            reader = self.daily_bar_readers[exchange.name]
+
+            session = self.trading_calendar.minute_to_session_label(end_dt)
+            dts = self._get_days_for_window(session, bar_count)
+
+            self.ensure_after_first_day(dts[0], assets)
+        else:
+            raise ValueError('Unsupported frequency')
+
+        try:
+            values = reader.load_raw_arrays(
+                [field],
+                dts[0],
+                dts[-1],
+                assets,
+            )[0]
+        except Exception:
+            raise PricingDataNotLoadedError(
+                field=field,
+                first_trading_day=self._get_first_trading_day(assets),
+                exchange=exchange.name,
+                symbols=[asset.symbol for asset in assets],
+            )
+
+        series = dict()
+        for index, asset in enumerate(assets):
+            asset_values = []
+            for value in values:
+                asset_values.append(value[index])
+
+            value_series = pd.Series(asset_values, index=dts)
+            series[asset] = value_series
+
+        df = pd.DataFrame(series)
         return df
+
+    def ensure_after_first_day(self, dt, assets):
+        first_trading_day = self._get_first_trading_day(assets)
+        if dt < first_trading_day:
+            raise PricingDataBeforeTradingError(
+                first_trading_day=first_trading_day,
+                exchange=assets[0].exchange,
+                symbols=[asset.symbol for asset in assets],
+            )
 
     def get_exchange_spot_value(self, exchange, assets, field, dt,
                                 data_frequency):
-
-        if data_frequency == 'minute':
+        if data_frequency == 'minute' or data_frequency == '1m':
             reader = self.minute_bar_readers[exchange.name]
-        elif data_frequency == '5-minute':
+        elif data_frequency == '5-minute' or data_frequency == '5m':
             reader = self.five_minute_bar_readers[exchange.name]
-        elif data_frequency == 'daily':
+        elif data_frequency == 'daily' or data_frequency == '1d':
             reader = self.daily_bar_readers[exchange.name]
         else:
             raise ValueError('Unsupported frequency')
 
         if isinstance(assets, TradingPair):
+            self.ensure_after_first_day(dt, [assets])
+
             try:
                 value = reader.get_value(
                     sid=assets.sid,
@@ -351,10 +412,16 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
                     field=field
                 )
                 return value
-            except Exception as e:
-                log.warn('minute data not found: {}'.format(e))
-                return None
+            except Exception:
+                raise PricingDataNotLoadedError(
+                    field=field,
+                    first_trading_day=self._get_first_trading_day([assets]),
+                    exchange=exchange.name,
+                    symbols=assets.symbol,
+                )
         else:
+            self.ensure_after_first_day(dt, assets)
+
             values = []
             for asset in assets:
                 try:
@@ -364,8 +431,12 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
                         field=field
                     )
                     values.append(value)
-                except Exception as e:
-                    log.warn('minute data not found: {}'.format(e))
-                    values.append(None)
+                except Exception:
+                    raise PricingDataNotLoadedError(
+                        field=field,
+                        first_trading_day=self._get_first_trading_day(assets),
+                        exchange=exchange.name,
+                        symbols=[asset.symbol for asset in assets],
+                    )
 
                 return values

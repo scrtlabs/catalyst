@@ -50,11 +50,10 @@ class ExchangeDataPortalTestCase:
             exchanges=dict(bitfinex=self.bitfinex),
             asset_finder=asset_finder,
             trading_calendar=open_calendar,
-            first_trading_day=pd.to_datetime('2017-09-10', utc=True)
+            first_trading_day=None  # will set dynamically based on assets
         )
 
     def test_get_history_window_live(self):
-
         asset_finder = self.data_portal_live.asset_finder
 
         assets = [
@@ -82,8 +81,24 @@ class ExchangeDataPortalTestCase:
             assets, 'price', now, '1m')
         pass
 
-    def test_get_spot_value_backtest(self):
+    def test_get_history_window_backtest(self):
+        asset_finder = self.data_portal_live.asset_finder
 
+        assets = [
+            asset_finder.lookup_symbol('neo_btc', self.bitfinex),
+        ]
+
+        date = pd.to_datetime('2017-09-10', utc=True)
+        data = self.data_portal_backtest.get_history_window(
+            assets,
+            date,
+            10,
+            '1m',
+            'close',
+            'minute')
+        pass
+
+    def test_get_spot_value_backtest(self):
         asset_finder = self.data_portal_backtest.asset_finder
 
         assets = [
@@ -92,8 +107,6 @@ class ExchangeDataPortalTestCase:
 
         date = pd.to_datetime('2017-09-10', utc=True)
         value = self.data_portal_backtest.get_spot_value(
-            assets, 'close', date, 'minute')
+            assets[0], 'close', date, 'minute')
         pass
 
-    def test_get_history_window_backtest(self):
-        pass

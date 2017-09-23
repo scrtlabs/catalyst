@@ -1,18 +1,16 @@
+from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
 from catalyst.finance.blotter import Blotter
-from catalyst.finance.commission import PerShare, CommissionModel
-from catalyst.finance.slippage import VolumeShareSlippage, SlippageModel, \
-    LiquidityExceeded
-from catalyst.assets._assets import TradingPair
-
-# It seems like we need to accept greate slippage risk in cryptos
-# Orders won't often close at Equity levels.
-# TODO: consider adjusting dynamically based on trading pair
+from catalyst.finance.commission import CommissionModel
+from catalyst.finance.slippage import SlippageModel
 from catalyst.finance.transaction import Transaction
 
 log = Logger('exchange_blotter')
 
+# It seems like we need to accept greater slippage risk in cryptos
+# Orders won't often close at Equity levels.
+# TODO: consider adjusting dynamically based on trading pair
 DEFAULT_SLIPPAGE_SPREAD = 0.02
 DEFAULT_MAKER_FEE = 0.001
 DEFAULT_TAKER_FEE = 0.002
@@ -37,8 +35,7 @@ class TradingPairFeeSchedule(CommissionModel):
     def __repr__(self):
         return (
             '{class_name}(maker_fee={maker_fee}, '
-            'taker_fee={taker_fee})'
-                .format(
+            'taker_fee={taker_fee})'.format(
                 class_name=self.__class__.__name__,
                 maker_fee=self.maker_fee,
                 taker_fee=self.taker_fee,
@@ -83,44 +80,32 @@ class TradingPairFixedSlippage(SlippageModel):
 
     def simulate(self, data, asset, orders_for_asset):
         self._volume_for_bar = 0
-        volume = data.current(asset, "volume")
 
-        if volume == 0:
-            return
+        price = data.current(asset, 'close')
 
-        # can use the close price, since we verified there's volume in this
-        # bar.
-        price = data.current(asset, "close")
         dt = data.current_dt
-
         for order in orders_for_asset:
             if order.open_amount == 0:
                 continue
 
             order.check_triggers(price, dt)
             if not order.triggered:
+                log.debug('order has not reached the trigger at current '
+                          'price {}'.format(price))
                 continue
 
-            transaction = None
-            try:
-                execution_price, execution_volume = \
-                    self.process_order(data, order)
+            execution_price, execution_volume = self.process_order(data, order)
 
-                if execution_price is not None:
-                    transaction = Transaction(
-                        asset=order.asset,
-                        amount=abs(execution_volume),
-                        dt=data.current_dt,
-                        price=execution_price,
-                        order_id=order.id
-                    )
+            transaction = Transaction(
+                asset=order.asset,
+                amount=abs(execution_volume),
+                dt=dt,
+                price=execution_price,
+                order_id=order.id
+            )
 
-            except LiquidityExceeded:
-                break
-
-            if transaction:
-                self._volume_for_bar += abs(transaction.amount)
-                yield order, transaction
+            self._volume_for_bar += abs(transaction.amount)
+            yield order, transaction
 
     def process_order(self, data, order):
         price = data.current(order.asset, 'close')
@@ -130,11 +115,11 @@ class TradingPairFixedSlippage(SlippageModel):
             adj_price = price * (1 + self.spread)
         else:
             # Sell order
-            adj_price = price & (1 - self.spread)
+            adj_price = price * (1 - self.spread)
 
         log.debug('added slippage to price: {} => {}'.format(price, adj_price))
 
-        return (adj_price, order.amount)
+        return adj_price, order.amount
 
 
 class ExchangeBlotter(Blotter):
