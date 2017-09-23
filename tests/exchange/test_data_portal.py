@@ -107,6 +107,6 @@ class ExchangeDataPortalTestCase:
 
         date = pd.to_datetime('2017-09-10', utc=True)
         value = self.data_portal_backtest.get_spot_value(
-            assets[0], 'close', date, 'minute')
+            assets, 'close', date, 'minute')
         pass
 

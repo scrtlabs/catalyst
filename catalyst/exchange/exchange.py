@@ -306,19 +306,14 @@ class Exchange:
          '1D', '7D', '14D', '1M'
         """
         if field not in BASE_FIELDS:
-            raise KeyError('Invalid column: ' + str(field))
+            raise KeyError('Invalid column: {}'.format(field))
 
-        if isinstance(assets, collections.Iterable):
-            values = list()
-            for asset in assets:
-                value = self.get_single_spot_value(
-                    asset, field, data_frequency)
-                values.append(value)
+        values = []
+        for asset in assets:
+            value = self.get_single_spot_value(asset, field, data_frequency)
+            values.append(value)
 
-            return values
-        else:
-            return self.get_single_spot_value(
-                assets, field, data_frequency)
+        return values
 
     def get_single_spot_value(self, asset, field, data_frequency):
         """
