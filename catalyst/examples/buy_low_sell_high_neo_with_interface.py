@@ -154,8 +154,8 @@ def analyze(context, stats):
 #     exchange_name='bittrex,bitfinex',
 #     live=True,
 #     algo_namespace=algo_namespace,
-#     base_currency='eth',
-#     live_graph=True
+#     base_currency='btc',
+#     live_graph=False
 # )
 run_algorithm(
     capital_base=250,

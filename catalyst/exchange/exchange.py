@@ -437,6 +437,7 @@ class Exchange:
             data_frequency=frequency,
             assets=assets,
             bar_count=bar_count,
+            end_dt=end_dt
         )
 
         series = dict()
@@ -494,18 +495,6 @@ class Exchange:
                     position.amount * position.last_sale_price
                 portfolio.portfolio_value = \
                     portfolio.positions_value + portfolio.cash
-
-    @abstractmethod
-    def get_balances(self):
-        """
-        Retrieve wallet balances for the exchange
-        :return balances: A dict of currency => available balance
-        """
-        pass
-
-    @abstractmethod
-    def create_order(self, asset, amount, is_buy, style):
-        pass
 
     def order(self, asset, amount, limit_price=None, stop_price=None,
               style=None):
@@ -592,6 +581,34 @@ class Exchange:
         else:
             return None
 
+    # The methods below must be implemented for each exchange.
+    @abstractmethod
+    def get_balances(self):
+        """
+        Retrieve wallet balances for the exchange
+        :return balances: A dict of currency => available balance
+        """
+        pass
+
+    @abstractmethod
+    def create_order(self, asset, amount, is_buy, style):
+        """
+        Place an order on the exchange.
+
+        :param asset : Asset
+            The asset that this order is for.
+        :param amount : int
+            The amount of shares to order. If ``amount`` is positive, this is
+            the number of shares to buy or cover. If ``amount`` is negative,
+            this is the number of shares to sell or short.
+        :param style : ExecutionStyle
+            The execution style for the order.
+        :param is_buy: boolean
+            Is it a buy order?
+        :return:
+        """
+        pass
+
     @abstractmethod
     def get_open_orders(self, asset):
         """Retrieve all of the current open orders.
@@ -649,12 +666,28 @@ class Exchange:
         Retrieve OHLCV candles for the given assets
 
         :param data_frequency:
-        :param assets:
-        :param end_dt:
+            The candle frequency: minute, 5-minute or daily
+        :param assets: list[TradingPair]
+            The targeted assets.
         :param bar_count:
-        :param limit:
-        :param start_date:
-        :return:
+            The number of bar desired. (default 1)
+        :param end_dt: datetime, optional
+            The last bar date.
+        :param start_date: datetime, optional
+            The first bar date.
+
+        :return dict[TradingPair, dict[str, Object]]: OHLCV data
+            A dictionary of OHLCV candles. Each TradingPair instance is
+            mapped to a list of dictionaries with this structure:
+                open: float
+                high: float
+                low: float
+                close: float
+                volume: float
+                last_traded: datetime
+
+            See definition here:
+                http://www.investopedia.com/terms/o/ohlcchart.asp
         """
         pass
 

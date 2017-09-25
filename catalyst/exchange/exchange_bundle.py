@@ -32,33 +32,6 @@ def fetch_candles_chunk(exchange, assets, data_frequency, end_dt, bar_count):
     )
     return candles
 
-    # series = dict()
-    #
-    # for asset in assets:
-    #     asset_candles = candles[asset]
-    #
-    #     candle_start_dt = None
-    #     candle_end_dt = None
-    #     for candle in asset_candles:
-    #         last_traded = candle['last_traded']
-    #
-    #         if candle_start_dt is None or candle_start_dt > last_traded:
-    #             candle_start_dt = last_traded
-    #
-    #         if candle_end_dt is None or candle_end_dt < last_traded:
-    #             candle_end_dt = last_traded
-    #
-    #
-    #     asset_df = pd.DataFrame(asset_candles)
-    #     if not asset_df.empty:
-    #         asset_df.set_index('last_traded', inplace=True, drop=True)
-    #         asset_df.sort_index(inplace=True)
-    #         asset_df = asset_df.resample('1T').ffill()
-    #
-    #         series[asset] = asset_df
-    #
-    # return series
-
 
 def process_bar_data(exchange, assets, writer, data_frequency,
                      show_progress, start, end):
@@ -117,9 +90,15 @@ def process_bar_data(exchange, assets, writer, data_frequency,
             chunk_end = chunk['end']
             chunk_start = chunk_end - timedelta(minutes=chunk['bar_count'])
 
+            chunk_assets = []
+            for asset in assets:
+                if asset.start_date <= chunk_end:
+                    chunk_assets.append(asset)
+
+            # TODO: ensure correct behavior for assets starting in the chunk
             candles = fetch_candles_chunk(
                 exchange=exchange,
-                assets=assets,
+                assets=chunk_assets,
                 data_frequency=frequency,
                 end_dt=chunk_end,
                 bar_count=chunk['bar_count']
@@ -133,7 +112,7 @@ def process_bar_data(exchange, assets, writer, data_frequency,
                 if not asset_candles:
                     log.debug(
                         'no data: {symbols} on {exchange}, date {end}'.format(
-                            symbols=assets,
+                            symbols=chunk_assets,
                             exchange=exchange.name,
                             end=chunk_end
                         )

@@ -143,7 +143,6 @@ def _run(handle_data,
     if exchange_name is None:
         raise ValueError('Please specify at least one exchange.')
 
-
     exchange_list = [x.strip().lower() for x in exchange.split(',')]
 
     exchanges = dict()
@@ -170,6 +169,7 @@ def _run(handle_data,
                 base_currency=base_currency,
                 portfolio=portfolio
             )
+
         elif exchange_name == 'bittrex':
             exchanges[exchange_name] = Bittrex(
                 key=exchange_auth['key'],
@@ -177,17 +177,11 @@ def _run(handle_data,
                 base_currency=base_currency,
                 portfolio=portfolio
             )
+
         else:
             raise ExchangeNotFoundError(exchange_name=exchange_name)
 
     open_calendar = get_calendar('OPEN')
-    sim_params = create_simulation_parameters(
-        start=start,
-        end=end,
-        capital_base=capital_base,
-        data_frequency=data_frequency,
-        emission_rate=data_frequency,
-    )
 
     env = TradingEnvironment(
         environ=environ,
@@ -274,9 +268,17 @@ def _run(handle_data,
 
         data = DataPortalExchangeBacktest(
             exchanges=exchanges,
-            asset_finder=env.asset_finder,
+            asset_finder=None,
             trading_calendar=open_calendar,
-            first_trading_day=start,
+            first_trading_day=None,
+        )
+
+        sim_params = create_simulation_parameters(
+            start=start,
+            end=end,
+            capital_base=capital_base,
+            data_frequency=data_frequency,
+            emission_rate=data_frequency,
         )
 
         algorithm_class = partial(
