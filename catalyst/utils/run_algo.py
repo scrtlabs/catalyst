@@ -11,6 +11,8 @@ import pandas as pd
 import click
 
 from catalyst.exchange.bittrex.bittrex import Bittrex
+from catalyst.exchange.bitfinex.bitfinex import Bitfinex
+from catalyst.exchange.poloniex.poloniex import Poloniex
 
 try:
     from pygments import highlight
@@ -39,7 +41,6 @@ import catalyst.utils.paths as pth
 
 from catalyst.exchange.algorithm_exchange import ExchangeTradingAlgorithm
 from catalyst.exchange.data_portal_exchange import DataPortalExchange
-from catalyst.exchange.bitfinex.bitfinex import Bitfinex
 from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
 from catalyst.exchange.exchange_portfolio import ExchangePortfolio
 from catalyst.exchange.exchange_errors import (
@@ -173,6 +174,13 @@ def _run(handle_data,
             )
         elif exchange_name == 'bittrex':
             exchange = Bittrex(
+                key=exchange_auth['key'],
+                secret=exchange_auth['secret'],
+                base_currency=base_currency,
+                portfolio=portfolio
+            )
+        elif exchange_name == 'poloniex':
+            exchange = Poloniex(
                 key=exchange_auth['key'],
                 secret=exchange_auth['secret'],
                 base_currency=base_currency,
