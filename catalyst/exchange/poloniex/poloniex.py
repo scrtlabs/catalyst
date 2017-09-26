@@ -251,8 +251,6 @@ class Poloniex(Exchange):
 
 
     def create_order(self, asset, amount, is_buy, style):
-        pass
-    '''
         """
         Creating order on the exchange.
 
@@ -263,59 +261,43 @@ class Poloniex(Exchange):
         :return:
         """
         exchange_symbol = self.get_symbol(asset)
-        if isinstance(style, ExchangeLimitOrder) \
-                or isinstance(style, ExchangeStopLimitOrder):
+
+        if isinstance(style, ExchangeLimitOrder) or isinstance(style, ExchangeStopLimitOrder):
+            if isinstance(style, ExchangeStopLimitOrder):
+                log.warn('{} will ignore the stop price'.format(self.name))
+
             price = style.get_limit_price(is_buy)
-            order_type = 'limit'
 
-        elif isinstance(style, ExchangeStopOrder):
-            price = style.get_stop_price(is_buy)
-            order_type = 'stop'
+            try:
+                if(is_buy):
+                    response = self.api.buy(exchange_symbol, amount, price)
+                else:
+                    reponse = self.api.sell(exchange_symbol, amount, price)
+            except Exception as e:
+                raise ExchangeRequestError(error=e)
 
+            date = pd.Timestamp.utcnow()
+
+            print(response)
+
+            if('orderNumber' in response):
+                order_id = str(response['orderNumber'])
+                order = Order(
+                    dt=date,
+                    asset=asset,
+                    amount=amount,
+                    stop=style.get_stop_price(is_buy),
+                    limit=style.get_limit_price(is_buy),
+                    id=order_id
+                )
+                return order
+            else:
+                log.warn('{} order failed: {}'.format('buy' if is_buy else 'sell', response['error']))
+                return None
         else:
             raise InvalidOrderStyle(exchange=self.name,
                                     style=style.__class__.__name__)
 
-        req = dict(
-            symbol=exchange_symbol,
-            amount=str(float(abs(amount))),
-            price="{:.20f}".format(float(price)),
-            side='buy' if is_buy else 'sell',
-            type='exchange ' + order_type,  # TODO: support margin trades
-            exchange=self.name,
-            is_hidden=False,
-            is_postonly=False,
-            use_all_available=0,
-            ocoorder=False,
-            buy_price_oco=0,
-            sell_price_oco=0
-        )
-
-        date = pd.Timestamp.utcnow()
-        try:
-            response = self._request('order/new', req)
-            order_status = response.json()
-        except Exception as e:
-            raise ExchangeRequestError(error=e)
-
-        if 'message' in order_status:
-            raise ExchangeRequestError(
-                error='unable to create Bitfinex order {}'.format(
-                    order_status['message'])
-            )
-
-        order_id = str(order_status['id'])
-        order = Order(
-            dt=date,
-            asset=asset,
-            amount=amount,
-            stop=style.get_stop_price(is_buy),
-            limit=style.get_limit_price(is_buy),
-            id=order_id
-        )
-
-        return order
-    '''
 
     def get_open_orders(self, asset='all'):
         """Retrieve all of the current open orders.
@@ -420,51 +402,40 @@ class Poloniex(Exchange):
 
         :param assets:
         :return:
-        """
-        pass
-
-        '''
-        symbols = self._get_v2_symbols(assets)
+        """      
+        symbols = []
+        for asset in assets:
+            symbols.append(self.get_symbol(asset))
         log.debug('fetching tickers {}'.format(symbols))
 
         try:
-            response = requests.get(
-                '{url}/v2/tickers?symbols={symbols}'.format(
-                    url=self.url,
-                    symbols=','.join(symbols),
-                )
-            )
+            response = self.api.returnticker()
         except Exception as e:
             raise ExchangeRequestError(error=e)
 
-        if 'error' in response.content:
+        if 'error' in response:
             raise ExchangeRequestError(
                 error='Unable to retrieve tickers: {}'.format(
-                    response.content)
+                    response['error'])
             )
 
-        tickers = response.json()
-
         ticks = dict()
-        for index, ticker in enumerate(tickers):
-            if not len(ticker) == 11:
-                raise ExchangeRequestError(
-                    error='Invalid ticker in response: {}'.format(ticker)
-                )
+
+        for index, symbol in enumerate(symbols):
 
             ticks[assets[index]] = dict(
                 timestamp=pd.Timestamp.utcnow(),
-                bid=ticker[1],
-                ask=ticker[3],
-                last_price=ticker[7],
-                low=ticker[10],
-                high=ticker[9],
-                volume=ticker[8],
+                bid=float(response[symbol]['highestBid']),
+                ask=float(response[symbol]['lowestAsk']),
+                last_price=float(response[symbol]['last']),
+                low=float(response[symbol]['lowestAsk']),      #TODO: Polo does not provide low
+                high=float(response[symbol]['highestBid']),    #TODO: Polo does not provide high
+                volume=float(response[symbol]['baseVolume']),
             )
 
         log.debug('got tickers {}'.format(ticks))
         return ticks
-        '''
+
 
     def generate_symbols_json(self, filename=None):
         symbol_map = {}

@@ -49,10 +49,10 @@ class Poloniex_api(object):
         return json.loads(urlopen(req).read())
 
     def returnticker(self):
-        return self.query('returnTicker')
+        return self.query('returnTicker', {})
 
     def return24volume(self):
-        return self.query('return24Volume')
+        return self.query('return24Volume', {})
 
     def returnOrderBook(self, market='all'):
         return self.query('returnOrderBook', {'currencyPair': market})
@@ -69,7 +69,7 @@ class Poloniex_api(object):
                           'start': start, 'end': end})
 
     def returncurrencies(self):
-        return self.query('returnCurrencies')
+        return self.query('returnCurrencies', {})
 
     def returnloadorders(self, market):
         return self.query('returnLoanOrders', {'currency': market})
@@ -77,52 +77,65 @@ class Poloniex_api(object):
     def returnbalances(self):
         return self.query('returnBalances')
 
+    def returncompletebalances(self, account):
+        if(account):
+            return self.query('returnCompleteBalances', {'account': account})
+        else:
+            return self.query('returnCompleteBalances')
+
+    def returndepositaddresses(self):
+        return self.query('returnDepositAddresses')
+
+    def generatenewaddress(self, currency):
+        return self.query('generateNewAddress', {'currency': currency})
+
+    def returnDepositsWithdrawals(self, start, end):
+        return self.query('returnDepositsWithdrawals', {'start': start, 'end': end})
+
     def returnopenorders(self, market):
         return self.query('returnOpenOrders', {'currencyPair': market})
+
+    def returntradehistory(self, market):
+        #TODO: optional start and/or end and limit
+        return self.query('returnTradeHistory', {'currencyPair': market})
+
+    def returnordertrades(self, ordernumber):
+        return self.query('returnOrderTrades', {'orderNumber': ordernumber})
+
+    def buy(self, market, amount, rate, fillorkill=0, immediateorcancel=0, postonly=0):
+        if(fillorkill):
+            return self.query('buy', {'currencyPair': market, 'rate':rate, 'amount': amount,
+                                      'fillOrKill': fillorkill, })
+        elif(immediateorcancel):
+            return self.query('buy', {'currencyPair': market, 'rate':rate, 'amount': amount,
+                                      'immediateOrCancel': immediateorcancel, })
+        elif(postonly):
+            return self.query('buy', {'currencyPair': market, 'rate':rate, 'amount': amount,
+                                      'postOnly': postonly, })
+        else:
+            return self.query('buy', {'currencyPair': market, 'rate':rate, 'amount': amount, })
+
+    def sell(self, market, amount, rate, fillorkill=0, immediateorcancel=0, postonly=0):
+        if(fillorkill):
+            return self.query('sell', {'currencyPair': market, 'rate':rate, 'amount': amount,
+                                      'fillOrKill': fillorkill, })
+        elif(immediateorcancel):
+            return self.query('sell', {'currencyPair': market, 'rate':rate, 'amount': amount,
+                                      'immediateOrCancel': immediateorcancel, })
+        elif(postonly):
+            return self.query('sell', {'currencyPair': market, 'rate':rate, 'amount': amount,
+                                      'postOnly': postonly, })
+        else:
+            return self.query('sell', {'currencyPair': market, 'rate':rate, 'amount': amount, })
 
     def cancelorder(self, ordernumber):
         return self.query('cancelOrder', {'orderNumber': ordernumber})
 
-    '''
-    def buylimit(self, market, quantity, rate):
-        return self.query('buylimit', {'market': market, 'quantity': quantity,
-                                       'rate': rate})
-
-    def buymarket(self, market, quantity):
-        return self.query('buymarket',
-                          {'market': market, 'quantity': quantity})
-
-    def selllimit(self, market, quantity, rate):
-        return self.query('selllimit', {'market': market, 'quantity': quantity,
-                                        'rate': rate})
-
-    def sellmarket(self, market, quantity):
-        return self.query('sellmarket',
-                          {'market': market, 'quantity': quantity})
-
-    def getbalance(self, currency):
-        return self.query('getbalance', {'currency': currency})
-
-    def getdepositaddress(self, currency):
-        return self.query('getdepositaddress', {'currency': currency})
-
     def withdraw(self, currency, quantity, address):
         return self.query('withdraw',
-                          {'currency': currency, 'quantity': quantity,
+                          {'currency': currency, 'amount': quantity,
                            'address': address})
 
-    def getorder(self, uuid):
-        return self.query('getorder', {'uuid': uuid})
+    def returnfeeinfo(self):
+        return self.query('returnFeeInfo')
 
-    def getorderhistory(self, market, count):
-        return self.query('getorderhistory',
-                          {'market': market, 'count': count})
-
-    def getwithdrawalhistory(self, currency, count):
-        return self.query('getwithdrawalhistory',
-                          {'currency': currency, 'count': count})
-
-    def getdeposithistory(self, currency, count):
-        return self.query('getdeposithistory',
-                          {'currency': currency, 'count': count})
-    '''
