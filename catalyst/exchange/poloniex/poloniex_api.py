@@ -40,7 +40,6 @@ class Poloniex_api(object):
             req['command'] = method
             req['nonce']   = int(time.time()*1000)
             post_data      = urllib.parse.urlencode(req)
-            print(post_data)
             signature      = hmac.new(self.secret, post_data, hashlib.sha512).hexdigest()
             headers        = { 'Sign': signature, 'Key': self.key}
         else:

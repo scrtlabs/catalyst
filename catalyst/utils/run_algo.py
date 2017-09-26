@@ -170,7 +170,6 @@ def _run(handle_data,
                 base_currency=base_currency,
                 portfolio=portfolio
             )
-
         elif exchange_name == 'bittrex':
             exchanges[exchange_name] = Bittrex(
                 key=exchange_auth['key'],
@@ -179,7 +178,7 @@ def _run(handle_data,
                 portfolio=portfolio
             )
         elif exchange_name == 'poloniex':
-            exchange = Poloniex(
+            exchanges[exchange_name] = Poloniex(
                 key=exchange_auth['key'],
                 secret=exchange_auth['secret'],
                 base_currency=base_currency,
