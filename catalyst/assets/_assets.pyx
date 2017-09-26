@@ -408,7 +408,8 @@ cdef class TradingPair(Asset):
         'exchange_full',
         'leverage',
         'market_currency',
-        'base_currency'
+        'base_currency',
+        'min_trade_size',
     })
     def __init__(self,
                  object symbol,
@@ -420,7 +421,8 @@ cdef class TradingPair(Asset):
                  object end_date=None,
                  object first_traded=None,
                  object auto_close_date=None,
-                 object exchange_full=None):
+                 object exchange_full=None,
+                 object min_trade_size=None):
         """
         Replicates the Asset constructor with some built-in conventions
         and a new 'leverage' attribute.
@@ -476,6 +478,7 @@ cdef class TradingPair(Asset):
         :param first_traded:
         :param auto_close_date:
         :param exchange_full:
+        :param min_trade_size:
         """
 
         symbol = symbol.lower()
@@ -509,6 +512,7 @@ cdef class TradingPair(Asset):
             first_traded=first_traded,
             auto_close_date=auto_close_date,
             exchange_full=exchange_full,
+            min_trade_size=min_trade_size
         )
 
         self.leverage = leverage
@@ -518,14 +522,16 @@ cdef class TradingPair(Asset):
                'Introduced On: {start_date}, ' \
                'Market Currency: {market_currency}, ' \
                'Base Currency: {base_currency}, ' \
-               'Exchange Leverage: {leverage}'.format(
+               'Exchange Leverage: {leverage}, ' \
+               'Minimum Trade Size: {min_trade_size}'.format(
             symbol=self.symbol,
             sid=self.sid,
             exchange=self.exchange,
             start_date=self.start_date,
             market_currency=self.market_currency,
             base_currency=self.base_currency,
-            leverage=self.leverage
+            leverage=self.leverage,
+            min_trade_size=self.min_trade_size
         )
 
     cpdef __reduce__(self):
@@ -544,7 +550,8 @@ cdef class TradingPair(Asset):
                                  self.end_date,
                                  self.first_traded,
                                  self.auto_close_date,
-                                 self.exchange_full))
+                                 self.exchange_full,
+                                 self.min_trade_size))
 
 def make_asset_array(int size, Asset asset):
     cdef np.ndarray out = np.empty([size], dtype=object)

@@ -218,13 +218,19 @@ class Exchange:
             else:
                 asset_name = None
 
+            if 'min_trade_size' in asset:
+                min_trade_size = asset['min_trade_size']
+            else:
+                min_trade_size = 0.0000001
+
             trading_pair = TradingPair(
                 symbol=asset['symbol'],
                 exchange=self.name,
                 start_date=start_date,
                 end_date=end_date,
                 leverage=leverage,
-                asset_name=asset_name
+                asset_name=asset_name,
+                min_trade_size=min_trade_size
             )
 
             self.assets[exchange_symbol] = trading_pair

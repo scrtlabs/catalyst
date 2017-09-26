@@ -52,6 +52,7 @@ from catalyst.utils.api_support import (
 from catalyst.utils.input_validation import error_keywords, ensure_upper_case, \
     expect_types
 from catalyst.utils.preprocess import preprocess
+from catalyst.utils.math_utils import round_nearest
 
 log = logbook.Logger('exchange_algorithm')
 
@@ -67,15 +68,14 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
 
         super(ExchangeTradingAlgorithmBase, self).__init__(*args, **kwargs)
 
-    def round_order(self, amount):
+    def round_order(self, amount, asset):
         """
         We need fractions with cryptocurrencies
 
         :param amount:
         :return:
         """
-        # TODO: is this good enough? Victor has a better solution.
-        return amount
+        return round_nearest(amount, asset.min_trade_size)
 
     @api_method
     @preprocess(symbol_str=ensure_upper_case)
