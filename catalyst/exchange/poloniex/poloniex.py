@@ -4,15 +4,18 @@ import hmac
 import json
 import re
 import time
-import datetime
 
 import numpy as np
 import pandas as pd
 import pytz
 import requests
-import six
+#import six
+from six import iteritems
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
+
+from catalyst.exchange.poloniex.poloniex_api import Poloniex_api
+
 
 # from websocket import create_connection
 from catalyst.exchange.exchange import Exchange
@@ -26,145 +29,77 @@ from catalyst.finance.order import Order, ORDER_STATUS
 from catalyst.protocol import Account
 from catalyst.exchange.exchange_utils import get_exchange_symbols_filename
 
-# Trying to account for REST api instability
-# https://stackoverflow.com/questions/15431044/can-i-set-max-retries-for-requests-request
-requests.adapters.DEFAULT_RETRIES = 20
 
-BITFINEX_URL = 'https://api.bitfinex.com'
-
-log = Logger('Bitfinex')
-warning_logger = Logger('AlgoWarning')
+log = Logger('Poloniex')
 
 
-class Bitfinex(Exchange):
+class Poloniex(Exchange):
     def __init__(self, key, secret, base_currency, portfolio=None):
-        self.url = BITFINEX_URL
-        self.key = key
-        self.secret = secret.encode('UTF-8')
-        self.name = 'bitfinex'
-        self.color = 'green'
+        self.api = Poloniex_api(key=key, secret=secret.encode('UTF-8'))
+        self.name = 'poloniex'
         self.assets = {}
         self.load_assets()
         self.base_currency = base_currency
         self._portfolio = portfolio
         self.minute_writer = None
         self.minute_reader = None
-        self.num_candles_limit = 1000
 
-        # Max is 90 but playing it safe
-        # https://www.bitfinex.com/posts/188
-        self.max_requests_per_minute = 20
-        self.request_cpt = dict()
 
-    def _request(self, operation, data, version='v1'):
-        payload_object = {
-            'request': '/{}/{}'.format(version, operation),
-            'nonce': '{0:f}'.format(time.time() * 1000000),
-            # convert to string
-            'options': {}
-        }
-
-        if data is None:
-            payload_dict = payload_object
-        else:
-            payload_dict = payload_object.copy()
-            payload_dict.update(data)
-
-        payload_json = json.dumps(payload_dict)
-        if six.PY3:
-            payload = base64.b64encode(bytes(payload_json, 'utf-8'))
-        else:
-            payload = base64.b64encode(payload_json)
-
-        m = hmac.new(self.secret, payload, hashlib.sha384)
-        m = m.hexdigest()
-
-        # headers
-        headers = {
-            'X-BFX-APIKEY': self.key,
-            'X-BFX-PAYLOAD': payload,
-            'X-BFX-SIGNATURE': m
-        }
-
-        if data is None:
-            request = requests.get(
-                '{url}/{version}/{operation}'.format(
-                    url=self.url,
-                    version=version,
-                    operation=operation
-                ), data={},
-                headers=headers)
-        else:
-            request = requests.post(
-                '{url}/{version}/{operation}'.format(
-                    url=self.url,
-                    version=version,
-                    operation=operation
-                ),
-                headers=headers)
-
-        return request
-
-    def _get_v2_symbol(self, asset):
-        pair = asset.symbol.split('_')
-        symbol = 't' + pair[0].upper() + pair[1].upper()
-        return symbol
-
-    def _get_v2_symbols(self, assets):
+    def sanitize_curency_symbol(self, exchange_symbol):
         """
-        Workaround to support Bitfinex v2
-        TODO: Might require a separate asset dictionary
+        Helper method used to build the universal pair.
+        Include any symbol mapping here if appropriate.
 
-        :param assets:
-        :return:
+        :param exchange_symbol:
+        :return universal_symbol:
         """
+        return exchange_symbol.lower()
 
-        v2_symbols = []
-        for asset in assets:
-            v2_symbols.append(self._get_v2_symbol(asset))
-
-        return v2_symbols
-
+    
     def _create_order(self, order_status):
         """
-        Create a Catalyst order object from a Bitfinex order dictionary
+        Create a Catalyst order object from the Exchange order dictionary
         :param order_status:
         :return: Order
         """
-        if order_status['is_cancelled']:
-            status = ORDER_STATUS.CANCELLED
-        elif not order_status['is_live']:
-            log.info('found executed order {}'.format(order_status))
-            status = ORDER_STATUS.FILLED
-        else:
-            status = ORDER_STATUS.OPEN
+        #if order_status['is_cancelled']:
+        #    status = ORDER_STATUS.CANCELLED
+        #elif not order_status['is_live']:
+        #    log.info('found executed order {}'.format(order_status))
+        #    status = ORDER_STATUS.FILLED
+        #else:
+        status = ORDER_STATUS.OPEN
 
-        amount = float(order_status['original_amount'])
-        filled = float(order_status['executed_amount'])
+        amount = float(order_status['amount'])
+        #filled = float(order_status['executed_amount'])
+        filled = None
 
-        if order_status['side'] == 'sell':
+        if order_status['type'] == 'sell':
             amount = -amount
-            filled = -filled
+            #filled = -filled
 
-        price = float(order_status['price'])
+        price = float(order_status['rate'])
         order_type = order_status['type']
 
         stop_price = None
         limit_price = None
 
         # TODO: is this comprehensive enough?
-        if order_type.endswith('limit'):
-            limit_price = price
-        elif order_type.endswith('stop'):
-            stop_price = price
+        #if order_type.endswith('limit'):
+        #    limit_price = price
+        #elif order_type.endswith('stop'):
+        #    stop_price = price
 
-        executed_price = float(order_status['avg_execution_price'])
+        #executed_price = float(order_status['avg_execution_price'])
+        executed_price = price
 
         # TODO: bitfinex does not specify comission. I could calculate it but not sure if it's worth it.
         commission = None
 
-        date = pd.Timestamp.utcfromtimestamp(float(order_status['timestamp']))
-        date = pytz.utc.localize(date)
+        #date = pd.Timestamp.utcfromtimestamp(float(order_status['timestamp']))
+        #date = pytz.utc.localize(date)
+        date = None
+
         order = Order(
             dt=date,
             asset=self.assets[order_status['symbol']],
@@ -172,33 +107,34 @@ class Bitfinex(Exchange):
             stop=stop_price,
             limit=limit_price,
             filled=filled,
-            id=str(order_status['id']),
+            id=str(order_status['orderNumber']),
             commission=commission
         )
         order.status = status
 
         return order, executed_price
+    
 
     def get_balances(self):
         log.debug('retrieving wallets balances')
         try:
-            self.ask_request()
-            response = self._request('balances', None)
-            balances = response.json()
+            balances = self.api.returnbalances()
         except Exception as e:
+            log.debug(e)
             raise ExchangeRequestError(error=e)
 
-        if 'message' in balances:
+        if 'error' in balances:
             raise ExchangeRequestError(
-                error='unable to fetch balance {}'.format(balances['message'])
+                error='unable to fetch balance {}'.format(balances['error'])
             )
 
         std_balances = dict()
-        for balance in balances:
-            currency = balance['currency'].lower()
-            std_balances[currency] = float(balance['available'])
+        for (key, value) in iteritems(balances):
+            currency = key.lower()
+            std_balances[currency] = float(value)
 
         return std_balances
+
 
     @property
     def account(self):
@@ -233,10 +169,9 @@ class Bitfinex(Exchange):
         # TODO: fetch account data and keep in cache
         return None
 
-    def get_candles(self, data_frequency, assets, bar_count=None,
-                    start_dt=None, end_dt=None):
+    def get_candles(self, data_frequency, assets, bar_count=None):
         """
-        Retrieve OHLVC candles from Bitfinex
+        Retrieve OHLVC candles from Poloniex
 
         :param data_frequency:
         :param assets:
@@ -245,32 +180,22 @@ class Bitfinex(Exchange):
 
         Available Frequencies
         ---------------------
-        '1m', '5m', '15m', '30m', '1h', '3h', '6h', '12h', '1D', '7D', '14D',
-         '1M'
+        '5m', '15m', '30m', '2h', '4h', '1D'
         """
 
-        freq_match = re.match(r'([0-9].*)(m|h|d)', data_frequency, re.M | re.I)
-        if freq_match:
-            number = int(freq_match.group(1))
-            unit = freq_match.group(2)
-
-            if unit == 'd':
-                converted_unit = 'D'
-            else:
-                converted_unit = unit
-
-            frequency = '{}{}'.format(number, converted_unit)
-            allowed_frequencies = ['1m', '5m', '15m', '30m', '1h', '3h', '6h',
-                                   '12h', '1D', '7D', '14D', '1M']
-
-            if frequency not in allowed_frequencies:
-                raise InvalidHistoryFrequencyError(
-                    frequency=data_frequency
-                )
-        elif data_frequency == 'minute':
-            frequency = '1m'
-        elif data_frequency == 'daily':
-            frequency = '1D'
+        # TODO: use BcolzMinuteBarReader to read from cache
+        if(data_frequency == '5m' or data_frequency == 'minute'): #TODO: Polo does not have '1m'
+            frequency = 300
+        elif(data_frequency == '15m'):
+            frequency = 900
+        elif(data_frequency == '30m'):
+            frequency = 1800
+        elif(data_frequency == '2h'):
+            frequency = 7200
+        elif(data_frequency == '4h'):
+            frequency = 14400
+        elif(data_frequency == '1D' or data_frequency == 'daily'):
+            frequency = 86400
         else:
             raise InvalidHistoryFrequencyError(
                 frequency=data_frequency
@@ -279,82 +204,55 @@ class Bitfinex(Exchange):
         # Making sure that assets are iterable
         asset_list = [assets] if isinstance(assets, TradingPair) else assets
         ohlc_map = dict()
+
         for asset in asset_list:
-            symbol = self._get_v2_symbol(asset)
-            url = '{url}/v2/candles/trade:{frequency}:{symbol}'.format(
-                url=self.url,
-                frequency=frequency,
-                symbol=symbol
-            )
 
-            if bar_count:
-                is_list = True
-                url += '/hist?limit={}'.format(int(bar_count))
-
-                def get_ms(date):
-                    epoch = datetime.datetime.utcfromtimestamp(0)
-                    epoch = epoch.replace(tzinfo=pytz.UTC)
-
-                    return (date - epoch).total_seconds() * 1000.0
-
-                if start_dt is not None:
-                    start_ms = get_ms(start_dt)
-                    url += '&start={0:f}'.format(start_ms)
-
-                if end_dt is not None:
-                    end_ms = get_ms(end_dt)
-                    url += '&end={0:f}'.format(end_ms)
-
+            end = int(time.time())
+            if(bar_count is None):
+                start = end - 2 * frequency
             else:
-                is_list = False
-                url += '/last'
+                start = end - bar_count * frequency
 
-            try:
-                self.ask_request()
-                response = requests.get(url)
+            try: 
+                response = self.api.returnchartdata(self.get_symbol(asset),frequency, start, end)
             except Exception as e:
                 raise ExchangeRequestError(error=e)
 
-            if 'error' in response.content:
+            if 'error' in response:
                 raise ExchangeRequestError(
                     error='Unable to retrieve candles: {}'.format(
                         response.content)
                 )
 
-            candles = response.json()
-
             def ohlc_from_candle(candle):
-                last_traded = pd.Timestamp.utcfromtimestamp(
-                    candle[0] / 1000.0)
-                last_traded = last_traded.replace(tzinfo=pytz.UTC)
                 ohlc = dict(
-                    open=np.float64(candle[1]),
-                    high=np.float64(candle[3]),
-                    low=np.float64(candle[4]),
-                    close=np.float64(candle[2]),
-                    volume=np.float64(candle[5]),
-                    price=np.float64(candle[2]),
-                    last_traded=last_traded
+                    open=np.float64(candle['open']),
+                    high=np.float64(candle['high']),
+                    low=np.float64(candle['low']),
+                    close=np.float64(candle['close']),
+                    volume=np.float64(candle['volume']),
+                    price=np.float64(candle['close']),
+                    last_traded=pd.Timestamp.utcfromtimestamp( candle['date'] )
                 )
+
                 return ohlc
 
-            if is_list:
+            if bar_count is None:
+                ohlc_map[asset] = ohlc_from_candle(response[0])
+            else:
                 ohlc_bars = []
-                # We can to list candles from old to new
-                for candle in reversed(candles):
+                for candle in response:
                     ohlc = ohlc_from_candle(candle)
                     ohlc_bars.append(ohlc)
-
                 ohlc_map[asset] = ohlc_bars
-
-            else:
-                ohlc = ohlc_from_candle(candles)
-                ohlc_map[asset] = ohlc
 
         return ohlc_map[assets] \
             if isinstance(assets, TradingPair) else ohlc_map
 
+
     def create_order(self, asset, amount, is_buy, style):
+        pass
+    '''
         """
         Creating order on the exchange.
 
@@ -395,7 +293,6 @@ class Bitfinex(Exchange):
 
         date = pd.Timestamp.utcnow()
         try:
-            self.ask_request()
             response = self._request('order/new', req)
             order_status = response.json()
         except Exception as e:
@@ -418,8 +315,9 @@ class Bitfinex(Exchange):
         )
 
         return order
+    '''
 
-    def get_open_orders(self, asset=None):
+    def get_open_orders(self, asset='all'):
         """Retrieve all of the current open orders.
 
         Parameters
@@ -437,25 +335,28 @@ class Bitfinex(Exchange):
             orders for this asset.
         """
         try:
-            self.ask_request()
-            response = self._request('orders', None)
-            order_statuses = response.json()
+            if(asset=='all'):
+                response = self.api.returnopenorders('all')
+            else:
+                response = self.api.returnopenorders(self.get_symbol(asset))
         except Exception as e:
             raise ExchangeRequestError(error=e)
 
-        if 'message' in order_statuses:
+        if 'error' in response:
             raise ExchangeRequestError(
                 error='Unable to retrieve open orders: {}'.format(
                     order_statuses['message'])
             )
 
-        orders = []
-        for order_status in order_statuses:
+        #TODO: Need to handle openOrders for 'all'
+        orders = list()
+        for order_status in response:
             order, executed_price = self._create_order(order_status)
             if asset is None or asset == order.sid:
                 orders.append(order)
 
         return orders
+        
 
     def get_order(self, order_id):
         """Lookup an order based on the order id returned from one of the
@@ -471,8 +372,9 @@ class Bitfinex(Exchange):
         order : Order
             The order object.
         """
+        pass
+        '''
         try:
-            self.ask_request()
             response = self._request(
                 'order/status', {'order_id': int(order_id)})
             order_status = response.json()
@@ -485,6 +387,7 @@ class Bitfinex(Exchange):
                     order_status['message'])
             )
         return self._create_order(order_status)
+        '''
 
     def cancel_order(self, order_param):
         """Cancel an open order.
@@ -498,18 +401,17 @@ class Bitfinex(Exchange):
             if isinstance(order_param, Order) else order_param
 
         try:
-            self.ask_request()
-            response = self._request('order/cancel', {'order_id': order_id})
-            status = response.json()
+            response = self.api.cancelorder(order_id)
         except Exception as e:
             raise ExchangeRequestError(error=e)
 
-        if 'message' in status:
+        if 'error' in response:
             raise OrderCancelError(
                 order_id=order_id,
                 exchange=self.name,
-                error=status['message']
+                error=response['error']
             )
+        
 
     def tickers(self, assets):
         """
@@ -519,11 +421,13 @@ class Bitfinex(Exchange):
         :param assets:
         :return:
         """
+        pass
+
+        '''
         symbols = self._get_v2_symbols(assets)
         log.debug('fetching tickers {}'.format(symbols))
 
         try:
-            self.ask_request()
             response = requests.get(
                 '{url}/v2/tickers?symbols={symbols}'.format(
                     url=self.url,
@@ -560,15 +464,22 @@ class Bitfinex(Exchange):
 
         log.debug('got tickers {}'.format(ticks))
         return ticks
+        '''
 
     def generate_symbols_json(self, filename=None):
         symbol_map = {}
-        response = self._request('symbols', None)
-        for symbol in response.json():
-            symbol_map[symbol]= {"symbol":symbol[:-3]+'_'+symbol[-3:], "start_date": "2010-01-01"}
+        response = self.api.returnticker()
+        for exchange_symbol in response:
+            base, market = self.sanitize_curency_symbol(exchange_symbol).split('_')
+            symbol = '{market}_{base}'.format( market=market, base=base )
+            symbol_map[exchange_symbol] = dict(
+                symbol = symbol,
+                start_date = '2010-01-01'
+            )
 
         if(filename is None):
             filename = get_exchange_symbols_filename(self.name)
 
         with open(filename,'w') as f:
             json.dump(symbol_map, f, sort_keys=True, indent=2, separators=(',',':'))
+        

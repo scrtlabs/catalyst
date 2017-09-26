@@ -491,7 +491,7 @@ class BaseBundle(object):
                     data_frequency,
                 )
                 raw_data.index = pd.to_datetime(raw_data.index, utc=True)
-                raw_data.index = raw_data.index.tz_localize('UTC')
+                #raw_data.index = raw_data.index.tz_localize('UTC')
 
                 # Filter incoming data to fit start and end sessions.
                 raw_data = raw_data[

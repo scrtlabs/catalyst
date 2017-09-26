@@ -38,7 +38,7 @@ from catalyst.utils.numpy_utils import float64_dtype
 from catalyst.utils.pandas_utils import find_in_sorted_index
 
 # Default number of decimal places used for rounding asset prices.
-DEFAULT_ASSET_PRICE_DECIMALS = 3
+DEFAULT_ASSET_PRICE_DECIMALS = 9
 
 
 class HistoryCompatibleUSEquityAdjustmentReader(object):

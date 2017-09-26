@@ -156,7 +156,10 @@ class DailyHistoryAggregator(object):
             cache = self._caches[field] = (session, market_open, {})
 
         _, market_open, entries = cache
-        market_open = market_open.tz_localize('UTC')
+        try:
+            market_open = market_open.tz_localize('UTC')
+        except TypeError:
+            market_open = market_open.tz_convert('UTC')
         if dt != market_open:
             prev_dt = dt_value - self._one_min
         else:
