@@ -29,19 +29,22 @@ class Poloniex_api(object):
                         'cancelLoanOffer','returnOpenLoanOffers','returnActiveLoans',
                         'returnLendingHistory','toggleAutoRenew']
 
-    def query(self, method, values={}):
+    def query(self, method, req={}):
 
         if method in self.public:
-            url = 'https://poloniex.com/public?command=' + method + urllib.parse.urlencode(values)
+            url = 'https://poloniex.com/public?command=' + method + '&' + urllib.parse.urlencode(req)
             headers = {}
             post_data = None
         elif method in self.trading:
             url = 'https://poloniex.com/tradingApi'
             req['command'] = method
             req['nonce']   = int(time.time()*1000)
-            post_data      = urllib.urlencode(req)
+            post_data      = urllib.parse.urlencode(req)
+            print(post_data)
             signature      = hmac.new(self.secret, post_data, hashlib.sha512).hexdigest()
             headers        = { 'Sign': signature, 'Key': self.key}
+        else:
+            raise ValueError('Method "' + method + '" not found in neither the Public API or Trading API endpoints')
 
         req = urllib.request.Request(url, data=post_data, headers=headers)
         return json.loads(urlopen(req).read())
@@ -70,7 +73,16 @@ class Poloniex_api(object):
         return self.query('returnCurrencies')
 
     def returnloadorders(self, market):
-        return self.query('returnLoanOrders', {'market': market})
+        return self.query('returnLoanOrders', {'currency': market})
+
+    def returnbalances(self):
+        return self.query('returnBalances')
+
+    def returnopenorders(self, market):
+        return self.query('returnOpenOrders', {'currencyPair': market})
+
+    def cancelorder(self, ordernumber):
+        return self.query('cancelOrder', {'orderNumber': ordernumber})
 
     '''
     def buylimit(self, market, quantity, rate):
@@ -88,15 +100,6 @@ class Poloniex_api(object):
     def sellmarket(self, market, quantity):
         return self.query('sellmarket',
                           {'market': market, 'quantity': quantity})
-
-    def cancel(self, uuid):
-        return self.query('cancel', {'uuid': uuid})
-
-    def getopenorders(self, market):
-        return self.query('getopenorders', {'market': market})
-
-    def getbalances(self):
-        return self.query('getbalances')
 
     def getbalance(self, currency):
         return self.query('getbalance', {'currency': currency})

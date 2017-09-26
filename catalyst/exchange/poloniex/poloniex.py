@@ -9,7 +9,8 @@ import numpy as np
 import pandas as pd
 import pytz
 import requests
-import six
+#import six
+from six import iteritems
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
@@ -37,11 +38,12 @@ class Poloniex(Exchange):
         self.api = Poloniex_api(key=key, secret=secret.encode('UTF-8'))
         self.name = 'poloniex'
         self.assets = {}
-        #self.load_assets()
+        self.load_assets()
         self.base_currency = base_currency
         self._portfolio = portfolio
         self.minute_writer = None
         self.minute_reader = None
+
 
     def sanitize_curency_symbol(self, exchange_symbol):
         """
@@ -53,47 +55,51 @@ class Poloniex(Exchange):
         """
         return exchange_symbol.lower()
 
-    '''
+    
     def _create_order(self, order_status):
         """
-        Create a Catalyst order object from a Bitfinex order dictionary
+        Create a Catalyst order object from the Exchange order dictionary
         :param order_status:
         :return: Order
         """
-        if order_status['is_cancelled']:
-            status = ORDER_STATUS.CANCELLED
-        elif not order_status['is_live']:
-            log.info('found executed order {}'.format(order_status))
-            status = ORDER_STATUS.FILLED
-        else:
-            status = ORDER_STATUS.OPEN
+        #if order_status['is_cancelled']:
+        #    status = ORDER_STATUS.CANCELLED
+        #elif not order_status['is_live']:
+        #    log.info('found executed order {}'.format(order_status))
+        #    status = ORDER_STATUS.FILLED
+        #else:
+        status = ORDER_STATUS.OPEN
 
-        amount = float(order_status['original_amount'])
-        filled = float(order_status['executed_amount'])
+        amount = float(order_status['amount'])
+        #filled = float(order_status['executed_amount'])
+        filled = None
 
-        if order_status['side'] == 'sell':
+        if order_status['type'] == 'sell':
             amount = -amount
-            filled = -filled
+            #filled = -filled
 
-        price = float(order_status['price'])
+        price = float(order_status['rate'])
         order_type = order_status['type']
 
         stop_price = None
         limit_price = None
 
         # TODO: is this comprehensive enough?
-        if order_type.endswith('limit'):
-            limit_price = price
-        elif order_type.endswith('stop'):
-            stop_price = price
+        #if order_type.endswith('limit'):
+        #    limit_price = price
+        #elif order_type.endswith('stop'):
+        #    stop_price = price
 
-        executed_price = float(order_status['avg_execution_price'])
+        #executed_price = float(order_status['avg_execution_price'])
+        executed_price = price
 
         # TODO: bitfinex does not specify comission. I could calculate it but not sure if it's worth it.
         commission = None
 
-        date = pd.Timestamp.utcfromtimestamp(float(order_status['timestamp']))
-        date = pytz.utc.localize(date)
+        #date = pd.Timestamp.utcfromtimestamp(float(order_status['timestamp']))
+        #date = pytz.utc.localize(date)
+        date = None
+
         order = Order(
             dt=date,
             asset=self.assets[order_status['symbol']],
@@ -101,36 +107,34 @@ class Poloniex(Exchange):
             stop=stop_price,
             limit=limit_price,
             filled=filled,
-            id=str(order_status['id']),
+            id=str(order_status['orderNumber']),
             commission=commission
         )
         order.status = status
 
         return order, executed_price
-    '''
+    
 
     def get_balances(self):
-        pass
-    '''
         log.debug('retrieving wallets balances')
         try:
-            response = self._request('balances', None)
-            balances = response.json()
+            balances = self.api.returnbalances()
         except Exception as e:
+            log.debug(e)
             raise ExchangeRequestError(error=e)
 
-        if 'message' in balances:
+        if 'error' in balances:
             raise ExchangeRequestError(
-                error='unable to fetch balance {}'.format(balances['message'])
+                error='unable to fetch balance {}'.format(balances['error'])
             )
 
         std_balances = dict()
-        for balance in balances:
-            currency = balance['currency'].lower()
-            std_balances[currency] = float(balance['available'])
+        for (key, value) in iteritems(balances):
+            currency = key.lower()
+            std_balances[currency] = float(value)
 
         return std_balances
-    '''
+
 
     @property
     def account(self):
@@ -166,10 +170,8 @@ class Poloniex(Exchange):
         return None
 
     def get_candles(self, data_frequency, assets, bar_count=None):
-        pass
-    '''
         """
-        Retrieve OHLVC candles from Bitfinex
+        Retrieve OHLVC candles from Poloniex
 
         :param data_frequency:
         :param assets:
@@ -178,33 +180,22 @@ class Poloniex(Exchange):
 
         Available Frequencies
         ---------------------
-        '1m', '5m', '15m', '30m', '1h', '3h', '6h', '12h', '1D', '7D', '14D',
-         '1M'
+        '5m', '15m', '30m', '2h', '4h', '1D'
         """
 
         # TODO: use BcolzMinuteBarReader to read from cache
-        freq_match = re.match(r'([0-9].*)(m|h|d)', data_frequency, re.M | re.I)
-        if freq_match:
-            number = int(freq_match.group(1))
-            unit = freq_match.group(2)
-
-            if unit == 'd':
-                converted_unit = 'D'
-            else:
-                converted_unit = unit
-
-            frequency = '{}{}'.format(number, converted_unit)
-            allowed_frequencies = ['1m', '5m', '15m', '30m', '1h', '3h', '6h',
-                                   '12h', '1D', '7D', '14D', '1M']
-
-            if frequency not in allowed_frequencies:
-                raise InvalidHistoryFrequencyError(
-                    frequency=data_frequency
-                )
-        elif data_frequency == 'minute':
-            frequency = '1m'
-        elif data_frequency == 'daily':
-            frequency = '1D'
+        if(data_frequency == '5m' or data_frequency == 'minute'): #TODO: Polo does not have '1m'
+            frequency = 300
+        elif(data_frequency == '15m'):
+            frequency = 900
+        elif(data_frequency == '30m'):
+            frequency = 1800
+        elif(data_frequency == '2h'):
+            frequency = 7200
+        elif(data_frequency == '4h'):
+            frequency = 14400
+        elif(data_frequency == '1D' or data_frequency == 'daily'):
+            frequency = 86400
         else:
             raise InvalidHistoryFrequencyError(
                 frequency=data_frequency
@@ -213,63 +204,51 @@ class Poloniex(Exchange):
         # Making sure that assets are iterable
         asset_list = [assets] if isinstance(assets, TradingPair) else assets
         ohlc_map = dict()
+
         for asset in asset_list:
-            symbol = self._get_v2_symbol(asset)
-            url = '{url}/v2/candles/trade:{frequency}:{symbol}'.format(
-                url=self.url,
-                frequency=frequency,
-                symbol=symbol
-            )
 
-            if bar_count:
-                is_list = True
-                url += '/hist?limit={}'.format(int(bar_count))
+            end = int(time.time())
+            if(bar_count is None):
+                start = end - 2 * frequency
             else:
-                is_list = False
-                url += '/last'
+                start = end - bar_count * frequency
 
-            try:
-                response = requests.get(url)
+            try: 
+                response = self.api.returnchartdata(self.get_symbol(asset),frequency, start, end)
             except Exception as e:
                 raise ExchangeRequestError(error=e)
 
-            if 'error' in response.content:
+            if 'error' in response:
                 raise ExchangeRequestError(
                     error='Unable to retrieve candles: {}'.format(
                         response.content)
                 )
 
-            candles = response.json()
-
             def ohlc_from_candle(candle):
                 ohlc = dict(
-                    open=np.float64(candle[1]),
-                    high=np.float64(candle[3]),
-                    low=np.float64(candle[4]),
-                    close=np.float64(candle[2]),
-                    volume=np.float64(candle[5]),
-                    price=np.float64(candle[2]),
-                    last_traded=pd.Timestamp.utcfromtimestamp(
-                        candle[0] / 1000.0)
+                    open=np.float64(candle['open']),
+                    high=np.float64(candle['high']),
+                    low=np.float64(candle['low']),
+                    close=np.float64(candle['close']),
+                    volume=np.float64(candle['volume']),
+                    price=np.float64(candle['close']),
+                    last_traded=pd.Timestamp.utcfromtimestamp( candle['date'] )
                 )
+
                 return ohlc
 
-            if is_list:
+            if bar_count is None:
+                ohlc_map[asset] = ohlc_from_candle(response[0])
+            else:
                 ohlc_bars = []
-                # We can to list candles from old to new
-                for candle in reversed(candles):
+                for candle in response:
                     ohlc = ohlc_from_candle(candle)
                     ohlc_bars.append(ohlc)
-
                 ohlc_map[asset] = ohlc_bars
-
-            else:
-                ohlc = ohlc_from_candle(candles)
-                ohlc_map[asset] = ohlc
 
         return ohlc_map[assets] \
             if isinstance(assets, TradingPair) else ohlc_map
-    '''
+
 
     def create_order(self, asset, amount, is_buy, style):
         pass
@@ -338,7 +317,7 @@ class Poloniex(Exchange):
         return order
     '''
 
-    def get_open_orders(self, asset=None):
+    def get_open_orders(self, asset='all'):
         """Retrieve all of the current open orders.
 
         Parameters
@@ -355,28 +334,29 @@ class Poloniex(Exchange):
             If an asset is passed then this will return a list of the open
             orders for this asset.
         """
-        pass
-        '''
         try:
-            response = self._request('orders', None)
-            order_statuses = response.json()
+            if(asset=='all'):
+                response = self.api.returnopenorders('all')
+            else:
+                response = self.api.returnopenorders(self.get_symbol(asset))
         except Exception as e:
             raise ExchangeRequestError(error=e)
 
-        if 'message' in order_statuses:
+        if 'error' in response:
             raise ExchangeRequestError(
                 error='Unable to retrieve open orders: {}'.format(
                     order_statuses['message'])
             )
 
+        #TODO: Need to handle openOrders for 'all'
         orders = list()
-        for order_status in order_statuses:
+        for order_status in response:
             order, executed_price = self._create_order(order_status)
             if asset is None or asset == order.sid:
                 orders.append(order)
 
         return orders
-        '''
+        
 
     def get_order(self, order_id):
         """Lookup an order based on the order id returned from one of the
@@ -417,24 +397,21 @@ class Poloniex(Exchange):
         order_param : str or Order
             The order_id or order object to cancel.
         """
-        pass
-        '''
         order_id = order_param.id \
             if isinstance(order_param, Order) else order_param
 
         try:
-            response = self._request('order/cancel', {'order_id': order_id})
-            status = response.json()
+            response = self.api.cancelorder(order_id)
         except Exception as e:
             raise ExchangeRequestError(error=e)
 
-        if 'message' in status:
+        if 'error' in response:
             raise OrderCancelError(
                 order_id=order_id,
                 exchange=self.name,
-                error=status['message']
+                error=response['error']
             )
-        '''
+        
 
     def tickers(self, assets):
         """
