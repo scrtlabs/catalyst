@@ -4,6 +4,7 @@ import hmac
 import json
 import re
 import time
+from collections import defaultdict
 
 import numpy as np
 import pandas as pd
@@ -16,13 +17,13 @@ from logbook import Logger
 
 from catalyst.exchange.poloniex.poloniex_api import Poloniex_api
 
-
 # from websocket import create_connection
 from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     InvalidHistoryFrequencyError,
-    InvalidOrderStyle, OrderCancelError)
+    InvalidOrderStyle, OrderCancelError,
+    OrphanOrderReverseError)
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder, \
     ExchangeStopLimitOrder, ExchangeStopOrder
 from catalyst.finance.order import Order, ORDER_STATUS
@@ -43,6 +44,7 @@ class Poloniex(Exchange):
         self._portfolio = portfolio
         self.minute_writer = None
         self.minute_reader = None
+        self.transactions = defaultdict(list)
 
 
     def sanitize_curency_symbol(self, exchange_symbol):
@@ -102,7 +104,7 @@ class Poloniex(Exchange):
 
         order = Order(
             dt=date,
-            asset=self.assets[order_status['symbol']],
+            asset=self.assets[order_status['symbol']],  # No such field in Poloniex
             amount=amount,
             stop=stop_price,
             limit=limit_price,
@@ -305,17 +307,25 @@ class Poloniex(Exchange):
         Parameters
         ----------
         asset : Asset
-            If passed and not None, return only the open orders for the given
+            If passed and not 'all', return only the open orders for the given
             asset instead of all open orders.
 
         Returns
         -------
         open_orders : dict[list[Order]] or list[Order]
-            If no asset is passed this will return a dict mapping Assets
+            If 'all' is passed this will return a dict mapping Assets
             to a list containing all the open orders for the asset.
             If an asset is passed then this will return a list of the open
             orders for this asset.
         """
+
+        return self.portfolio.open_orders
+
+        """
+            TODO: Why going to the exchange if we already have this info locally?
+                  And why creating all these Orders if we later discard them?
+        """
+
         try:
             if(asset=='all'):
                 response = self.api.returnopenorders('all')
@@ -330,10 +340,12 @@ class Poloniex(Exchange):
                     order_statuses['message'])
             )
 
+        print(self.portfolio.open_orders)
+
         #TODO: Need to handle openOrders for 'all'
         orders = list()
         for order_status in response:
-            order, executed_price = self._create_order(order_status)
+            order, executed_price = self._create_order(order_status)    # will Throw error b/c Polo doesn't track order['symbol']
             if asset is None or asset == order.sid:
                 orders.append(order)
 
@@ -354,22 +366,23 @@ class Poloniex(Exchange):
         order : Order
             The order object.
         """
-        pass
-        '''
+
         try:
-            response = self._request(
-                'order/status', {'order_id': int(order_id)})
-            order_status = response.json()
+            order = self._portfolio.open_orders[order_id]
+        except Exception as e:
+            raise OrphanOrderError(order_id=order_id, exchange=self.name)
+
+        try:
+            response = self.api.returnopenorders(self.get_symbol(order.sid))
         except Exception as e:
             raise ExchangeRequestError(error=e)
 
-        if 'message' in order_status:
-            raise ExchangeRequestError(
-                error='Unable to retrieve order status: {}'.format(
-                    order_status['message'])
-            )
-        return self._create_order(order_status)
-        '''
+        for order in response:
+            if(int(order['orderNumber'])==int(order_id)):
+                return True
+        
+        return None
+        
 
     def cancel_order(self, order_param):
         """Cancel an open order.
@@ -394,6 +407,9 @@ class Poloniex(Exchange):
                 error=response['error']
             )
         
+        self.portfolio.remove_order(order_param)    #TODO: Verify this works
+
+
 
     def tickers(self, assets):
         """
@@ -403,9 +419,8 @@ class Poloniex(Exchange):
         :param assets:
         :return:
         """      
-        symbols = []
-        for asset in assets:
-            symbols.append(self.get_symbol(asset))
+        symbols = self.get_symbols(assets)
+
         log.debug('fetching tickers {}'.format(symbols))
 
         try:
@@ -453,4 +468,83 @@ class Poloniex(Exchange):
 
         with open(filename,'w') as f:
             json.dump(symbol_map, f, sort_keys=True, indent=2, separators=(',',':'))
-        
+
+    
+    def check_open_orders(self):
+        """
+        Need to override this function for Poloniex:
+
+        Loop through the list of open orders in the Portfolio object.
+        Check if any transactions have been executed:
+            If so, create a transaction and apply to the Portfolio.
+        Check if the order is still open:
+            If not, remove it from open orders
+
+        :return:
+        transactions: Transaction[]
+        """
+        transactions = list()
+        if self.portfolio.open_orders:
+            for order_id in list(self.portfolio.open_orders):
+
+                order = self._portfolio.open_orders[order_id]
+                log.debug('found open order: {}'.format(order_id))
+
+                try:
+                    order_open = self.get_order(order_id)
+                except Exception as e:
+                    raise ExchangeRequestError(error=e)
+
+                if(order_open):
+                    delta = pd.Timestamp.utcnow() - order.dt
+                    log.info(
+                        'order {order_id} still open after {delta}'.format(
+                            order_id=order_id,
+                            delta=delta )
+                        )
+
+                try:
+                    response = self.api.returnordertrades(order_id)
+                except Exception as e:
+                    raise ExchangeRequestError(error=e)
+
+                if(response['error']):
+                    if(not order_open):
+                        raise OrphanOrderReverseError(order_id=order_id, exchange=self.name)
+                else:
+                    for tx in response:
+                        """
+                            We maintain a list of dictionaries of transactions that correspond to
+                            partially filled orders, indexed by order_id. Every time we query 
+                            executed transactions from the exchange, we check if we had that 
+                            transaction for that order already. If not, we process it.
+
+                            When an order if fully filled, we flush the dict of transactions  
+                            associated with that order.
+                        """
+                        if(not filter(lambda item: item['order_id'] == tx['tradeID'], self.transactions[order_id])):
+                            log.debug('Got new transaction for order {}: amount {}, price {}'.format(
+                                       order_id, tx.amount, tx.rate))
+                            if(tx['type']=='sell'):
+                                tx['amount'] = -tx['amount']
+                            transaction = Transaction(
+                                asset=order.asset,
+                                amount=tx['amount'],
+                                dt=pd.to_datetime(tx['date'], utc=True),
+                                price=tx['rate'],
+                                order_id=tx['tradeID'],     # it's a misnomer, but keeping it for compatibility
+                                commission=tx['fee']
+                            )
+                            self.transactions[order_id].append(transaction)
+                            self.portfolio.execute_transaction(transaction)
+                            transactions.append(transaction)
+
+                    if(not order_open):
+                        """
+                            Since transactions have been executed individually
+                            the only thing left to do is remove them from list of open_orders
+                        """
+                        del self.portfolio.open_orders[order_id]
+                        del self.transactions[order_id]
+
+        return transactions

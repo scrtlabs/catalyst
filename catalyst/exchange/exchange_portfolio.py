@@ -70,6 +70,30 @@ class ExchangePortfolio(Portfolio):
 
         log.debug('updated portfolio with executed order')
 
+    def execute_transaction(self, transaction):
+        log.debug('executing transaction {}'.format(transaction.order_id))
+
+        order_position = self.positions[transaction.asset] \
+            if transaction.asset in self.positions else None
+
+        if order_position is None:
+            raise ValueError(
+                'Trying to execute transaction for a position not held: %s' % transaction.order_id
+            )
+
+        self.capital_used += transaction.amount * transaction.price
+
+        if transaction.amount > 0:
+            if order_position.cost_basis > 0:
+                order_position.cost_basis = np.average(
+                    [order_position.cost_basis, transaction.price],
+                    weights=[order_position.amount, transaction.amount]
+                )
+            else:
+                order_position.cost_basis = transaction.price
+
+        log.debug('updated portfolio with executed order')
+
     def remove_order(self, order):
         log.info('removing cancelled order {}'.format(order.id))
         del self.open_orders[order.id]

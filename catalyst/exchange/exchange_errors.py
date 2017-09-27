@@ -101,6 +101,12 @@ class OrphanOrderError(ZiplineError):
     ).strip()
 
 
+class OrphanOrderReverseError(ZiplineError):
+    msg = (
+        'Order {order_id} tracked by algorithm, but not found in exchange {exchange}.'
+    ).strip()
+
+
 class OrderCancelError(ZiplineError):
     msg = (
         'Unable to cancel order {order_id} on exchange {exchange} {error}.'
