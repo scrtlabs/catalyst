@@ -283,14 +283,6 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
                 self.daily_bar_readers[exchange_name] = None
 
             try:
-                self.five_minute_bar_readers[exchange_name] = \
-                    BcolzFiveMinuteBarReader(
-                        five_minute_path(name, time_folder),
-                    )
-            except IOError:
-                self.five_minute_bar_readers[exchange_name] = None
-
-            try:
                 self.minute_bar_readers[exchange_name] = \
                     BcolzMinuteBarReader(
                         minute_path(name, time_folder),
@@ -351,8 +343,6 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
         """
         if data_frequency == 'minute':
             reader = self.minute_bar_readers[exchange_name]
-        elif data_frequency == '5-minute':
-            reader = self.five_minute_bar_readers[exchange_name]
         elif data_frequency == 'daily':
             reader = self.daily_bar_readers[exchange_name]
         else:

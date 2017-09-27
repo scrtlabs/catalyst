@@ -47,10 +47,6 @@ def process_bar_data(exchange, assets, writer, data_frequency,
         delta_periods = delta.total_seconds() / 60
         frequency = '1m'
 
-    elif data_frequency == '5-minute':
-        delta_periods = delta.total_seconds() / 60 / 5
-        frequency = '5m'
-
     elif data_frequency == 'daily':
         delta_periods = delta.total_seconds() / 60 / 60 / 24
         frequency = '1d'
@@ -295,17 +291,8 @@ def exchange_bundle(exchange_name, symbols=None, start=None, end=None,
         #         start=start,
         #         end=end
         #     )
-        #
-        # if five_minute_bar_writer is not None:
-        #     process_bar_data(
-        #         exchange=exchange,
-        #         assets=assets,
-        #         writer=five_minute_bar_writer,
-        #         data_frequency='5-minute',
-        #         show_progress=show_progress,
-        #         start=start,
-        #         end=end
-        #     )
+
+        # TODO: delete 5-minute writer everywhere
 
         if minute_bar_writer is not None:
             process_bar_data(
