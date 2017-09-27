@@ -39,7 +39,8 @@ equities = sa.Table(
     sa.Column('first_traded', sa.Integer),
     sa.Column('auto_close_date', sa.Integer),
     sa.Column('exchange', sa.Text),
-    sa.Column('exchange_full', sa.Text)
+    sa.Column('exchange_full', sa.Text),
+    sa.Column('min_trade_size', sa.Float)
 )
 
 equity_symbol_mappings = sa.Table(

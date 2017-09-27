@@ -9,9 +9,8 @@ from catalyst.exchange.exchange_errors import ExchangeAuthNotFound, \
     ExchangeSymbolsNotFound
 from catalyst.utils.paths import data_root, ensure_directory
 
-# TODO: move to aws
-SYMBOLS_URL = 'https://raw.githubusercontent.com/enigmampc/catalyst/' \
-              'master/catalyst/exchange/{exchange}/symbols.json'
+SYMBOLS_URL = 'https://s3.amazonaws.com/enigmaco/catalyst-exchanges/' \
+              '{exchange}/symbols.json'
 
 
 def get_exchange_folder(exchange_name, environ=None):
@@ -25,18 +24,20 @@ def get_exchange_folder(exchange_name, environ=None):
     return exchange_folder
 
 
-def download_exchange_symbols(exchange_name, environ=None):
+def get_exchange_symbols_filename(exchange_name, environ=None):
     exchange_folder = get_exchange_folder(exchange_name, environ)
-    filename = os.path.join(exchange_folder, 'symbols.json')
+    return os.path.join(exchange_folder, 'symbols.json')
 
+
+def download_exchange_symbols(exchange_name, environ=None):
+    filename = get_exchange_symbols_filename(exchange_name)
     url = SYMBOLS_URL.format(exchange=exchange_name)
     response = urllib.urlretrieve(url=url, filename=filename)
     return response
 
 
 def get_exchange_symbols(exchange_name, environ=None):
-    exchange_folder = get_exchange_folder(exchange_name, environ)
-    filename = os.path.join(exchange_folder, 'symbols.json')
+    filename = get_exchange_symbols_filename(exchange_name)
 
     if not os.path.isfile(filename):
         download_exchange_symbols(exchange_name, environ)

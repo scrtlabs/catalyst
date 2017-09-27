@@ -11,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+from __future__ import division     # Python2 req to have division of ints yield float
+
 from errno import ENOENT
 from functools import partial
 from os import remove
@@ -80,7 +83,6 @@ from catalyst.utils.cli import (
 from ._equities import _compute_row_slices, _read_bcolz_data
 from ._adjustments import load_adjustments_from_sqlite
 
-
 logger = logbook.Logger('UsEquityPricing')
 
 OHLC = frozenset(['open', 'high', 'low', 'close'])
@@ -115,6 +117,8 @@ SQLITE_STOCK_DIVIDEND_PAYOUT_COLUMN_DTYPES = {
 }
 UINT32_MAX = iinfo(uint32).max
 UINT64_MAX = iinfo(uint64).max
+
+PRICE_ADJUSTMENT_FACTOR = 1000000000    # Provides 9 decimals resolution. Also affects _equities.pyx L220
 
 
 def check_uint32_safe(value, colname):
@@ -433,7 +437,7 @@ class BcolzDailyBarWriter(object):
             return raw_data
 
         winsorise_uint64(raw_data, invalid_data_behavior, 'volume', *OHLC)
-        processed = (raw_data[list(OHLC)] * 1000000).astype('uint64')
+        processed = (raw_data[list(OHLC)] * PRICE_ADJUSTMENT_FACTOR).astype('uint64')
         dates = raw_data.index.values.astype('datetime64[s]')
         check_uint32_safe(dates.max().view(np.int64), 'day')
         processed['day'] = dates.astype('uint32')
@@ -519,7 +523,6 @@ class BcolzDailyBarReader(SessionBarReader):
         # Need to test keeping the entire array in memory for the course of a
         # process first.
         self._spot_cols = {}
-        self.PRICE_ADJUSTMENT_FACTOR = 0.001
         self._read_all_threshold = read_all_threshold
 
     @lazyval
@@ -763,7 +766,7 @@ class BcolzDailyBarReader(SessionBarReader):
             if price == 0:
                 return nan
             else:
-                return price * 0.001
+                return price / PRICE_ADJUSTMENT_FACTOR
         else:
             return price
 
