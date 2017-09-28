@@ -465,12 +465,13 @@ class Poloniex(Exchange):
         return ticks
 
 
-    def generate_symbols_json(self, filename=None):
+    def generate_symbols_json(self, filename=None, source_dates=False):
         symbol_map = {}
 
-        fn, r = download_exchange_symbols(self.name)
-        with open(fn) as data_file:
-            cached_symbols = json.load(data_file)
+        if not source_dates:
+            fn, r = download_exchange_symbols(self.name)
+            with open(fn) as data_file:
+                cached_symbols = json.load(data_file)
 
         response = self.api.returnticker()
 
@@ -478,10 +479,13 @@ class Poloniex(Exchange):
             base, market = self.sanitize_curency_symbol(exchange_symbol).split('_')
             symbol = '{market}_{base}'.format( market=market, base=base )
 
-            try:
-                start_date = cached_symbols[exchange_symbol]['start_date']
-            except KeyError as e:
-                start_date = time.strftime('%Y-%m-%d')
+            if(source_dates):
+                start_date = self.get_symbol_start_date(exchange_symbol)
+            else:
+                try:
+                    start_date = cached_symbols[exchange_symbol]['start_date']
+                except KeyError as e:
+                    start_date = time.strftime('%Y-%m-%d')
 
             symbol_map[exchange_symbol] = dict(
                 symbol = symbol,
@@ -493,6 +497,15 @@ class Poloniex(Exchange):
 
         with open(filename,'w') as f:
             json.dump(symbol_map, f, sort_keys=True, indent=2, separators=(',',':'))
+
+    def get_symbol_start_date(self, symbol):
+        try:
+            r = self.api.returnchartdata(symbol,86400,pd.to_datetime('2010-1-1').value // 10 ** 9)
+        except Exception as e:
+            raise ExchangeRequestError(error=e)
+
+        return time.strftime('%Y-%m-%d', time.gmtime(int(r[0]['date'])))
+
 
     
     def check_open_orders(self):

@@ -568,12 +568,13 @@ class Bitfinex(Exchange):
 
     def generate_symbols_json(self, filename=None, source_dates=False):
         symbol_map = {}
-        response = self._request('symbols', None)
 
         if not source_dates:
             fn, r = download_exchange_symbols(self.name)
             with open(fn) as data_file:
                 cached_symbols = json.load(data_file)
+
+        response = self._request('symbols', None)
 
         for symbol in response.json():
             if(source_dates):
@@ -584,7 +585,10 @@ class Bitfinex(Exchange):
                 except KeyError as e:
                     start_date = time.strftime('%Y-%m-%d')
 
-            symbol_map[symbol]= {"symbol":symbol[:-3]+'_'+symbol[-3:], "start_date": start_date}
+            symbol_map[symbol]= dict(
+                symbol = symbol[:-3]+'_'+symbol[-3:], 
+                start_date = start_date
+            )
 
         if(filename is None):
             filename = get_exchange_symbols_filename(self.name)
