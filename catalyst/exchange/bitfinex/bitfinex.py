@@ -24,7 +24,9 @@ from catalyst.exchange.exchange_execution import ExchangeLimitOrder, \
     ExchangeStopLimitOrder, ExchangeStopOrder
 from catalyst.finance.order import Order, ORDER_STATUS
 from catalyst.protocol import Account
-from catalyst.exchange.exchange_utils import get_exchange_symbols_filename
+from catalyst.exchange.exchange_utils import get_exchange_symbols_filename, \
+    download_exchange_symbols
+
 
 # Trying to account for REST api instability
 # https://stackoverflow.com/questions/15431044/can-i-set-max-retries-for-requests-request
@@ -564,14 +566,84 @@ class Bitfinex(Exchange):
         log.debug('got tickers {}'.format(ticks))
         return ticks
 
-    def generate_symbols_json(self, filename=None):
+    def generate_symbols_json(self, filename=None, source_dates=False):
         symbol_map = {}
         response = self._request('symbols', None)
+
+        if not source_dates:
+            fn, r = download_exchange_symbols(self.name)
+            with open(fn) as data_file:
+                cached_symbols = json.load(data_file)
+
         for symbol in response.json():
-            symbol_map[symbol]= {"symbol":symbol[:-3]+'_'+symbol[-3:], "start_date": "2010-01-01"}
+            if(source_dates):
+                start_date = self.get_symbol_start_date(symbol)
+            else:
+                try:
+                    start_date = cached_symbols[symbol]['start_date']
+                except KeyError as e:
+                    start_date = time.strftime('%Y-%m-%d')
+
+            symbol_map[symbol]= {"symbol":symbol[:-3]+'_'+symbol[-3:], "start_date": start_date}
 
         if(filename is None):
             filename = get_exchange_symbols_filename(self.name)
 
         with open(filename,'w') as f:
             json.dump(symbol_map, f, sort_keys=True, indent=2, separators=(',',':'))
+
+    def get_symbol_start_date(self, symbol):
+
+        print(symbol)
+        symbol_v2 = 't' + symbol.upper()
+
+        """
+            For each symbol we retrieve candles with Monhtly resolution
+            We get the first month, and query again with daily resolution
+            around that date, and we get the first date
+        """
+        url = '{url}/v2/candles/trade:1M:{symbol}/hist'.format(
+            url=self.url,
+            symbol=symbol_v2
+        )
+
+        try:
+            self.ask_request()
+            response = requests.get(url)
+        except Exception as e:
+            raise ExchangeRequestError(error=e)
+
+        """
+            If we don't get any data back for our monthly-resolution query
+            it means that symbol started trading less than a month ago, so
+            arbitrarily set the ref. date to 15 days ago to be safe with
+            +/- 31 days
+        """
+        if(len(response.json())):
+            startmonth = response.json()[-1][0]
+        else:
+            startmonth = int((time.time()-15*24*3600)*1000)
+
+        """
+            Query again with daily resolution setting the start and end around
+            the startmonth we got above. Avoid end dates greater than now: time.time()
+        """
+        url = '{url}/v2/candles/trade:1D:{symbol}/hist?start={start}&end={end}'.format(
+            url=self.url,
+            symbol=symbol_v2,
+            start=startmonth - 3600 *24 *31 *1000,
+            end=min(startmonth + 3600 *24 *31 *1000, int(time.time()*1000))
+        )
+
+        try:
+            self.ask_request()
+            response = requests.get(url)
+        except Exception as e:
+            raise ExchangeRequestError(error=e)
+
+        return time.strftime('%Y-%m-%d', time.gmtime(int(response.json()[-1][0]/1000)))
+
+   
+
+
+
