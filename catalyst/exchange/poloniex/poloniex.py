@@ -28,7 +28,8 @@ from catalyst.exchange.exchange_execution import ExchangeLimitOrder, \
     ExchangeStopLimitOrder, ExchangeStopOrder
 from catalyst.finance.order import Order, ORDER_STATUS
 from catalyst.protocol import Account
-from catalyst.exchange.exchange_utils import get_exchange_symbols_filename
+from catalyst.exchange.exchange_utils import get_exchange_symbols_filename, \
+    download_exchange_symbols
 from catalyst.finance.transaction import Transaction
 
 
@@ -466,13 +467,25 @@ class Poloniex(Exchange):
 
     def generate_symbols_json(self, filename=None):
         symbol_map = {}
+
+        fn, r = download_exchange_symbols(self.name)
+        with open(fn) as data_file:
+            cached_symbols = json.load(data_file)
+
         response = self.api.returnticker()
+
         for exchange_symbol in response:
             base, market = self.sanitize_curency_symbol(exchange_symbol).split('_')
             symbol = '{market}_{base}'.format( market=market, base=base )
+
+            try:
+                start_date = cached_symbols[exchange_symbol]['start_date']
+            except KeyError as e:
+                start_date = time.strftime('%Y-%m-%d')
+
             symbol_map[exchange_symbol] = dict(
                 symbol = symbol,
-                start_date = '2010-01-01'
+                start_date = start_date
             )
 
         if(filename is None):
