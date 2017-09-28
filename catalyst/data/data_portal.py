@@ -42,7 +42,6 @@ from catalyst.assets.roll_finder import (
 )
 from catalyst.data.dispatch_bar_reader import (
     AssetDispatchMinuteBarReader,
-    AssetDispatchFiveMinuteBarReader,
     AssetDispatchSessionBarReader
 )
 from catalyst.data.resample import (
@@ -120,10 +119,6 @@ class DataPortal(object):
         daily data backtests or daily history calls in a minute backetest.
         If a daily bar reader is not provided but a minute bar reader is,
         the minutes will be rolled up to serve the daily requests.
-    five_minute_reader : BcolzFiveMinuteBarReader, optional
-        The five minute bar reader for equities. This will be used to service
-        5-minute data backtests or five-minute history calls.  This can be used
-        to serve daily calls if no daily bar reader is provided.
     minute_reader : BcolzMinuteBarReader, optional
         The minute bar reader for equities. This will be used to service
         minute data backtests or minute history calls. This can be used
@@ -150,7 +145,6 @@ class DataPortal(object):
                  trading_calendar,
                  first_trading_day,
                  daily_reader=None,
-                 five_minute_reader=None,
                  minute_reader=None,
                  future_daily_reader=None,
                  future_minute_reader=None,
@@ -202,7 +196,6 @@ class DataPortal(object):
                 reader.last_available_dt
                 for reader in [
                     minute_reader,
-                    five_minute_reader,
                     future_minute_reader,
                 ]
                 if reader is not None
@@ -214,8 +207,6 @@ class DataPortal(object):
 
         aligned_minute_reader = self._ensure_reader_aligned(
             minute_reader)
-        aligned_five_minute_reader = self._ensure_reader_aligned(
-            five_minute_reader)
         aligned_session_reader = self._ensure_reader_aligned(
             daily_reader)
         aligned_future_minute_reader = self._ensure_reader_aligned(
@@ -229,13 +220,10 @@ class DataPortal(object):
         }
 
         aligned_minute_readers = {}
-        aligned_five_minute_readers = {}
         aligned_session_readers = {}
 
         if aligned_minute_reader is not None:
             aligned_minute_readers[Equity] = aligned_minute_reader
-        if aligned_five_minute_reader is not None:
-            aligned_five_minute_readers[Equity] = aligned_five_minute_reader
         if aligned_session_reader is not None:
             aligned_session_readers[Equity] = aligned_session_reader
 
@@ -267,13 +255,6 @@ class DataPortal(object):
             self._last_available_minute,
         )
 
-        _dispatch_five_minute_reader = AssetDispatchFiveMinuteBarReader(
-            self.trading_calendar,
-            self.asset_finder,
-            aligned_five_minute_readers,
-            self._last_available_minute,
-        )
-
         _dispatch_session_reader = AssetDispatchSessionBarReader(
             self.trading_calendar,
             self.asset_finder,
@@ -283,7 +264,6 @@ class DataPortal(object):
 
         self._pricing_readers = {
             'minute': _dispatch_minute_reader,
-            '5-minute': _dispatch_five_minute_reader,
             'daily': _dispatch_session_reader,
         }
 
@@ -718,17 +698,6 @@ class DataPortal(object):
             data_frequency,
             spot_value=result
         )
-
-
-    def _get_five_minute_spot_value(self, asset, column, dt, ffill=False):
-        return self._get_minutely_spot_value(
-            asset,
-            column,
-            dt,
-            ffill, 
-            '5-minute',
-        )
-        
 
     def _get_minute_spot_value(self, asset, column, dt, ffill=False):
         return self._get_minutely_spot_value(

@@ -1,7 +1,7 @@
 from unittest import TestCase
 from logbook import Logger
 from mock import patch, sentinel
-from catalyst.exchange.exchange_clock import ExchangeClock
+from catalyst.exchange.simple_clock import SimpleClock
 from catalyst.utils.calendars.trading_calendar import days_at_time
 from datetime import time
 from collections import defaultdict
@@ -35,9 +35,9 @@ class ExchangeClockTestCase(TestCase):
         return self.internal_clock
 
     def test_clock(self):
-        with patch('catalyst.exchange.exchange_clock.pd.to_datetime') as to_dt, \
-                patch('catalyst.exchange.exchange_clock.sleep') as sleep:
-            clock = ExchangeClock(sessions=self.sessions)
+        with patch('catalyst.exchange.simple_clock.pd.to_datetime') as to_dt, \
+                patch('catalyst.exchange.simple_clock.sleep') as sleep:
+            clock = SimpleClock(sessions=self.sessions)
             to_dt.side_effect = self.get_clock
             sleep.side_effect = self.advance_clock
             start_time = pd.Timestamp.utcnow()

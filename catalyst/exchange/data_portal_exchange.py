@@ -20,9 +20,8 @@ from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
 from catalyst.data.bundles.core import from_bundle_ingest_dirname, \
-    minute_path, five_minute_path, daily_path
+    minute_path, daily_path
 from catalyst.data.data_portal import DataPortal
-from catalyst.data.five_minute_bars import BcolzFiveMinuteBarReader
 from catalyst.data.minute_bars import BcolzMinuteBarReader
 from catalyst.data.us_equity_pricing import BcolzDailyBarReader
 from catalyst.exchange.exchange_errors import (
@@ -262,7 +261,6 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
 
         self.daily_bar_readers = dict()
         self.minute_bar_readers = dict()
-        self.five_minute_bar_readers = dict()
 
         self.history_loaders = dict()
         self.minute_history_loaders = dict()
@@ -333,7 +331,7 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
         Pick from a collection of readers based of exchange name and frequency.
 
         :param data_frequency:
-            The reader frequency: minute, 5-minute, daily.
+            The reader frequency: minute, daily.
 
         :param exchange_name:
             The exchange name.

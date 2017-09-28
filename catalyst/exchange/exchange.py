@@ -672,7 +672,7 @@ class Exchange:
         Retrieve OHLCV candles for the given assets
 
         :param data_frequency:
-            The candle frequency: minute, 5-minute or daily
+            The candle frequency: minute or daily
         :param assets: list[TradingPair]
             The targeted assets.
         :param bar_count:

@@ -5,7 +5,6 @@ import numpy as np
 from logbook import Logger, INFO
 
 from catalyst import get_calendar
-from catalyst.data.five_minute_bars import BcolzFiveMinuteOverlappingData
 from catalyst.data.minute_bars import BcolzMinuteOverlappingData
 from catalyst.exchange.bitfinex.bitfinex import Bitfinex
 from catalyst.exchange.bittrex.bittrex import Bittrex
@@ -161,8 +160,7 @@ def process_bar_data(exchange, assets, writer, data_frequency,
                     show_progress=False,
                     invalid_data_behavior='raise'
                 )
-            except (BcolzMinuteOverlappingData,
-                    BcolzFiveMinuteOverlappingData) as e:
+            except BcolzMinuteOverlappingData as e:
                 log.warn('chunk already exists {}: {}'.format(chunk, e))
 
 
@@ -215,7 +213,6 @@ def exchange_bundle(exchange_name, symbols=None, start=None, end=None,
     def ingest(environ,
                asset_db_writer,
                minute_bar_writer,
-               five_minute_bar_writer,
                daily_bar_writer,
                adjustment_writer,
                calendar,
@@ -291,8 +288,6 @@ def exchange_bundle(exchange_name, symbols=None, start=None, end=None,
         #         start=start,
         #         end=end
         #     )
-
-        # TODO: delete 5-minute writer everywhere
 
         if minute_bar_writer is not None:
             process_bar_data(

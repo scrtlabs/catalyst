@@ -53,7 +53,6 @@ class ExchangeBundleTestCase:
         ingest(environ=os.environ,
                asset_db_writer=None,
                minute_bar_writer=minute_bar_writer,
-               five_minute_bar_writer=None,
                daily_bar_writer=None,
                adjustment_writer=None,
                calendar=open_calendar,

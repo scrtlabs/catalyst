@@ -15,6 +15,10 @@ class Poloniex_api(object):
     def __init__(self, key, secret):
         self.key = key
         self.secret = secret
+
+        self.max_requests_per_second = 6
+        self.request_cpt = dict()
+
         self.public  = ['returnTicker', 'return24Volume', 'returnOrderBook',
                         'returnTradeHistory', 'returnChartData',
                         'returnCurrencies', 'returnLoanOrders']
@@ -28,6 +32,43 @@ class Poloniex_api(object):
                         'getMarginPosition', 'closeMarginPosition','createLoanOffer',
                         'cancelLoanOffer','returnOpenLoanOffers','returnActiveLoans',
                         'returnLendingHistory','toggleAutoRenew']
+
+    def ask_request(self):
+        """
+        Asks permission to issue a request to the exchange.
+        The primary purpose is to avoid hitting rate limits.
+
+        The application will pause if the maximum requests per minute
+        permitted by the exchange is exceeded.
+
+        :return boolean:
+
+        """
+        now = time.time()
+        if not self.request_cpt:
+            self.request_cpt = dict()
+            self.request_cpt[now] = 0
+            return True
+
+        cpt_date = self.request_cpt.keys()[0]
+        cpt = self.request_cpt[cpt_date]
+
+        if now > cpt_date + 1:
+            self.request_cpt = dict()
+            self.request_cpt[now] = 0
+            return True
+
+        if cpt >= self.max_requests_per_second:
+            
+            log.debug('max requests 6 reached, sleeping for 1 seconds')
+            sleep(1)
+
+            now = time.time()
+            self.request_cpt = dict()
+            self.request_cpt[now] = 0
+            return True
+        else:
+            self.request_cpt[cpt_date] += 1
 
     def query(self, method, req={}):
 
@@ -45,6 +86,7 @@ class Poloniex_api(object):
         else:
             raise ValueError('Method "' + method + '" not found in neither the Public API or Trading API endpoints')
 
+        self.ask_request()
         req = urllib.request.Request(url, data=post_data, headers=headers)
         return json.loads(urlopen(req).read())
 

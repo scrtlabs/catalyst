@@ -148,7 +148,6 @@ class PoloniexBundle(BaseCryptoPricingBundle):
                          data_frequency):
         period_map = {
             'daily': 86400,
-#            '5-minute': 300,
         }
 
         try:

@@ -29,6 +29,7 @@ from catalyst.exchange.exchange_execution import ExchangeLimitOrder, \
 from catalyst.finance.order import Order, ORDER_STATUS
 from catalyst.protocol import Account
 from catalyst.exchange.exchange_utils import get_exchange_symbols_filename
+from catalyst.finance.transaction import Transaction
 
 
 log = Logger('Poloniex')
@@ -274,13 +275,11 @@ class Poloniex(Exchange):
                 if(is_buy):
                     response = self.api.buy(exchange_symbol, amount, price)
                 else:
-                    reponse = self.api.sell(exchange_symbol, amount, price)
+                    response = self.api.sell(exchange_symbol, -amount, price)
             except Exception as e:
                 raise ExchangeRequestError(error=e)
 
             date = pd.Timestamp.utcnow()
-
-            print(response)
 
             if('orderNumber' in response):
                 order_id = str(response['orderNumber'])
@@ -372,14 +371,19 @@ class Poloniex(Exchange):
         except Exception as e:
             raise OrphanOrderError(order_id=order_id, exchange=self.name)
 
+        return order
+
+        # TODO: Need to decide whether we fetch orders locally or from exchnage
+        # The code below is ignored
+
         try:
             response = self.api.returnopenorders(self.get_symbol(order.sid))
         except Exception as e:
             raise ExchangeRequestError(error=e)
 
-        for order in response:
-            if(int(order['orderNumber'])==int(order_id)):
-                return True
+        for o in response:
+            if(int(o['orderNumber'])==int(order_id)):
+                return order
         
         return None
         
@@ -392,23 +396,31 @@ class Poloniex(Exchange):
         order_param : str or Order
             The order_id or order object to cancel.
         """
-        order_id = order_param.id \
-            if isinstance(order_param, Order) else order_param
+
+        if(isinstance(order_param, Order)):
+            order = order_param
+        else:
+            order = self._portfolio.open_orders[order_param]
 
         try:
-            response = self.api.cancelorder(order_id)
+            response = self.api.cancelorder(order.id)
         except Exception as e:
             raise ExchangeRequestError(error=e)
 
         if 'error' in response:
-            raise OrderCancelError(
-                order_id=order_id,
+            log.info('Unable to cancel order {order_id} on exchange {exchange} {error}.'.format(
+                order_id=order.id,
                 exchange=self.name,
                 error=response['error']
-            )
-        
-        self.portfolio.remove_order(order_param)    #TODO: Verify this works
+                ))
 
+            #raise OrderCancelError(
+            #    order_id=order.id,
+            #    exchange=self.name,
+            #    error=response['error']
+            #)
+        
+        self.portfolio.remove_order(order)
 
 
     def tickers(self, assets):
@@ -508,7 +520,7 @@ class Poloniex(Exchange):
                 except Exception as e:
                     raise ExchangeRequestError(error=e)
 
-                if(response['error']):
+                if('error' in response):
                     if(not order_open):
                         raise OrphanOrderReverseError(order_id=order_id, exchange=self.name)
                 else:
@@ -524,16 +536,17 @@ class Poloniex(Exchange):
                         """
                         if(not filter(lambda item: item['order_id'] == tx['tradeID'], self.transactions[order_id])):
                             log.debug('Got new transaction for order {}: amount {}, price {}'.format(
-                                       order_id, tx.amount, tx.rate))
+                                       order_id, tx['amount'], tx['rate']))
+                            tx['amount']=float(tx['amount'])
                             if(tx['type']=='sell'):
                                 tx['amount'] = -tx['amount']
                             transaction = Transaction(
                                 asset=order.asset,
                                 amount=tx['amount'],
                                 dt=pd.to_datetime(tx['date'], utc=True),
-                                price=tx['rate'],
+                                price=float(tx['rate']),
                                 order_id=tx['tradeID'],     # it's a misnomer, but keeping it for compatibility
-                                commission=tx['fee']
+                                commission=float(tx['fee'])
                             )
                             self.transactions[order_id].append(transaction)
                             self.portfolio.execute_transaction(transaction)

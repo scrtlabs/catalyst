@@ -126,7 +126,7 @@ def ipython_only(option):
 )
 @click.option(
     '--data-frequency',
-    type=click.Choice({'daily', '5-minute', 'minute'}),
+    type=click.Choice({'daily', 'minute'}),
     default='daily',
     show_default=True,
     help='The data frequency of the simulation.',
@@ -196,8 +196,8 @@ def ipython_only(option):
 @click.option(
     '-x',
     '--exchange-name',
-    type=click.Choice({'bitfinex', 'bittrex'}),
-    help='The name of the targeted exchange (supported: bitfinex, bittrex).',
+    type=click.Choice({'bitfinex', 'bittrex', 'poloniex'}),
+    help='The name of the targeted exchange (supported: bitfinex, bittrex, poloniex).',
 )
 @click.option(
     '-n',
