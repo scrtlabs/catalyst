@@ -539,7 +539,10 @@ class Bitfinex(Exchange):
                     response.content)
             )
 
-        tickers = response.json()
+        try:
+            tickers = response.json()
+        except Exception as e:
+            raise ExchangeRequestError(error=e)
 
         ticks = dict()
         for index, ticker in enumerate(tickers):
