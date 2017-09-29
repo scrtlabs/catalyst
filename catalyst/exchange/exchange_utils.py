@@ -80,6 +80,9 @@ def get_algo_folder(algo_name, environ=None):
 
 
 def get_algo_object(algo_name, key, environ=None, rel_path=None):
+    if algo_name is None:
+        return None
+
     folder = get_algo_folder(algo_name, environ)
 
     if rel_path is not None:

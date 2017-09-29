@@ -54,6 +54,7 @@ class LiveGraphClock(object):
 
     def __init__(self, sessions, context, time_skew=pd.Timedelta('0s')):
 
+        global mdates, plt                  #TODO: Could be cleaner
         import matplotlib.dates as mdates
         from matplotlib import pyplot as plt
         from matplotlib import style
