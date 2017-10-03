@@ -441,7 +441,7 @@ class BcolzDailyBarWriter(object):
         dates = raw_data.index.values.astype('datetime64[s]')
         check_uint32_safe(dates.max().view(np.int64), 'day')
         processed['day'] = dates.astype('uint32')
-        processed['volume'] = raw_data.volume.astype('uint64')
+        processed['volume'] = (raw_data.volume * PRICE_ADJUSTMENT_FACTOR).astype('uint64')
         return ctable.fromdataframe(processed)
 
 
@@ -494,9 +494,8 @@ class BcolzDailyBarReader(SessionBarReader):
 
     The data in these columns is interpreted as follows:
 
-    - Price columns ('open', 'high', 'low', 'close') are interpreted as 1000 *
-      as-traded dollar value.
-    - Volume is interpreted as as-traded volume.
+    - Price columns ('open', 'high', 'low', 'close') and Volume are interpreted 
+      as 10^9 * as-traded dollar value.
     - Day is interpreted as seconds since midnight UTC, Jan 1, 1970.
     - Id is the asset id of the row.
 
@@ -762,13 +761,10 @@ class BcolzDailyBarReader(SessionBarReader):
         """
         ix = self.sid_day_index(sid, dt)
         price = self._spot_col(field)[ix]
-        if field != 'volume':
-            if price == 0:
-                return nan
-            else:
-                return price / PRICE_ADJUSTMENT_FACTOR
+        if field != 'volume' and price == 0:
+            return nan
         else:
-            return price
+            return price / PRICE_ADJUSTMENT_FACTOR
 
 
 class PanelBarReader(SessionBarReader):
