@@ -1,8 +1,77 @@
-import datetime
+import datetime, requests
 
+EXCHANGE_NAMES = ['bitfinex', 'bittrex', 'poloniex']
+API_URL = 'http://data.enigma.co/api/v1'
 
 def get_date_from_ms(ms):
     return datetime.datetime.fromtimestamp(ms / 1000.0)
+
+def get_history(exchange_name, data_frequency, symbol, start_ms = None, end_ms = None):
+    """
+    History API provides OHLCV data for any of the supported exchanges up to yesterday.
+
+    :param exchange_name: string
+        Required: The name identifier of the exchange (e.g. bitfinex, bittrex, poloniex).
+    :param data_frequency: string
+        Required: The bar frequency (minute or daily)
+        *** currently only 'daily' is supported ***
+    :param symbol: string
+        Required: The trading pair symbol.
+    :param start: float
+        Optional: The start date in milliseconds.
+    :param end: float
+        Optional: The end date in milliseconds.
+
+    :return ohlcv: list[dict[string, float]]
+        Each row contains the following dictionary for the resulting bars:
+        'ts'     : int, the timestamp in seconds
+        'open'   : float
+        'high'   : float
+        'low'    : float
+        'close'  : float
+        'volume' : float
+
+    Notes
+    =====
+    Using milliseconds for the start and end dates for ease of use in the
+    function query parameters.
+
+    Sometimes, one minute goes by without completing a trade of the given
+    trading pair on the given exchange. To minimize the payload size, we
+    don't return identical sequential bars. Post-processing code will
+    forward fill missing bars outside of this function.
+    """
+
+    if exchange_name not in EXCHANGE_NAMES:
+        raise ValueError('get_history function only supports the following exchanges: {}'.format(list(EXCHANGE_NAMES)))
+
+    if data_frequency != 'daily':
+        raise ValueError('get_history currently only supports daily data.')
+
+    url = '{api_url}/candles?exchange={exchange}&market={symbol}&freq={data_frequency}'.format(
+        api_url=API_URL,
+        exchange=exchange_name,
+        symbol=symbol,
+        data_frequency=data_frequency,
+        )
+
+    if start_ms:
+        url += '&start={}'.format(int(start_ms/1000))
+
+    if end_ms:
+        url += '&end={}'.format(int(end_ms/1000))
+
+    try:
+        response = requests.get(url)
+    except Exception as e:
+        raise ValueError(e)
+
+    data = response.json()
+
+    if 'error' in response:
+        raise ValueError(e)
+
+    return data
 
 
 def get_history_mock(exchange_name, data_frequency, symbol, start_ms, end_ms,
@@ -71,3 +140,4 @@ def get_history_mock(exchange_name, data_frequency, symbol, start_ms, end_ms,
             last_traded=candle['last_traded']
         ))
     return ohlcv
+
