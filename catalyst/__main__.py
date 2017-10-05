@@ -8,6 +8,7 @@ import pandas as pd
 from six import text_type
 
 from catalyst.data import bundles as bundles_module
+from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.utils.cli import Date, Timestamp
 from catalyst.utils.run_algo import _run, load_extensions
 
@@ -39,7 +40,6 @@ except NameError:
     help="Don't load the default catalyst extension.py file in $ZIPLINE_HOME.",
 )
 @click.version_option()
-
 def main(extension, strict_extensions, default_extension):
     """Top level catalyst entry point.
     """
@@ -238,7 +238,7 @@ def run(ctx,
         # does not pass either of these and then passes the first only
         # to be told they need to pass the second argument also
         ctx.fail(
-                "must specify dates with '-s' / '--start' and '-e' / '--end'",
+            "must specify dates with '-s' / '--start' and '-e' / '--end'",
         )
     if start is None:
         ctx.fail("must specify a start date with '-s' / '--start'")
@@ -246,7 +246,7 @@ def run(ctx,
         ctx.fail("must specify an end date with '-e' / '--end'")
 
     if exchange_name is None:
-            ctx.fail("must specify an exchange name '-x'")
+        ctx.fail("must specify an exchange name '-x'")
 
     perf = _run(
         initialize=None,
@@ -307,12 +307,13 @@ def catalyst_magic(line, cell=None):
             '%s%%catalyst' % ((cell or '') and '%'),
             # don't use system exit and propogate errors to the caller
             standalone_mode=False,
-        )
+            )
     except SystemExit as e:
         # https://github.com/mitsuhiko/click/pull/533
         # even in standalone_mode=False `--help` really wants to kill us ;_;
         if e.code:
             raise ValueError('main returned non-zero status code: %d' % e.code)
+
 
 @main.command()
 @click.option(
@@ -380,33 +381,32 @@ def catalyst_magic(line, cell=None):
     default=False,
     help='Display live graph.',
 )
-
 @click.pass_context
 def live(ctx,
-        algofile,
-        algotext,
-        define,
-        output,
-        print_algo,
-        local_namespace,
-        exchange_name,
-        algo_namespace,
-        base_currency,
-        live_graph):
+         algofile,
+         algotext,
+         define,
+         output,
+         print_algo,
+         local_namespace,
+         exchange_name,
+         algo_namespace,
+         base_currency,
+         live_graph):
     """Trade live with the given algorithm.
     """
     if (algotext is not None) == (algofile is not None):
         ctx.fail(
             "must specify exactly one of '-f' / '--algofile' or"
             " '-t' / '--algotext'",
-    )
+        )
 
     if exchange_name is None:
-            ctx.fail("must specify an exchange name '-x'")
+        ctx.fail("must specify an exchange name '-x'")
     if algo_namespace is None:
-            ctx.fail("must specify an algorithm name '-n' in live execution mode")
+        ctx.fail("must specify an algorithm name '-n' in live execution mode")
     if base_currency is None:
-            ctx.fail("must specify a base currency '-c' in live execution mode")
+        ctx.fail("must specify a base currency '-c' in live execution mode")
 
     perf = _run(
         initialize=None,
@@ -444,12 +444,71 @@ def live(ctx,
 
 @main.command()
 @click.option(
+    '-x',
+    '--exchange-name',
+    type=click.Choice({'bitfinex', 'bittrex', 'poloniex'}),
+    help='The name of the exchange bundle to ingest (supported: bitfinex,'
+         ' bittrex, poloniex).',
+)
+@click.option(
+    '--data-frequency',
+    type=click.Choice({'daily', 'minute', 'daily,minute'}),
+    default='daily',
+    show_default=True,
+    help='The data frequency of the desired OHLCV bars.',
+)
+@click.option(
+    '-s',
+    '--start',
+    default=None,
+    type=Date(tz='utc', as_timestamp=True),
+    help='The start date of the data range. (default: one year from end date)',
+)
+@click.option(
+    '-e',
+    '--end',
+    default=None,
+    type=Date(tz='utc', as_timestamp=True),
+    help='The end date of the data range. (default: today)',
+)
+@click.option(
+    '--show-progress/--no-show-progress',
+    default=True,
+    help='Print progress information to the terminal.'
+)
+def ingest_exchange(exchange_name, data_frequency, start, end,
+                    show_progress):
+    """
+    Ingest data for the given exchange.
+    """
+    click.echo('ingesting exchange bundle {}'.format(exchange_name))
+    exchange_bundle = ExchangeBundle(
+        exchange_name=exchange_name,
+        data_frequency=data_frequency,
+        include_symbols=None,
+        exclude_symbols=None,
+        start=start,
+        end=end,
+        show_progress=show_progress
+    )
+    exchange_bundle.ingest()
+
+
+@main.command()
+@click.option(
     '-b',
     '--bundle',
-    default='poloniex',
     metavar='BUNDLE-NAME',
-    show_default=True,
+    default=None,
+    show_default=False,
     help='The data bundle to ingest.',
+)
+@click.option(
+    '-x',
+    '--exchange-name',
+    type=click.Choice({'bitfinex', 'bittrex', 'poloniex'}),
+    help='The name of the exchange bundle to ingest (supported: bitfinex,'
+         ' bittrex, poloniex).',
 )
 @click.option(
     '-c',
@@ -469,9 +528,12 @@ def live(ctx,
     default=True,
     help='Print progress information to the terminal.'
 )
-def ingest(bundle, compile_locally, assets_version, show_progress):
+@click.pass_context
+def ingest(ctx, bundle, exchange_name, compile_locally, assets_version,
+           show_progress):
     """Ingest the data for the given bundle.
     """
+
     bundles_module.ingest(
         bundle,
         os.environ,
@@ -490,6 +552,13 @@ def ingest(bundle, compile_locally, assets_version, show_progress):
     metavar='BUNDLE-NAME',
     show_default=True,
     help='The data bundle to clean.',
+)
+@click.option(
+    '-x',
+    '--exchange_name',
+    metavar='EXCHANGE-NAME',
+    show_default=True,
+    help='The exchange bundle name to clean.',
 )
 @click.option(
     '-e',
@@ -522,6 +591,7 @@ def clean(bundle, before, after, keep_last):
         after,
         keep_last,
     )
+
 
 @main.command()
 def bundles():

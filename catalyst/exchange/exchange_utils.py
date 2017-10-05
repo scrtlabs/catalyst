@@ -3,6 +3,7 @@ import os
 import pickle
 import urllib
 from datetime import date, datetime
+
 import pandas as pd
 
 from catalyst.exchange.exchange_errors import ExchangeAuthNotFound, \

@@ -148,27 +148,27 @@ def analyze(context, stats):
     pass
 
 
-run_algorithm(
-    initialize=initialize,
-    handle_data=handle_data,
-    analyze=analyze,
-    exchange_name='bitfinex',
-    live=True,
-    algo_namespace=algo_namespace,
-    base_currency='btc',
-    live_graph=False
-)
-
-# Backtest
 # run_algorithm(
-#     capital_base=250,
-#     start=pd.to_datetime('2017-09-08', utc=True),
-#     end=pd.to_datetime('2017-09-15', utc=True),
-#     data_frequency='minute',
 #     initialize=initialize,
 #     handle_data=handle_data,
 #     analyze=analyze,
 #     exchange_name='bitfinex',
+#     live=True,
 #     algo_namespace=algo_namespace,
-#     base_currency='btc'
+#     base_currency='btc',
+#     live_graph=False
 # )
+
+# Backtest
+run_algorithm(
+    capital_base=250,
+    start=pd.to_datetime('2017-09-08', utc=True),
+    end=pd.to_datetime('2017-09-15', utc=True),
+    data_frequency='minute',
+    initialize=initialize,
+    handle_data=handle_data,
+    analyze=analyze,
+    exchange_name='bitfinex',
+    algo_namespace=algo_namespace,
+    base_currency='btc'
+)

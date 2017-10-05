@@ -1,11 +1,9 @@
-from catalyst.exchange.bitfinex.bitfinex import Bitfinex
-from base import BaseExchangeTestCase
 from logbook import Logger
-from catalyst.finance.execution import (MarketOrder,
-                                        LimitOrder,
-                                        StopOrder,
-                                        StopLimitOrder)
+
+from base import BaseExchangeTestCase
+from catalyst.exchange.bitfinex.bitfinex import Bitfinex
 from catalyst.exchange.exchange_utils import get_exchange_auth
+from catalyst.finance.execution import (LimitOrder)
 
 log = Logger('test_bitfinex')
 

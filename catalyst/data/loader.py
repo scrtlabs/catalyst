@@ -12,30 +12,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import datetime
 import os
 from collections import OrderedDict
 
 import logbook
 import pandas as pd
-import numpy as np
-from pandas_datareader.data import DataReader
-import datetime
-import time
 import pytz
+from pandas_datareader.data import DataReader
 from six import iteritems
 from six.moves.urllib_error import HTTPError
 
-from .benchmarks import get_benchmark_returns
+from catalyst.utils.calendars import get_calendar
 from . import treasuries, treasuries_can
+from .benchmarks import get_benchmark_returns
+from ..utils.deprecate import deprecated
 from ..utils.paths import (
     cache_root,
     data_root,
 )
-from ..utils.deprecate import deprecated
-
-from catalyst.data.bundles.poloniex import PoloniexBundle
-from catalyst.utils.calendars import get_calendar
-
 
 logger = logbook.Logger('Loader')
 
@@ -308,20 +303,21 @@ def ensure_crypto_benchmark_data(symbol,
             ('Downloading benchmark data for {symbol!r} from {first_date} to {last_date}'),
             symbol=symbol, first_date=first_date, last_date=last_date)
 
+        raise DeprecationWarning('poloniex bundle deprecated')
         # Load benchmark symbol from Poloniex API
-        try:
-            bundle = PoloniexBundle()
-            bench_raw = bundle._fetch_symbol_frame(
-                None,
-                symbol,
-                get_calendar(bundle.calendar_name),
-                first_date - trading_day,
-                last_date,
-                'daily',
-            )
-        except (OSError, IOError, HTTPError):
-            logger.exception('Failed to fetch new crypto benchmark returns')
-            raise
+        # try:
+        #     bundle = PoloniexBundle()
+        #     bench_raw = bundle._fetch_symbol_frame(
+        #         None,
+        #         symbol,
+        #         get_calendar(bundle.calendar_name),
+        #         first_date - trading_day,
+        #         last_date,
+        #         'daily',
+        #     )
+        # except (OSError, IOError, HTTPError):
+        #     logger.exception('Failed to fetch new crypto benchmark returns')
+        #     raise
 
     # select close column and compute percent change between days
     daily_close = bench_raw[['close']]

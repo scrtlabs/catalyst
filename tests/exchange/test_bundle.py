@@ -1,13 +1,8 @@
-import os
-from datetime import timedelta
-from logging import Logger, DEBUG
+from logging import Logger
 
 import pandas as pd
 
-from catalyst import get_calendar
-from catalyst.data.minute_bars import BcolzMinuteBarWriter
-from catalyst.exchange.exchange_bundle import exchange_bundle
-from catalyst.utils.paths import ensure_directory, data_root
+from catalyst.exchange.exchange_bundle import ExchangeBundle
 
 log = Logger('test_exchange_bundle')
 
@@ -18,50 +13,15 @@ class ExchangeBundleTestCase:
 
         start = pd.to_datetime('2017-09-01', utc=True)
         end = pd.Timestamp.utcnow()
-        open_calendar = get_calendar('OPEN')
 
-        root = data_root(os.environ)
-        output_dir = '{root}/exchange_{exchange}/2017-09-21T05;34;37.274482'.format(
-            root=root,
-            exchange=exchange_name
-        )
-        ensure_directory(output_dir)
-
-        filename = os.path.join(output_dir, 'metadata.json')
-
-        start_session = start.floor('1d')
-        if os.path.isfile(filename):
-            minute_bar_writer = BcolzMinuteBarWriter.open(output_dir, end)
-        else:
-            # TODO: need to be able to write more precise numbers
-            minute_bar_writer = BcolzMinuteBarWriter(
-                rootdir=output_dir,
-                calendar=open_calendar,
-                minutes_per_day=1440,
-                start_session=start_session,
-                end_session=end,
-                write_metadata=True,
-                default_ohlc_ratio=1000000
-            )
-
-        ingest = exchange_bundle(
+        log.info('ingesting exchange bundle {}'.format(exchange_name))
+        exchange_bundle = ExchangeBundle(
             exchange_name=exchange_name,
-            symbols=['eth_btc'],
-            log_level=DEBUG
+            data_frequency='minute',
+            include_symbols=None,
+            exclude_symbols=None,
+            start=start,
+            end=end,
+            show_progress=True
         )
-
-        ingest(environ=os.environ,
-               asset_db_writer=None,
-               minute_bar_writer=minute_bar_writer,
-               daily_bar_writer=None,
-               adjustment_writer=None,
-               calendar=open_calendar,
-               start_session=start_session,
-               end_session=end,
-               cache=dict(),
-               show_progress=True,
-               is_compile=False,
-               output_dir=output_dir,
-               start=start,
-               end=end)
         pass

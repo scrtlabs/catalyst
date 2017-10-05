@@ -1,4 +1,16 @@
 import datetime
+from logging import Logger, DEBUG
+import os
+from dateutil.relativedelta import relativedelta
+import pandas as pd
+
+from catalyst import get_calendar
+from catalyst.data.minute_bars import BcolzMinuteBarWriter
+from catalyst.data.us_equity_pricing import BcolzDailyBarWriter
+from catalyst.exchange.exchange_utils import get_exchange_folder
+from catalyst.utils.paths import data_root, ensure_directory
+
+log = Logger('test_exchange_bundle')
 
 
 def get_date_from_ms(ms):
@@ -30,7 +42,7 @@ def get_history_mock(exchange_name, data_frequency, symbol, start_ms, end_ms,
 
     Notes
     =====
-    Using milliseconds for the start and end dates for ease of use in the
+    Using milliseconds for the start and end dates for ease of use in
     URL query parameters.
 
     Sometimes, one minute goes by without completing a trade of the given
@@ -71,3 +83,15 @@ def get_history_mock(exchange_name, data_frequency, symbol, start_ms, end_ms,
             last_traded=candle['last_traded']
         ))
     return ohlcv
+
+
+def fetch_candles_chunk(exchange, assets, data_frequency, end_dt, bar_count):
+    calc_start_dt = end_dt - datetime.timedelta(minutes=bar_count)
+    candles = exchange.get_candles(
+        data_frequency=data_frequency,
+        assets=assets,
+        bar_count=bar_count,
+        start_dt=calc_start_dt,
+        end_dt=end_dt
+    )
+    return candles

@@ -1,5 +1,4 @@
 import abc
-import collections
 import random
 from abc import ABCMeta, abstractmethod, abstractproperty
 from datetime import timedelta

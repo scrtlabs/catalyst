@@ -1,19 +1,13 @@
-from datetime import timedelta
-
-import os
 import pandas as pd
-from catalyst import get_calendar
 from logbook import Logger
 
-from catalyst.data.minute_bars import BcolzMinuteBarReader
+from catalyst import get_calendar
 from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
 from catalyst.exchange.bitfinex.bitfinex import Bitfinex
 from catalyst.exchange.bittrex.bittrex import Bittrex
 from catalyst.exchange.data_portal_exchange import DataPortalExchangeBacktest, \
     DataPortalExchangeLive
-from catalyst.exchange.exchange_bundle import exchange_bundle
 from catalyst.exchange.exchange_utils import get_exchange_auth
-from catalyst.utils.run_algo import load_extensions
 
 log = Logger('test_bitfinex')
 
