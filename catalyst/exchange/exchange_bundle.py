@@ -1,6 +1,7 @@
 import os
 from datetime import timedelta
 
+import numpy as np
 import pandas as pd
 from logbook import Logger
 
@@ -20,6 +21,7 @@ def _cachpath(symbol, type_):
     return '-'.join([symbol, type_])
 
 
+BUNDLE_NAME_TEMPLATE = '{root}/{frequency}_bundle'
 log = Logger('exchange_bundle')
 
 
@@ -77,7 +79,7 @@ class ExchangeBundle:
             return self._reader
 
         root = get_exchange_folder(self.exchange.name)
-        input_dir = '{root}/{frequency}_bundle'.format(
+        input_dir = BUNDLE_NAME_TEMPLATE.format(
             root=root,
             frequency=self.data_frequency
         )
@@ -108,7 +110,7 @@ class ExchangeBundle:
         open_calendar = get_calendar('OPEN')
 
         root = get_exchange_folder(self.exchange.name)
-        output_dir = '{root}/{frequency}_bundle'.format(
+        output_dir = BUNDLE_NAME_TEMPLATE.format(
             root=root,
             frequency=self.data_frequency
         )
@@ -143,6 +145,32 @@ class ExchangeBundle:
             )
 
         return self._writer
+
+    def check_data_exists(self, assets, start, end):
+        has_data = True
+        for asset in assets:
+            if has_data and self.reader is not None:
+                try:
+                    start_close = self.reader.get_value(
+                        asset.sid, start, 'close')
+
+                    if np.is_nan(start_close):
+                        has_data = False
+
+                    else:
+                        end_close = self.reader.get_value(
+                            asset.sid, end, 'close')
+
+                        if np.is_nan(end_close):
+                            has_data = False
+
+                except Exception as e:
+                    has_data = False
+
+            else:
+                has_data = False
+
+        return has_data
 
     def ingest(self):
         symbols = []
@@ -204,6 +232,11 @@ class ExchangeBundle:
                 for asset in self.assets:
                     if asset.start_date <= chunk_end:
                         chunk_assets.append(asset)
+
+                if self.check_data_exists(
+                        chunk_assets, chunk_start, chunk_end):
+                    log.debug('the data chunk already exists')
+                    continue
 
                 # TODO: ensure correct behavior for assets starting in the chunk
                 candles = fetch_candles_chunk(
