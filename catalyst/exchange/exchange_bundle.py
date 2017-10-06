@@ -154,14 +154,14 @@ class ExchangeBundle:
                     start_close = self.reader.get_value(
                         asset.sid, start, 'close')
 
-                    if np.is_nan(start_close):
+                    if np.isnan(start_close):
                         has_data = False
 
                     else:
                         end_close = self.reader.get_value(
                             asset.sid, end, 'close')
 
-                        if np.is_nan(end_close):
+                        if np.isnan(end_close):
                             has_data = False
 
                 except Exception as e:
