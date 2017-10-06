@@ -39,8 +39,14 @@ class ExchangeBundle:
         self._reader = None
 
     def get_assets(self, include_symbols, exclude_symbols):
-        # TODO: filter assets
-        return self.exchange.assets
+        # TODO: filter exclude symbols assets
+        if include_symbols is not None:
+            include_symbols_list = include_symbols.split(',')
+
+            return self.exchange.get_assets(include_symbols_list)
+
+        else:
+            return self.exchange.get_assets()
 
     def get_adj_dates(self, start, end):
         now = pd.Timestamp.utcnow()

@@ -18,10 +18,11 @@ class ExchangeBundleTestCase:
         exchange_bundle = ExchangeBundle(
             exchange_name=exchange_name,
             data_frequency='minute',
-            include_symbols=None,
+            include_symbols='neo_btc',
             exclude_symbols=None,
             start=start,
             end=end,
             show_progress=True
         )
+        exchange_bundle.ingest()
         pass

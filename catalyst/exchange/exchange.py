@@ -141,12 +141,16 @@ class Exchange:
 
         return symbols
 
-    def get_assets(self, symbols):
+    def get_assets(self, symbols=None):
         assets = []
 
-        for symbol in symbols:
-            asset = self.get_asset(symbol)
-            assets.append(asset)
+        if symbols is not None:
+            for symbol in symbols:
+                asset = self.get_asset(symbol)
+                assets.append(asset)
+        else:
+            for key in self.assets:
+                assets.append(self.assets[key])
 
         return assets
 
