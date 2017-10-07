@@ -585,9 +585,21 @@ class Bitfinex(Exchange):
                 except KeyError as e:
                     start_date = time.strftime('%Y-%m-%d')
 
+            try:
+                end_daily = cached_symbols[symbol]['end_daily']
+            except KeyError as e:
+                end_daily ='N/A'
+
+            try:
+                end_minute = cached_symbols[symbol]['end_minute']
+            except KeyError as e:
+                end_minute = 'N/A'
+
             symbol_map[symbol]= dict(
-                symbol = symbol[:-3]+'_'+symbol[-3:], 
-                start_date = start_date
+                symbol     = symbol[:-3]+'_'+symbol[-3:], 
+                start_date = start_date,
+                end_daily  = end_daily,
+                end_minute = end_minute,
             )
 
         if(filename is None):
