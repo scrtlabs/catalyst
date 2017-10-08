@@ -1,5 +1,4 @@
 import datetime, requests
-import datetime
 import os
 from logging import Logger
 
@@ -11,10 +10,13 @@ log = Logger('test_exchange_bundle')
 EXCHANGE_NAMES = ['bitfinex', 'bittrex', 'poloniex']
 API_URL = 'http://data.enigma.co/api/v1'
 
+
 def get_date_from_ms(ms):
     return datetime.datetime.fromtimestamp(ms / 1000.0)
 
-def get_history(exchange_name, data_frequency, symbol, start_ms = None, end_ms = None):
+
+def get_history(exchange_name, data_frequency, symbol, start_ms=None,
+                end_ms=None):
     """
     History API provides OHLCV data for any of the supported exchanges up to yesterday.
 
@@ -51,7 +53,9 @@ def get_history(exchange_name, data_frequency, symbol, start_ms = None, end_ms =
     """
 
     if exchange_name not in EXCHANGE_NAMES:
-        raise ValueError('get_history function only supports the following exchanges: {}'.format(list(EXCHANGE_NAMES)))
+        raise ValueError(
+            'get_history function only supports the following exchanges: {}'.format(
+                list(EXCHANGE_NAMES)))
 
     if data_frequency != 'daily':
         raise ValueError('get_history currently only supports daily data.')
@@ -61,13 +65,13 @@ def get_history(exchange_name, data_frequency, symbol, start_ms = None, end_ms =
         exchange=exchange_name,
         symbol=symbol,
         data_frequency=data_frequency,
-        )
+    )
 
     if start_ms:
-        url += '&start={}'.format(int(start_ms/1000))
+        url += '&start={}'.format(int(start_ms / 1000))
 
     if end_ms:
-        url += '&end={}'.format(int(end_ms/1000))
+        url += '&end={}'.format(int(end_ms / 1000))
 
     try:
         response = requests.get(url)
@@ -77,7 +81,7 @@ def get_history(exchange_name, data_frequency, symbol, start_ms = None, end_ms =
     data = response.json()
 
     if 'error' in response:
-        raise ValueError(e)
+        raise ValueError(response['error'])
 
     return data
 
@@ -150,7 +154,6 @@ def get_history_mock(exchange_name, data_frequency, symbol, start_ms, end_ms,
     return ohlcv
 
 
-
 def fetch_candles_chunk(exchange, assets, data_frequency, end_dt, bar_count):
     calc_start_dt = end_dt - datetime.timedelta(minutes=bar_count)
     candles = exchange.get_candles(
@@ -161,6 +164,7 @@ def fetch_candles_chunk(exchange, assets, data_frequency, end_dt, bar_count):
         end_dt=end_dt
     )
     return candles
+
 
 def find_most_recent_time(bundle_name):
     """
