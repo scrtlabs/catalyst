@@ -487,9 +487,21 @@ class Poloniex(Exchange):
                 except KeyError as e:
                     start_date = time.strftime('%Y-%m-%d')
 
+            try:
+                end_daily = cached_symbols[exchange_symbol]['end_daily']
+            except KeyError as e:
+                end_daily ='N/A'
+
+            try:
+                end_minute = cached_symbols[exchange_symbol]['end_minute']
+            except KeyError as e:
+                end_minute = 'N/A'
+
             symbol_map[exchange_symbol] = dict(
-                symbol = symbol,
-                start_date = start_date
+                symbol     = symbol,
+                start_date = start_date,
+                end_daily  = end_daily,
+                end_minute = end_minute,
             )
 
         if(filename is None):

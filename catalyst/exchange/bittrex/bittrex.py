@@ -12,8 +12,8 @@ from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
     CreateOrderError
 from catalyst.finance.execution import LimitOrder, StopLimitOrder
 from catalyst.finance.order import Order, ORDER_STATUS
-from catalyst.exchange.exchange_utils import get_exchange_symbols_filename
-
+from catalyst.exchange.exchange_utils import get_exchange_symbols_filename, \
+    download_exchange_symbols
 
 log = Logger('Bittrex')
 
@@ -309,6 +309,11 @@ class Bittrex(Exchange):
 
     def generate_symbols_json(self, filename=None):
         symbol_map = {}
+
+        fn, r = download_exchange_symbols(self.name)
+        with open(fn) as data_file:
+            cached_symbols = json.load(data_file)
+
         markets = self.api.getmarkets()
         for market in markets:
             exchange_symbol = market['MarketName']
@@ -316,9 +321,22 @@ class Bittrex(Exchange):
                 market=self.sanitize_curency_symbol(market['MarketCurrency']),
                 base=self.sanitize_curency_symbol(market['BaseCurrency'])
             )
+
+            try:
+                end_daily = cached_symbols[exchange_symbol]['end_daily']
+            except KeyError as e:
+                end_daily ='N/A'
+
+            try:
+                end_minute = cached_symbols[exchange_symbol]['end_minute']
+            except KeyError as e:
+                end_minute = 'N/A'
+
             symbol_map[exchange_symbol] = dict(
                 symbol=symbol,
-                start_date=pd.to_datetime(market['Created'], utc=True).strftime("%Y-%m-%d")
+                start_date=pd.to_datetime(market['Created'], utc=True).strftime("%Y-%m-%d"),
+                end_daily  = end_daily,
+                end_minute = end_minute,
             )
 
         if(filename is None):
