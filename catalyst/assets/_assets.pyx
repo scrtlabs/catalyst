@@ -395,6 +395,9 @@ cdef class TradingPair(Asset):
     cdef readonly float leverage
     cdef readonly object market_currency
     cdef readonly object base_currency
+    cdef readonly object end_daily
+    cdef readonly object end_minute
+    cdef readonly object exchange_symbol
 
     _kwargnames = frozenset({
         'sid',
@@ -409,7 +412,10 @@ cdef class TradingPair(Asset):
         'leverage',
         'market_currency',
         'base_currency',
-        'min_trade_size',
+        'end_daily',
+        'end_minute',
+        'exchange_symbol',
+        'min_trade_size'
     })
     def __init__(self,
                  object symbol,
@@ -418,7 +424,10 @@ cdef class TradingPair(Asset):
                  object asset_name=None,
                  int sid=0,
                  float leverage=1.0,
+                 object end_daily=None,
+                 object end_minute=None,
                  object end_date=None,
+                 object exchange_symbol=None,
                  object first_traded=None,
                  object auto_close_date=None,
                  object exchange_full=None,
@@ -474,7 +483,10 @@ cdef class TradingPair(Asset):
         :param asset_name:
         :param sid:
         :param leverage:
+        :param end_daily
+        :param end_minute
         :param end_date:
+        :param exchange_symbol:
         :param first_traded:
         :param auto_close_date:
         :param exchange_full:
@@ -516,6 +528,9 @@ cdef class TradingPair(Asset):
         )
 
         self.leverage = leverage
+        self.end_daily = end_daily
+        self.end_minute = end_minute
+        self.exchange_symbol = exchange_symbol
 
     def __repr__(self):
         return 'Trading Pair {symbol}({sid}) Exchange: {exchange}, ' \
@@ -523,7 +538,9 @@ cdef class TradingPair(Asset):
                'Market Currency: {market_currency}, ' \
                'Base Currency: {base_currency}, ' \
                'Exchange Leverage: {leverage}, ' \
-               'Minimum Trade Size: {min_trade_size}'.format(
+               'Minimum Trade Size: {min_trade_size} ' \
+               'Last daily ingestion: {end_daily} ' \
+               'Last minutely ingestion: {end_minute}'.format(
             symbol=self.symbol,
             sid=self.sid,
             exchange=self.exchange,
@@ -531,7 +548,9 @@ cdef class TradingPair(Asset):
             market_currency=self.market_currency,
             base_currency=self.base_currency,
             leverage=self.leverage,
-            min_trade_size=self.min_trade_size
+            min_trade_size=self.min_trade_size,
+            end_daily=self.end_daily,
+            end_minute=self.end_minute
         )
 
     cpdef __reduce__(self):

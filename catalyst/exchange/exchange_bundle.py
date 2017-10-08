@@ -10,7 +10,8 @@ from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
     BcolzMinuteBarWriter, BcolzMinuteBarReader
 from catalyst.data.us_equity_pricing import BcolzDailyBarWriter, \
     BcolzDailyBarReader
-from catalyst.exchange.bundle_utils import fetch_candles_chunk
+from catalyst.exchange.bundle_utils import fetch_candles_chunk, get_history, \
+    get_seconds_from_date
 from catalyst.exchange.exchange_utils import get_exchange_folder
 from catalyst.exchange.init_utils import get_exchange
 from catalyst.utils.cli import maybe_show_progress
@@ -136,11 +137,12 @@ class ExchangeBundle:
             if len(os.listdir(output_dir)) > 0:
                 self._writers[key] = BcolzDailyBarWriter.open(output_dir, end)
             else:
+                end_session = end.floor('1d')
                 self._writers[key] = BcolzDailyBarWriter(
                     filename=output_dir,
                     calendar=open_calendar,
                     start_session=start,
-                    end_session=end
+                    end_session=end_session
                 )
         else:
             raise ValueError(
@@ -213,14 +215,26 @@ class ExchangeBundle:
             log.debug('the data chunk already exists')
             return
 
-        # TODO: ensure correct behavior for assets starting in the chunk
-        candles = fetch_candles_chunk(
-            exchange=self.exchange,
-            assets=missing_assets,
-            data_frequency=data_frequency,
-            end_dt=chunk_end,
-            bar_count=chunk['bar_count']
-        )
+        if data_frequency == 'minute':
+            # TODO: ensure correct behavior for assets starting in the chunk
+            candles = fetch_candles_chunk(
+                exchange=self.exchange,
+                assets=missing_assets,
+                data_frequency=data_frequency,
+                end_dt=chunk_end,
+                bar_count=chunk['bar_count']
+            )
+        else:
+            for asset in missing_assets:
+                # TODO: switch to Catalyst symbol convention
+                candles = get_history(
+                    exchange_name=self.exchange.name,
+                    data_frequency=data_frequency,
+                    symbol=asset.exchange_symbol,
+                    start_seconds=get_seconds_from_date(chunk_start),
+                    end_seconds=get_seconds_from_date(chunk_end)
+                )
+                pass
 
         num_candles = 0
         data = []

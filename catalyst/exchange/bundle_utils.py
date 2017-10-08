@@ -2,6 +2,8 @@ import datetime, requests
 import os
 from logging import Logger
 
+import pytz
+
 from catalyst.data.bundles import from_bundle_ingest_dirname
 from catalyst.utils.paths import data_path
 
@@ -15,8 +17,15 @@ def get_date_from_ms(ms):
     return datetime.datetime.fromtimestamp(ms / 1000.0)
 
 
-def get_history(exchange_name, data_frequency, symbol, start_ms=None,
-                end_ms=None):
+def get_seconds_from_date(date):
+    epoch = datetime.datetime.utcfromtimestamp(0)
+    epoch = epoch.replace(tzinfo=pytz.UTC)
+
+    return int((date - epoch).total_seconds())
+
+
+def get_history(exchange_name, data_frequency, symbol, start_seconds=None,
+                end_seconds=None):
     """
     History API provides OHLCV data for any of the supported exchanges up to yesterday.
 
@@ -27,10 +36,10 @@ def get_history(exchange_name, data_frequency, symbol, start_ms=None,
         *** currently only 'daily' is supported ***
     :param symbol: string
         Required: The trading pair symbol.
-    :param start: float
-        Optional: The start date in milliseconds.
-    :param end: float
-        Optional: The end date in milliseconds.
+    :param start_seconds: int
+        Optional: The start date in seconds.
+    :param end_seconds: int
+        Optional: The end date in seconds.
 
     :return ohlcv: list[dict[string, float]]
         Each row contains the following dictionary for the resulting bars:
@@ -67,11 +76,11 @@ def get_history(exchange_name, data_frequency, symbol, start_ms=None,
         data_frequency=data_frequency,
     )
 
-    if start_ms:
-        url += '&start={}'.format(int(start_ms / 1000))
+    if start_seconds:
+        url += '&start={}'.format(start_seconds)
 
-    if end_ms:
-        url += '&end={}'.format(int(end_ms / 1000))
+    if end_seconds:
+        url += '&end={}'.format(end_seconds)
 
     try:
         response = requests.get(url)
@@ -80,7 +89,7 @@ def get_history(exchange_name, data_frequency, symbol, start_ms=None,
 
     data = response.json()
 
-    if 'error' in response:
+    if 'error' in data:
         raise ValueError(response['error'])
 
     return data

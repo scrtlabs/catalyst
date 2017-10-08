@@ -226,6 +226,16 @@ class Exchange:
             else:
                 min_trade_size = 0.0000001
 
+            if 'end_daily' in asset and asset['end_daily'] != 'N/A':
+                end_daily = pd.to_datetime(asset['end_daily'], utc=True)
+            else:
+                end_daily = None
+
+            if 'end_minute' in asset and asset['end_minute'] != 'N/A':
+                end_minute = pd.to_datetime(asset['end_minute'], utc=True)
+            else:
+                end_minute = None
+
             trading_pair = TradingPair(
                 symbol=asset['symbol'],
                 exchange=self.name,
@@ -233,7 +243,10 @@ class Exchange:
                 end_date=end_date,
                 leverage=leverage,
                 asset_name=asset_name,
-                min_trade_size=min_trade_size
+                min_trade_size=min_trade_size,
+                end_daily=end_daily,
+                end_minute=end_minute,
+                exchange_symbol=exchange_symbol
             )
 
             self.assets[exchange_symbol] = trading_pair
