@@ -90,6 +90,8 @@ class ExchangeDataPortalTestCase:
             '1m',
             'close',
             'minute')
+
+        log.info('found history window: {}'.format(data))
         pass
 
     def test_get_spot_value_backtest(self):
@@ -102,5 +104,5 @@ class ExchangeDataPortalTestCase:
         date = pd.to_datetime('2017-09-10', utc=True)
         value = self.data_portal_backtest.get_spot_value(
             assets, 'close', date, 'minute')
+        log.info('found spot value {}'.format(value))
         pass
-

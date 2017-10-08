@@ -14,9 +14,10 @@ class ExchangeBundleTestCase:
         start = pd.to_datetime('2017-09-01', utc=True)
         end = pd.Timestamp.utcnow()
 
+        exchange_bundle = ExchangeBundle(exchange_name)
+
         log.info('ingesting exchange bundle {}'.format(exchange_name))
-        exchange_bundle = ExchangeBundle(
-            exchange_name=exchange_name,
+        exchange_bundle.ingest(
             data_frequency='minute',
             include_symbols='neo_btc',
             exclude_symbols=None,
@@ -24,5 +25,4 @@ class ExchangeBundleTestCase:
             end=end,
             show_progress=True
         )
-        exchange_bundle.ingest()
         pass

@@ -12,24 +12,19 @@
 # limitations under the License.
 
 import abc
-import os
 from time import sleep
 
 import pandas as pd
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
-from catalyst.data.bundles.core import from_bundle_ingest_dirname, \
-    minute_path, daily_path
 from catalyst.data.data_portal import DataPortal
-from catalyst.data.minute_bars import BcolzMinuteBarReader
-from catalyst.data.us_equity_pricing import BcolzDailyBarReader
+from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     ExchangeBarDataError,
-    BundleNotFoundError, PricingDataBeforeTradingError,
+    PricingDataBeforeTradingError,
     PricingDataNotLoadedError, InvalidHistoryFrequencyError)
-from catalyst.utils.paths import data_path
 
 log = Logger('DataPortalExchange')
 
@@ -259,34 +254,14 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
     def __init__(self, *args, **kwargs):
         super(DataPortalExchangeBacktest, self).__init__(*args, **kwargs)
 
-        self.daily_bar_readers = dict()
-        self.minute_bar_readers = dict()
+        self.exchange_bundles = dict()
 
         self.history_loaders = dict()
         self.minute_history_loaders = dict()
+
         for exchange_name in self.exchanges:
-            name = 'exchange_{}'.format(exchange_name)
-            time_folder = \
-                DataPortalExchangeBacktest.find_most_recent_time(name)
-
-            if time_folder is None:
-                raise BundleNotFoundError(exchange=exchange_name)
-
-            try:
-                self.daily_bar_readers[exchange_name] = \
-                    BcolzDailyBarReader(
-                        daily_path(name, time_folder),
-                    )
-            except IOError:
-                self.daily_bar_readers[exchange_name] = None
-
-            try:
-                self.minute_bar_readers[exchange_name] = \
-                    BcolzMinuteBarReader(
-                        minute_path(name, time_folder),
-                    )
-            except IOError:
-                self.minute_bar_readers[exchange_name] = None
+            self.exchange_bundles[exchange_name] = \
+                ExchangeBundle(exchange_name)
 
     def _get_first_trading_day(self, assets):
         first_date = None
@@ -294,62 +269,6 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
             if first_date is None or asset.start_date > first_date:
                 first_date = asset.start_date
         return first_date
-
-    @staticmethod
-    def find_most_recent_time(bundle_name):
-        """
-        Find most recent "time folder" for a given bundle.
-
-        :param bundle_name:
-            The name of the targeted bundle.
-
-        :return folder:
-            The name of the time folder.
-        """
-        try:
-            bundle_folders = os.listdir(
-                data_path([bundle_name]),
-            )
-        except OSError:
-            return None
-
-        most_recent_bundle = dict()
-        for folder in bundle_folders:
-            date = from_bundle_ingest_dirname(folder)
-            if not most_recent_bundle or date > \
-                    most_recent_bundle[most_recent_bundle.keys()[0]]:
-                most_recent_bundle = dict()
-                most_recent_bundle[folder] = date
-
-        if most_recent_bundle:
-            return most_recent_bundle.keys()[0]
-        else:
-            return None
-
-    def _get_reader(self, data_frequency, exchange_name):
-        """
-        Pick from a collection of readers based of exchange name and frequency.
-
-        :param data_frequency:
-            The reader frequency: minute, daily.
-
-        :param exchange_name:
-            The exchange name.
-
-        :return reader:
-            A reader object.
-        """
-        if data_frequency == 'minute':
-            reader = self.minute_bar_readers[exchange_name]
-        elif data_frequency == 'daily':
-            reader = self.daily_bar_readers[exchange_name]
-        else:
-            raise InvalidHistoryFrequencyError(frequency=data_frequency)
-
-        if reader is None:
-            raise ValueError('reader not found')
-
-        return reader
 
     def get_exchange_history_window(self,
                                     exchange,
@@ -360,7 +279,9 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
                                     field,
                                     data_frequency,
                                     ffill=True):
-        reader = self._get_reader(data_frequency, exchange.name)
+        bundle = self.exchange_bundles[exchange.name]
+
+        reader = bundle.get_reader(data_frequency)
         if data_frequency == 'minute':
             dts = self.trading_calendar.minutes_window(
                 end_dt, -bar_count
@@ -416,7 +337,8 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
 
     def get_exchange_spot_value(self, exchange, assets, field, dt,
                                 data_frequency):
-        reader = self._get_reader(data_frequency, exchange.name)
+        bundle = self.exchange_bundles[exchange.name]
+        reader = bundle.get_reader(data_frequency)
 
         self.ensure_after_first_day(dt, assets)
 

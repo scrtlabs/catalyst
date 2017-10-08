@@ -1,14 +1,9 @@
 import datetime
-from logging import Logger, DEBUG
 import os
-from dateutil.relativedelta import relativedelta
-import pandas as pd
+from logging import Logger
 
-from catalyst import get_calendar
-from catalyst.data.minute_bars import BcolzMinuteBarWriter
-from catalyst.data.us_equity_pricing import BcolzDailyBarWriter
-from catalyst.exchange.exchange_utils import get_exchange_folder
-from catalyst.utils.paths import data_root, ensure_directory
+from catalyst.data.bundles import from_bundle_ingest_dirname
+from catalyst.utils.paths import data_path
 
 log = Logger('test_exchange_bundle')
 
@@ -95,3 +90,33 @@ def fetch_candles_chunk(exchange, assets, data_frequency, end_dt, bar_count):
         end_dt=end_dt
     )
     return candles
+
+def find_most_recent_time(bundle_name):
+    """
+    Find most recent "time folder" for a given bundle.
+
+    :param bundle_name:
+        The name of the targeted bundle.
+
+    :return folder:
+        The name of the time folder.
+    """
+    try:
+        bundle_folders = os.listdir(
+            data_path([bundle_name]),
+        )
+    except OSError:
+        return None
+
+    most_recent_bundle = dict()
+    for folder in bundle_folders:
+        date = from_bundle_ingest_dirname(folder)
+        if not most_recent_bundle or date > \
+                most_recent_bundle[most_recent_bundle.keys()[0]]:
+            most_recent_bundle = dict()
+            most_recent_bundle[folder] = date
+
+    if most_recent_bundle:
+        return most_recent_bundle.keys()[0]
+    else:
+        return None

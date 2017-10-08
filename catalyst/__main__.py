@@ -307,7 +307,7 @@ def catalyst_magic(line, cell=None):
             '%s%%catalyst' % ((cell or '') and '%'),
             # don't use system exit and propogate errors to the caller
             standalone_mode=False,
-            )
+        )
     except SystemExit as e:
         # https://github.com/mitsuhiko/click/pull/533
         # even in standalone_mode=False `--help` really wants to kill us ;_;
@@ -472,26 +472,37 @@ def live(ctx,
     help='The end date of the data range. (default: today)',
 )
 @click.option(
+    '--include-symbols',
+    default=None,
+    help='A list of symbols to ingest (optional comma separated list)',
+)
+@click.option(
+    '--exclude-symbols',
+    default=None,
+    help='A list of symbols to exclude from the ingestion '
+         '(optional comma separated list)',
+)
+@click.option(
     '--show-progress/--no-show-progress',
     default=True,
     help='Print progress information to the terminal.'
 )
 def ingest_exchange(exchange_name, data_frequency, start, end,
-                    show_progress):
+                    include_symbols, exclude_symbols, show_progress):
     """
     Ingest data for the given exchange.
     """
+    exchange_bundle = ExchangeBundle(exchange_name)
+
     click.echo('ingesting exchange bundle {}'.format(exchange_name))
-    exchange_bundle = ExchangeBundle(
-        exchange_name=exchange_name,
+    exchange_bundle.ingest(
         data_frequency=data_frequency,
-        include_symbols=None,
-        exclude_symbols=None,
+        include_symbols=include_symbols,
+        exclude_symbols=exclude_symbols,
         start=start,
         end=end,
         show_progress=show_progress
     )
-    exchange_bundle.ingest()
 
 
 @main.command()
