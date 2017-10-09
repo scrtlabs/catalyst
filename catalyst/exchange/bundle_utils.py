@@ -95,7 +95,7 @@ def get_history(exchange_name, data_frequency, symbol, start=None, end=None):
     data = response.json()
 
     if 'error' in data:
-        raise ValueError(response['error'])
+        raise ValueError(data['error'])
 
     for candle in data:
         last_traded = pd.Timestamp.utcfromtimestamp(candle['ts'])
