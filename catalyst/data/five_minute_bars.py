@@ -67,7 +67,7 @@ OHLCV = frozenset(['open', 'high', 'low', 'close', 'volume'])
 
 UINT64_MAX = iinfo(uint64).max
 
-NANOS_IN_FIVE_MINUTES = 5 * NANOS_IN_MINUTE
+NANOS_IN_FIVE_MINUTE = 5 * NANOS_IN_MINUTE
 
 class BcolzFiveMinuteOverlappingData(Exception):
     pass
