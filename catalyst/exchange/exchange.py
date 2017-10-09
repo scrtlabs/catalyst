@@ -10,6 +10,7 @@ from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
 from catalyst.data.data_portal import BASE_FIELDS
+from catalyst.exchange import bundle_utils
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     InvalidOrderStyle, BaseCurrencyNotFoundError, SymbolNotFoundOnExchange
 from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
@@ -412,6 +413,95 @@ class Exchange:
 
         return value
 
+    def get_history(self, assets, end_dt, bar_count, data_frequency):
+        """
+        Retrieve OHLCV bars from the Catalyst and/or exchange API.
+
+        If Catalyst does not have the full data set, retrieve the missing
+        portion from the exchange API if the exchanges supports
+        historical data.
+
+        :param assets: list[TradingPair]
+            The TradingPair asset.
+        :param data_frequency: str
+            The bar frequency: daily or minute
+        :param bar_count: int
+            The number of bars desired.
+        :param end: datetime
+            The last trading date of the last bar.
+
+        :return:
+        """
+        candles = dict()
+        for asset in assets:
+            candles[asset] = self.get_asset_history(
+                asset=asset,
+                end=end_dt,
+                bar_count=bar_count,
+                data_frequency=data_frequency
+            )
+        return candles
+
+    def get_asset_history(self, asset, end, bar_count, data_frequency):
+        """
+        Retrieve the OHLVC bars of a single asset.
+
+        :param asset: TradingPair
+            The TradingPair asset.
+        :param data_frequency: str
+            The bar frequency: daily or minute
+        :param bar_count: int
+            The number of bars desired.
+        :param end: datetime
+            The last trading date of the last bar.
+        :return:
+        """
+        start = end - timedelta(minutes=bar_count)
+
+        exchange_start = None
+        catalyst_end = None
+
+        if start < asset.end_minute:
+            catalyst_start = start
+            if end <= asset.end_minute:
+                catalyst_end = end
+            else:
+                catalyst_end = asset.end_minute
+
+                delta = timedelta(minutes=1) \
+                    if data_frequency == 'minute' else timedelta(days=1)
+                exchange_start = catalyst_end + delta
+
+                exchange_end = end
+
+        else:
+            exchange_start = start
+            exchange_end = end
+
+        data = []
+        if catalyst_end is not None:
+            # TODO: support multiple assets in the Catalyst API.
+            candles = bundle_utils.get_history(
+                exchange_name=self.name,
+                data_frequency=data_frequency,
+                symbol=asset.exchange_symbol,  # TODO: use Catalyst symbol
+                start=catalyst_start,
+                end=catalyst_end
+            )
+            data += candles
+
+        if exchange_start is not None:
+            candles = self.get_candles(
+                data_frequency=data_frequency,
+                assets=[asset],
+                bar_count=bar_count,
+                start_dt=exchange_start,
+                end_dt=exchange_end
+            )
+            data += candles[asset]
+
+        return data
+
     def get_history_window(self,
                            assets,
                            end_dt,
@@ -455,11 +545,12 @@ class Exchange:
         A dataframe containing the requested data.
         """
 
-        candles = self.get_candles(
-            data_frequency=frequency,
+        # TODO: try to read from bundle first
+        candles = self.get_history(
             assets=assets,
+            end_dt=end_dt,
             bar_count=bar_count,
-            end_dt=end_dt
+            data_frequency=data_frequency
         )
 
         series = dict()

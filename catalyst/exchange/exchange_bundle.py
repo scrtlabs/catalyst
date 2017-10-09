@@ -10,8 +10,7 @@ from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
     BcolzMinuteBarWriter, BcolzMinuteBarReader
 from catalyst.data.us_equity_pricing import BcolzDailyBarWriter, \
     BcolzDailyBarReader
-from catalyst.exchange.bundle_utils import fetch_candles_chunk, get_history, \
-    get_seconds_from_date
+from catalyst.exchange.bundle_utils import get_ffill_candles
 from catalyst.exchange.exchange_utils import get_exchange_folder
 from catalyst.exchange.init_utils import get_exchange
 from catalyst.utils.cli import maybe_show_progress
@@ -196,6 +195,16 @@ class ExchangeBundle:
 
     def ingest_chunk(self, chunk, previous_candle, data_frequency, assets,
                      writer):
+        """
+        Retrieve the specified OHLCV chunk and write it to the bundle
+
+        :param chunk:
+        :param previous_candle:
+        :param data_frequency:
+        :param assets:
+        :param writer:
+        :return:
+        """
         chunk_end = chunk['end']
         chunk_start = chunk_end - timedelta(minutes=chunk['bar_count'])
 
@@ -215,36 +224,12 @@ class ExchangeBundle:
             log.debug('the data chunk already exists')
             return
 
-        candles = dict()
-        for asset in missing_assets:
-            if chunk_start < asset.end_minute:
-                # TODO: fetch delta candles from exchanges
-                history_end = chunk_end \
-                    if chunk_end <= asset.end_minute else asset.end_minute
-
-                # TODO: switch to Catalyst symbol convention
-                candles[asset] = get_history(
-                    exchange_name=self.exchange.name,
-                    data_frequency=data_frequency,
-                    symbol=asset.exchange_symbol,
-                    start=chunk_start,
-                    end=history_end
-                )
-            else:
-                log.debug(
-                    'no data in Catalyst api for chunk '
-                    '{} to {}'.format(chunk_start, chunk_end)
-                )
-        # if data_frequency == 'minute':
-        #     # TODO: ensure correct behavior for assets starting in the chunk
-        #     candles = fetch_candles_chunk(
-        #         exchange=self.exchange,
-        #         assets=missing_assets,
-        #         data_frequency=data_frequency,
-        #         end_dt=chunk_end,
-        #         bar_count=chunk['bar_count']
-        #     )
-        # else:
+        candles = self.exchange.get_history(
+            assets=missing_assets,
+            end_dt=chunk_end,
+            bar_count=chunk['bar_count'],
+            data_frequency=data_frequency
+        )
 
         num_candles = 0
         data = []
@@ -260,25 +245,17 @@ class ExchangeBundle:
                 )
                 continue
 
-            all_dates = []
-            all_candles = []
-            date = chunk_start
-            while date <= chunk_end:
+            previous = previous_candle[asset] \
+                if asset in previous_candle else None
 
-                previous = previous_candle[asset] \
-                    if asset in previous_candle else None
-
-                candle = next((candle for candle in asset_candles \
-                               if candle['last_traded'] == date),
-                              previous)
-
-                if candle is not None:
-                    all_dates.append(date)
-                    all_candles.append(candle)
-
-                    previous_candle[asset] = candle
-
-                date += timedelta(minutes=1)
+            all_dates, all_candles = get_ffill_candles(
+                candles=asset_candles,
+                start_dt=chunk_start,
+                end_dt=chunk_end,
+                data_frequency=data_frequency,
+                previous_candle=previous
+            )
+            previous_candle[asset] = all_candles[-1]
 
             df = pd.DataFrame(all_candles, index=all_dates)
             if not df.empty:

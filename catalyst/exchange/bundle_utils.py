@@ -6,6 +6,7 @@ import pandas as pd
 import pytz
 
 from catalyst.data.bundles import from_bundle_ingest_dirname
+from catalyst.utils.deprecate import deprecated
 from catalyst.utils.paths import data_path
 
 log = Logger('test_exchange_bundle')
@@ -106,6 +107,46 @@ def get_history(exchange_name, data_frequency, symbol, start=None, end=None):
     return data
 
 
+def get_ffill_candles(candles, start_dt, end_dt, data_frequency,
+                      previous_candle=None):
+    """
+    Create candles for each period of the specified range, forward-filling
+    missing candles with the previous value.
+
+    :param candles:
+    :param start_dt:
+    :param end_dt:
+    :param data_frequency:
+    :param previous_candle:
+
+    :return:
+    """
+    all_dates = []
+    all_candles = []
+    date = start_dt
+
+    while date <= end_dt:
+        candle = next((
+            candle for candle in candles if candle['last_traded'] == date
+        ), previous_candle)
+
+        if candle is not None:
+            all_dates.append(date)
+            all_candles.append(candle)
+
+            previous_candle = candle
+
+        if data_frequency == 'minute':
+            date += datetime.timedelta(minutes=1)
+        elif data_frequency == 'daily':
+            date += datetime.timedelta(days=1)
+        else:
+            raise ValueError('invalid data frequency')
+
+    return all_dates, all_candles
+
+
+@deprecated
 def get_history_mock(exchange_name, data_frequency, symbol, start_ms, end_ms,
                      exchanges):
     """
@@ -172,18 +213,6 @@ def get_history_mock(exchange_name, data_frequency, symbol, start_ms, end_ms,
             last_traded=candle['last_traded']
         ))
     return ohlcv
-
-
-def fetch_candles_chunk(exchange, assets, data_frequency, end_dt, bar_count):
-    calc_start_dt = end_dt - datetime.timedelta(minutes=bar_count)
-    candles = exchange.get_candles(
-        data_frequency=data_frequency,
-        assets=assets,
-        bar_count=bar_count,
-        start_dt=calc_start_dt,
-        end_dt=end_dt
-    )
-    return candles
 
 
 def find_most_recent_time(bundle_name):
