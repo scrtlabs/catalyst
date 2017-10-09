@@ -215,26 +215,36 @@ class ExchangeBundle:
             log.debug('the data chunk already exists')
             return
 
-        if data_frequency == 'minute':
-            # TODO: ensure correct behavior for assets starting in the chunk
-            candles = fetch_candles_chunk(
-                exchange=self.exchange,
-                assets=missing_assets,
-                data_frequency=data_frequency,
-                end_dt=chunk_end,
-                bar_count=chunk['bar_count']
-            )
-        else:
-            for asset in missing_assets:
+        candles = dict()
+        for asset in missing_assets:
+            if chunk_start < asset.end_minute:
+                # TODO: fetch delta candles from exchanges
+                history_end = chunk_end \
+                    if chunk_end <= asset.end_minute else asset.end_minute
+
                 # TODO: switch to Catalyst symbol convention
-                candles = get_history(
+                candles[asset] = get_history(
                     exchange_name=self.exchange.name,
                     data_frequency=data_frequency,
                     symbol=asset.exchange_symbol,
-                    start_seconds=get_seconds_from_date(chunk_start),
-                    end_seconds=get_seconds_from_date(chunk_end)
+                    start=chunk_start,
+                    end=history_end
                 )
-                pass
+            else:
+                log.debug(
+                    'no data in Catalyst api for chunk '
+                    '{} to {}'.format(chunk_start, chunk_end)
+                )
+        # if data_frequency == 'minute':
+        #     # TODO: ensure correct behavior for assets starting in the chunk
+        #     candles = fetch_candles_chunk(
+        #         exchange=self.exchange,
+        #         assets=missing_assets,
+        #         data_frequency=data_frequency,
+        #         end_dt=chunk_end,
+        #         bar_count=chunk['bar_count']
+        #     )
+        # else:
 
         num_candles = 0
         data = []

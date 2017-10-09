@@ -1,6 +1,7 @@
 import datetime, requests
 import os
 from logging import Logger
+import pandas as pd
 
 import pytz
 
@@ -24,8 +25,7 @@ def get_seconds_from_date(date):
     return int((date - epoch).total_seconds())
 
 
-def get_history(exchange_name, data_frequency, symbol, start_seconds=None,
-                end_seconds=None):
+def get_history(exchange_name, data_frequency, symbol, start=None, end=None):
     """
     History API provides OHLCV data for any of the supported exchanges up to yesterday.
 
@@ -36,10 +36,10 @@ def get_history(exchange_name, data_frequency, symbol, start_seconds=None,
         *** currently only 'daily' is supported ***
     :param symbol: string
         Required: The trading pair symbol.
-    :param start_seconds: int
-        Optional: The start date in seconds.
-    :param end_seconds: int
-        Optional: The end date in seconds.
+    :param start: datetime
+        Optional: The start date.
+    :param end: datetime
+        Optional: The end date.
 
     :return ohlcv: list[dict[string, float]]
         Each row contains the following dictionary for the resulting bars:
@@ -61,13 +61,18 @@ def get_history(exchange_name, data_frequency, symbol, start_seconds=None,
     forward fill missing bars outside of this function.
     """
 
+    start_seconds = get_seconds_from_date(start) if start else None
+    end_seconds = get_seconds_from_date(end) if end else None
+
     if exchange_name not in EXCHANGE_NAMES:
         raise ValueError(
             'get_history function only supports the following exchanges: {}'.format(
                 list(EXCHANGE_NAMES)))
 
-    if data_frequency != 'daily':
-        raise ValueError('get_history currently only supports daily data.')
+    if data_frequency != 'daily' and data_frequency != 'minute':
+        raise ValueError(
+            'get_history currently only supports daily and minute data.'
+        )
 
     url = '{api_url}/candles?exchange={exchange}&market={symbol}&freq={data_frequency}'.format(
         api_url=API_URL,
@@ -91,6 +96,12 @@ def get_history(exchange_name, data_frequency, symbol, start_seconds=None,
 
     if 'error' in data:
         raise ValueError(response['error'])
+
+    for candle in data:
+        last_traded = pd.Timestamp.utcfromtimestamp(candle['ts'])
+        last_traded = last_traded.replace(tzinfo=pytz.UTC)
+
+        candle['last_traded'] = last_traded
 
     return data
 
