@@ -34,9 +34,8 @@ def get_history(exchange_name, data_frequency, symbol, start=None, end=None):
         Required: The name identifier of the exchange (e.g. bitfinex, bittrex, poloniex).
     :param data_frequency: string
         Required: The bar frequency (minute or daily)
-        *** currently only 'daily' is supported ***
     :param symbol: string
-        Required: The trading pair symbol.
+        Required: The trading pair symbol, using Catalyst naming convention
     :param start: datetime
         Optional: The start date.
     :param end: datetime
