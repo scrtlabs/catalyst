@@ -260,8 +260,8 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
         self.minute_history_loaders = dict()
 
         for exchange_name in self.exchanges:
-            self.exchange_bundles[exchange_name] = \
-                ExchangeBundle(exchange_name)
+            exchange = self.exchanges[exchange_name]
+            self.exchange_bundles[exchange_name] = ExchangeBundle(exchange)
 
     def _get_first_trading_day(self, assets):
         first_date = None

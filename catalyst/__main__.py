@@ -9,6 +9,7 @@ from six import text_type
 
 from catalyst.data import bundles as bundles_module
 from catalyst.exchange.exchange_bundle import ExchangeBundle
+from catalyst.exchange.init_utils import get_exchange
 from catalyst.utils.cli import Date, Timestamp
 from catalyst.utils.run_algo import _run, load_extensions
 
@@ -492,7 +493,8 @@ def ingest_exchange(exchange_name, data_frequency, start, end,
     """
     Ingest data for the given exchange.
     """
-    exchange_bundle = ExchangeBundle(exchange_name)
+    exchange=get_exchange(exchange_name)
+    exchange_bundle = ExchangeBundle(exchange)
 
     click.echo('ingesting exchange bundle {}'.format(exchange_name))
     exchange_bundle.ingest(

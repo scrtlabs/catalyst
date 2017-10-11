@@ -1,4 +1,5 @@
-import datetime, requests
+import requests
+from datetime import timedelta, datetime
 import os
 from logging import Logger
 import pandas as pd
@@ -16,11 +17,11 @@ API_URL = 'http://data.enigma.co/api/v1'
 
 
 def get_date_from_ms(ms):
-    return datetime.datetime.fromtimestamp(ms / 1000.0)
+    return datetime.fromtimestamp(ms / 1000.0)
 
 
 def get_seconds_from_date(date):
-    epoch = datetime.datetime.utcfromtimestamp(0)
+    epoch = datetime.utcfromtimestamp(0)
     epoch = epoch.replace(tzinfo=pytz.UTC)
 
     return int((date - epoch).total_seconds())
@@ -107,14 +108,30 @@ def get_history(exchange_name, data_frequency, symbol, start=None, end=None):
     return data
 
 
-def get_ffill_candles(candles, start_dt, end_dt, data_frequency,
+def get_delta(periods, data_frequency):
+    return timedelta(minutes=periods) \
+        if data_frequency == 'minute' else timedelta(days=periods)
+
+
+def get_start_dt(end_dt, bar_count, data_frequency):
+    periods = bar_count - 1
+    if periods > 1:
+        delta = get_delta(periods, data_frequency)
+        start_dt = end_dt - delta
+    else:
+        start_dt = end_dt
+
+    return start_dt
+
+
+def get_ffill_candles(candles, bar_count, end_dt, data_frequency,
                       previous_candle=None):
     """
     Create candles for each period of the specified range, forward-filling
     missing candles with the previous value.
 
     :param candles:
-    :param start_dt:
+    :param bar_count:
     :param end_dt:
     :param data_frequency:
     :param previous_candle:
@@ -123,6 +140,8 @@ def get_ffill_candles(candles, start_dt, end_dt, data_frequency,
     """
     all_dates = []
     all_candles = []
+
+    start_dt = get_start_dt(end_dt, bar_count, data_frequency)
     date = start_dt
 
     while date <= end_dt:
@@ -130,18 +149,15 @@ def get_ffill_candles(candles, start_dt, end_dt, data_frequency,
             candle for candle in candles if candle['last_traded'] == date
         ), previous_candle)
 
-        if candle is not None:
-            all_dates.append(date)
-            all_candles.append(candle)
+        if candle is None:
+            candle = candles[0]
 
-            previous_candle = candle
+        all_dates.append(date)
+        all_candles.append(candle)
 
-        if data_frequency == 'minute':
-            date += datetime.timedelta(minutes=1)
-        elif data_frequency == 'daily':
-            date += datetime.timedelta(days=1)
-        else:
-            raise ValueError('invalid data frequency')
+        previous_candle = candle
+
+        date += get_delta(1, data_frequency)
 
     return all_dates, all_candles
 

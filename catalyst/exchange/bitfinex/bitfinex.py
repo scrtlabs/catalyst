@@ -14,7 +14,6 @@ import six
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
-# from websocket import create_connection
 from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,

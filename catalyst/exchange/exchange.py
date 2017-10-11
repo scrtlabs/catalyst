@@ -1,5 +1,6 @@
 import abc
 import random
+import re
 from abc import ABCMeta, abstractmethod, abstractproperty
 from datetime import timedelta
 from time import sleep
@@ -11,8 +12,12 @@ from logbook import Logger
 
 from catalyst.data.data_portal import BASE_FIELDS
 from catalyst.exchange import bundle_utils
+from catalyst.exchange.bundle_utils import get_ffill_candles, get_start_dt, \
+    get_delta
+from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
-    InvalidOrderStyle, BaseCurrencyNotFoundError, SymbolNotFoundOnExchange
+    InvalidOrderStyle, BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
+    InvalidHistoryFrequencyError
 from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
     ExchangeLimitOrder, ExchangeStopOrder
 from catalyst.exchange.exchange_portfolio import ExchangePortfolio
@@ -456,7 +461,7 @@ class Exchange:
             The last trading date of the last bar.
         :return:
         """
-        start = end - timedelta(minutes=bar_count)
+        start = get_start_dt(end, bar_count, data_frequency)
 
         exchange_start = None
         catalyst_end = None
@@ -475,8 +480,8 @@ class Exchange:
                 exchange_end = end
 
         else:
-            exchange_start = start
             exchange_end = end
+            exchange_start = start
 
         data = []
         if catalyst_end is not None:
@@ -495,7 +500,7 @@ class Exchange:
                 data_frequency=data_frequency,
                 assets=[asset],
                 bar_count=bar_count,
-                start_dt=exchange_start,
+                start_dt=exchange_start if bar_count > 1 else None,
                 end_dt=exchange_end
             )
             data += candles[asset]
@@ -545,25 +550,86 @@ class Exchange:
         A dataframe containing the requested data.
         """
 
-        # TODO: try to read from bundle first
-        candles = self.get_history(
+        bundle = ExchangeBundle(self)
+
+        freq_match = re.match(r'([0-9].*)(m|M|d|D)', frequency, re.M | re.I)
+        if freq_match:
+            candle_size = int(freq_match.group(1))
+            unit = freq_match.group(2)
+        else:
+            raise InvalidHistoryFrequencyError(frequency)
+
+        if unit.lower() == 'd':
+            data_frequency = 'daily'
+
+        elif unit.lower() == 'm':
+            data_frequency = 'minute'
+
+        else:
+            raise InvalidHistoryFrequencyError(frequency)
+
+        adj_bar_count = candle_size * bar_count
+        start_dt = get_start_dt(end_dt, adj_bar_count, data_frequency)
+
+        missing_assets = bundle.filter_existing_assets(
             assets=assets,
+            start_dt=start_dt,
             end_dt=end_dt,
-            bar_count=bar_count,
             data_frequency=data_frequency
         )
 
+        if len(missing_assets) > 0:
+            writer = bundle.get_writer(start_dt, end_dt, data_frequency)
+
+            bundle.ingest_chunk(
+                bar_count=adj_bar_count,
+                end_dt=end_dt,
+                data_frequency=data_frequency,
+                assets=missing_assets,
+                writer=writer
+            )
+
+        reader = bundle.get_reader(data_frequency)
+        values = reader.load_raw_arrays(
+            fields=[field],
+            start_dt=start_dt,
+            end_dt=end_dt,
+            sids=[asset.sid for asset in assets],
+        )[0]
+
         series = dict()
-        for asset in assets:
-            asset_candles = candles[asset]
+        for asset_index, asset in enumerate(assets):
+            all_dates = []
+            asset_values = []
 
-            values = map(lambda candle: candle[field], asset_candles)
-            dates = map(lambda candle: candle['last_traded'], asset_candles)
+            date = start_dt
+            for value in values:
+                all_dates.append(date)
+                asset_values.append(value[asset_index])
 
-            value_series = pd.Series(values, index=dates)
+                date += get_delta(1, data_frequency)
+
+            value_series = pd.Series(asset_values, index=all_dates)
             series[asset] = value_series
 
         df = pd.DataFrame(series)
+
+        if candle_size > 1:
+            if field == 'open':
+                agg = 'first'
+            elif field == 'high':
+                agg = 'max'
+            elif field == 'low':
+                agg = 'min'
+            elif field == 'close':
+                agg = 'last'
+            elif field == 'volume':
+                agg = 'sum'
+            else:
+                raise ValueError('invalid field')
+
+            df = df.resample('{}T'.format(candle_size)).agg(agg)
+
         return df
 
     def synchronize_portfolio(self):
