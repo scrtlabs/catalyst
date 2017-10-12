@@ -311,7 +311,7 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
                 field=field,
                 first_trading_day=self._get_first_trading_day(assets),
                 exchange=exchange.name,
-                symbols=[asset.symbol for asset in assets],
+                symbols=[asset.symbol.encode('utf-8') for asset in assets],
             )
 
         series = dict()
@@ -332,7 +332,8 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
             raise PricingDataBeforeTradingError(
                 first_trading_day=first_trading_day,
                 exchange=assets[0].exchange,
-                symbols=[asset.symbol for asset in assets],
+                symbols=[asset.symbol.encode('utf-8') for asset in assets],
+                dt = dt,
             )
 
     def get_exchange_spot_value(self, exchange, assets, field, dt,
@@ -356,7 +357,8 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
                     field=field,
                     first_trading_day=self._get_first_trading_day(assets),
                     exchange=exchange.name,
-                    symbols=[asset.symbol for asset in assets],
+                    symbols=[asset.symbol.encode('utf-8') for asset in assets],
+                    symbol_list = ''.join([asset.symbol.encode('utf-8') for asset in assets])
                 )
 
             return values

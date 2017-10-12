@@ -2,11 +2,12 @@ import sys, traceback
 from catalyst.errors import ZiplineError
 
 def silent_except_hook(exctype, excvalue, exctraceback):
-    if exctype in [SymbolNotFoundOnExchange,]:
+    if exctype in [ PricingDataBeforeTradingError, PricingDataNotLoadedError, 
+                    SymbolNotFoundOnExchange, ]:
         fn = traceback.extract_tb(exctraceback)[-1][0]
         ln = traceback.extract_tb(exctraceback)[-1][1]
         print "Error traceback: {1} (line {2})\n" \
-                "{0.__name__}:  {3}.".format(exctype, fn, ln, excvalue)
+                "{0.__name__}:  {3}".format(exctype, fn, ln, excvalue)
     else:
         sys.__excepthook__(exctype, excvalue, exctraceback)
 
@@ -169,15 +170,16 @@ class BundleNotFoundError(ZiplineError):
 
 class PricingDataBeforeTradingError(ZiplineError):
     msg = ('Pricing data for trading pairs {symbols} on exchange {exchange} '
-           'starts on {first_trading_day}.').strip()
+           'starts on {first_trading_day}, but you are either trying to trade or '
+           'retrieve pricing data on {dt}. Adjust your dates accordingly.').strip()
 
 
 class PricingDataNotLoadedError(ZiplineError):
     msg = ('Pricing data {field} for trading pairs {symbols} trading on '
            'exchange {exchange} since {first_trading_day} is unavailable. '
-           'The bundle data is either out-of-date or has not been loaded yet.'
+           'The bundle data is either out-of-date or has not been loaded yet. '
            'Please ingest data using the command '
-           '`catalyst ingest -b exchange_{exchange}`. '
+           '`catalyst ingest-exchange -x {exchange} -i {symbol_list}`. '
            'See catalyst documentation for details.').strip()
 
 
