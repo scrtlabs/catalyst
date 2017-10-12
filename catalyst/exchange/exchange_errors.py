@@ -1,4 +1,17 @@
+import sys, inspect
 from catalyst.errors import ZiplineError
+
+class ZiplineErrorSilent(ZiplineError):
+    def __init__(self, **kwargs):
+        msg = self.msg.format(**kwargs)
+        try:
+            ln = sys.exc_info()[-1].tb_lineno
+            fn = sys.exc_info()[-1].f_code.co_filename
+        except AttributeError:
+            ln = inspect.currentframe().f_back.f_lineno
+            fn = inspect.currentframe().f_back.f_code.co_filename
+        msg = "Error traceback: {1} (line {2})\n{0.__name__}:  {3}.".format(type(self), fn, ln, msg)
+        sys.exit(msg)
 
 
 class ExchangeRequestError(ZiplineError):
@@ -140,7 +153,7 @@ class MismatchingBaseCurrenciesExchanges(ZiplineError):
     ).strip()
 
 
-class SymbolNotFoundOnExchange(ZiplineError):
+class SymbolNotFoundOnExchange(ZiplineErrorSilent):
     """
     Raised when a symbol() call contains a non-existant symbol.
     """
