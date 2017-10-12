@@ -131,18 +131,14 @@ class ExchangeBundle:
                 write_metadata = False
                 if start_dt < metadata.start_session:
                     write_metadata = True
-                    start_session = start_dt.floor('1d')
+                    start_session = start_dt
                 else:
                     start_session = metadata.start_session
 
                 if end_dt > metadata.end_session:
                     write_metadata = True
 
-                    # TODO: workaround, improve the calendar logic?
-                    if end_dt == start_dt:
-                        end_dt += timedelta(days=1)
-
-                    end_session = end_dt.floor('1d')
+                    end_session = end_dt
                 else:
                     end_session = metadata.end_session
 

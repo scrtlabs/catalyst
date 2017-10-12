@@ -489,7 +489,7 @@ class Exchange:
             candles = bundle_utils.get_history(
                 exchange_name=self.name,
                 data_frequency=data_frequency,
-                symbol=asset.exchange_symbol,  # TODO: use Catalyst symbol
+                symbol=asset.symbol,  # TODO: use Catalyst symbol
                 start=catalyst_start,
                 end=catalyst_end
             )

@@ -1,3 +1,4 @@
+from datetime import timedelta
 from logging import Logger
 
 import pandas as pd
@@ -12,8 +13,9 @@ class ExchangeBundleTestCase:
     def test_ingest_minute(self):
         exchange_name = 'bitfinex'
 
-        start = pd.to_datetime('2017-09-01', utc=True)
-        end = pd.Timestamp.utcnow()
+        # start = pd.to_datetime('2017-09-01', utc=True)
+        end = pd.Timestamp.utcnow() - timedelta(minutes=5)
+        start = end - timedelta(minutes=30)
 
         exchange_bundle = ExchangeBundle(get_exchange(exchange_name))
 

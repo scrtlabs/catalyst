@@ -7,6 +7,7 @@ import pandas as pd
 import pytz
 
 from catalyst.data.bundles import from_bundle_ingest_dirname
+from catalyst.exchange.exchange_errors import ApiCandlesError
 from catalyst.utils.deprecate import deprecated
 from catalyst.utils.paths import data_path
 
@@ -96,7 +97,7 @@ def get_history(exchange_name, data_frequency, symbol, start=None, end=None):
     data = response.json()
 
     if 'error' in data:
-        raise ValueError(data['error'])
+        raise ApiCandlesError(error=data['error'])
 
     for candle in data:
         last_traded = pd.Timestamp.utcfromtimestamp(candle['ts'])
