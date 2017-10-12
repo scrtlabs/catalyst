@@ -559,6 +559,7 @@ class Exchange:
         if freq_match:
             candle_size = int(freq_match.group(1))
             unit = freq_match.group(2)
+
         else:
             raise InvalidHistoryFrequencyError(frequency)
 

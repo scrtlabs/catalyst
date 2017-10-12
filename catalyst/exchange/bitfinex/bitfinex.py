@@ -26,7 +26,6 @@ from catalyst.protocol import Account
 from catalyst.exchange.exchange_utils import get_exchange_symbols_filename, \
     download_exchange_symbols
 
-
 # Trying to account for REST api instability
 # https://stackoverflow.com/questions/15431044/can-i-set-max-retries-for-requests-request
 requests.adapters.DEFAULT_RETRIES = 20
@@ -50,7 +49,9 @@ class Bitfinex(Exchange):
         self._portfolio = portfolio
         self.minute_writer = None
         self.minute_reader = None
-        self.num_candles_limit = 10000
+
+        # The candle limit for each request
+        self.num_candles_limit = 1000
 
         # Max is 90 but playing it safe
         # https://www.bitfinex.com/posts/188
@@ -576,7 +577,7 @@ class Bitfinex(Exchange):
         response = self._request('symbols', None)
 
         for symbol in response.json():
-            if(source_dates):
+            if (source_dates):
                 start_date = self.get_symbol_start_date(symbol)
             else:
                 try:
@@ -587,25 +588,26 @@ class Bitfinex(Exchange):
             try:
                 end_daily = cached_symbols[symbol]['end_daily']
             except KeyError as e:
-                end_daily ='N/A'
+                end_daily = 'N/A'
 
             try:
                 end_minute = cached_symbols[symbol]['end_minute']
             except KeyError as e:
                 end_minute = 'N/A'
 
-            symbol_map[symbol]= dict(
-                symbol     = symbol[:-3]+'_'+symbol[-3:], 
-                start_date = start_date,
-                end_daily  = end_daily,
-                end_minute = end_minute,
+            symbol_map[symbol] = dict(
+                symbol=symbol[:-3] + '_' + symbol[-3:],
+                start_date=start_date,
+                end_daily=end_daily,
+                end_minute=end_minute,
             )
 
-        if(filename is None):
+        if (filename is None):
             filename = get_exchange_symbols_filename(self.name)
 
-        with open(filename,'w') as f:
-            json.dump(symbol_map, f, sort_keys=True, indent=2, separators=(',',':'))
+        with open(filename, 'w') as f:
+            json.dump(symbol_map, f, sort_keys=True, indent=2,
+                      separators=(',', ':'))
 
     def get_symbol_start_date(self, symbol):
 
@@ -634,10 +636,10 @@ class Bitfinex(Exchange):
             arbitrarily set the ref. date to 15 days ago to be safe with
             +/- 31 days
         """
-        if(len(response.json())):
+        if (len(response.json())):
             startmonth = response.json()[-1][0]
         else:
-            startmonth = int((time.time()-15*24*3600)*1000)
+            startmonth = int((time.time() - 15 * 24 * 3600) * 1000)
 
         """
             Query again with daily resolution setting the start and end around
@@ -646,8 +648,9 @@ class Bitfinex(Exchange):
         url = '{url}/v2/candles/trade:1D:{symbol}/hist?start={start}&end={end}'.format(
             url=self.url,
             symbol=symbol_v2,
-            start=startmonth - 3600 *24 *31 *1000,
-            end=min(startmonth + 3600 *24 *31 *1000, int(time.time()*1000))
+            start=startmonth - 3600 * 24 * 31 * 1000,
+            end=min(startmonth + 3600 * 24 * 31 * 1000,
+                    int(time.time() * 1000))
         )
 
         try:
@@ -656,9 +659,5 @@ class Bitfinex(Exchange):
         except Exception as e:
             raise ExchangeRequestError(error=e)
 
-        return time.strftime('%Y-%m-%d', time.gmtime(int(response.json()[-1][0]/1000)))
-
-   
-
-
-
+        return time.strftime('%Y-%m-%d',
+                             time.gmtime(int(response.json()[-1][0] / 1000)))

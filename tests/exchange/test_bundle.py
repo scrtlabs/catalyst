@@ -14,8 +14,8 @@ class ExchangeBundleTestCase:
         exchange_name = 'bitfinex'
 
         # start = pd.to_datetime('2017-09-01', utc=True)
-        end = pd.Timestamp.utcnow() - timedelta(minutes=5)
-        start = end - timedelta(minutes=30)
+        start = pd.to_datetime('2017-10-01', utc=True)
+        end = pd.to_datetime('2017-10-06', utc=True)
 
         exchange_bundle = ExchangeBundle(get_exchange(exchange_name))
 

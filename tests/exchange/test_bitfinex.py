@@ -47,6 +47,10 @@ class BitfinexTestCase(BaseExchangeTestCase):
 
     def test_get_candles(self):
         log.info('retrieving candles')
+        ohlcv_neo = self.exchange.get_candles(
+            data_frequency='1m',
+            assets=self.exchange.get_asset('neo_btc')
+        )
         pass
 
     def test_tickers(self):

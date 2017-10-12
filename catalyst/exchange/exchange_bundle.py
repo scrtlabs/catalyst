@@ -13,6 +13,7 @@ from catalyst.exchange.bundle_utils import get_ffill_candles, get_start_dt, \
     get_periods, range_in_bundle
 from catalyst.exchange.exchange_utils import get_exchange_folder
 from catalyst.utils.cli import maybe_show_progress
+from catalyst.utils.deprecate import deprecated
 from catalyst.utils.paths import ensure_directory
 
 
@@ -208,6 +209,7 @@ class ExchangeBundle:
 
         return missing_assets
 
+    @deprecated
     def ingest_chunk(self, bar_count, end_dt, data_frequency, asset,
                      writer, previous_candle=dict()):
         """

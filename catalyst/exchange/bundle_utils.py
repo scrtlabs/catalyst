@@ -29,6 +29,21 @@ def get_seconds_from_date(date):
     return int((date - epoch).total_seconds())
 
 
+def get_bcolz_chunk(exchange_name, data_frequency, symbol, period_a, period_b):
+    """
+
+    :param exchange_name:
+    :param data_frequency:
+    :param symbol:
+    :param period_a:
+        Example: 2017
+    :param period_b:
+        Example: 10
+
+    Note:
+        Filename: bitfinex-daily-neo_eth-2017-10.tar.gz
+    :return:
+    """
 def get_history(exchange_name, data_frequency, symbol, start=None, end=None):
     """
     History API provides OHLCV data for any of the supported exchanges up to yesterday.
@@ -55,7 +70,7 @@ def get_history(exchange_name, data_frequency, symbol, start=None, end=None):
 
     Notes
     =====
-    Using milliseconds for the start and end dates for ease of use in the
+    Using seconds for the start and end dates for ease of use in the
     function query parameters.
 
     Sometimes, one minute goes by without completing a trade of the given
