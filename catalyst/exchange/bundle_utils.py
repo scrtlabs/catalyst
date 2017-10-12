@@ -3,6 +3,7 @@ from datetime import timedelta, datetime
 import os
 from logging import Logger
 import pandas as pd
+import numpy as np
 
 import pytz
 
@@ -113,6 +114,21 @@ def get_delta(periods, data_frequency):
         if data_frequency == 'minute' else timedelta(days=periods)
 
 
+def get_periods(start_dt, end_dt, data_frequency):
+    delta = end_dt - start_dt
+
+    if data_frequency == 'minute':
+        delta_periods = delta.total_seconds() / 60
+
+    elif data_frequency == 'daily':
+        delta_periods = delta.total_seconds() / 60 / 60 / 24
+
+    else:
+        raise ValueError('frequency not supported')
+
+    return int(delta_periods)
+
+
 def get_start_dt(end_dt, bar_count, data_frequency):
     periods = bar_count - 1
     if periods > 1:
@@ -160,6 +176,31 @@ def get_ffill_candles(candles, bar_count, end_dt, data_frequency,
         date += get_delta(1, data_frequency)
 
     return all_dates, all_candles
+
+
+def range_in_bundle(asset, start_dt, end_dt, reader):
+    has_data = True
+    if has_data and reader is not None:
+        try:
+            start_close = \
+                reader.get_value(asset.sid, start_dt, 'close')
+
+            if np.isnan(start_close):
+                has_data = False
+
+            else:
+                end_close = reader.get_value(asset.sid, end_dt, 'close')
+
+                if np.isnan(end_close):
+                    has_data = False
+
+        except Exception:
+            has_data = False
+
+    else:
+        has_data = False
+
+    return has_data
 
 
 @deprecated

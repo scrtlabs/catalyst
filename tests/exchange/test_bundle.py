@@ -30,6 +30,25 @@ class ExchangeBundleTestCase:
         )
         pass
 
+    def test_ingest_minute_all(self):
+        exchange_name = 'bitfinex'
+
+        # start = pd.to_datetime('2017-09-01', utc=True)
+        start = pd.to_datetime('2017-10-01', utc=True)
+        end = pd.to_datetime('2017-10-05', utc=True)
+
+        exchange_bundle = ExchangeBundle(get_exchange(exchange_name))
+
+        log.info('ingesting exchange bundle {}'.format(exchange_name))
+        exchange_bundle.ingest(
+            data_frequency='minute',
+            exclude_symbols=None,
+            start=start,
+            end=end,
+            show_progress=True
+        )
+        pass
+
     def test_ingest_daily(self):
         exchange_name = 'bitfinex'
 

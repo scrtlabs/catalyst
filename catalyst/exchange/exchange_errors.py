@@ -1,6 +1,7 @@
 import sys, inspect
 from catalyst.errors import ZiplineError
 
+
 class ZiplineErrorSilent(ZiplineError):
     def __init__(self, **kwargs):
         msg = self.msg.format(**kwargs)
@@ -10,7 +11,8 @@ class ZiplineErrorSilent(ZiplineError):
         except AttributeError:
             ln = inspect.currentframe().f_back.f_lineno
             fn = inspect.currentframe().f_back.f_code.co_filename
-        msg = "Error traceback: {1} (line {2})\n{0.__name__}:  {3}.".format(type(self), fn, ln, msg)
+        msg = "Error traceback: {1} (line {2})\n{0.__name__}:  {3}.".format(
+            type(self), fn, ln, msg)
         sys.exit(msg)
 
 

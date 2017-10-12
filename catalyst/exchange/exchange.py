@@ -466,7 +466,7 @@ class Exchange:
         exchange_start = None
         catalyst_end = None
 
-        if start < asset.end_minute:
+        if asset.end_minute is not None and start < asset.end_minute:
             catalyst_start = start
             if end <= asset.end_minute:
                 catalyst_end = end
@@ -581,13 +581,14 @@ class Exchange:
         if len(missing_assets) > 0:
             writer = bundle.get_writer(start_dt, end_dt, data_frequency)
 
-            bundle.ingest_chunk(
-                bar_count=adj_bar_count,
-                end_dt=end_dt,
-                data_frequency=data_frequency,
-                assets=missing_assets,
-                writer=writer
-            )
+            for asset in missing_assets:
+                bundle.ingest_chunk(
+                    bar_count=adj_bar_count,
+                    end_dt=end_dt,
+                    data_frequency=data_frequency,
+                    asset=asset,
+                    writer=writer
+                )
 
         reader = bundle.get_reader(data_frequency)
         values = reader.load_raw_arrays(

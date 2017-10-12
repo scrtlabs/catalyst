@@ -48,6 +48,10 @@ class Poloniex(Exchange):
         self.minute_reader = None
         self.transactions = defaultdict(list)
 
+        self.num_candles_limit = 2000
+        self.max_requests_per_minute = 20
+        self.request_cpt = dict()
+
 
     def sanitize_curency_symbol(self, exchange_symbol):
         """
