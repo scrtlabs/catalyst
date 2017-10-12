@@ -1,17 +1,16 @@
 import os
 from datetime import timedelta
 
-import numpy as np
 import pandas as pd
-from logbook import Logger
-from pandas import DatetimeIndex
+from logbook import Logger, DEBUG, INFO
 
 from catalyst import get_calendar
 from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
     BcolzMinuteBarWriter, BcolzMinuteBarReader, BcolzMinuteBarMetadata
 from catalyst.data.us_equity_pricing import BcolzDailyBarWriter, \
     BcolzDailyBarReader
-from catalyst.exchange.bundle_utils import get_ffill_candles, get_start_dt
+from catalyst.exchange.bundle_utils import get_ffill_candles, get_start_dt, \
+    get_periods, range_in_bundle
 from catalyst.exchange.exchange_utils import get_exchange_folder
 from catalyst.utils.cli import maybe_show_progress
 from catalyst.utils.paths import ensure_directory
@@ -23,6 +22,7 @@ def _cachpath(symbol, type_):
 
 BUNDLE_NAME_TEMPLATE = '{root}/{frequency}_bundle'
 log = Logger('exchange_bundle')
+log.level = INFO
 
 
 class ExchangeBundle:
@@ -45,8 +45,8 @@ class ExchangeBundle:
 
     def get_adj_dates(self, start, end, assets):
         now = pd.Timestamp.utcnow()
-        if end > now:
-            log.info('adjusting the end date to now {}'.format(now))
+        if end is None or end > now:
+            log.debug('adjusting the end date to now {}'.format(now))
             end = now
 
         earliest_trade = None
@@ -54,8 +54,8 @@ class ExchangeBundle:
             if earliest_trade is None or earliest_trade > asset.start_date:
                 earliest_trade = asset.start_date
 
-        if earliest_trade > start:
-            log.info(
+        if start is None or earliest_trade > start:
+            log.debug(
                 'adjusting start date to earliest trade date found {}'.format(
                     earliest_trade
                 ))
@@ -131,18 +131,14 @@ class ExchangeBundle:
                 write_metadata = False
                 if start_dt < metadata.start_session:
                     write_metadata = True
-                    start_session = start_dt.floor('1d')
+                    start_session = start_dt
                 else:
                     start_session = metadata.start_session
 
                 if end_dt > metadata.end_session:
                     write_metadata = True
 
-                    # TODO: workaround, improve the calendar logic?
-                    if end_dt == start_dt:
-                        end_dt += timedelta(days=1)
-
-                    end_session = end_dt.floor('1d')
+                    end_session = end_dt
                 else:
                     end_session = metadata.end_session
 
@@ -205,68 +201,34 @@ class ExchangeBundle:
         reader = self.get_reader(data_frequency)
         missing_assets = []
         for asset in assets:
-            has_data = True
-            if has_data and reader is not None:
-                try:
-                    start_close = \
-                        reader.get_value(asset.sid, start_dt, 'close')
-
-                    if np.isnan(start_close):
-                        has_data = False
-
-                    else:
-                        end_close = reader.get_value(asset.sid, end_dt,
-                                                     'close')
-
-                        if np.isnan(end_close):
-                            has_data = False
-
-                except Exception as e:
-                    has_data = False
-
-            else:
-                has_data = False
+            has_data = range_in_bundle(asset, start_dt, end_dt, reader)
 
             if not has_data:
                 missing_assets.append(asset)
 
         return missing_assets
 
-    def ingest_chunk(self, bar_count, end_dt, data_frequency, assets,
+    def ingest_chunk(self, bar_count, end_dt, data_frequency, asset,
                      writer, previous_candle=dict()):
         """
         Retrieve the specified OHLCV chunk and write it to the bundle
 
-        :param chunk:
-        :param previous_candle:
+        :param bar_count:
+        :param end_dt:
         :param data_frequency:
-        :param assets:
+        :param asset:
         :param writer:
+        :param previous_candle
         :return:
         """
 
-        chunk_assets = []
-        for asset in assets:
-            if asset.start_date <= end_dt:
-                chunk_assets.append(asset)
-
-        start_dt = get_start_dt(end_dt, bar_count, data_frequency)
-        missing_assets = self.filter_existing_assets(
-            assets=chunk_assets,
-            start_dt=start_dt,
-            end_dt=end_dt,
-            data_frequency=data_frequency
-        )
-
-        if len(missing_assets) == 0:
-            log.debug('the data chunk already exists')
-            return
-
+        # The get_history method supports multiple asset
         candles = self.exchange.get_history(
-            assets=missing_assets,
+            assets=[asset],
             end_dt=end_dt,
             bar_count=bar_count,
-            data_frequency=data_frequency
+            data_frequency=data_frequency,
+            fallback_exchange=False
         )
 
         num_candles = 0
@@ -276,7 +238,7 @@ class ExchangeBundle:
             if not asset_candles:
                 log.debug(
                     'no data: {symbols} on {exchange}, date {end}'.format(
-                        symbols=missing_assets,
+                        symbols=asset,
                         exchange=self.exchange.name,
                         end=end_dt
                     )
@@ -333,6 +295,7 @@ class ExchangeBundle:
             del self._writers[data_frequency]
 
             # TODO: these are the dates of the chunk, not the job
+            start_dt = get_start_dt(end_dt, bar_count, data_frequency)
             writer = self.get_writer(start_dt, end_dt, data_frequency)
             writer.write(
                 data=data,
@@ -361,8 +324,8 @@ class ExchangeBundle:
         assets = self.get_assets(include_symbols, exclude_symbols)
         start, end = self.get_adj_dates(start, end, assets)
 
-        symbols = []
-        log.debug(
+        symbols = list(map(lambda asset: asset.symbol, assets))
+        log.info(
             'ingesting trading pairs {symbols} on exchange {exchange} '
             'from {start} to {end}'.format(
                 symbols=symbols,
@@ -372,39 +335,88 @@ class ExchangeBundle:
             )
         )
 
-        delta = end - start
-        if data_frequency == 'minute':
-            delta_periods = delta.total_seconds() / 60
-
-        elif data_frequency == 'daily':
-            delta_periods = delta.total_seconds() / 60 / 60 / 24
-
-        else:
-            raise ValueError('frequency not supported')
-
         writer = self.get_writer(start, end, data_frequency)
+        reader = self.get_reader(data_frequency)
 
-        if delta_periods > self.exchange.num_candles_limit:
-            bar_count = self.exchange.num_candles_limit
+        all_chunks = []
+        for asset in assets:
+            try:
+                asset_start, asset_end = \
+                    self.get_adj_dates(start, end, [asset])
 
-            chunks = []
-            last_chunk_date = end.floor('1 min')
-            while last_chunk_date > start + timedelta(minutes=bar_count):
-                # TODO: account for the partial last bar
-                chunk = dict(end=last_chunk_date, bar_count=bar_count)
-                chunks.append(chunk)
+            except ValueError as e:
+                log.debug('asset outside of range {} {}'.format(asset, e))
+                continue
 
-                # TODO: base on frequency
-                last_chunk_date = \
-                    last_chunk_date - timedelta(minutes=(bar_count + 1))
+            asset_periods = get_periods(asset_start, asset_end, data_frequency)
+            if asset_periods > self.exchange.num_candles_limit:
+                bar_count = self.exchange.num_candles_limit
 
-            chunks.reverse()
+                chunks = []
 
-        else:
-            chunks = [dict(end=end, bar_count=delta_periods)]
+                period_delta = timedelta(minutes=1) \
+                    if data_frequency == 'minute' else \
+                    timedelta(days=1)
+
+                chunk_start = asset_start.floor('1 min') - period_delta
+                while chunk_start < asset_end:
+                    delta = timedelta(minutes=bar_count) \
+                        if data_frequency == 'minute' else \
+                        timedelta(days=bar_count)
+
+                    chunk_end = chunk_start + delta \
+                        if chunk_start + delta < asset_end else asset_end
+
+                    chunk_periods = \
+                        get_periods(chunk_start, chunk_end, data_frequency)
+
+                    range_start = \
+                        get_start_dt(chunk_end, chunk_periods, data_frequency)
+
+                    if range_in_bundle(asset, range_start, chunk_end, reader):
+                        log.debug(
+                            'chunk already ingested {symbol} '
+                            '{start} to {end}'.format(
+                                symbol=asset.symbol,
+                                start=range_start,
+                                end=chunk_end
+                            )
+                        )
+
+                        chunk_start = chunk_end + period_delta
+                        continue
+
+                    chunk = dict(
+                        asset=asset,
+                        end=chunk_end,
+                        bar_count=chunk_periods
+                    )
+                    chunks.append(chunk)
+
+                    chunk_start = chunk_end + period_delta
+
+                all_chunks += chunks
+
+            else:
+                if range_in_bundle(asset, asset_start, asset_end, reader):
+                    log.debug(
+                        'asset already ingested {symbol} '
+                        '{start} to {end}'.format(
+                            symbol=asset.symbol,
+                            start=asset_start,
+                            end=asset_end
+                        )
+                    )
+                    continue
+
+                all_chunks += [
+                    dict(asset=asset, end=asset_end, bar_count=asset_periods)
+                ]
+
+        all_chunks.sort(key=lambda chunk: chunk['end'])
 
         with maybe_show_progress(
-                chunks,
+                all_chunks,
                 show_progress,
                 label='Fetching {exchange} {frequency} candles: '.format(
                     exchange=self.exchange.name,
@@ -417,7 +429,7 @@ class ExchangeBundle:
                     bar_count=chunk['bar_count'],
                     end_dt=chunk['end'],
                     data_frequency=data_frequency,
-                    assets=assets,
+                    asset=chunk['asset'],
                     writer=writer,
                     previous_candle=previous_candle,
                 )

@@ -443,7 +443,7 @@ def live(ctx,
     return perf
 
 
-@main.command()
+@main.command(name='ingest-exchange')
 @click.option(
     '-x',
     '--exchange-name',
@@ -452,6 +452,7 @@ def live(ctx,
          ' bittrex, poloniex).',
 )
 @click.option(
+    '-f',
     '--data-frequency',
     type=click.Choice({'daily', 'minute', 'daily,minute'}),
     default='daily',
@@ -473,6 +474,7 @@ def live(ctx,
     help='The end date of the data range. (default: today)',
 )
 @click.option(
+    '-i',
     '--include-symbols',
     default=None,
     help='A list of symbols to ingest (optional comma separated list)',
@@ -493,7 +495,7 @@ def ingest_exchange(exchange_name, data_frequency, start, end,
     """
     Ingest data for the given exchange.
     """
-    exchange=get_exchange(exchange_name)
+    exchange = get_exchange(exchange_name)
     exchange_bundle = ExchangeBundle(exchange)
 
     click.echo('ingesting exchange bundle {}'.format(exchange_name))

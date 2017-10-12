@@ -28,6 +28,8 @@ class Bittrex(Exchange):
         self.base_currency = base_currency
         self._portfolio = portfolio
 
+        self.num_candles_limit = 2000
+
         # Not sure what the rate limit is but trying to play it safe
         # https://bitcoin.stackexchange.com/questions/53778/bittrex-api-rate-limit
         self.max_requests_per_minute = 60
