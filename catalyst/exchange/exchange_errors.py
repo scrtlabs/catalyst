@@ -1,7 +1,6 @@
 import sys, traceback
 from catalyst.errors import ZiplineError
 
-<<<<<<< HEAD
 def silent_except_hook(exctype, excvalue, exctraceback):
     if exctype in [SymbolNotFoundOnExchange,]:
         fn = traceback.extract_tb(exctraceback)[-1][0]
@@ -12,21 +11,6 @@ def silent_except_hook(exctype, excvalue, exctraceback):
         sys.__excepthook__(exctype, excvalue, exctraceback)
 
 sys.excepthook = silent_except_hook
-=======
-
-class ZiplineErrorSilent(ZiplineError):
-    def __init__(self, **kwargs):
-        msg = self.msg.format(**kwargs)
-        try:
-            ln = sys.exc_info()[-1].tb_lineno
-            fn = sys.exc_info()[-1].f_code.co_filename
-        except AttributeError:
-            ln = inspect.currentframe().f_back.f_lineno
-            fn = inspect.currentframe().f_back.f_code.co_filename
-        msg = "Error traceback: {1} (line {2})\n{0.__name__}:  {3}.".format(
-            type(self), fn, ln, msg)
-        sys.exit(msg)
->>>>>>> 73378962aaa385f34cf28c5c91b957cacf94d6e9
 
 
 class ExchangeRequestError(ZiplineError):
@@ -170,7 +154,7 @@ class MismatchingBaseCurrenciesExchanges(ZiplineError):
 
 class SymbolNotFoundOnExchange(ZiplineError):
     """
-    Raised when a symbol() call contains a non-existant symbol.
+    Raised when a symbol() call contains a non-existent symbol.
     """
     msg = ('Symbol {symbol} not found on exchange {exchange}. '
            'Choose from: {supported_symbols}').strip()
