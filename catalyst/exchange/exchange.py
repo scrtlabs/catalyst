@@ -418,7 +418,8 @@ class Exchange:
 
         return value
 
-    def get_history(self, assets, end_dt, bar_count, data_frequency):
+    def get_history(self, assets, end_dt, bar_count, data_frequency,
+                    fallback_exchange=True):
         """
         Retrieve OHLCV bars from the Catalyst and/or exchange API.
 
@@ -443,11 +444,13 @@ class Exchange:
                 asset=asset,
                 end=end_dt,
                 bar_count=bar_count,
-                data_frequency=data_frequency
+                data_frequency=data_frequency,
+                fallback_exchange=fallback_exchange
             )
         return candles
 
-    def get_asset_history(self, asset, end, bar_count, data_frequency):
+    def get_asset_history(self, asset, end, bar_count, data_frequency,
+                          fallback_exchange=True):
         """
         Retrieve the OHLVC bars of a single asset.
 
@@ -495,7 +498,7 @@ class Exchange:
             )
             data += candles
 
-        if exchange_start is not None:
+        if exchange_start is not None and fallback_exchange:
             candles = self.get_candles(
                 data_frequency=data_frequency,
                 assets=[asset],

@@ -50,7 +50,7 @@ class Bitfinex(Exchange):
         self._portfolio = portfolio
         self.minute_writer = None
         self.minute_reader = None
-        self.num_candles_limit = 1000
+        self.num_candles_limit = 10000
 
         # Max is 90 but playing it safe
         # https://www.bitfinex.com/posts/188

@@ -227,7 +227,8 @@ class ExchangeBundle:
             assets=[asset],
             end_dt=end_dt,
             bar_count=bar_count,
-            data_frequency=data_frequency
+            data_frequency=data_frequency,
+            fallback_exchange=False
         )
 
         num_candles = 0
