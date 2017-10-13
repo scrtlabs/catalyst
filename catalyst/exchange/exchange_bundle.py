@@ -1,6 +1,8 @@
 import os
+import time
 from datetime import timedelta
 
+import bcolz
 import pandas as pd
 from logbook import Logger, DEBUG, INFO
 
@@ -209,7 +211,38 @@ class ExchangeBundle:
 
         return missing_assets
 
-    @deprecated
+    def _write(self, data, writer, data_frequency):
+        """
+        Write data to the writer
+
+        :param df:
+        :param writer:
+        :return:
+        """
+        try:
+            writer.write(
+                data=data,
+                show_progress=False,
+                invalid_data_behavior='raise'
+            )
+        except BcolzMinuteOverlappingData as e:
+            log.warn('chunk already exists: {}'.format(e))
+        except Exception as e:
+            log.warn('error when writing data: {}, trying again'.format(e))
+
+            # This is workaround, there is an issue with empty
+            # session_label when using a newly created writer
+            del self._writers[data_frequency]
+
+            # TODO: these are the dates of the chunk, not the job
+            writer = self.get_writer(writer._start_session,
+                                     writer._end_session, data_frequency)
+            writer.write(
+                data=data,
+                show_progress=False,
+                invalid_data_behavior='raise'
+            )
+
     def ingest_chunk(self, bar_count, end_dt, data_frequency, asset,
                      writer, previous_candle=dict()):
         """
@@ -264,6 +297,7 @@ class ExchangeBundle:
                 index=all_dates,
                 columns=['open', 'high', 'low', 'close', 'volume']
             )
+
             if not df.empty:
                 df.sort_index(inplace=True)
 
@@ -272,40 +306,66 @@ class ExchangeBundle:
 
                 data.append((sid, df))
 
-        try:
-            log.debug(
-                'writing {num_candles} candles for {bar_count} bars'
-                'ending {end}'.format(
-                    num_candles=num_candles,
-                    bar_count=bar_count,
-                    end=end_dt
-                )
+        log.debug(
+            'writing {num_candles} candles for {bar_count} bars'
+            'ending {end}'.format(
+                num_candles=num_candles,
+                bar_count=bar_count,
+                end=end_dt
             )
-
-            writer.write(
-                data=data,
-                show_progress=False,
-                invalid_data_behavior='raise'
-            )
-        except BcolzMinuteOverlappingData as e:
-            log.warn('chunk already exists: {}'.format(e))
-        except Exception as e:
-            log.warn('error when writing data: {}, trying again'.format(e))
-
-            # This is workaround, there is an issue with empty
-            # session_label when using a newly created writer
-            del self._writers[data_frequency]
-
-            # TODO: these are the dates of the chunk, not the job
-            start_dt = get_start_dt(end_dt, bar_count, data_frequency)
-            writer = self.get_writer(start_dt, end_dt, data_frequency)
-            writer.write(
-                data=data,
-                show_progress=False,
-                invalid_data_behavior='raise'
-            )
+        )
+        self._write(data, writer, data_frequency)
 
         return data
+
+    def ingest_ctable(self, asset, data_frequency, path):
+        start_time = time.time()
+
+        reader = BcolzMinuteBarReader(path)
+
+        start = reader.first_trading_day
+        end = reader.last_available_dt
+
+        open_calendar = get_calendar('OPEN')
+        periods = open_calendar.minutes_in_range(start, end)
+
+        sid = 284
+        arrays = reader.load_raw_arrays(
+            fields=['open', 'high', 'low', 'close', 'volume'],
+            start_dt=start,
+            end_dt=end,
+            sids=[sid]
+        )
+
+        ohlcv = dict(
+            open=arrays[0].flatten(),
+            high=arrays[1].flatten(),
+            low=arrays[2].flatten(),
+            close=arrays[3].flatten(),
+            volume=arrays[4].flatten()
+        )
+
+        df = pd.DataFrame(
+            data=ohlcv,
+            index=periods
+        )
+
+        data = []
+        if not df.empty:
+            df.sort_index(inplace=True)
+
+            data.append((sid, df))
+
+        writer = self.get_writer(start, end, data_frequency)
+
+        self._write(data, writer, data_frequency)
+
+        end_time = time.time()
+        delta_time = end_time - start_time
+
+        log.info('time elapsed {}'.format(delta_time))
+
+        pass
 
     def ingest(self, data_frequency, include_symbols=None,
                exclude_symbols=None, start=None, end=None,

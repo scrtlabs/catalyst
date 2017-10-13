@@ -33,6 +33,13 @@ def initialize(context):
 
 
 def _handle_data(context, data):
+    price = data.current(context.asset, 'close')
+    log.info('got price {price}'.format(price=price))
+
+    if price is None:
+        log.warn('no pricing data')
+        return
+
     prices = data.history(
         context.asset,
         fields='price',
@@ -54,13 +61,6 @@ def _handle_data(context, data):
 
     cash = context.portfolio.cash
     log.info('base currency available: {cash}'.format(cash=cash))
-
-    price = data.current(context.asset, 'close')
-    log.info('got price {price}'.format(price=price))
-
-    if price is None:
-        log.warn('no pricing data')
-        return
 
     record(price=price)
 
