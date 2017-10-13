@@ -162,6 +162,14 @@ def get_exchange_minute_writer_root(exchange_name, environ=None):
 
     return minute_data_folder
 
+def get_exchange_bundles_folder(exchange_name, environ=None):
+    exchange_folder = get_exchange_folder(exchange_name, environ)
+
+    temp_bundles = os.path.join(exchange_folder, 'temp_bundles')
+    ensure_directory(temp_bundles)
+
+    return temp_bundles
+
 
 def perf_serial(obj):
     """JSON serializer for objects not serializable by default json code"""

@@ -1,3 +1,6 @@
+import gzip
+import tarfile
+
 import requests
 from datetime import timedelta, datetime
 import os
@@ -8,7 +11,9 @@ import numpy as np
 import pytz
 
 from catalyst.data.bundles import from_bundle_ingest_dirname
+from catalyst.data.bundles.core import download_without_progress
 from catalyst.exchange.exchange_errors import ApiCandlesError
+from catalyst.exchange.exchange_utils import get_exchange_bundles_folder
 from catalyst.utils.deprecate import deprecated
 from catalyst.utils.paths import data_path
 
@@ -29,21 +34,43 @@ def get_seconds_from_date(date):
     return int((date - epoch).total_seconds())
 
 
-def get_bcolz_chunk(exchange_name, data_frequency, symbol, period_a, period_b):
+def get_bcolz_chunk(exchange_name, symbol, data_frequency, period):
     """
+    Download and extract a bcolz bundle.
 
     :param exchange_name:
-    :param data_frequency:
     :param symbol:
-    :param period_a:
-        Example: 2017
-    :param period_b:
-        Example: 10
+    :param data_frequency:
+    :param period:
+    :return:
 
     Note:
         Filename: bitfinex-daily-neo_eth-2017-10.tar.gz
-    :return:
     """
+
+    root = get_exchange_bundles_folder(exchange_name)
+    name = '{exchange}-{frequency}-{symbol}-{period}'.format(
+        exchange=exchange_name,
+        frequency=data_frequency,
+        symbol=symbol,
+        period=period
+    )
+    path = os.path.join(root, name)
+
+    if not os.path.isdir(path):
+        url = 'https://s3.amazonaws.com/enigmaco/catalyst-bundles/' \
+              'exchange-{exchange}/{name}.tar.gz'.format(
+            exchange=exchange_name,
+            name=name
+        )
+
+        bytes = download_without_progress(url)
+        with tarfile.open('r', fileobj=bytes) as tar:
+            tar.extractall(path)
+
+    return path
+
+
 def get_history(exchange_name, data_frequency, symbol, start=None, end=None):
     """
     History API provides OHLCV data for any of the supported exchanges up to yesterday.
