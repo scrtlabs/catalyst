@@ -21,7 +21,8 @@ class ExchangeBundleTestCase:
         log.info('ingesting exchange bundle {}'.format(exchange_name))
         exchange_bundle.ingest(
             data_frequency='minute',
-            include_symbols='btc_usdt',
+            include_symbols='gno_btc',
+            # include_symbols=None,
             exclude_symbols=None,
             start=start,
             end=end,
@@ -72,7 +73,7 @@ class ExchangeBundleTestCase:
         data_frequency = 'minute'
 
         exchange = get_exchange(exchange_name)
-        asset = exchange.get_asset('btc_usdt')
+        asset = exchange.get_asset('gno_btc')
 
         start = pd.to_datetime('2017-5-1', utc=True)
         end = pd.to_datetime('2017-5-31', utc=True)

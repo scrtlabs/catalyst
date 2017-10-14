@@ -6,7 +6,7 @@ from catalyst.api import symbol
 
 def initialize(context):
     print('initializing')
-    context.asset = symbol('btc_usdt')
+    context.asset = symbol('gno_btc')
 
 
 def handle_data(context, data):
@@ -18,8 +18,8 @@ def handle_data(context, data):
 
 run_algorithm(
     capital_base=250,
-    start=pd.to_datetime('2017-1-1', utc=True),
-    end=pd.to_datetime('2017-1-31', utc=True),
+    start=pd.to_datetime('2017-5-1', utc=True),
+    end=pd.to_datetime('2017-5-31', utc=True),
     data_frequency='minute',
     initialize=initialize,
     handle_data=handle_data,

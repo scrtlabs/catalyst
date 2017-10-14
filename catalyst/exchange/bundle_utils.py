@@ -1,5 +1,5 @@
-import gzip
 import tarfile
+import shutil
 
 import requests
 from datetime import timedelta, datetime
@@ -221,6 +221,16 @@ def get_ffill_candles(candles, bar_count, end_dt, data_frequency,
 
 
 def range_in_bundle(asset, start_dt, end_dt, reader):
+    """
+    Evaluate whether price data of an asset is included has been ingested in
+    the exchange bundle for the given date range.
+
+    :param asset:
+    :param start_dt:
+    :param end_dt:
+    :param reader:
+    :return:
+    """
     has_data = True
     if has_data and reader is not None:
         try:

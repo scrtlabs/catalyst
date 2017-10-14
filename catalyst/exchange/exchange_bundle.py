@@ -1,5 +1,7 @@
 import calendar
 import os
+import shutil
+
 import pytz
 from datetime import timedelta, datetime
 
@@ -50,16 +52,19 @@ class ExchangeBundle:
         else:
             return self.exchange.get_assets()
 
-    def get_adj_dates(self, start, end, assets):
-        now = pd.Timestamp.utcnow()
-        if end is None or end > now:
-            log.debug('adjusting the end date to now {}'.format(now))
-            end = now
+    def get_adj_dates(self, start, end, assets, data_frequency):
 
         earliest_trade = None
+        last_entry = None
         for asset in assets:
             if earliest_trade is None or earliest_trade > asset.start_date:
                 earliest_trade = asset.start_date
+
+            end_asset = asset.end_minute if data_frequency == 'minute' else \
+                asset.end_daily
+            if end_asset is not None and \
+                    (last_entry is None or end_asset > last_entry):
+                last_entry = end_asset
 
         if start is None or earliest_trade > start:
             log.debug(
@@ -67,6 +72,10 @@ class ExchangeBundle:
                     earliest_trade
                 ))
             start = earliest_trade
+
+        if end is None or (last_entry is not None and end > last_entry):
+            log.debug('adjusting the end date to now {}'.format(last_entry))
+            end = last_entry
 
         if start >= end:
             raise ValueError('start date cannot be after end date')
@@ -328,7 +337,7 @@ class ExchangeBundle:
         """
 
     def ingest_ctable(self, asset, data_frequency, period, writer,
-                      verify=False):
+                      verify=False, cleanup=False):
         """
         Merge a ctable bundle chunk into the main bundle for the exchange.
 
@@ -336,7 +345,12 @@ class ExchangeBundle:
         :param data_frequency: str
         :param period: str
         :param writer:
-        :param verify:
+        :param verify: bool
+            Ensure that the bundle does not have any missing data.
+
+        :param cleanup: bool
+            Remove the temp bundle directory after ingestion.
+
         :return:
         """
 
@@ -390,10 +404,15 @@ class ExchangeBundle:
         data = []
         if not df.empty:
             df.sort_index(inplace=True)
-
             data.append((sid, df))
 
         self._write(data, writer, data_frequency)
+
+        if cleanup:
+            log.debug('removing bundle folder following '
+                      'ingestion: {}'.format(path))
+            shutil.rmtree(path)
+
         return path
 
     def ingest(self, data_frequency, include_symbols=None,
@@ -412,15 +431,22 @@ class ExchangeBundle:
         """
 
         assets = self.get_assets(include_symbols, exclude_symbols)
-        start, end = self.get_adj_dates(start, end, assets)
+        start, end = self.get_adj_dates(start, end, assets, data_frequency)
         reader = self.get_reader(data_frequency)
 
         chunks = []
-        periods = []
         for asset in assets:
-            asset_start, asset_end = self.get_adj_dates(start, end, [asset])
+            try:
+                asset_start, asset_end = \
+                    self.get_adj_dates(start, end, [asset], data_frequency)
+
+            except ValueError:
+                dt += timedelta(days=1)
+                continue
+
             sessions = self.calendar.sessions_in_range(asset_start, asset_end)
 
+            periods = []
             dt = sessions[0]
             while dt <= sessions[-1]:
                 period = '{}-{}'.format(dt.year, dt.month)
@@ -438,6 +464,10 @@ class ExchangeBundle:
                         datetime(dt.year, dt.month, month_range[1] - 1,
                                  23, 59, 0, 0),
                         utc=True)
+
+                    if month_end > asset_end:
+                        month_end = asset_end
+
                     has_data = \
                         range_in_bundle(asset, month_start, month_end, reader)
 
