@@ -1,8 +1,5 @@
-from datetime import timedelta, time
 from logging import Logger
 
-import bcolz
-from toolz.itertoolz import join as joinz
 import pandas as pd
 
 from catalyst.exchange.exchange_bundle import ExchangeBundle
@@ -13,18 +10,18 @@ log = Logger('test_exchange_bundle')
 
 class ExchangeBundleTestCase:
     def test_ingest_minute(self):
-        exchange_name = 'bitfinex'
+        exchange_name = 'poloniex'
 
         # start = pd.to_datetime('2017-09-01', utc=True)
-        start = pd.to_datetime('2017-10-01', utc=True)
-        end = pd.to_datetime('2017-10-06', utc=True)
+        start = pd.to_datetime('2017-1-1', utc=True)
+        end = pd.to_datetime('2017-6-30', utc=True)
 
         exchange_bundle = ExchangeBundle(get_exchange(exchange_name))
 
         log.info('ingesting exchange bundle {}'.format(exchange_name))
         exchange_bundle.ingest(
             data_frequency='minute',
-            include_symbols='bcc_btc',
+            include_symbols='btc_usdt',
             exclude_symbols=None,
             start=start,
             end=end,
@@ -77,8 +74,8 @@ class ExchangeBundleTestCase:
         exchange = get_exchange(exchange_name)
         asset = exchange.get_asset('btc_usdt')
 
-        start = pd.to_datetime('2017-09-01', utc=True)
-        end = pd.to_datetime('2017-09-06', utc=True)
+        start = pd.to_datetime('2017-5-1', utc=True)
+        end = pd.to_datetime('2017-5-31', utc=True)
 
         exchange_bundle = ExchangeBundle(exchange)
 
@@ -86,7 +83,8 @@ class ExchangeBundleTestCase:
         exchange_bundle.ingest_ctable(
             asset=asset,
             data_frequency=data_frequency,
-            period='2017-9',
-            writer=writer
+            period='2017-5',
+            writer=writer,
+            verify=True
         )
         pass

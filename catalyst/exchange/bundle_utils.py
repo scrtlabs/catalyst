@@ -236,7 +236,7 @@ def range_in_bundle(asset, start_dt, end_dt, reader):
                 if np.isnan(end_close):
                     has_data = False
 
-        except Exception:
+        except Exception as e:
             has_data = False
 
     else:

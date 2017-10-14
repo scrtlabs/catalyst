@@ -1,9 +1,10 @@
 import calendar
 import os
-import time
-from datetime import timedelta, datetime, date
+import pytz
+from datetime import timedelta, datetime
 
 import pandas as pd
+import numpy as np
 from logbook import Logger, INFO
 
 from catalyst import get_calendar
@@ -13,6 +14,7 @@ from catalyst.data.us_equity_pricing import BcolzDailyBarWriter, \
     BcolzDailyBarReader
 from catalyst.exchange.bundle_utils import get_ffill_candles, get_start_dt, \
     get_periods, range_in_bundle, get_bcolz_chunk
+from catalyst.exchange.exchange_errors import EmptyValuesInBundleError
 from catalyst.exchange.exchange_utils import get_exchange_folder, \
     get_exchange_bundles_folder
 from catalyst.utils.cli import maybe_show_progress
@@ -325,8 +327,18 @@ class ExchangeBundle:
         :return:
         """
 
-    def ingest_ctable(self, asset, data_frequency, period, writer):
-        start_time = time.time()
+    def ingest_ctable(self, asset, data_frequency, period, writer,
+                      verify=False):
+        """
+        Merge a ctable bundle chunk into the main bundle for the exchange.
+
+        :param asset: TradingPair
+        :param data_frequency: str
+        :param period: str
+        :param writer:
+        :param verify:
+        :return:
+        """
 
         path = get_bcolz_chunk(
             exchange_name=self.exchange.name,
@@ -338,7 +350,10 @@ class ExchangeBundle:
         reader = BcolzMinuteBarReader(path)
 
         start = reader.first_trading_day
-        end = reader.last_available_dt
+
+        # TODO: temp workaround, remove when the bundles are fixed
+        # end = reader.last_available_dt
+        end = reader.last_available_dt - timedelta(days=1)
 
         periods = self.calendar.minutes_in_range(start, end)
 
@@ -363,20 +378,23 @@ class ExchangeBundle:
             index=periods
         )
 
+        if verify:
+            nan_rows = df[df.isnull().T.any().T].index
+            if len(nan_rows) > 0:
+                raise EmptyValuesInBundleError(
+                    path=path,
+                    start=nan_rows[0],
+                    end=nan_rows[-1]
+                )
+
         data = []
         if not df.empty:
-            df.sort_index(inplace=True, ascending=False)
+            df.sort_index(inplace=True)
 
             data.append((sid, df))
 
         self._write(data, writer, data_frequency)
-
-        end_time = time.time()
-        delta_time = end_time - start_time
-
-        log.info('time elapsed {}'.format(delta_time))
-
-        pass
+        return path
 
     def ingest(self, data_frequency, include_symbols=None,
                exclude_symbols=None, start=None, end=None,
@@ -411,11 +429,19 @@ class ExchangeBundle:
                     periods.append(period)
 
                     month_range = calendar.monthrange(dt.year, dt.month)
-                    month_start = date(dt.year, dt.month, month_range[0])
-                    month_end = date(dt.year, dt.month, month_range[1])
+                    month_start = pd.to_datetime(
+                        datetime(dt.year, dt.month, 1, 0, 0, 0, 0),
+                        utc=True)
 
-                    if not range_in_bundle(asset, month_start, month_end,
-                                           reader):
+                    # TODO: workaround, remove when bundles are fixed
+                    month_end = pd.to_datetime(
+                        datetime(dt.year, dt.month, month_range[1] - 1,
+                                 23, 59, 0, 0),
+                        utc=True)
+                    has_data = \
+                        range_in_bundle(asset, month_start, month_end, reader)
+
+                    if not has_data:
                         log.debug('adding period: {}'.format(period))
                         chunks.append(
                             dict(
@@ -445,4 +471,3 @@ class ExchangeBundle:
                     period=chunk['period'],
                     writer=writer
                 )
-        pass
