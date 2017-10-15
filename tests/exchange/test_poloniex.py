@@ -1,18 +1,19 @@
 from catalyst.exchange.bittrex.bittrex import Bittrex
+from catalyst.exchange.poloniex.poloniex import Poloniex
 from catalyst.finance.order import Order
 from base import BaseExchangeTestCase
 from logbook import Logger
 from catalyst.exchange.exchange_utils import get_exchange_auth
 
-log = Logger('test_bittrex')
+log = Logger('test_poloniex')
 
 
-class BittrexTestCase(BaseExchangeTestCase):
+class PoloniexTestCase(BaseExchangeTestCase):
     @classmethod
     def setup(self):
-        print ('creating bittrex object')
-        auth = get_exchange_auth('bittrex')
-        self.exchange = Bittrex(
+        print ('creating poloniex object')
+        auth = get_exchange_auth('poloniex')
+        self.exchange = Poloniex(
             key=auth['key'],
             secret=auth['secret'],
             base_currency='btc'

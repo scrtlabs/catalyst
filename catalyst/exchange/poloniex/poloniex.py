@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import pytz
 import requests
-#import six
+# import six
 from six import iteritems
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
@@ -32,7 +32,6 @@ from catalyst.exchange.exchange_utils import get_exchange_symbols_filename, \
     download_exchange_symbols
 from catalyst.finance.transaction import Transaction
 
-
 log = Logger('Poloniex')
 
 
@@ -52,7 +51,6 @@ class Poloniex(Exchange):
         self.max_requests_per_minute = 20
         self.request_cpt = dict()
 
-
     def sanitize_curency_symbol(self, exchange_symbol):
         """
         Helper method used to build the universal pair.
@@ -63,28 +61,27 @@ class Poloniex(Exchange):
         """
         return exchange_symbol.lower()
 
-    
     def _create_order(self, order_status):
         """
         Create a Catalyst order object from the Exchange order dictionary
         :param order_status:
         :return: Order
         """
-        #if order_status['is_cancelled']:
+        # if order_status['is_cancelled']:
         #    status = ORDER_STATUS.CANCELLED
-        #elif not order_status['is_live']:
+        # elif not order_status['is_live']:
         #    log.info('found executed order {}'.format(order_status))
         #    status = ORDER_STATUS.FILLED
-        #else:
+        # else:
         status = ORDER_STATUS.OPEN
 
         amount = float(order_status['amount'])
-        #filled = float(order_status['executed_amount'])
+        # filled = float(order_status['executed_amount'])
         filled = None
 
         if order_status['type'] == 'sell':
             amount = -amount
-            #filled = -filled
+            # filled = -filled
 
         price = float(order_status['rate'])
         order_type = order_status['type']
@@ -93,24 +90,25 @@ class Poloniex(Exchange):
         limit_price = None
 
         # TODO: is this comprehensive enough?
-        #if order_type.endswith('limit'):
+        # if order_type.endswith('limit'):
         #    limit_price = price
-        #elif order_type.endswith('stop'):
+        # elif order_type.endswith('stop'):
         #    stop_price = price
 
-        #executed_price = float(order_status['avg_execution_price'])
+        # executed_price = float(order_status['avg_execution_price'])
         executed_price = price
 
         # TODO: bitfinex does not specify comission. I could calculate it but not sure if it's worth it.
         commission = None
 
-        #date = pd.Timestamp.utcfromtimestamp(float(order_status['timestamp']))
-        #date = pytz.utc.localize(date)
+        # date = pd.Timestamp.utcfromtimestamp(float(order_status['timestamp']))
+        # date = pytz.utc.localize(date)
         date = None
 
         order = Order(
             dt=date,
-            asset=self.assets[order_status['symbol']],  # No such field in Poloniex
+            asset=self.assets[order_status['symbol']],
+            # No such field in Poloniex
             amount=amount,
             stop=stop_price,
             limit=limit_price,
@@ -121,7 +119,6 @@ class Poloniex(Exchange):
         order.status = status
 
         return order, executed_price
-    
 
     def get_balances(self):
         log.debug('retrieving wallets balances')
@@ -142,7 +139,6 @@ class Poloniex(Exchange):
             std_balances[currency] = float(value)
 
         return std_balances
-
 
     @property
     def account(self):
@@ -192,17 +188,18 @@ class Poloniex(Exchange):
         """
 
         # TODO: use BcolzMinuteBarReader to read from cache
-        if(data_frequency == '5m' or data_frequency == 'minute'): #TODO: Polo does not have '1m'
+        if (
+                data_frequency == '5m' or data_frequency == 'minute'):  # TODO: Polo does not have '1m'
             frequency = 300
-        elif(data_frequency == '15m'):
+        elif (data_frequency == '15m'):
             frequency = 900
-        elif(data_frequency == '30m'):
+        elif (data_frequency == '30m'):
             frequency = 1800
-        elif(data_frequency == '2h'):
+        elif (data_frequency == '2h'):
             frequency = 7200
-        elif(data_frequency == '4h'):
+        elif (data_frequency == '4h'):
             frequency = 14400
-        elif(data_frequency == '1D' or data_frequency == 'daily'):
+        elif (data_frequency == '1D' or data_frequency == 'daily'):
             frequency = 86400
         else:
             raise InvalidHistoryFrequencyError(
@@ -216,13 +213,14 @@ class Poloniex(Exchange):
         for asset in asset_list:
 
             end = int(time.time())
-            if(bar_count is None):
+            if (bar_count is None):
                 start = end - 2 * frequency
             else:
                 start = end - bar_count * frequency
 
-            try: 
-                response = self.api.returnchartdata(self.get_symbol(asset),frequency, start, end)
+            try:
+                response = self.api.returnchartdata(self.get_symbol(asset),
+                                                    frequency, start, end)
             except Exception as e:
                 raise ExchangeRequestError(error=e)
 
@@ -240,7 +238,7 @@ class Poloniex(Exchange):
                     close=np.float64(candle['close']),
                     volume=np.float64(candle['volume']),
                     price=np.float64(candle['close']),
-                    last_traded=pd.Timestamp.utcfromtimestamp( candle['date'] )
+                    last_traded=pd.Timestamp.utcfromtimestamp(candle['date'])
                 )
 
                 return ohlc
@@ -257,7 +255,6 @@ class Poloniex(Exchange):
         return ohlc_map[assets] \
             if isinstance(assets, TradingPair) else ohlc_map
 
-
     def create_order(self, asset, amount, is_buy, style):
         """
         Creating order on the exchange.
@@ -270,14 +267,15 @@ class Poloniex(Exchange):
         """
         exchange_symbol = self.get_symbol(asset)
 
-        if isinstance(style, ExchangeLimitOrder) or isinstance(style, ExchangeStopLimitOrder):
+        if isinstance(style, ExchangeLimitOrder) or isinstance(style,
+                                                               ExchangeStopLimitOrder):
             if isinstance(style, ExchangeStopLimitOrder):
                 log.warn('{} will ignore the stop price'.format(self.name))
 
             price = style.get_limit_price(is_buy)
 
             try:
-                if(is_buy):
+                if (is_buy):
                     response = self.api.buy(exchange_symbol, amount, price)
                 else:
                     response = self.api.sell(exchange_symbol, -amount, price)
@@ -286,7 +284,7 @@ class Poloniex(Exchange):
 
             date = pd.Timestamp.utcnow()
 
-            if('orderNumber' in response):
+            if ('orderNumber' in response):
                 order_id = str(response['orderNumber'])
                 order = Order(
                     dt=date,
@@ -298,12 +296,13 @@ class Poloniex(Exchange):
                 )
                 return order
             else:
-                log.warn('{} order failed: {}'.format('buy' if is_buy else 'sell', response['error']))
+                log.warn(
+                    '{} order failed: {}'.format('buy' if is_buy else 'sell',
+                                                 response['error']))
                 return None
         else:
             raise InvalidOrderStyle(exchange=self.name,
                                     style=style.__class__.__name__)
-
 
     def get_open_orders(self, asset='all'):
         """Retrieve all of the current open orders.
@@ -331,7 +330,7 @@ class Poloniex(Exchange):
         """
 
         try:
-            if(asset=='all'):
+            if (asset == 'all'):
                 response = self.api.returnopenorders('all')
             else:
                 response = self.api.returnopenorders(self.get_symbol(asset))
@@ -346,15 +345,15 @@ class Poloniex(Exchange):
 
         print(self.portfolio.open_orders)
 
-        #TODO: Need to handle openOrders for 'all'
+        # TODO: Need to handle openOrders for 'all'
         orders = list()
         for order_status in response:
-            order, executed_price = self._create_order(order_status)    # will Throw error b/c Polo doesn't track order['symbol']
+            order, executed_price = self._create_order(
+                order_status)  # will Throw error b/c Polo doesn't track order['symbol']
             if asset is None or asset == order.sid:
                 orders.append(order)
 
         return orders
-        
 
     def get_order(self, order_id):
         """Lookup an order based on the order id returned from one of the
@@ -387,11 +386,10 @@ class Poloniex(Exchange):
             raise ExchangeRequestError(error=e)
 
         for o in response:
-            if(int(o['orderNumber'])==int(order_id)):
+            if (int(o['orderNumber']) == int(order_id)):
                 return order
-        
+
         return None
-        
 
     def cancel_order(self, order_param):
         """Cancel an open order.
@@ -402,7 +400,7 @@ class Poloniex(Exchange):
             The order_id or order object to cancel.
         """
 
-        if(isinstance(order_param, Order)):
+        if (isinstance(order_param, Order)):
             order = order_param
         else:
             order = self._portfolio.open_orders[order_param]
@@ -413,20 +411,20 @@ class Poloniex(Exchange):
             raise ExchangeRequestError(error=e)
 
         if 'error' in response:
-            log.info('Unable to cancel order {order_id} on exchange {exchange} {error}.'.format(
-                order_id=order.id,
-                exchange=self.name,
-                error=response['error']
+            log.info(
+                'Unable to cancel order {order_id} on exchange {exchange} {error}.'.format(
+                    order_id=order.id,
+                    exchange=self.name,
+                    error=response['error']
                 ))
 
-            #raise OrderCancelError(
+            # raise OrderCancelError(
             #    order_id=order.id,
             #    exchange=self.name,
             #    error=response['error']
-            #)
-        
-        self.portfolio.remove_order(order)
+            # )
 
+        self.portfolio.remove_order(order)
 
     def tickers(self, assets):
         """
@@ -435,7 +433,7 @@ class Poloniex(Exchange):
 
         :param assets:
         :return:
-        """      
+        """
         symbols = self.get_symbols(assets)
 
         log.debug('fetching tickers {}'.format(symbols))
@@ -454,20 +452,20 @@ class Poloniex(Exchange):
         ticks = dict()
 
         for index, symbol in enumerate(symbols):
-
             ticks[assets[index]] = dict(
                 timestamp=pd.Timestamp.utcnow(),
                 bid=float(response[symbol]['highestBid']),
                 ask=float(response[symbol]['lowestAsk']),
                 last_price=float(response[symbol]['last']),
-                low=float(response[symbol]['lowestAsk']),      #TODO: Polo does not provide low
-                high=float(response[symbol]['highestBid']),    #TODO: Polo does not provide high
+                low=float(response[symbol]['lowestAsk']),
+                # TODO: Polo does not provide low
+                high=float(response[symbol]['highestBid']),
+                # TODO: Polo does not provide high
                 volume=float(response[symbol]['baseVolume']),
             )
 
         log.debug('got tickers {}'.format(ticks))
         return ticks
-
 
     def generate_symbols_json(self, filename=None, source_dates=False):
         symbol_map = {}
@@ -480,10 +478,11 @@ class Poloniex(Exchange):
         response = self.api.returnticker()
 
         for exchange_symbol in response:
-            base, market = self.sanitize_curency_symbol(exchange_symbol).split('_')
-            symbol = '{market}_{base}'.format( market=market, base=base )
+            base, market = self.sanitize_curency_symbol(exchange_symbol).split(
+                '_')
+            symbol = '{market}_{base}'.format(market=market, base=base)
 
-            if(source_dates):
+            if (source_dates):
                 start_date = self.get_symbol_start_date(exchange_symbol)
             else:
                 try:
@@ -494,7 +493,7 @@ class Poloniex(Exchange):
             try:
                 end_daily = cached_symbols[exchange_symbol]['end_daily']
             except KeyError as e:
-                end_daily ='N/A'
+                end_daily = 'N/A'
 
             try:
                 end_minute = cached_symbols[exchange_symbol]['end_minute']
@@ -502,28 +501,28 @@ class Poloniex(Exchange):
                 end_minute = 'N/A'
 
             symbol_map[exchange_symbol] = dict(
-                symbol     = symbol,
-                start_date = start_date,
-                end_daily  = end_daily,
-                end_minute = end_minute,
+                symbol=symbol,
+                start_date=start_date,
+                end_daily=end_daily,
+                end_minute=end_minute,
             )
 
-        if(filename is None):
+        if (filename is None):
             filename = get_exchange_symbols_filename(self.name)
 
-        with open(filename,'w') as f:
-            json.dump(symbol_map, f, sort_keys=True, indent=2, separators=(',',':'))
+        with open(filename, 'w') as f:
+            json.dump(symbol_map, f, sort_keys=True, indent=2,
+                      separators=(',', ':'))
 
     def get_symbol_start_date(self, symbol):
         try:
-            r = self.api.returnchartdata(symbol,86400,pd.to_datetime('2010-1-1').value // 10 ** 9)
+            r = self.api.returnchartdata(symbol, 86400, pd.to_datetime(
+                '2010-1-1').value // 10 ** 9)
         except Exception as e:
             raise ExchangeRequestError(error=e)
 
         return time.strftime('%Y-%m-%d', time.gmtime(int(r[0]['date'])))
 
-
-    
     def check_open_orders(self):
         """
         Need to override this function for Poloniex:
@@ -549,22 +548,23 @@ class Poloniex(Exchange):
                 except Exception as e:
                     raise ExchangeRequestError(error=e)
 
-                if(order_open):
+                if (order_open):
                     delta = pd.Timestamp.utcnow() - order.dt
                     log.info(
                         'order {order_id} still open after {delta}'.format(
                             order_id=order_id,
-                            delta=delta )
-                        )
+                            delta=delta)
+                    )
 
                 try:
                     response = self.api.returnordertrades(order_id)
                 except Exception as e:
                     raise ExchangeRequestError(error=e)
 
-                if('error' in response):
-                    if(not order_open):
-                        raise OrphanOrderReverseError(order_id=order_id, exchange=self.name)
+                if ('error' in response):
+                    if (not order_open):
+                        raise OrphanOrderReverseError(order_id=order_id,
+                                                      exchange=self.name)
                 else:
                     for tx in response:
                         """
@@ -576,25 +576,29 @@ class Poloniex(Exchange):
                             When an order if fully filled, we flush the dict of transactions  
                             associated with that order.
                         """
-                        if(not filter(lambda item: item['order_id'] == tx['tradeID'], self.transactions[order_id])):
-                            log.debug('Got new transaction for order {}: amount {}, price {}'.format(
-                                       order_id, tx['amount'], tx['rate']))
-                            tx['amount']=float(tx['amount'])
-                            if(tx['type']=='sell'):
+                        if (not filter(
+                                lambda item: item['order_id'] == tx['tradeID'],
+                                self.transactions[order_id])):
+                            log.debug(
+                                'Got new transaction for order {}: amount {}, price {}'.format(
+                                    order_id, tx['amount'], tx['rate']))
+                            tx['amount'] = float(tx['amount'])
+                            if (tx['type'] == 'sell'):
                                 tx['amount'] = -tx['amount']
                             transaction = Transaction(
                                 asset=order.asset,
                                 amount=tx['amount'],
                                 dt=pd.to_datetime(tx['date'], utc=True),
                                 price=float(tx['rate']),
-                                order_id=tx['tradeID'],     # it's a misnomer, but keeping it for compatibility
+                                order_id=tx['tradeID'],
+                                # it's a misnomer, but keeping it for compatibility
                                 commission=float(tx['fee'])
                             )
                             self.transactions[order_id].append(transaction)
                             self.portfolio.execute_transaction(transaction)
                             transactions.append(transaction)
 
-                    if(not order_open):
+                    if (not order_open):
                         """
                             Since transactions have been executed individually
                             the only thing left to do is remove them from list of open_orders
@@ -603,3 +607,25 @@ class Poloniex(Exchange):
                         del self.transactions[order_id]
 
         return transactions
+
+    def get_orderbook(self, asset, type='all'):
+        exchange_symbol = asset.exchange_symbol
+        data = self.api.returnOrderBook(market=exchange_symbol)
+
+        result = dict()
+        for exchange_type in data:
+            if exchange_type == 'bids':
+                type = 'bid'
+            elif exchange_type == 'asks':
+                type = 'ask'
+            else:
+                continue
+
+            result[type] = []
+            for entry in data[exchange_type]:
+                if len(entry) == 2:
+                    result[type].append(dict(
+                        rate=float(entry[0]),
+                        quantity=float(entry[1])
+                    ))
+        return result

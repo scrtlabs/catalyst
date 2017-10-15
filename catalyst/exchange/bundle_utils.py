@@ -220,6 +220,21 @@ def get_ffill_candles(candles, bar_count, end_dt, data_frequency,
     return all_dates, all_candles
 
 
+def get_trailing_candles_dt(asset, start_dt, end_dt, data_frequency):
+    missing_start = None
+
+    if asset.end_minute is not None and start_dt < asset.end_minute:
+        if asset.end_minute < end_dt:
+            delta = get_delta(1, data_frequency)
+
+            missing_start = asset.end_minute + delta
+
+    else:
+        missing_start = start_dt
+
+    return missing_start
+
+
 def range_in_bundle(asset, start_dt, end_dt, reader):
     """
     Evaluate whether price data of an asset is included has been ingested in

@@ -327,7 +327,7 @@ class Bittrex(Exchange):
             try:
                 end_daily = cached_symbols[exchange_symbol]['end_daily']
             except KeyError as e:
-                end_daily ='N/A'
+                end_daily = 'N/A'
 
             try:
                 end_minute = cached_symbols[exchange_symbol]['end_minute']
@@ -336,13 +336,44 @@ class Bittrex(Exchange):
 
             symbol_map[exchange_symbol] = dict(
                 symbol=symbol,
-                start_date=pd.to_datetime(market['Created'], utc=True).strftime("%Y-%m-%d"),
-                end_daily  = end_daily,
-                end_minute = end_minute,
+                start_date=pd.to_datetime(market['Created'],
+                                          utc=True).strftime("%Y-%m-%d"),
+                end_daily=end_daily,
+                end_minute=end_minute,
             )
 
-        if(filename is None):
+        if (filename is None):
             filename = get_exchange_symbols_filename(self.name)
 
-        with open(filename,'w') as f:
-            json.dump(symbol_map, f, sort_keys=True, indent=2, separators=(',',':'))
+        with open(filename, 'w') as f:
+            json.dump(symbol_map, f, sort_keys=True, indent=2,
+                      separators=(',', ':'))
+
+    def get_orderbook(self, asset, type='all'):
+        if type == 'all':
+            type = 'both'
+        elif type == 'bid':
+            type = 'buy'
+        elif type == 'ask':
+            type = 'sell'
+        else:
+            raise ValueError('invalid type')
+
+        exchange_symbol = asset.exchange_symbol
+        data = self.api.getorderbook(market=exchange_symbol, type=type)
+
+        result = dict()
+        for exchange_type in data:
+            if exchange_type == 'buy':
+                type = 'bid'
+            elif exchange_type == 'sell':
+                type = 'ask'
+
+            result[type] = []
+            for entry in data[exchange_type]:
+                result[type].append(dict(
+                    rate=entry['Rate'],
+                    quantity=entry['Quantity']
+                ))
+
+        return result

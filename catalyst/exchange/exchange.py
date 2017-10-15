@@ -12,8 +12,8 @@ from logbook import Logger
 
 from catalyst.data.data_portal import BASE_FIELDS
 from catalyst.exchange import bundle_utils
-from catalyst.exchange.bundle_utils import get_ffill_candles, get_start_dt, \
-    get_delta
+from catalyst.exchange.bundle_utils import get_start_dt, \
+    get_delta, get_trailing_candles_dt
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     InvalidOrderStyle, BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
@@ -24,6 +24,7 @@ from catalyst.exchange.exchange_portfolio import ExchangePortfolio
 from catalyst.exchange.exchange_utils import get_exchange_symbols
 from catalyst.finance.order import ORDER_STATUS
 from catalyst.finance.transaction import Transaction
+from catalyst.utils.deprecate import deprecated
 
 log = Logger('Exchange')
 
@@ -418,6 +419,7 @@ class Exchange:
 
         return value
 
+    @deprecated
     def get_history(self, assets, end_dt, bar_count, data_frequency,
                     fallback_exchange=True):
         """
@@ -449,6 +451,7 @@ class Exchange:
             )
         return candles
 
+    @deprecated
     def get_asset_history(self, asset, end, bar_count, data_frequency,
                           fallback_exchange=True):
         """
@@ -586,13 +589,31 @@ class Exchange:
             writer = bundle.get_writer(start_dt, end_dt, data_frequency)
 
             for asset in missing_assets:
-                bundle.ingest_chunk(
-                    bar_count=adj_bar_count,
-                    end_dt=end_dt,
-                    data_frequency=data_frequency,
+                # TODO: use this only for data too recent to be in a bundle
+                trailing_candles_dt = get_trailing_candles_dt(
                     asset=asset,
-                    writer=writer
+                    start_dt=start_dt,
+                    end_dt=end_dt,
+                    data_frequency=data_frequency
                 )
+
+                if trailing_candles_dt is not None:
+                    # The get_history method supports multiple asset
+                    candles = self.get_candles(
+                        data_frequency=data_frequency,
+                        assets=[asset],
+                        bar_count=bar_count,
+                        start_dt=trailing_candles_dt,
+                        end_dt=end_dt
+                    )
+
+                    bundle.ingest_candles(
+                        candles=candles,
+                        bar_count=adj_bar_count,
+                        end_dt=end_dt,
+                        data_frequency=data_frequency,
+                        writer=writer
+                    )
 
         reader = bundle.get_reader(data_frequency)
         values = reader.load_raw_arrays(
@@ -887,6 +908,14 @@ class Exchange:
 
     @abc.abstractmethod
     def get_account(self):
+        """
+        Retrieve the account parameters.
+        :return:
+        """
+        pass
+
+    @abc.abstractmethod
+    def get_orderbook(self):
         """
         Retrieve the account parameters.
         :return:

@@ -56,8 +56,8 @@ class BitfinexTestCase(BaseExchangeTestCase):
     def test_tickers(self):
         log.info('retrieving tickers')
         tickers = self.exchange.tickers([
-            self.exchange.get_asset('eth_usd'),
-            self.exchange.get_asset('btc_usd')
+            self.exchange.get_asset('eth_btc'),
+            self.exchange.get_asset('etc_btc')
         ])
         pass
 

@@ -254,7 +254,7 @@ class ExchangeBundle:
                 invalid_data_behavior='raise'
             )
 
-    def ingest_chunk(self, bar_count, end_dt, data_frequency, asset,
+    def ingest_candles(self, candles, bar_count, end_dt, data_frequency,
                      writer, previous_candle=dict()):
         """
         Retrieve the specified OHLCV chunk and write it to the bundle
@@ -268,14 +268,6 @@ class ExchangeBundle:
         :return:
         """
 
-        # The get_history method supports multiple asset
-        candles = self.exchange.get_history(
-            assets=[asset],
-            end_dt=end_dt,
-            bar_count=bar_count,
-            data_frequency=data_frequency,
-            fallback_exchange=False
-        )
 
         num_candles = 0
         data = []
