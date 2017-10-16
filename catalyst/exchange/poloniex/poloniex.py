@@ -173,7 +173,8 @@ class Poloniex(Exchange):
         # TODO: fetch account data and keep in cache
         return None
 
-    def get_candles(self, data_frequency, assets, bar_count=None):
+    def get_candles(self, data_frequency, assets, bar_count=None,
+                    start_dt=None, end_dt=None):
         """
         Retrieve OHLVC candles from Poloniex
 
@@ -187,9 +188,10 @@ class Poloniex(Exchange):
         '5m', '15m', '30m', '2h', '4h', '1D'
         """
 
-        # TODO: use BcolzMinuteBarReader to read from cache
+        # TODO: implement end_dt and start_dt filters
+
         if (
-                data_frequency == '5m' or data_frequency == 'minute'):  # TODO: Polo does not have '1m'
+                        data_frequency == '5m' or data_frequency == 'minute'):  # TODO: Polo does not have '1m'
             frequency = 300
         elif (data_frequency == '15m'):
             frequency = 900
@@ -231,6 +233,9 @@ class Poloniex(Exchange):
                 )
 
             def ohlc_from_candle(candle):
+                last_traded = pd.Timestamp.utcfromtimestamp(candle['date'])
+                last_traded = last_traded.replace(tzinfo=pytz.UTC)
+
                 ohlc = dict(
                     open=np.float64(candle['open']),
                     high=np.float64(candle['high']),
@@ -238,7 +243,7 @@ class Poloniex(Exchange):
                     close=np.float64(candle['close']),
                     volume=np.float64(candle['volume']),
                     price=np.float64(candle['close']),
-                    last_traded=pd.Timestamp.utcfromtimestamp(candle['date'])
+                    last_traded=last_traded
                 )
 
                 return ohlc
@@ -608,24 +613,23 @@ class Poloniex(Exchange):
 
         return transactions
 
-    def get_orderbook(self, asset, type='all'):
+    def get_orderbook(self, asset, order_type='all'):
         exchange_symbol = asset.exchange_symbol
         data = self.api.returnOrderBook(market=exchange_symbol)
 
         result = dict()
-        for exchange_type in data:
-            if exchange_type == 'bids':
-                type = 'bid'
-            elif exchange_type == 'asks':
-                type = 'ask'
-            else:
+        for order_type in data:
+            # TODO: filter by type
+            if order_type != 'asks' and order_type != 'bids':
                 continue
 
-            result[type] = []
-            for entry in data[exchange_type]:
+            result[order_type] = []
+            for entry in data[order_type]:
                 if len(entry) == 2:
-                    result[type].append(dict(
-                        rate=float(entry[0]),
-                        quantity=float(entry[1])
-                    ))
+                    result[order_type].append(
+                        dict(
+                            rate=float(entry[0]),
+                            quantity=float(entry[1])
+                        )
+                    )
         return result

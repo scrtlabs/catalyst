@@ -84,7 +84,8 @@ class PoloniexTestCase(BaseExchangeTestCase):
         pass
 
     def test_orderbook(self):
-        log.info('testing order book for bittrex')
+        log.info('testing order book for poloniex')
         asset = self.exchange.get_asset('eth_btc')
+
         orderbook = self.exchange.get_orderbook(asset)
         pass

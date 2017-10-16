@@ -9,7 +9,7 @@ from catalyst.api import (
 from catalyst.exchange.stats_utils import get_pretty_stats
 from catalyst.utils.run_algo import run_algorithm
 
-algo_namespace = 'arbitrage_neo_eth'
+algo_namespace = 'arbitrage_eth_btc'
 log = Logger(algo_namespace)
 
 
@@ -19,10 +19,10 @@ def initialize(context):
     # The context contains a new "exchanges" attribute which is a dictionary
     # of exchange objects by exchange name. This allow easy access to the
     # exchanges.
-    context.buying_exchange = context.exchanges['bittrex']
+    context.buying_exchange = context.exchanges['poloniex']
     context.selling_exchange = context.exchanges['bitfinex']
 
-    context.trading_pair_symbol = 'neo_eth'
+    context.trading_pair_symbol = 'eth_btc'
     context.trading_pairs = dict()
 
     # Note the second parameter of the symbol() method
@@ -30,7 +30,7 @@ def initialize(context):
     # the exchange information. This allow all other operations using
     # the TradingPair to target the correct exchange.
     context.trading_pairs[context.buying_exchange] = \
-        symbol('neo_eth', context.buying_exchange.name)
+        symbol('eth_btc', context.buying_exchange.name)
 
     context.trading_pairs[context.selling_exchange] = \
         symbol(context.trading_pair_symbol, context.selling_exchange.name)
@@ -267,9 +267,9 @@ run_algorithm(
     initialize=initialize,
     handle_data=handle_data,
     analyze=analyze,
-    exchange_name='bittrex,bitfinex',
+    exchange_name='poloniex,bitfinex',
     live=True,
     algo_namespace=algo_namespace,
-    base_currency='eth',
+    base_currency='btc',
     live_graph=False
 )

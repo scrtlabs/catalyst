@@ -13,7 +13,7 @@ from logbook import Logger
 from catalyst.data.data_portal import BASE_FIELDS
 from catalyst.exchange import bundle_utils
 from catalyst.exchange.bundle_utils import get_start_dt, \
-    get_delta, get_trailing_candles_dt
+    get_delta, get_trailing_candles_dt, get_periods
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     InvalidOrderStyle, BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
@@ -505,9 +505,7 @@ class Exchange:
             candles = self.get_candles(
                 data_frequency=data_frequency,
                 assets=[asset],
-                bar_count=bar_count,
-                start_dt=exchange_start if bar_count > 1 else None,
-                end_dt=exchange_end
+                bar_count=bar_count
             )
             data += candles[asset]
 
@@ -588,8 +586,28 @@ class Exchange:
         if len(missing_assets) > 0:
             writer = bundle.get_writer(start_dt, end_dt, data_frequency)
 
+            chunks = bundle.prepare_chunks(
+                assets=assets,
+                data_frequency=data_frequency,
+                start_dt=start_dt,
+                end_dt=end_dt
+            )
+            for chunk in chunks:
+                log.debug('ingesting chunk for pair {}, period {}'.format(
+                    chunk['asset'],
+                    chunk['period']
+                ))
+                self.ingest_ctable(
+                    asset=chunk['asset'],
+                    data_frequency=data_frequency,
+                    period=chunk['period'],
+                    writer=writer
+                )
+
+            # Adding bars too recent to be contained in the consolidated
+            # exchanges bundles. We go directly against the exchange
+            # to retrieve the candles.
             for asset in missing_assets:
-                # TODO: use this only for data too recent to be in a bundle
                 trailing_candles_dt = get_trailing_candles_dt(
                     asset=asset,
                     start_dt=start_dt,
@@ -598,18 +616,20 @@ class Exchange:
                 )
 
                 if trailing_candles_dt is not None:
+                    trailing_bar_count = \
+                        get_periods(start_dt, end_dt, data_frequency)
+
                     # The get_history method supports multiple asset
                     candles = self.get_candles(
                         data_frequency=data_frequency,
                         assets=[asset],
-                        bar_count=bar_count,
-                        start_dt=trailing_candles_dt,
+                        bar_count=trailing_bar_count,
                         end_dt=end_dt
                     )
 
                     bundle.ingest_candles(
                         candles=candles,
-                        bar_count=adj_bar_count,
+                        bar_count=trailing_bar_count,
                         end_dt=end_dt,
                         data_frequency=data_frequency,
                         writer=writer
@@ -866,7 +886,7 @@ class Exchange:
 
     @abstractmethod
     def get_candles(self, data_frequency, assets, bar_count=None,
-                    start_date=None):
+                    start_dt=None, end_dt=None):
         """
         Retrieve OHLCV candles for the given assets
 
@@ -878,7 +898,7 @@ class Exchange:
             The number of bar desired. (default 1)
         :param end_dt: datetime, optional
             The last bar date.
-        :param start_date: datetime, optional
+        :param start_dt: datetime, optional
             The first bar date.
 
         :return dict[TradingPair, dict[str, Object]]: OHLCV data
@@ -915,9 +935,14 @@ class Exchange:
         pass
 
     @abc.abstractmethod
-    def get_orderbook(self):
+    def get_orderbook(self, asset, order_type):
         """
-        Retrieve the account parameters.
+        Retrieve the the orderbook for the given trading pair.
+
+        :param asset: TradingPair
+        :param order_type: str
+            The type of orders: bid, ask or all
+
         :return:
         """
         pass

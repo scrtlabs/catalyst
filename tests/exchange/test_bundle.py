@@ -14,7 +14,7 @@ class ExchangeBundleTestCase:
 
         # start = pd.to_datetime('2017-09-01', utc=True)
         start = pd.to_datetime('2017-1-1', utc=True)
-        end = pd.to_datetime('2017-6-30', utc=True)
+        end = pd.to_datetime('2017-9-30', utc=True)
 
         exchange_bundle = ExchangeBundle(get_exchange(exchange_name))
 

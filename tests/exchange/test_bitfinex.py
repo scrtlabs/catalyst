@@ -69,3 +69,9 @@ class BitfinexTestCase(BaseExchangeTestCase):
         log.info('testing exchange balances')
         balances = self.exchange.get_balances()
         pass
+
+    def test_orderbook(self):
+        log.info('testing order book for bitfinex')
+        asset = self.exchange.get_asset('eth_btc')
+        orderbook = self.exchange.get_orderbook(asset)
+        pass

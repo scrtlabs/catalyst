@@ -245,7 +245,6 @@ class ExchangeBundle:
             # session_label when using a newly created writer
             del self._writers[data_frequency]
 
-            # TODO: these are the dates of the chunk, not the job
             writer = self.get_writer(writer._start_session,
                                      writer._end_session, data_frequency)
             writer.write(
@@ -255,9 +254,13 @@ class ExchangeBundle:
             )
 
     def ingest_candles(self, candles, bar_count, end_dt, data_frequency,
-                     writer, previous_candle=dict()):
+                       writer, previous_candle=dict()):
         """
-        Retrieve the specified OHLCV chunk and write it to the bundle
+        Ingest candles obtained via the get_candles API of an exchange.
+
+        Since exchange APIs generally only do not return candles when there
+        are no transactions in the period, we ffill values using the
+        previous candle to ensure that each period has a candle.
 
         :param bar_count:
         :param end_dt:
@@ -267,7 +270,6 @@ class ExchangeBundle:
         :param previous_candle
         :return:
         """
-
 
         num_candles = 0
         data = []
@@ -357,9 +359,8 @@ class ExchangeBundle:
 
         start = reader.first_trading_day
 
-        # TODO: temp workaround, remove when the bundles are fixed
         # end = reader.last_available_dt
-        end = reader.last_available_dt - timedelta(days=1)
+        end = reader.last_available_dt
 
         periods = self.calendar.minutes_in_range(start, end)
 
@@ -407,33 +408,25 @@ class ExchangeBundle:
 
         return path
 
-    def ingest(self, data_frequency, include_symbols=None,
-               exclude_symbols=None, start=None, end=None,
-               show_progress=True, environ=os.environ):
+    def prepare_chunks(self, assets, data_frequency, start_dt, end_dt):
         """
 
+        :param assets:
         :param data_frequency:
-        :param include_symbols:
-        :param exclude_symbols:
-        :param start:
-        :param end:
-        :param show_progress:
-        :param environ:
+        :param start_dt:
+        :param end_dt:
         :return:
         """
-
-        assets = self.get_assets(include_symbols, exclude_symbols)
-        start, end = self.get_adj_dates(start, end, assets, data_frequency)
         reader = self.get_reader(data_frequency)
 
         chunks = []
         for asset in assets:
             try:
                 asset_start, asset_end = \
-                    self.get_adj_dates(start, end, [asset], data_frequency)
+                    self.get_adj_dates(start_dt, end_dt, [asset],
+                                       data_frequency)
 
             except ValueError:
-                dt += timedelta(days=1)
                 continue
 
             sessions = self.calendar.sessions_in_range(asset_start, asset_end)
@@ -451,11 +444,11 @@ class ExchangeBundle:
                         datetime(dt.year, dt.month, 1, 0, 0, 0, 0),
                         utc=True)
 
-                    # TODO: workaround, remove when bundles are fixed
                     month_end = pd.to_datetime(
-                        datetime(dt.year, dt.month, month_range[1] - 1,
-                                 23, 59, 0, 0),
-                        utc=True)
+                        datetime(
+                            dt.year, dt.month, month_range[1], 23, 59, 0, 0),
+                        utc=True
+                    )
 
                     if month_end > asset_end:
                         month_end = asset_end
@@ -477,7 +470,32 @@ class ExchangeBundle:
 
         chunks.sort(key=lambda chunk: chunk['period_end'])
 
+        return chunks
+
+    def ingest(self, data_frequency, include_symbols=None,
+               exclude_symbols=None, start=None, end=None,
+               show_progress=True, environ=os.environ):
+        """
+
+        :param data_frequency:
+        :param include_symbols:
+        :param exclude_symbols:
+        :param start:
+        :param end:
+        :param show_progress:
+        :param environ:
+        :return:
+        """
+        assets = self.get_assets(include_symbols, exclude_symbols)
+        start, end = self.get_adj_dates(start, end, assets, data_frequency)
+
         writer = self.get_writer(start, end, data_frequency)
+        chunks = self.prepare_chunks(
+            assets=assets,
+            data_frequency=data_frequency,
+            start_dt=start,
+            end_dt=end
+        )
         with maybe_show_progress(
                 chunks,
                 show_progress,
@@ -485,7 +503,6 @@ class ExchangeBundle:
                     exchange=self.exchange.name,
                     frequency=data_frequency
                 )) as it:
-
             for chunk in it:
                 self.ingest_ctable(
                     asset=chunk['asset'],

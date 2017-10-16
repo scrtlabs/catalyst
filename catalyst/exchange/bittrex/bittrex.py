@@ -65,13 +65,19 @@ class Bittrex(Exchange):
             log.debug('retrieving wallet balances')
             self.ask_request()
             balances = self.api.getbalances()
+
         except Exception as e:
             raise ExchangeRequestError(error=e)
 
         std_balances = dict()
-        for balance in balances:
-            currency = balance['Currency'].lower()
-            std_balances[currency] = balance['Available']
+        try:
+            for balance in balances:
+                currency = balance['Currency'].lower()
+                std_balances[currency] = balance['Available']
+
+        except TypeError:
+            raise ExchangeRequestError(error=balances)
+
         return std_balances
 
     def create_order(self, asset, amount, is_buy, style):
@@ -349,29 +355,29 @@ class Bittrex(Exchange):
             json.dump(symbol_map, f, sort_keys=True, indent=2,
                       separators=(',', ':'))
 
-    def get_orderbook(self, asset, type='all'):
-        if type == 'all':
-            type = 'both'
-        elif type == 'bid':
-            type = 'buy'
-        elif type == 'ask':
-            type = 'sell'
+    def get_orderbook(self, asset, order_type='all'):
+        if order_type == 'all':
+            order_type = 'both'
+        elif order_type == 'bid':
+            order_type = 'buy'
+        elif order_type == 'ask':
+            order_type = 'sell'
         else:
             raise ValueError('invalid type')
 
         exchange_symbol = asset.exchange_symbol
-        data = self.api.getorderbook(market=exchange_symbol, type=type)
+        data = self.api.getorderbook(market=exchange_symbol, type=order_type)
 
         result = dict()
         for exchange_type in data:
             if exchange_type == 'buy':
-                type = 'bid'
+                order_type = 'bids'
             elif exchange_type == 'sell':
-                type = 'ask'
+                order_type = 'asks'
 
-            result[type] = []
+            result[order_type] = []
             for entry in data[exchange_type]:
-                result[type].append(dict(
+                result[order_type].append(dict(
                     rate=entry['Rate'],
                     quantity=entry['Quantity']
                 ))

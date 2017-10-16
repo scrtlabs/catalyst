@@ -661,3 +661,27 @@ class Bitfinex(Exchange):
 
         return time.strftime('%Y-%m-%d',
                              time.gmtime(int(response.json()[-1][0] / 1000)))
+
+    def get_orderbook(self, asset, order_type='all'):
+        exchange_symbol = asset.exchange_symbol
+        try:
+            self.ask_request()
+            response = self._request(
+                'book/{}'.format(exchange_symbol), None)
+            data = response.json()
+
+        except Exception as e:
+            raise ExchangeRequestError(error=e)
+
+        # TODO: filter by type
+        result = dict()
+        for order_type in data:
+            result[order_type] = []
+
+            for entry in data[order_type]:
+                result[order_type].append(dict(
+                    rate=float(entry['price']),
+                    quantity=float(entry['amount'])
+                ))
+
+        return result
