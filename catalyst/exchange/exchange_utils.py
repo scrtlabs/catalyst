@@ -8,7 +8,7 @@ import pandas as pd
 
 from catalyst.exchange.exchange_errors import ExchangeAuthNotFound, \
     ExchangeSymbolsNotFound
-from catalyst.utils.paths import data_root, ensure_directory
+from catalyst.utils.paths import data_root, ensure_directory, last_modified_time
 
 SYMBOLS_URL = 'https://s3.amazonaws.com/enigmaco/catalyst-exchanges/' \
               '{exchange}/symbols.json'
@@ -40,7 +40,8 @@ def download_exchange_symbols(exchange_name, environ=None):
 def get_exchange_symbols(exchange_name, environ=None):
     filename = get_exchange_symbols_filename(exchange_name)
 
-    if not os.path.isfile(filename):
+    if not os.path.isfile(filename) or \
+            pd.Timedelta(pd.Timestamp('now', tz='UTC') - last_modified_time(filename)).days > 1:
         download_exchange_symbols(exchange_name, environ)
 
     if os.path.isfile(filename):
