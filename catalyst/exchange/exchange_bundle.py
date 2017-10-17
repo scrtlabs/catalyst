@@ -1,12 +1,9 @@
 import calendar
 import os
 import shutil
-
-import pytz
 from datetime import timedelta, datetime
 
 import pandas as pd
-import numpy as np
 from logbook import Logger, INFO
 
 from catalyst import get_calendar
@@ -14,13 +11,11 @@ from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
     BcolzMinuteBarWriter, BcolzMinuteBarReader, BcolzMinuteBarMetadata
 from catalyst.data.us_equity_pricing import BcolzDailyBarWriter, \
     BcolzDailyBarReader
-from catalyst.exchange.bundle_utils import get_ffill_candles, get_start_dt, \
-    get_periods, range_in_bundle, get_bcolz_chunk
+from catalyst.exchange.bundle_utils import get_ffill_candles, range_in_bundle, \
+    get_bcolz_chunk, get_delta
 from catalyst.exchange.exchange_errors import EmptyValuesInBundleError
-from catalyst.exchange.exchange_utils import get_exchange_folder, \
-    get_exchange_bundles_folder
+from catalyst.exchange.exchange_utils import get_exchange_folder
 from catalyst.utils.cli import maybe_show_progress
-from catalyst.utils.deprecate import deprecated
 from catalyst.utils.paths import ensure_directory
 
 
@@ -387,11 +382,40 @@ class ExchangeBundle:
 
         if verify:
             nan_rows = df[df.isnull().T.any().T].index
+
             if len(nan_rows) > 0:
+                dates = []
+                previous_date = None
+                for row_date in nan_rows.values:
+                    row_date = pd.to_datetime(row_date)
+
+                    if previous_date is None:
+                        dates.append(row_date)
+
+                    else:
+                        seq_date = previous_date + get_delta(1, data_frequency)
+
+                        if row_date > seq_date:
+                            dates.append(previous_date)
+                            dates.append(row_date)
+
+                    previous_date = row_date
+
+                dates.append(pd.to_datetime(nan_rows.values[-1]))
+
+                name = path.split('/')[-1]
+                log.warn(
+                    '\n{name} with end minute {end_minute} has empty rows '
+                    'in ranges: {dates}'.format(
+                        name=name,
+                        end_minute=asset.end_minute,
+                        dates=dates
+                    )
+                )
                 raise EmptyValuesInBundleError(
-                    path=path,
-                    start=nan_rows[0],
-                    end=nan_rows[-1]
+                    name=name,
+                    end_minute=asset.end_minute,
+                    dates=dates
                 )
 
         data = []

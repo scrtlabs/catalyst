@@ -171,8 +171,8 @@ class BundleNotFoundError(ZiplineError):
 
 
 class EmptyValuesInBundleError(ZiplineError):
-    msg = ('Found empty values in bundle {path} between '
-           '{start} and {end}.').strip()
+    msg = ('{name} with end minute {end_minute} has empty rows '
+           'in ranges: {dates}').strip()
 
 
 class PricingDataBeforeTradingError(ZiplineError):

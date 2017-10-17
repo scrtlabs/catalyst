@@ -2,6 +2,8 @@ from logging import Logger
 
 import pandas as pd
 
+from catalyst.data.minute_bars import BcolzMinuteBarReader
+from catalyst.exchange.bundle_utils import get_bcolz_chunk
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.init_utils import get_exchange
 
@@ -69,6 +71,33 @@ class ExchangeBundleTestCase:
         pass
 
     def test_merge_ctables(self):
+        exchange_name = 'bitfinex'
+        data_frequency = 'minute'
+
+        exchange = get_exchange(exchange_name)
+        # asset = exchange.get_asset('gno_btc')
+        #
+        # start = pd.to_datetime('2017-5-1', utc=True)
+        # end = pd.to_datetime('2017-5-31', utc=True)
+
+        asset = exchange.get_asset('neo_btc')
+
+        start = pd.to_datetime('2017-9-1', utc=True)
+        end = pd.to_datetime('2017-9-30', utc=True)
+
+        exchange_bundle = ExchangeBundle(exchange)
+
+        writer = exchange_bundle.get_writer(start, end, data_frequency)
+        exchange_bundle.ingest_ctable(
+            asset=asset,
+            data_frequency=data_frequency,
+            period='2017-9',
+            writer=writer,
+            verify=True
+        )
+        pass
+
+    def test_minute_bundle(self):
         exchange_name = 'poloniex'
         data_frequency = 'minute'
 
@@ -78,14 +107,11 @@ class ExchangeBundleTestCase:
         start = pd.to_datetime('2017-5-1', utc=True)
         end = pd.to_datetime('2017-5-31', utc=True)
 
-        exchange_bundle = ExchangeBundle(exchange)
-
-        writer = exchange_bundle.get_writer(start, end, data_frequency)
-        exchange_bundle.ingest_ctable(
-            asset=asset,
+        path = get_bcolz_chunk(
+            exchange_name=exchange_name,
+            symbol=asset.symbol,
             data_frequency=data_frequency,
-            period='2017-5',
-            writer=writer,
-            verify=True
+            period='2017-5'
         )
+        reader = BcolzMinuteBarReader(path)
         pass
