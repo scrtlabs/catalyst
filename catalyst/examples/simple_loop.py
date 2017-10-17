@@ -7,7 +7,7 @@ from catalyst.api import symbol
 
 def initialize(context):
     print('initializing')
-    context.asset = symbol('gno_btc')
+    context.asset = symbol('etc_btc')
 
 
 def handle_data(context, data):
@@ -19,18 +19,19 @@ def handle_data(context, data):
     prices = data.history(
         context.asset,
         fields='price',
-        bar_count=50,
-        frequency='1m'
+        bar_count=15,
+        frequency='1d'
     )
     rsi = talib.RSI(prices.values, timeperiod=14)[-1]
     print('got rsi: {}'.format(rsi))
+    pass
 
 
 run_algorithm(
     capital_base=250,
-    start=pd.to_datetime('2017-9-5', utc=True),
+    start=pd.to_datetime('2017-9-01', utc=True),
     end=pd.to_datetime('2017-9-30', utc=True),
-    data_frequency='minute',
+    data_frequency='daily',
     initialize=initialize,
     handle_data=handle_data,
     analyze=None,

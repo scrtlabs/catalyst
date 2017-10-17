@@ -419,98 +419,6 @@ class Exchange:
 
         return value
 
-    @deprecated
-    def get_history(self, assets, end_dt, bar_count, data_frequency,
-                    fallback_exchange=True):
-        """
-        Retrieve OHLCV bars from the Catalyst and/or exchange API.
-
-        If Catalyst does not have the full data set, retrieve the missing
-        portion from the exchange API if the exchanges supports
-        historical data.
-
-        :param assets: list[TradingPair]
-            The TradingPair asset.
-        :param data_frequency: str
-            The bar frequency: daily or minute
-        :param bar_count: int
-            The number of bars desired.
-        :param end: datetime
-            The last trading date of the last bar.
-
-        :return:
-        """
-        candles = dict()
-        for asset in assets:
-            candles[asset] = self.get_asset_history(
-                asset=asset,
-                end=end_dt,
-                bar_count=bar_count,
-                data_frequency=data_frequency,
-                fallback_exchange=fallback_exchange
-            )
-        return candles
-
-    @deprecated
-    def get_asset_history(self, asset, end, bar_count, data_frequency,
-                          fallback_exchange=True):
-        """
-        Retrieve the OHLVC bars of a single asset.
-
-        :param asset: TradingPair
-            The TradingPair asset.
-        :param data_frequency: str
-            The bar frequency: daily or minute
-        :param bar_count: int
-            The number of bars desired.
-        :param end: datetime
-            The last trading date of the last bar.
-        :return:
-        """
-        start = get_start_dt(end, bar_count, data_frequency)
-
-        exchange_start = None
-        catalyst_end = None
-
-        if asset.end_minute is not None and start < asset.end_minute:
-            catalyst_start = start
-            if end <= asset.end_minute:
-                catalyst_end = end
-            else:
-                catalyst_end = asset.end_minute
-
-                delta = timedelta(minutes=1) \
-                    if data_frequency == 'minute' else timedelta(days=1)
-                exchange_start = catalyst_end + delta
-
-                exchange_end = end
-
-        else:
-            exchange_end = end
-            exchange_start = start
-
-        data = []
-        if catalyst_end is not None:
-            # TODO: support multiple assets in the Catalyst API.
-            candles = bundle_utils.get_history(
-                exchange_name=self.name,
-                data_frequency=data_frequency,
-                symbol=asset.symbol,  # TODO: use Catalyst symbol
-                start=catalyst_start,
-                end=catalyst_end
-            )
-            data += candles
-
-        if exchange_start is not None and fallback_exchange:
-            candles = self.get_candles(
-                data_frequency=data_frequency,
-                assets=[asset],
-                bar_count=bar_count
-            )
-            data += candles[asset]
-
-        return data
-
     def get_history_window(self,
                            assets,
                            end_dt,
@@ -565,10 +473,12 @@ class Exchange:
             raise InvalidHistoryFrequencyError(frequency)
 
         if unit.lower() == 'd':
-            data_frequency = 'daily'
+            if data_frequency != 'daily':
+                raise InvalidHistoryFrequencyError(frequency=frequency)
 
         elif unit.lower() == 'm':
-            data_frequency = 'minute'
+            if data_frequency != 'minute':
+                raise InvalidHistoryFrequencyError(frequency=frequency)
 
         else:
             raise InvalidHistoryFrequencyError(frequency)
@@ -635,12 +545,12 @@ class Exchange:
                         writer=writer
                     )
 
-        reader = bundle.get_reader(data_frequency)
-        values = reader.load_raw_arrays(
+        values = bundle.get_raw_arrays(
+            assets=assets,
             fields=[field],
             start_dt=start_dt,
             end_dt=end_dt,
-            sids=[asset.sid for asset in assets],
+            data_frequency=data_frequency
         )[0]
 
         series = dict()
@@ -648,6 +558,7 @@ class Exchange:
             all_dates = []
             asset_values = []
 
+            # TODO: use numpy to avoid the loop
             date = start_dt
             for value in values:
                 all_dates.append(date)

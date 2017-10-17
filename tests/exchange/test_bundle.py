@@ -15,15 +15,15 @@ class ExchangeBundleTestCase:
         exchange_name = 'poloniex'
 
         # start = pd.to_datetime('2017-09-01', utc=True)
-        start = pd.to_datetime('2017-1-1', utc=True)
+        start = pd.to_datetime('2017-9-1', utc=True)
         end = pd.to_datetime('2017-9-30', utc=True)
 
         exchange_bundle = ExchangeBundle(get_exchange(exchange_name))
 
         log.info('ingesting exchange bundle {}'.format(exchange_name))
         exchange_bundle.ingest(
-            data_frequency='minute',
-            include_symbols='gno_btc',
+            data_frequency='daily',
+            include_symbols='etc_btc',
             # include_symbols=None,
             exclude_symbols=None,
             start=start,

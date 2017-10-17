@@ -299,26 +299,36 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
             raise InvalidHistoryFrequencyError(frequency=data_frequency)
 
         try:
-            values = reader.load_raw_arrays(
+            # values = reader.load_raw_arrays(
+            #     fields=[field],
+            #     start_dt=dts[0],
+            #     end_dt=dts[-1],
+            #     sids=[asset.sid for asset in assets],
+            # )[0]
+            values = bundle.get_raw_arrays(
+                assets=assets,
                 fields=[field],
                 start_dt=dts[0],
                 end_dt=dts[-1],
-                sids=[asset.sid for asset in assets],
+                data_frequency=data_frequency
             )[0]
 
         except Exception:
+            first_trading_day = self._get_first_trading_day(assets)
+            symbols = [asset.symbol.encode('utf-8') for asset in assets]
+
+            symbol_list = ','.join(symbols)
             raise PricingDataNotLoadedError(
                 field=field,
-                first_trading_day=self._get_first_trading_day(assets),
+                first_trading_day=first_trading_day,
                 exchange=exchange.name,
-                symbols=[asset.symbol.encode('utf-8') for asset in assets],
+                symbols=symbols,
+                symbol_list=symbol_list
             )
 
         series = dict()
         for index, asset in enumerate(assets):
-            asset_values = []
-            for value in values:
-                asset_values.append(value[index])
+            asset_values = values[:, index]
 
             value_series = pd.Series(asset_values, index=dts)
             series[asset] = value_series
@@ -333,7 +343,7 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
                 first_trading_day=first_trading_day,
                 exchange=assets[0].exchange,
                 symbols=[asset.symbol.encode('utf-8') for asset in assets],
-                dt = dt,
+                dt=dt,
             )
 
     def get_exchange_spot_value(self, exchange, assets, field, dt,
@@ -358,7 +368,8 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
                     first_trading_day=self._get_first_trading_day(assets),
                     exchange=exchange.name,
                     symbols=[asset.symbol.encode('utf-8') for asset in assets],
-                    symbol_list = ''.join([asset.symbol.encode('utf-8') for asset in assets])
+                    symbol_list=''.join(
+                        [asset.symbol.encode('utf-8') for asset in assets])
                 )
 
             return values
