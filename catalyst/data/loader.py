@@ -96,10 +96,10 @@ def load_crypto_market_data(trading_day=None, trading_days=None, bm_symbol='USDT
 
     if trading_day is None:
         trading_day = get_calendar('OPEN').trading_day
-    if trading_days is None:
-        trading_days = get_calendar('OPEN').all_sessions
+    #if trading_days is None:
+    #    trading_days = get_calendar('OPEN').schedule
 
-    first_date = trading_days[1]
+    first_date = get_calendar('OPEN').first_trading_session
     now = pd.Timestamp.utcnow()
 
     # We expect to have benchmark and treasury data that's current up until
@@ -116,6 +116,7 @@ def load_crypto_market_data(trading_day=None, trading_days=None, bm_symbol='USDT
 
     # We'll attempt to download new data if the latest entry in our cache is
     # before this date.
+    '''
     if(bundle_data):
         # If we are using the bundle to retrieve the cryptobenchmark, find the last
         # date for which there is trading data in the bundle
@@ -124,19 +125,28 @@ def load_crypto_market_data(trading_day=None, trading_days=None, bm_symbol='USDT
         last_date = pd.to_datetime(bundle_data.daily_bar_reader._spot_col('day')[ix],unit='s')
     else:
         last_date = trading_days[trading_days.get_loc(now, method='ffill') - 2]
-    
-    br = ensure_crypto_benchmark_data(
-        bm_symbol,
-        first_date,
-        last_date,
-        now,
-        # We need the trading_day to figure out the close prior to the first
-        # date so that we can compute returns for the first date.
-        trading_day,
-        bundle,
-        bundle_data,
-        environ,
-    )
+    '''
+    last_date = trading_days[trading_days.get_loc(now, method='ffill') - 1]
+
+    # This is exceptional, since placing the import at the module scope breaks things
+    # and it's only needed here
+    from catalyst.exchange.poloniex.poloniex import Poloniex
+
+    exchange = Poloniex('','','')
+    btc_usdt = exchange.get_asset('btc_usdt')
+
+    # exchange.get_history_window() already ensures that we have the right data
+    # for the right dates
+    br = exchange.get_history_window(
+                assets = [btc_usdt,], 
+                end_dt = last_date, 
+                bar_count = pd.Timedelta(last_date - first_date).days,
+                frequency =  '1d',
+                field  = 'close',
+                data_frequency = 'daily')
+    br.columns = ['close']
+    br = br.pct_change(1).iloc[1:]
+
     # Override first_date for treasury data since we have it for many more years
     # and is independent of crypto data
     first_date_treasury = pd.Timestamp('1990-01-02', tz='UTC') 

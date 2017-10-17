@@ -26,6 +26,7 @@ from functools import partial
 from catalyst.finance.trading import TradingEnvironment
 from catalyst.utils.calendars import get_calendar
 from catalyst.utils.factory import create_simulation_parameters
+from catalyst.data.loader import load_crypto_market_data
 import catalyst.utils.paths as pth
 
 from catalyst.exchange.exchange_algorithm import ExchangeTradingAlgorithmLive, \
@@ -190,6 +191,7 @@ def _run(handle_data,
     open_calendar = get_calendar('OPEN')
 
     env = TradingEnvironment(
+        load=partial(load_crypto_market_data, environ=environ),
         environ=environ,
         exchange_tz='UTC',
         asset_db_path=None  # We don't need an asset db, we have exchanges

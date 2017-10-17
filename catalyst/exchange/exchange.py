@@ -597,7 +597,7 @@ class Exchange:
                     chunk['asset'],
                     chunk['period']
                 ))
-                self.ingest_ctable(
+                bundle.ingest_ctable(
                     asset=chunk['asset'],
                     data_frequency=data_frequency,
                     period=chunk['period'],

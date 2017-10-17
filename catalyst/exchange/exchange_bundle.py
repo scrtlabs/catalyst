@@ -366,8 +366,8 @@ class ExchangeBundle:
         elif data_frequency == 'daily':
             reader = BcolzDailyBarReader(path)
 
-            start = writer._start_session
-            end = writer._end_session
+            start = reader.first_trading_day
+            end = reader.last_available_dt
 
             periods = self.calendar.sessions_in_range(start, end)
 
