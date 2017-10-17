@@ -92,7 +92,7 @@ def get_periods(start_dt, end_dt, data_frequency):
 
 
 def get_start_dt(end_dt, bar_count, data_frequency):
-    periods = bar_count - 1
+    periods = bar_count
     if periods > 1:
         delta = get_delta(periods, data_frequency)
         start_dt = end_dt - delta
