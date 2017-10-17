@@ -175,17 +175,13 @@ class ExchangeBundle:
                 )
 
         elif data_frequency == 'daily':
-            if len(os.listdir(output_dir)) > 0:
-                self._writers[key] = \
-                    BcolzDailyBarWriter.open(output_dir, end_dt)
-            else:
-                end_session = end_dt.floor('1d')
-                self._writers[key] = BcolzDailyBarWriter(
-                    filename=output_dir,
-                    calendar=self.calendar,
-                    start_session=start_dt,
-                    end_session=end_session
-                )
+            end_session = end_dt.floor('1d')
+            self._writers[key] = BcolzDailyBarWriter(
+                filename=output_dir,
+                calendar=self.calendar,
+                start_session=start_dt,
+                end_session=end_session
+            )
         else:
             raise InvalidHistoryFrequencyError(
                 frequency=data_frequency
@@ -327,7 +323,7 @@ class ExchangeBundle:
         """
 
     def ingest_ctable(self, asset, data_frequency, period, writer,
-                      empty_rows_behavior='warn', cleanup=False):
+                      empty_rows_behavior='strip', cleanup=False):
         """
         Merge a ctable bundle chunk into the main bundle for the exchange.
 
@@ -440,6 +436,8 @@ class ExchangeBundle:
                         end_minute=asset.end_minute,
                         dates=dates
                     )
+                else:
+                    df.dropna(inplace=True)
 
         data = []
         if not df.empty:

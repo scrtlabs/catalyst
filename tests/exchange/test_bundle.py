@@ -71,14 +71,14 @@ class ExchangeBundleTestCase:
         pass
 
     def test_merge_ctables(self):
-        exchange_name = 'poloniex'
-        data_frequency = 'minute'
+        exchange_name = 'bitfinex'
+        data_frequency = 'daily'
 
         exchange = get_exchange(exchange_name)
-        asset = exchange.get_asset('gno_btc')
+        asset = exchange.get_asset('neo_btc')
 
-        start = pd.to_datetime('2017-5-1', utc=True)
-        end = pd.to_datetime('2017-5-31', utc=True)
+        start = pd.to_datetime('2017-9-1', utc=True)
+        end = pd.to_datetime('2017-9-30', utc=True)
 
         # asset = exchange.get_asset('neo_btc')
         #
@@ -91,9 +91,9 @@ class ExchangeBundleTestCase:
         exchange_bundle.ingest_ctable(
             asset=asset,
             data_frequency=data_frequency,
-            period='2017-5',
+            period='2017',
             writer=writer,
-            empty_rows_behavior='raise'
+            empty_rows_behavior='strip'
         )
         pass
 
@@ -102,10 +102,7 @@ class ExchangeBundleTestCase:
         data_frequency = 'minute'
 
         exchange = get_exchange(exchange_name)
-        asset = exchange.get_asset('gno_btc')
-
-        start = pd.to_datetime('2017-5-1', utc=True)
-        end = pd.to_datetime('2017-5-31', utc=True)
+        asset = exchange.get_asset('neo_btc')
 
         path = get_bcolz_chunk(
             exchange_name=exchange_name,
