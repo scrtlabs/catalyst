@@ -530,7 +530,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             self.add_exposure_stats(minute_stats)
 
             print_df = pd.DataFrame(list(self.minute_stats))
-            log.debug(
+            log.info(
                 'statistics for the last {stats_minutes} minutes:\n{stats}'.format(
                     stats_minutes=self.stats_minutes,
                     stats=get_pretty_stats(

@@ -54,15 +54,15 @@ class ExchangeBundleTestCase:
     def test_ingest_daily(self):
         exchange_name = 'bitfinex'
 
-        start = pd.to_datetime('2017-09-01', utc=True)
-        end = pd.Timestamp.utcnow()
+        start = pd.to_datetime('2017-01-01', utc=True)
+        end = pd.to_datetime('2017-09-30', utc=True)
 
         exchange_bundle = ExchangeBundle(get_exchange(exchange_name))
 
         log.info('ingesting exchange bundle {}'.format(exchange_name))
         exchange_bundle.ingest(
             data_frequency='daily',
-            include_symbols='neo_btc',
+            include_symbols='neo_btc,bch_btc,eth_btc',
             exclude_symbols=None,
             start=start,
             end=end,
@@ -71,19 +71,19 @@ class ExchangeBundleTestCase:
         pass
 
     def test_merge_ctables(self):
-        exchange_name = 'bitfinex'
+        exchange_name = 'poloniex'
         data_frequency = 'minute'
 
         exchange = get_exchange(exchange_name)
-        # asset = exchange.get_asset('gno_btc')
+        asset = exchange.get_asset('gno_btc')
+
+        start = pd.to_datetime('2017-5-1', utc=True)
+        end = pd.to_datetime('2017-5-31', utc=True)
+
+        # asset = exchange.get_asset('neo_btc')
         #
-        # start = pd.to_datetime('2017-5-1', utc=True)
-        # end = pd.to_datetime('2017-5-31', utc=True)
-
-        asset = exchange.get_asset('neo_btc')
-
-        start = pd.to_datetime('2017-9-1', utc=True)
-        end = pd.to_datetime('2017-9-30', utc=True)
+        # start = pd.to_datetime('2017-9-1', utc=True)
+        # end = pd.to_datetime('2017-9-30', utc=True)
 
         exchange_bundle = ExchangeBundle(exchange)
 
@@ -91,9 +91,9 @@ class ExchangeBundleTestCase:
         exchange_bundle.ingest_ctable(
             asset=asset,
             data_frequency=data_frequency,
-            period='2017-9',
+            period='2017-5',
             writer=writer,
-            verify=True
+            empty_rows_behavior='raise'
         )
         pass
 
@@ -111,7 +111,7 @@ class ExchangeBundleTestCase:
             exchange_name=exchange_name,
             symbol=asset.symbol,
             data_frequency=data_frequency,
-            period='2017-5'
+            period='2017-5',
         )
         reader = BcolzMinuteBarReader(path)
         pass
