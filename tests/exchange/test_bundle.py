@@ -1,12 +1,9 @@
 from logging import Logger
 
-import numpy as np
 import pandas as pd
 
 from catalyst import get_calendar
-from catalyst.data.minute_bars import BcolzMinuteBarReader, \
-    BcolzMinuteBarWriter
-from catalyst.exchange.bundle_utils import get_bcolz_chunk, get_periods_range
+from catalyst.exchange.bundle_utils import get_bcolz_chunk
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
 from catalyst.exchange.exchange_bundle import ExchangeBundle, \
