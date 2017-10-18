@@ -207,7 +207,10 @@ class ExchangeBundle:
 
             # This is workaround, there is an issue with empty
             # session_label when using a newly created writer
-            del self._writers[writer._rootdir]
+            key = writer._rootdir if data_frequency == 'minute' \
+                else writer._filename
+
+            del self._writers[key]
 
             writer = self.get_writer(writer._start_session,
                                      writer._end_session, data_frequency)
