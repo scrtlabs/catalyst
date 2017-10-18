@@ -454,7 +454,7 @@ def live(ctx,
 @click.option(
     '-f',
     '--data-frequency',
-    type=click.Choice({'daily', 'minute', 'daily,minute'}),
+    type=click.Choice({'daily', 'minute', 'daily,minute', 'minute,daily'}),
     default='daily',
     show_default=True,
     help='The data frequency of the desired OHLCV bars.',

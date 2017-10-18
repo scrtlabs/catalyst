@@ -516,5 +516,6 @@ class ExchangeBundle:
         assets = self.get_assets(include_symbols, exclude_symbols)
         start_dt, end_dt = get_adj_dates(start, end, assets, data_frequency)
 
-        self.ingest_assets(assets, start_dt, end_dt, data_frequency,
-                           show_progress)
+        for frequency in data_frequency.split(','):
+            self.ingest_assets(assets, start_dt, end_dt, frequency,
+                               show_progress)
