@@ -57,22 +57,46 @@ class ExchangeBundleTestCase:
         pass
 
     def test_ingest_daily(self):
-        exchange_name = 'bitfinex'
+        # exchange_name = 'bitfinex'
+        # data_frequency = 'daily'
+        # include_symbols = 'neo_btc,bch_btc,eth_btc'
 
-        start = pd.to_datetime('2017-01-01', utc=True)
-        end = pd.to_datetime('2017-09-30', utc=True)
+        exchange_name = 'poloniex'
+        data_frequency = 'daily'
+        include_symbols = 'btc_usdt'
 
-        exchange_bundle = ExchangeBundle(get_exchange(exchange_name))
+        start = pd.to_datetime('2015-01-01', utc=True)
+        end = pd.to_datetime('2015-12-31', utc=True)
+
+        exchange = get_exchange(exchange_name)
+        exchange_bundle = ExchangeBundle(exchange)
 
         log.info('ingesting exchange bundle {}'.format(exchange_name))
         exchange_bundle.ingest(
-            data_frequency='daily',
-            include_symbols='neo_btc,bch_btc,eth_btc',
+            data_frequency=data_frequency,
+            include_symbols=include_symbols,
             exclude_symbols=None,
             start=start,
             end=end,
             show_progress=True
         )
+
+        symbols = include_symbols.split(',')
+        assets = []
+        for pair_symbol in symbols:
+            assets.append(exchange.get_asset(pair_symbol))
+
+        reader = exchange_bundle.get_reader(data_frequency)
+        for asset in assets:
+            arrays = reader.load_raw_arrays(
+                sids=[asset.sid],
+                fields=['close'],
+                start_dt=start,
+                end_dt=end
+            )
+            print('found {} rows for {} ingestion\n{}'.format(
+                len(arrays[0]), asset.symbol, arrays[0])
+            )
         pass
 
     def test_merge_ctables(self):

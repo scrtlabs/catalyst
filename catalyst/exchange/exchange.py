@@ -16,7 +16,8 @@ from catalyst.exchange.bundle_utils import get_start_dt, \
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     InvalidOrderStyle, BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
-    InvalidHistoryFrequencyError, MismatchingFrequencyError
+    InvalidHistoryFrequencyError, MismatchingFrequencyError, \
+    BundleNotFoundError
 from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
     ExchangeLimitOrder, ExchangeStopOrder
 from catalyst.exchange.exchange_portfolio import ExchangePortfolio
@@ -526,6 +527,12 @@ class Exchange:
                     )
 
         reader = self.bundle.get_reader(data_frequency)
+        if reader is None:
+            raise BundleNotFoundError(
+                exchange=self.name,
+                data_frequency=data_frequency
+            )
+
         values = reader.load_raw_arrays(
             sids=[asset.sid for asset in assets],
             fields=[field],

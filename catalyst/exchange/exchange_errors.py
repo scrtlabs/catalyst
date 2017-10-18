@@ -171,10 +171,14 @@ class SymbolNotFoundOnExchange(ZiplineError):
 
 
 class BundleNotFoundError(ZiplineError):
-    msg = ('Unable to find bundle data for exchange {exchange}. '
-           'Please ingest data using the command '
-           '`catalyst ingest -b exchange_{exchange}`. '
-           'See catalyst documentation for details.').strip()
+    msg = ('Unable to find bundle data for exchange {exchange} and '
+           'data frequency {data_frequency}.'
+           'Please ingest some price data.'
+           'See `catalyst ingest-exchange --help` for details.').strip()
+
+
+class TempBundleNotFoundError(ZiplineError):
+    msg = ('Temporary bundle not found in: {path}.').strip()
 
 
 class EmptyValuesInBundleError(ZiplineError):
@@ -195,6 +199,7 @@ class PricingDataNotLoadedError(ZiplineError):
            'Please ingest data using the command '
            '`catalyst ingest-exchange -x {exchange} -i {symbol_list}`. '
            'See catalyst documentation for details.').strip()
+
 
 class ApiCandlesError(ZiplineError):
     msg = ('Unable to fetch candles from the remote API: {error}.').strip()

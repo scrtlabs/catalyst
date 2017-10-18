@@ -2,6 +2,7 @@ import os
 import shutil
 from datetime import timedelta
 
+import numpy as np
 import pandas as pd
 from logbook import Logger, INFO
 
@@ -14,7 +15,8 @@ from catalyst.exchange.bundle_utils import get_ffill_candles, range_in_bundle, \
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
 from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
-    InvalidHistoryFrequencyError, PricingDataBeforeTradingError
+    InvalidHistoryFrequencyError, PricingDataBeforeTradingError, \
+    TempBundleNotFoundError
 from catalyst.exchange.exchange_utils import get_exchange_folder
 from catalyst.utils.cli import maybe_show_progress
 from catalyst.utils.paths import ensure_directory
@@ -70,7 +72,7 @@ class ExchangeBundle:
                 data_frequency=data_frequency
             )
         except IOError:
-            self.get_readers[path] = None
+            self._readers[path] = None
 
         return self._readers[path]
 
@@ -300,6 +302,9 @@ class ExchangeBundle:
             else self.calendar.sessions_in_range(start_dt, end_dt)
 
         reader = self.get_reader(data_frequency, path=path)
+        if reader is None:
+            raise TempBundleNotFoundError(path=path)
+
         arrays = reader.load_raw_arrays(
             sids=[asset.sid],
             fields=['open', 'high', 'low', 'close', 'volume'],
@@ -310,13 +315,11 @@ class ExchangeBundle:
         if not arrays:
             return path
 
-        ohlcv = dict(
-            open=arrays[0].flatten(),
-            high=arrays[1].flatten(),
-            low=arrays[2].flatten(),
-            close=arrays[3].flatten(),
-            volume=arrays[4].flatten()
-        )
+        ohlcv = dict()
+        for index, field in enumerate(
+                ['open', 'high', 'low', 'close', 'volume']):
+            ohlcv[field] = arrays[index].flatten()
+            ohlcv[field] = ohlcv[field][~np.isnan(ohlcv[field])]
 
         df = pd.DataFrame(
             data=ohlcv,
@@ -400,7 +403,8 @@ class ExchangeBundle:
             except PricingDataBeforeTradingError:
                 continue
 
-            sessions = get_periods_range(asset_start, asset_end, 'daily')
+            sessions = get_periods_range(asset_start, asset_end,
+                                         data_frequency)
 
             periods = []
             dt = sessions[0]
