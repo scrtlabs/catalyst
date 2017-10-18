@@ -7,6 +7,8 @@ from catalyst import get_calendar
 from catalyst.data.minute_bars import BcolzMinuteBarReader, \
     BcolzMinuteBarWriter
 from catalyst.exchange.bundle_utils import get_bcolz_chunk, get_periods_range
+from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
+    BcolzExchangeBarWriter
 from catalyst.exchange.exchange_bundle import ExchangeBundle, \
     BUNDLE_NAME_TEMPLATE
 from catalyst.exchange.exchange_utils import get_exchange_folder
@@ -182,14 +184,12 @@ class ExchangeBundleTestCase:
 
         # I tried setting the minutes_per_day to 1 will not create
         # unnecessary bars
-        writer = BcolzMinuteBarWriter(
+        writer = BcolzExchangeBarWriter(
             rootdir=path,
-            calendar=calendar,
-            minutes_per_day=1,
+            data_frequency=data_frequency,
             start_session=start,
             end_session=end,
-            write_metadata=True,
-            default_ohlc_ratio=exchange_bundle.default_ohlc_ratio
+            write_metadata=True
         )
 
         # This will read the daily data in a bundle created by
@@ -209,34 +209,8 @@ class ExchangeBundleTestCase:
                 empty_rows_behavior='strip'
             )
 
-        # Simplifying the data reader to play nice with 1 minute per day
-        class BcolzDayBarReader(BcolzMinuteBarReader):
-            def load_raw_arrays(self, fields, start_dt, end_dt, sids):
-                start_idx = self._find_position_of_minute(start_dt)
-                end_idx = self._find_position_of_minute(end_dt)
-
-                num_days = (end_idx - start_idx + 1)
-                shape = num_days, len(sids)
-
-                data = []
-                for field in fields:
-                    out = np.full(shape, np.nan)
-
-                    for i, sid in enumerate(sids):
-                        carray = reader._open_minute_file(field, sid)
-                        a = carray[start_idx:end_idx + 1]
-
-                        where = a != 0
-
-                        out[:len(where), i][where] = (
-                            a[where] * self._ohlc_ratio_inverse_for_sid(sid)
-                        )
-
-                    data.append(out)
-
-                return data
-
-        reader = BcolzDayBarReader(path)
+        reader = BcolzExchangeBarReader(rootdir=path,
+                                        data_frequency=data_frequency)
 
         # Reading the two assets to ensure that no data was lost
         for asset in assets:
