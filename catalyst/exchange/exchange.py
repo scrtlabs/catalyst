@@ -486,17 +486,17 @@ class Exchange:
 
         # We check again for data which may be too recent for the consolidated
         # exchanges service
-        missing_assets = self.bundle.filter_existing_assets(
+        trailing_assets = self.bundle.filter_existing_assets(
             assets=assets,
             start_dt=start_dt,
             end_dt=end_dt,
             data_frequency=data_frequency
         )
-        if missing_assets:
+        if trailing_assets:
             # Adding bars too recent to be contained in the consolidated
             # exchanges bundles. We go directly against the exchange
             # to retrieve the candles.
-            for asset in missing_assets:
+            for asset in trailing_assets:
                 trailing_candles_dt = get_trailing_candles_dt(
                     asset=asset,
                     start_dt=start_dt,
