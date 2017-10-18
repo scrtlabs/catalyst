@@ -215,11 +215,13 @@ cpdef _read_bcolz_data(ctable_t table,
                 else:
                     continue
 
-        if column_name in ['open', 'high', 'low', 'close', 'volume']:
+        if column_name in ['open', 'high', 'low', 'close']:
             where_nan = (outbuf == 0)
             outbuf_as_float = outbuf.astype(float64) * .000000001
             outbuf_as_float[where_nan] = NAN
             results.append(outbuf_as_float)
+        elif column_name in ['volume']:
+            results.append(outbuf.astype(float64) * .000000001)
         else:
             results.append(outbuf)
     return results

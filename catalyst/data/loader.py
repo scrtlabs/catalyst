@@ -152,6 +152,8 @@ def load_crypto_market_data(trading_day=None, trading_days=None,
         data_frequency='daily')
     br.columns = ['close']
     br = br.pct_change(1).iloc[1:]
+    br.loc[first_date]=0
+    br=br.sort_index()
 
     # Override first_date for treasury data since we have it for many more years
     # and is independent of crypto data
