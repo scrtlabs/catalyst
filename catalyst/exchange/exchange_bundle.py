@@ -405,7 +405,7 @@ class ExchangeBundle:
             periods = []
             dt = sessions[0]
             while dt <= sessions[-1]:
-                period = '{}-{}'.format(dt.year, dt.month) \
+                period = '{}-{:02d}'.format(dt.year, dt.month) \
                     if data_frequency == 'minute' else '{}'.format(dt.year)
 
                 if period not in periods:
