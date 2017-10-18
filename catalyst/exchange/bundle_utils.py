@@ -17,7 +17,6 @@ from catalyst.exchange.exchange_utils import get_exchange_bundles_folder
 from catalyst.utils.deprecate import deprecated
 from catalyst.utils.paths import data_path
 
-
 EXCHANGE_NAMES = ['bitfinex', 'bittrex', 'poloniex']
 API_URL = 'http://data.enigma.co/api/v1'
 
@@ -198,6 +197,7 @@ def get_ffill_candles(candles, bar_count, end_dt, data_frequency,
     start_dt = get_start_dt(end_dt, bar_count, data_frequency)
     date = start_dt
 
+    # TODO: this works well with a small number of candles, consider using numpy as needed
     while date <= end_dt:
         candle = next((
             candle for candle in candles if candle['last_traded'] == date

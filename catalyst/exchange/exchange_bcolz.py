@@ -3,6 +3,7 @@ import numpy as np
 from catalyst import get_calendar
 from catalyst.data.minute_bars import BcolzMinuteBarReader, \
     BcolzMinuteBarWriter
+from catalyst.exchange.bundle_utils import get_periods, get_periods_range
 
 
 class BcolzExchangeBarWriter(BcolzMinuteBarWriter):
@@ -34,6 +35,10 @@ class BcolzExchangeBarReader(BcolzMinuteBarReader):
 
         super(BcolzExchangeBarReader, self).__init__(*args, **kwargs)
 
+    @property
+    def data_frequency(self):
+        return self._data_frequency
+
     def load_raw_arrays(self, fields, start_dt, end_dt, sids):
 
         if self._data_frequency == 'minute':
@@ -47,24 +52,27 @@ class BcolzExchangeBarReader(BcolzMinuteBarReader):
         start_idx = self._find_position_of_minute(start_dt)
         end_idx = self._find_position_of_minute(end_dt)
 
-        num_days = (end_idx - start_idx + 1)
+        periods = get_periods_range(start_dt, end_dt, self.data_frequency)
+        num_days = len(periods)
         shape = num_days, len(sids)
 
+        if len(fields) == 1 and fields[0] == 'volume':
+            fields.insert(0, 'close')
+
+        mask = None
         data = []
         for field in fields:
-            if field != 'volume':
-                out = np.full(shape, np.nan)
-            else:
-                out = np.zeros(shape, dtype=np.float64)
+            out = np.full(shape, np.nan)
 
             for i, sid in enumerate(sids):
                 carray = self._open_minute_file(field, sid)
                 a = carray[start_idx:end_idx + 1]
 
-                where = a != 0
+                if mask is None:
+                    mask = a != 0
 
-                out[:len(where), i][where] = (
-                    a[where] * self._ohlc_ratio_inverse_for_sid(sid)
+                out[:len(mask), i][mask] = (
+                    a[mask] * self._ohlc_ratio_inverse_for_sid(sid)
                 )
 
             data.append(out)
