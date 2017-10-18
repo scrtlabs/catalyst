@@ -24,7 +24,8 @@ from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     ExchangeBarDataError,
     PricingDataBeforeTradingError,
-    PricingDataNotLoadedError, InvalidHistoryFrequencyError)
+    PricingDataNotLoadedError, InvalidHistoryFrequencyError,
+    BundleNotFoundError)
 
 log = Logger('DataPortalExchange')
 
@@ -297,13 +298,19 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
         else:
             raise InvalidHistoryFrequencyError(frequency=data_frequency)
 
+        reader = bundle.get_reader(data_frequency)
+        if reader is None:
+            raise BundleNotFoundError(
+                exchange=exchange.name,
+                data_frequency=data_frequency
+            )
+
         try:
-            values = bundle.get_raw_arrays(
-                assets=assets,
+            values = reader.load_raw_arrays(
+                sids=[asset.sid for asset in assets],
                 fields=[field],
                 start_dt=dts[0],
-                end_dt=dts[-1],
-                data_frequency=data_frequency
+                end_dt=dts[-1]
             )[0]
 
         except Exception:

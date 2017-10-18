@@ -7,7 +7,7 @@ from catalyst.api import symbol
 
 def initialize(context):
     print('initializing')
-    context.asset = symbol('wings_eth')
+    context.asset = symbol('etc_eth')
 
 
 def handle_data(context, data):
@@ -35,7 +35,7 @@ run_algorithm(
     initialize=initialize,
     handle_data=handle_data,
     analyze=None,
-    exchange_name='bittrex',
+    exchange_name='poloniex',
     algo_namespace='simple_loop',
     base_currency='eth'
 )
