@@ -76,16 +76,17 @@ class ExchangeBundleTestCase:
         pass
 
     def test_merge_ctables(self):
-        exchange_name = 'poloniex'
+        exchange_name = 'bittrex'
 
         # Switch between daily and minute for testing
         # data_frequency = 'daily'
-        data_frequency = 'minute'
+        data_frequency = 'daily'
 
         exchange = get_exchange(exchange_name)
         assets = [
             exchange.get_asset('eth_btc'),
             exchange.get_asset('etc_btc'),
+            exchange.get_asset('wings_eth'),
         ]
 
         start = pd.to_datetime('2017-9-1', utc=True)
@@ -102,7 +103,7 @@ class ExchangeBundleTestCase:
                 asset=asset,
                 data_frequency=data_frequency,
                 # period='2017-9',
-                period='2017-9',
+                period='2017',
                 # Dont't forget to update if you change your dates
                 start_dt=start,
                 end_dt=end,
@@ -116,7 +117,7 @@ class ExchangeBundleTestCase:
         # In minute mode, the data is there too. This signals that the minute
         # writer / reader is more powerful. This explains why I did not
         # encounter these problems as I have been focusing on minute data.
-        reader = self.get_reader(data_frequency)
+        reader = exchange_bundle.get_reader(data_frequency)
         for asset in assets:
             # Since this pair was loaded last. It should be there in daily mode.
             arrays = reader.load_raw_arrays(
@@ -125,8 +126,8 @@ class ExchangeBundleTestCase:
                 start_dt=start,
                 end_dt=end
             )
-            print('found {} rows for {} ingestion'.format(
-                len(arrays[0]), asset.symbol)
+            print('found {} rows for {} ingestion\n{}'.format(
+                len(arrays[0]), asset.symbol, arrays[0])
             )
         pass
 

@@ -64,10 +64,13 @@ class ExchangeBundle:
         if path in self._readers and self._readers[path] is not None:
             return self._readers[path]
 
-        self._readers[path] = BcolzExchangeBarReader(
-            rootdir=path,
-            data_frequency=data_frequency
-        )
+        try:
+            self._readers[path] = BcolzExchangeBarReader(
+                rootdir=path,
+                data_frequency=data_frequency
+            )
+        except IOError:
+            self.get_readers[path] = None
 
         return self._readers[path]
 
