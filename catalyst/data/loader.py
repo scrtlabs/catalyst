@@ -37,11 +37,11 @@ logger = logbook.Logger('Loader')
 # Mapping from index symbol to appropriate bond data
 INDEX_MAPPING = {
     'SPY':
-    (treasuries, 'treasury_curves.csv', 'www.federalreserve.gov'),
+        (treasuries, 'treasury_curves.csv', 'www.federalreserve.gov'),
     '^GSPTSE':
-    (treasuries_can, 'treasury_curves_can.csv', 'bankofcanada.ca'),
+        (treasuries_can, 'treasury_curves_can.csv', 'bankofcanada.ca'),
     '^FTSE':  # use US treasuries until UK bonds implemented
-    (treasuries, 'treasury_curves.csv', 'www.federalreserve.gov'),
+        (treasuries, 'treasury_curves.csv', 'www.federalreserve.gov'),
 }
 
 ONE_HOUR = pd.Timedelta(hours=1)
@@ -89,14 +89,19 @@ def has_data_for_dates(series_or_df, first_date, last_date):
     if not isinstance(dts, pd.DatetimeIndex):
         raise TypeError("Expected a DatetimeIndex, but got %s." % type(dts))
     first, last = dts[[0, -1]].tz_localize(None)
-    return (first <= first_date.tz_localize(None)) and (last >= last_date.tz_localize(None))
+    return (first <= first_date.tz_localize(None)) and (
+        last >= last_date.tz_localize(None))
 
-def load_crypto_market_data(trading_day=None, trading_days=None, bm_symbol='USDT_BTC',
-                            bundle=None, bundle_data=None, environ=None):
 
+def load_crypto_market_data(trading_day=None, trading_days=None,
+                            bm_symbol=None, bundle=None, bundle_data=None,
+                            environ=None, exchange=None):
     if trading_day is None:
         trading_day = get_calendar('OPEN').trading_day
-    #if trading_days is None:
+
+    # TODO: consider making configurable
+    bm_symbol = 'btc_usdt'
+    # if trading_days is None:
     #    trading_days = get_calendar('OPEN').schedule
 
     first_date = get_calendar('OPEN').first_trading_session
@@ -128,28 +133,29 @@ def load_crypto_market_data(trading_day=None, trading_days=None, bm_symbol='USDT
     '''
     last_date = trading_days[trading_days.get_loc(now, method='ffill') - 1]
 
-    # This is exceptional, since placing the import at the module scope breaks things
-    # and it's only needed here
-    from catalyst.exchange.poloniex.poloniex import Poloniex
+    if exchange is None:
+        # This is exceptional, since placing the import at the module scope
+        #  breaks things and it's only needed here
+        from catalyst.exchange.poloniex.poloniex import Poloniex
+        exchange = Poloniex('', '', '')
 
-    exchange = Poloniex('','','')
-    btc_usdt = exchange.get_asset('btc_usdt')
+    benchmark_asset = exchange.get_asset(bm_symbol)
 
     # exchange.get_history_window() already ensures that we have the right data
     # for the right dates
     br = exchange.get_history_window(
-                assets = [btc_usdt,], 
-                end_dt = last_date, 
-                bar_count = pd.Timedelta(last_date - first_date).days,
-                frequency =  '1d',
-                field  = 'close',
-                data_frequency = 'daily')
+        assets=[benchmark_asset],
+        end_dt=last_date,
+        bar_count=pd.Timedelta(last_date - first_date).days,
+        frequency='1d',
+        field='close',
+        data_frequency='daily')
     br.columns = ['close']
     br = br.pct_change(1).iloc[1:]
 
     # Override first_date for treasury data since we have it for many more years
     # and is independent of crypto data
-    first_date_treasury = pd.Timestamp('1990-01-02', tz='UTC') 
+    first_date_treasury = pd.Timestamp('1990-01-02', tz='UTC')
     tc = ensure_treasury_data(
         bm_symbol,
         first_date_treasury,
@@ -158,7 +164,8 @@ def load_crypto_market_data(trading_day=None, trading_days=None, bm_symbol='USDT
         environ,
     )
     benchmark_returns = br[br.index.slice_indexer(first_date, last_date)]
-    treasury_curves = tc[tc.index.slice_indexer(first_date_treasury, last_date)]
+    treasury_curves = tc[
+        tc.index.slice_indexer(first_date_treasury, last_date)]
     return benchmark_returns, treasury_curves
 
 
@@ -256,12 +263,11 @@ def ensure_crypto_benchmark_data(symbol,
                                  bundle,
                                  bundle_data,
                                  environ=None):
-
     filename = get_benchmark_filename(symbol)
 
     logger.info(
         ('Loading benchmark data for {symbol!r} '
-            'from {first_date} to {last_date}'),
+         'from {first_date} to {last_date}'),
         symbol=symbol,
         first_date=first_date,
         last_date=last_date
@@ -282,7 +288,7 @@ def ensure_crypto_benchmark_data(symbol,
     # If no cached data was found or it was missing any dates then download the
     # necessary data.
 
-    if(bundle == 'poloniex'):
+    if (bundle == 'poloniex'):
         '''
         If we're using the Poloniex bundle, we'll get the benchmark from the bundle
         instead of downloading it from Poloniex every time we need it.
@@ -290,27 +296,34 @@ def ensure_crypto_benchmark_data(symbol,
         prevents users abroad from getting Catalyst to work
         '''
         logger.info(
-            ('Retrieving benchmark data from bundle for {symbol!r} from {first_date} to {last_date}'),
+            (
+                'Retrieving benchmark data from bundle for {symbol!r} from {first_date} to {last_date}'),
             symbol=symbol, first_date=first_date, last_date=last_date)
 
-        asset = bundle_data.asset_finder.lookup_symbol(symbol=symbol,as_of_date=None)
+        asset = bundle_data.asset_finder.lookup_symbol(symbol=symbol,
+                                                       as_of_date=None)
         fields = ['day', 'close']
         raw = bundle_data.daily_bar_reader.load_raw_arrays(
             columns=fields,
             start_date=first_date - trading_day,
             end_date=last_date,
-            assets=[asset,])
-        bench_raw = pd.concat([pd.DataFrame(raw[0], columns=['date']),pd.DataFrame(raw[1], columns=['close'])], axis=1)
-        bench_raw['date'] = pd.to_datetime(bench_raw['date'],unit='s')
+            assets=[asset, ])
+        bench_raw = pd.concat([pd.DataFrame(raw[0], columns=['date']),
+                               pd.DataFrame(raw[1], columns=['close'])],
+                              axis=1)
+        bench_raw['date'] = pd.to_datetime(bench_raw['date'], unit='s')
         bench_raw.set_index('date', inplace=True)
         bench_raw.sort_index(inplace=True)
-        bench_raw = bench_raw[pd.to_datetime(first_date - trading_day):pd.to_datetime(last_date)]
+        bench_raw = bench_raw[
+                    pd.to_datetime(first_date - trading_day):pd.to_datetime(
+                        last_date)]
 
     else:
         # This is how it used to be: downloading the benchmark everytime. 
         # Leaving this code here to be repurposed in the future for other bundles.
         logger.info(
-            ('Downloading benchmark data for {symbol!r} from {first_date} to {last_date}'),
+            (
+                'Downloading benchmark data for {symbol!r} from {first_date} to {last_date}'),
             symbol=symbol, first_date=first_date, last_date=last_date)
 
         raise DeprecationWarning('poloniex bundle deprecated')
@@ -386,7 +399,7 @@ def ensure_benchmark_data(symbol, first_date, last_date, now, trading_day,
     # necessary data.
     logger.info(
         ('Downloading benchmark data for {symbol!r} '
-            'from {first_date} to {last_date}'),
+         'from {first_date} to {last_date}'),
         symbol=symbol,
         first_date=first_date - trading_day,
         last_date=last_date
@@ -447,7 +460,7 @@ def ensure_benchmark_data(symbol, first_date, last_date, now, trading_day,
     # necessary data.
     logger.info(
         ('Downloading benchmark data for {symbol!r} '
-            'from {first_date} to {last_date}'),
+         'from {first_date} to {last_date}'),
         symbol=symbol,
         first_date=first_date - trading_day,
         last_date=last_date
@@ -531,7 +544,8 @@ def _load_cached_data(filename, first_date, last_date, now, resource_name,
             data = pd.DataFrame.from_csv(path)
             if data.empty:
                 raise ValueError("File is empty.")
-            data.index = pd.to_datetime(data.index, infer_datetime_format=True, errors='coerce' ).tz_localize('UTC')
+            data.index = pd.to_datetime(data.index, infer_datetime_format=True,
+                                        errors='coerce').tz_localize('UTC')
             if has_data_for_dates(data, first_date, last_date):
                 return data
 

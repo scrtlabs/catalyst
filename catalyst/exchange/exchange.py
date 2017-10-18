@@ -13,7 +13,7 @@ from logbook import Logger
 from catalyst.data.data_portal import BASE_FIELDS
 from catalyst.exchange import bundle_utils
 from catalyst.exchange.bundle_utils import get_start_dt, \
-    get_delta, get_trailing_candles_dt, get_periods
+    get_delta, get_trailing_candles_dt, get_periods, get_adj_dates
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     InvalidOrderStyle, BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
@@ -486,6 +486,9 @@ class Exchange:
         adj_bar_count = candle_size * bar_count
         start_dt = get_start_dt(end_dt, adj_bar_count, data_frequency)
 
+        start_dt, end_dt = get_adj_dates(start_dt, end_dt, assets,
+                                         data_frequency)
+
         missing_assets = bundle.filter_existing_assets(
             assets=assets,
             start_dt=start_dt,
@@ -511,6 +514,8 @@ class Exchange:
                     asset=chunk['asset'],
                     data_frequency=data_frequency,
                     period=chunk['period'],
+                    start_dt=chunk['period_start'],
+                    end_dt=chunk['period_end'],
                     writer=writer
                 )
 

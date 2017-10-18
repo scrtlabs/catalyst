@@ -5,6 +5,7 @@ from datetime import timedelta, datetime
 
 import pandas as pd
 from logbook import Logger, INFO
+from pandas.tseries.offsets import MonthBegin, YearBegin, YearEnd
 
 from catalyst import get_calendar
 from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
@@ -12,9 +13,10 @@ from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
 from catalyst.data.us_equity_pricing import BcolzDailyBarWriter, \
     BcolzDailyBarReader
 from catalyst.exchange.bundle_utils import get_ffill_candles, range_in_bundle, \
-    get_bcolz_chunk, get_delta
+    get_bcolz_chunk, get_delta, get_adj_dates, get_month_start_end, \
+    get_year_start_end
 from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
-    InvalidHistoryFrequencyError
+    InvalidHistoryFrequencyError, PricingDataBeforeTradingError
 from catalyst.exchange.exchange_utils import get_exchange_folder
 from catalyst.utils.cli import maybe_show_progress
 from catalyst.utils.paths import ensure_directory
@@ -47,36 +49,6 @@ class ExchangeBundle:
 
         else:
             return self.exchange.get_assets()
-
-    def get_adj_dates(self, start, end, assets, data_frequency):
-
-        earliest_trade = None
-        last_entry = None
-        for asset in assets:
-            if earliest_trade is None or earliest_trade > asset.start_date:
-                earliest_trade = asset.start_date
-
-            end_asset = asset.end_minute if data_frequency == 'minute' else \
-                asset.end_daily
-            if end_asset is not None and \
-                    (last_entry is None or end_asset > last_entry):
-                last_entry = end_asset
-
-        if start is None or earliest_trade > start:
-            log.debug(
-                'adjusting start date to earliest trade date found {}'.format(
-                    earliest_trade
-                ))
-            start = earliest_trade
-
-        if end is None or (last_entry is not None and end > last_entry):
-            log.debug('adjusting the end date to now {}'.format(last_entry))
-            end = last_entry
-
-        if start >= end:
-            raise ValueError('start date cannot be after end date')
-
-        return start, end
 
     def get_reader(self, data_frequency, path=None):
         """
@@ -346,8 +318,8 @@ class ExchangeBundle:
         :return:
         """
 
-    def ingest_ctable(self, asset, data_frequency, period, writer,
-                      empty_rows_behavior='strip', cleanup=False):
+    def ingest_ctable(self, asset, data_frequency, period, start_dt, end_dt,
+                      writer, empty_rows_behavior='strip', cleanup=False):
         """
         Merge a ctable bundle chunk into the main bundle for the exchange.
 
@@ -370,11 +342,6 @@ class ExchangeBundle:
             data_frequency=data_frequency,
             period=period
         )
-
-        # TODO: is this the optimal approach?
-        # Ensures that we read exact range which we want to write
-        start_dt = writer._start_session
-        end_dt = writer._end_session
 
         periods = self.calendar.minutes_in_range(start_dt, end_dt) \
             if data_frequency == 'minute' \
@@ -474,10 +441,9 @@ class ExchangeBundle:
         for asset in assets:
             try:
                 asset_start, asset_end = \
-                    self.get_adj_dates(start_dt, end_dt, [asset],
-                                       data_frequency)
+                    get_adj_dates(start_dt, end_dt, [asset], data_frequency)
 
-            except ValueError:
+            except PricingDataBeforeTradingError:
                 continue
 
             sessions = self.calendar.sessions_in_range(asset_start, asset_end)
@@ -491,46 +457,48 @@ class ExchangeBundle:
                 if period not in periods:
                     periods.append(period)
 
+                    # Adjusting the period dates to match the availability
+                    # of the trading pair
                     if data_frequency == 'minute':
-                        month_range = calendar.monthrange(dt.year, dt.month)
-                        period_start = pd.to_datetime(
-                            datetime(dt.year, dt.month, 1, 0, 0, 0, 0),
-                            utc=True)
+                        period_start, period_end = get_month_start_end(dt)
+                        asset_start_month, _ = get_month_start_end(asset_start)
 
-                        period_end = pd.to_datetime(
-                            datetime(
-                                dt.year, dt.month, month_range[1], 23, 59, 0,
-                                0),
-                            utc=True
-                        )
+                        if asset_start_month == period_start \
+                                and period_start < asset_start:
+                            period_start = asset_start
+
+                        _, asset_end_month = get_month_start_end(asset_end)
+                        if asset_end_month == period_end \
+                                and period_end > asset_end:
+                            period_end = asset_end
 
                     elif data_frequency == 'daily':
-                        period_start = pd.to_datetime(
-                            datetime(dt.year, 1, 1, 0, 0, 0, 0),
-                            utc=True)
+                        period_start, period_end = get_year_start_end(dt)
+                        asset_start_year, _ = get_year_start_end(asset_start)
 
-                        period_end = pd.to_datetime(
-                            datetime(
-                                dt.year, 12, 31, 23, 59, 0, 0),
-                            utc=True
-                        )
+                        if asset_start_year == period_start \
+                                and period_start < asset_start:
+                            period_start = asset_start
+
+                        _, asset_end_year = get_year_start_end(asset_end)
+                        if asset_end_year == period_end \
+                                and period_end > asset_end:
+                            period_end = asset_end
                     else:
                         raise InvalidHistoryFrequencyError(
                             frequency=data_frequency
                         )
 
-                    if period_end > asset_end:
-                        period_end = asset_end
-
-                    has_data = \
-                        range_in_bundle(asset, period_start, period_end,
-                                        reader)
+                    has_data = range_in_bundle(
+                        asset, period_start, period_end, reader
+                    )
 
                     if not has_data:
                         log.debug('adding period: {}'.format(period))
                         chunks.append(
                             dict(
                                 asset=asset,
+                                period_start=period_start,
                                 period_end=period_end,
                                 period=period
                             )
@@ -557,7 +525,7 @@ class ExchangeBundle:
         :return:
         """
         assets = self.get_assets(include_symbols, exclude_symbols)
-        start, end = self.get_adj_dates(start, end, assets, data_frequency)
+        start, end = get_adj_dates(start, end, assets, data_frequency)
 
         writer = self.get_writer(start, end, data_frequency)
         chunks = self.prepare_chunks(
@@ -578,6 +546,8 @@ class ExchangeBundle:
                     asset=chunk['asset'],
                     data_frequency=data_frequency,
                     period=chunk['period'],
+                    start_dt=chunk['period_start'],
+                    end_dt=chunk['period_end'],
                     writer=writer,
                     empty_rows_behavior='strip'
                 )

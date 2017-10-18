@@ -281,7 +281,6 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
                                     ffill=True):
         bundle = self.exchange_bundles[exchange.name]
 
-        reader = bundle.get_reader(data_frequency)
         if data_frequency == 'minute':
             dts = self.trading_calendar.minutes_window(
                 end_dt, -bar_count
@@ -299,12 +298,6 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
             raise InvalidHistoryFrequencyError(frequency=data_frequency)
 
         try:
-            # values = reader.load_raw_arrays(
-            #     fields=[field],
-            #     start_dt=dts[0],
-            #     end_dt=dts[-1],
-            #     sids=[asset.sid for asset in assets],
-            # )[0]
             values = bundle.get_raw_arrays(
                 assets=assets,
                 fields=[field],
@@ -333,8 +326,7 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
             value_series = pd.Series(asset_values, index=dts)
             series[asset] = value_series
 
-        df = pd.DataFrame(series)
-        return df
+        return pd.DataFrame(series)
 
     def ensure_after_first_day(self, dt, assets):
         first_trading_day = self._get_first_trading_day(assets)

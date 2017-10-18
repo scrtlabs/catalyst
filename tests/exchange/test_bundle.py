@@ -92,6 +92,8 @@ class ExchangeBundleTestCase:
             asset=asset,
             data_frequency=data_frequency,
             period='2017',
+            start_dt=start,
+            end_dt=end,
             writer=writer,
             empty_rows_behavior='strip'
         )

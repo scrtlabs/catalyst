@@ -189,6 +189,5 @@ class PricingDataNotLoadedError(ZiplineError):
            '`catalyst ingest-exchange -x {exchange} -i {symbol_list}`. '
            'See catalyst documentation for details.').strip()
 
-
 class ApiCandlesError(ZiplineError):
     msg = ('Unable to fetch candles from the remote API: {error}.').strip()
