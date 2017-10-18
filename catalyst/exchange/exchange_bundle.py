@@ -1,20 +1,18 @@
-import calendar
 import os
 import shutil
-from datetime import timedelta, datetime
+from datetime import timedelta
 
 import pandas as pd
 from logbook import Logger, INFO
-from pandas.tseries.offsets import MonthBegin, YearBegin, YearEnd
 
 from catalyst import get_calendar
 from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
-    BcolzMinuteBarWriter, BcolzMinuteBarReader, BcolzMinuteBarMetadata
-from catalyst.data.us_equity_pricing import BcolzDailyBarWriter, \
-    BcolzDailyBarReader
+    BcolzMinuteBarMetadata
 from catalyst.exchange.bundle_utils import get_ffill_candles, range_in_bundle, \
     get_bcolz_chunk, get_delta, get_adj_dates, get_month_start_end, \
-    get_year_start_end, get_periods, get_periods_range
+    get_year_start_end, get_periods_range
+from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
+    BcolzExchangeBarWriter
 from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
     InvalidHistoryFrequencyError, PricingDataBeforeTradingError
 from catalyst.exchange.exchange_utils import get_exchange_folder
@@ -66,22 +64,10 @@ class ExchangeBundle:
         if path in self._readers and self._readers[path] is not None:
             return self._readers[path]
 
-        self._readers[path] = None
-        if data_frequency == 'minute':
-            try:
-                self._readers[path] = BcolzMinuteBarReader(path)
-            except IOError:
-                log.debug('no reader data found in {}'.format(path))
-
-        elif data_frequency == 'daily':
-            try:
-                self._readers[path] = BcolzDailyBarReader(path)
-            except IOError:
-                log.debug('no reader data found in {}'.format(path))
-        else:
-            raise InvalidHistoryFrequencyError(
-                frequency=data_frequency
-            )
+        self._readers[path] = BcolzExchangeBarReader(
+            rootdir=path,
+            data_frequency=data_frequency
+        )
 
         return self._readers[path]
 
@@ -105,58 +91,39 @@ class ExchangeBundle:
 
         ensure_directory(path)
 
-        if data_frequency == 'minute':
-            if len(os.listdir(path)) > 0:
+        if len(os.listdir(path)) > 0:
 
-                metadata = BcolzMinuteBarMetadata.read(path)
+            metadata = BcolzMinuteBarMetadata.read(path)
 
-                write_metadata = False
-                if start_dt < metadata.start_session:
-                    write_metadata = True
-                    start_session = start_dt
-                else:
-                    start_session = metadata.start_session
-
-                if end_dt > metadata.end_session:
-                    write_metadata = True
-
-                    end_session = end_dt
-                else:
-                    end_session = metadata.end_session
-
-                self._writers[path] = \
-                    BcolzMinuteBarWriter(
-                        path,
-                        metadata.calendar,
-                        start_session,
-                        end_session,
-                        metadata.minutes_per_day,
-                        metadata.default_ohlc_ratio,
-                        metadata.ohlc_ratios_per_sid,
-                        write_metadata=write_metadata
-                    )
+            write_metadata = False
+            if start_dt < metadata.start_session:
+                write_metadata = True
+                start_session = start_dt
             else:
-                self._writers[path] = BcolzMinuteBarWriter(
-                    rootdir=path,
-                    calendar=self.calendar,
-                    minutes_per_day=self.minutes_per_day,
-                    start_session=start_dt,
-                    end_session=end_dt,
-                    write_metadata=True,
-                    default_ohlc_ratio=self.default_ohlc_ratio
-                )
+                start_session = metadata.start_session
 
-        elif data_frequency == 'daily':
-            end_session = end_dt.floor('1d')
-            self._writers[path] = BcolzDailyBarWriter(
-                filename=path,
-                calendar=self.calendar,
-                start_session=start_dt,
-                end_session=end_session
-            )
+            if end_dt > metadata.end_session:
+                write_metadata = True
+
+                end_session = end_dt
+            else:
+                end_session = metadata.end_session
+
+            self._writers[path] = \
+                BcolzExchangeBarWriter(
+                    rootdir=path,
+                    start_session=start_session,
+                    end_session=end_session,
+                    write_metadata=write_metadata,
+                    data_frequency=data_frequency
+                )
         else:
-            raise InvalidHistoryFrequencyError(
-                frequency=data_frequency
+            self._writers[path] = BcolzExchangeBarWriter(
+                rootdir=path,
+                start_session=start_dt,
+                end_session=end_dt,
+                write_metadata=True,
+                data_frequency=data_frequency
             )
 
         return self._writers[path]
@@ -293,33 +260,6 @@ class ExchangeBundle:
 
         return data
 
-    def get_raw_arrays(self, assets, start_dt, end_dt, fields, data_frequency,
-                       path=None):
-        reader = self.get_reader(data_frequency, path)
-
-        if reader.last_available_dt < end_dt:
-            return []
-
-        if data_frequency == 'minute':
-            values = reader.load_raw_arrays(
-                fields=fields,
-                start_dt=start_dt,
-                end_dt=end_dt,
-                sids=[asset.sid for asset in assets],
-            )
-        else:
-
-            # Note that the parameters convention is totally different
-            # from the minute reader.
-            values = reader.load_raw_arrays(
-                columns=fields,
-                start_date=start_dt,
-                end_date=end_dt,
-                assets=assets
-            )
-
-        return values
-
     def download_bundle(self, name):
         """
 
@@ -356,13 +296,12 @@ class ExchangeBundle:
             if data_frequency == 'minute' \
             else self.calendar.sessions_in_range(start_dt, end_dt)
 
-        arrays = self.get_raw_arrays(
-            assets=[asset],
+        reader = self.get_reader(data_frequency, path=path)
+        arrays = reader.load_raw_arrays(
+            sids=[asset.sid],
             fields=['open', 'high', 'low', 'close', 'volume'],
             start_dt=start_dt,
-            end_dt=end_dt,
-            data_frequency=data_frequency,
-            path=path
+            end_dt=end_dt
         )
 
         if not arrays:

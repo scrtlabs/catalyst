@@ -12,6 +12,10 @@ class BcolzExchangeBarWriter(BcolzMinuteBarWriter):
         kwargs.pop('default_ohlc_ratio', None)
         kwargs.pop('calendar', None)
 
+        end_session = kwargs.pop('end_session', None)
+        if end_session is not None:
+            end_session = end_session.floor('1d')
+
         minutes_per_day = 1440 if self._data_frequency == 'minute' else 1
         default_ohlc_ratio = 1000000
         calendar = get_calendar('OPEN')
@@ -20,7 +24,8 @@ class BcolzExchangeBarWriter(BcolzMinuteBarWriter):
             .__init__(*args, **dict(kwargs,
                                     minutes_per_day=minutes_per_day,
                                     default_ohlc_ratio=default_ohlc_ratio,
-                                    calendar=calendar
+                                    calendar=calendar,
+                                    end_session=end_session
                                     ))
 
 

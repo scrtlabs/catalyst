@@ -525,12 +525,12 @@ class Exchange:
                         data_frequency=data_frequency
                     )
 
-        values = self.bundle.get_raw_arrays(
-            assets=assets,
+        reader = self.bundle.get_reader(data_frequency)
+        values = reader.load_raw_arrays(
+            sids=[asset.sid for asset in assets],
             fields=[field],
             start_dt=start_dt,
-            end_dt=end_dt,
-            data_frequency=data_frequency
+            end_dt=end_dt
         )
 
         series = dict()

@@ -82,8 +82,8 @@ class ExchangeBundleTestCase:
         exchange_name = 'poloniex'
 
         # Switch between daily and minute for testing
-        data_frequency = 'daily'
-        # data_frequency = 'minute'
+        # data_frequency = 'daily'
+        data_frequency = 'minute'
 
         exchange = get_exchange(exchange_name)
         assets = [
@@ -100,39 +100,18 @@ class ExchangeBundleTestCase:
 
         # In the interest of avoiding abstractions, this is writing a chunk
         # to the ctable. It does not include the logic which creates chunks.
-        exchange_bundle.ingest_ctable(
-            asset=assets[0],
-            data_frequency=data_frequency,
-            # period='2017-9',
-            period='2017',
-            # Dont't forget to update if you change your dates
-            start_dt=start,
-            end_dt=end,
-            writer=writer,
-            empty_rows_behavior='strip'
-        )
-        exchange_bundle.ingest_ctable(
-            asset=assets[1],
-            data_frequency=data_frequency,
-            # period='2017-9',
-            period='2017',
-            start_dt=start,
-            end_dt=end,
-            writer=writer,
-            empty_rows_behavior='strip'
-        )
-
-        # Since this pair was loaded last. It should be there in daily mode.
-        last_asset_array = exchange_bundle.get_raw_arrays(
-            assets=[assets[1]],
-            start_dt=start,
-            end_dt=end,
-            fields=['close'],
-            data_frequency=data_frequency
-        )
-        print('found {} rows for last ingestion'.format(
-            len(last_asset_array[0]))
-        )
+        for asset in assets:
+            exchange_bundle.ingest_ctable(
+                asset=asset,
+                data_frequency=data_frequency,
+                # period='2017-9',
+                period='2017-9',
+                # Dont't forget to update if you change your dates
+                start_dt=start,
+                end_dt=end,
+                writer=writer,
+                empty_rows_behavior='strip'
+            )
 
         # In daily mode, this returns an error. It appears that writing
         # a second asset in the same date range removed the first asset.
@@ -140,16 +119,18 @@ class ExchangeBundleTestCase:
         # In minute mode, the data is there too. This signals that the minute
         # writer / reader is more powerful. This explains why I did not
         # encounter these problems as I have been focusing on minute data.
-        first_asset_array = exchange_bundle.get_raw_arrays(
-            assets=[assets[0]],
-            start_dt=start,
-            end_dt=end,
-            fields=['close'],
-            data_frequency=data_frequency
-        )
-        print('found {} rows for first ingestion'.format(
-            len(first_asset_array[0]))
-        )
+        reader = self.get_reader(data_frequency)
+        for asset in assets:
+            # Since this pair was loaded last. It should be there in daily mode.
+            arrays = reader.load_raw_arrays(
+                sids=[asset.sid],
+                fields=['close'],
+                start_dt=start,
+                end_dt=end
+            )
+            print('found {} rows for {} ingestion'.format(
+                len(arrays[0]), asset.symbol)
+            )
         pass
 
     def test_daily_data_to_minute_table(self):
