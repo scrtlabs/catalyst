@@ -78,7 +78,14 @@ class AlgoPickleNotFound(ZiplineError):
 
 class InvalidHistoryFrequencyError(ZiplineError):
     msg = (
-        'History frequency {frequency} not supported by the exchange.'
+        'Frequency {frequency} not supported by the exchange.'
+    ).strip()
+
+
+class MismatchingFrequencyError(ZiplineError):
+    msg = (
+        'Bar aggregate frequency {frequency} not compatible with '
+        'data frequency {data_frequency}.'
     ).strip()
 
 

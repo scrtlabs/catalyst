@@ -11,20 +11,18 @@ from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
 from catalyst.data.data_portal import BASE_FIELDS
-from catalyst.exchange import bundle_utils
 from catalyst.exchange.bundle_utils import get_start_dt, \
     get_delta, get_trailing_candles_dt, get_periods, get_adj_dates
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     InvalidOrderStyle, BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
-    InvalidHistoryFrequencyError
+    InvalidHistoryFrequencyError, MismatchingFrequencyError
 from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
     ExchangeLimitOrder, ExchangeStopOrder
 from catalyst.exchange.exchange_portfolio import ExchangePortfolio
 from catalyst.exchange.exchange_utils import get_exchange_symbols
 from catalyst.finance.order import ORDER_STATUS
 from catalyst.finance.transaction import Transaction
-from catalyst.utils.deprecate import deprecated
 
 log = Logger('Exchange')
 
@@ -43,6 +41,7 @@ class Exchange:
         self.num_candles_limit = None
         self.max_requests_per_minute = None
         self.request_cpt = None
+        self.bundle = ExchangeBundle(self)
 
     @property
     def positions(self):
@@ -367,55 +366,32 @@ class Exchange:
             )
         )
 
-        if field == 'price':
-            field = 'close'
-
         # Don't use a timezone here
         dt = pd.Timestamp.utcnow().floor('1 min')
-        value = None
-        if self.minute_reader is not None:
+        ohlc = self.get_candles(data_frequency, asset)
+        if field not in ohlc:
+            raise KeyError('Invalid column: %s' % field)
+
+        if self.minute_writer is not None:
+            df = pd.DataFrame(
+                [ohlc],
+                index=pd.DatetimeIndex([dt]),
+                columns=['open', 'high', 'low', 'close', 'volume']
+            )
+
             try:
-                # Slight delay to minimize the chances that multiple algos
-                # might try to hit the cache at the exact same time.
-                sleep_time = random.uniform(0.5, 0.8)
-                sleep(sleep_time)
-                # TODO: This does not always! Why is that? Open an issue with zipline.
-                # See: https://github.com/zipline-live/zipline/issues/26
-                value = self.minute_reader.get_value(
+                # TODO: use victor's modified branch using int64
+                self.minute_writer.write_sid(
                     sid=asset.sid,
-                    dt=dt,
-                    field=field
+                    df=df
                 )
+                log.debug('wrote minute data: {}'.format(dt))
             except Exception as e:
-                log.warn('minute data not found: {}'.format(e))
-
-        if value is None or np.isnan(value):
-            ohlc = self.get_candles(data_frequency, asset)
-            if field not in ohlc:
-                raise KeyError('Invalid column: %s' % field)
-
-            if self.minute_writer is not None:
-                df = pd.DataFrame(
-                    [ohlc],
-                    index=pd.DatetimeIndex([dt]),
-                    columns=['open', 'high', 'low', 'close', 'volume']
-                )
-
-                try:
-                    # TODO: use victor's modified branch using int64
-                    self.minute_writer.write_sid(
-                        sid=asset.sid,
-                        df=df
-                    )
-                    log.debug('wrote minute data: {}'.format(dt))
-                except Exception as e:
-                    log.warn(
-                        'unable to write minute data: {} {}'.format(dt, e))
+                log.warn(
+                    'unable to write minute data: {} {}'.format(dt, e))
 
             value = ohlc[field]
             log.debug('got spot value: {}'.format(value))
-        else:
-            log.debug('got spot value from cache: {}'.format(value))
 
         return value
 
@@ -462,8 +438,6 @@ class Exchange:
         A dataframe containing the requested data.
         """
 
-        bundle = ExchangeBundle(self)
-
         freq_match = re.match(r'([0-9].*)(m|M|d|D)', frequency, re.M | re.I)
         if freq_match:
             candle_size = int(freq_match.group(1))
@@ -474,11 +448,17 @@ class Exchange:
 
         if unit.lower() == 'd':
             if data_frequency != 'daily':
-                raise InvalidHistoryFrequencyError(frequency=frequency)
+                raise MismatchingFrequencyError(
+                    frequency=frequency,
+                    data_frequency=data_frequency
+                )
 
         elif unit.lower() == 'm':
             if data_frequency != 'minute':
-                raise InvalidHistoryFrequencyError(frequency=frequency)
+                raise MismatchingFrequencyError(
+                    frequency=frequency,
+                    data_frequency=data_frequency
+                )
 
         else:
             raise InvalidHistoryFrequencyError(frequency)
@@ -489,36 +469,30 @@ class Exchange:
         start_dt, end_dt = get_adj_dates(start_dt, end_dt, assets,
                                          data_frequency)
 
-        missing_assets = bundle.filter_existing_assets(
+        missing_assets = self.bundle.filter_existing_assets(
             assets=assets,
             start_dt=start_dt,
             end_dt=end_dt,
             data_frequency=data_frequency
         )
 
-        if len(missing_assets) > 0:
-            writer = bundle.get_writer(start_dt, end_dt, data_frequency)
-
-            chunks = bundle.prepare_chunks(
+        if missing_assets:
+            self.bundle.ingest_assets(
                 assets=assets,
-                data_frequency=data_frequency,
                 start_dt=start_dt,
-                end_dt=end_dt
+                end_dt=end_dt,
+                data_frequency=data_frequency
             )
-            for chunk in chunks:
-                log.debug('ingesting chunk for pair {}, period {}'.format(
-                    chunk['asset'],
-                    chunk['period']
-                ))
-                bundle.ingest_ctable(
-                    asset=chunk['asset'],
-                    data_frequency=data_frequency,
-                    period=chunk['period'],
-                    start_dt=chunk['period_start'],
-                    end_dt=chunk['period_end'],
-                    writer=writer
-                )
 
+        # We check again for data which may be too recent for the consolidated
+        # exchanges service
+        missing_assets = self.bundle.filter_existing_assets(
+            assets=assets,
+            start_dt=start_dt,
+            end_dt=end_dt,
+            data_frequency=data_frequency
+        )
+        if missing_assets:
             # Adding bars too recent to be contained in the consolidated
             # exchanges bundles. We go directly against the exchange
             # to retrieve the candles.
@@ -542,21 +516,22 @@ class Exchange:
                         end_dt=end_dt
                     )
 
-                    bundle.ingest_candles(
+                    # TODO: Do I need the previous_candle?
+                    self.bundle.ingest_candles(
                         candles=candles,
                         bar_count=trailing_bar_count,
+                        start_dt=start_dt,
                         end_dt=end_dt,
-                        data_frequency=data_frequency,
-                        writer=writer
+                        data_frequency=data_frequency
                     )
 
-        values = bundle.get_raw_arrays(
+        values = self.bundle.get_raw_arrays(
             assets=assets,
             fields=[field],
             start_dt=start_dt,
             end_dt=end_dt,
             data_frequency=data_frequency
-        )[0]
+        )
 
         series = dict()
         for asset_index, asset in enumerate(assets):
@@ -565,7 +540,7 @@ class Exchange:
 
             # TODO: use numpy to avoid the loop
             date = start_dt
-            for value in values:
+            for value in values[0]:
                 all_dates.append(date)
                 asset_values.append(value[asset_index])
 

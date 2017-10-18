@@ -262,6 +262,9 @@ def _run(handle_data,
             data_frequency='minute'
         )
 
+        # TODO: use the constructor instead
+        sim_params._arena = 'live'
+
         algorithm_class = partial(
             ExchangeTradingAlgorithmLive,
             exchanges=exchanges,

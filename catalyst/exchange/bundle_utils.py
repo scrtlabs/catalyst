@@ -1,11 +1,9 @@
 import calendar
 import tarfile
-import shutil
 
 import requests
 from datetime import timedelta, datetime, date
 import os
-from logging import Logger
 import pandas as pd
 import numpy as np
 
@@ -19,7 +17,6 @@ from catalyst.exchange.exchange_utils import get_exchange_bundles_folder
 from catalyst.utils.deprecate import deprecated
 from catalyst.utils.paths import data_path
 
-log = Logger('test_exchange_bundle')
 
 EXCHANGE_NAMES = ['bitfinex', 'bittrex', 'poloniex']
 API_URL = 'http://data.enigma.co/api/v1'
@@ -78,6 +75,12 @@ def get_delta(periods, data_frequency):
         if data_frequency == 'minute' else timedelta(days=periods)
 
 
+def get_periods_range(start_dt, end_dt, data_frequency):
+    freq = 'T' if data_frequency == 'minute' else 'D'
+
+    return pd.date_range(start_dt, end_dt, freq=freq)
+
+
 def get_periods(start_dt, end_dt, data_frequency):
     delta = end_dt - start_dt
 
@@ -127,14 +130,9 @@ def get_adj_dates(start, end, assets, data_frequency):
             last_entry = end_asset
 
     if start is None or earliest_trade > start:
-        log.debug(
-            'adjusting start date to earliest trade date found {}'.format(
-                earliest_trade
-            ))
         start = earliest_trade
 
     if end is None or (last_entry is not None and end > last_entry):
-        log.debug('adjusting the end date to now {}'.format(last_entry))
         end = last_entry
 
     if start >= end:

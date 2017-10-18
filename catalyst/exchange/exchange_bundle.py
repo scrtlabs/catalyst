@@ -14,7 +14,7 @@ from catalyst.data.us_equity_pricing import BcolzDailyBarWriter, \
     BcolzDailyBarReader
 from catalyst.exchange.bundle_utils import get_ffill_candles, range_in_bundle, \
     get_bcolz_chunk, get_delta, get_adj_dates, get_month_start_end, \
-    get_year_start_end
+    get_year_start_end, get_periods, get_periods_range
 from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
     InvalidHistoryFrequencyError, PricingDataBeforeTradingError
 from catalyst.exchange.exchange_utils import get_exchange_folder
@@ -207,7 +207,7 @@ class ExchangeBundle:
 
             # This is workaround, there is an issue with empty
             # session_label when using a newly created writer
-            del self._writers[data_frequency]
+            del self._writers[writer._rootdir]
 
             writer = self.get_writer(writer._start_session,
                                      writer._end_session, data_frequency)
@@ -217,8 +217,9 @@ class ExchangeBundle:
                 invalid_data_behavior='raise'
             )
 
-    def ingest_candles(self, candles, bar_count, end_dt, data_frequency,
-                       writer, previous_candle=dict()):
+    def ingest_candles(self, candles, bar_count, start_dt, end_dt,
+                       data_frequency,
+                       previous_candle=dict()):
         """
         Ingest candles obtained via the get_candles API of an exchange.
 
@@ -234,6 +235,8 @@ class ExchangeBundle:
         :param previous_candle
         :return:
         """
+
+        writer = self.get_writer(start_dt, end_dt, data_frequency)
 
         num_candles = 0
         data = []
@@ -290,6 +293,9 @@ class ExchangeBundle:
     def get_raw_arrays(self, assets, start_dt, end_dt, fields, data_frequency,
                        path=None):
         reader = self.get_reader(data_frequency, path)
+
+        if reader.last_available_dt < end_dt:
+            return []
 
         if data_frequency == 'minute':
             values = reader.load_raw_arrays(
@@ -355,6 +361,9 @@ class ExchangeBundle:
             data_frequency=data_frequency,
             path=path
         )
+
+        if not arrays:
+            return path
 
         ohlcv = dict(
             open=arrays[0].flatten(),
@@ -446,7 +455,7 @@ class ExchangeBundle:
             except PricingDataBeforeTradingError:
                 continue
 
-            sessions = self.calendar.sessions_in_range(asset_start, asset_end)
+            sessions = get_periods_range(asset_start, asset_end, 'daily')
 
             periods = []
             dt = sessions[0]
@@ -510,29 +519,22 @@ class ExchangeBundle:
 
         return chunks
 
-    def ingest(self, data_frequency, include_symbols=None,
-               exclude_symbols=None, start=None, end=None,
-               show_progress=True, environ=os.environ):
+    def ingest_assets(self, assets, start_dt, end_dt, data_frequency,
+                      show_progress=False):
         """
+        Determine if data is missing from the bundle and attempt to ingest it.
 
-        :param data_frequency:
-        :param include_symbols:
-        :param exclude_symbols:
-        :param start:
-        :param end:
-        :param show_progress:
-        :param environ:
+        :param assets:
+        :param start_dt:
+        :param end_dt:
         :return:
         """
-        assets = self.get_assets(include_symbols, exclude_symbols)
-        start, end = get_adj_dates(start, end, assets, data_frequency)
-
-        writer = self.get_writer(start, end, data_frequency)
+        writer = self.get_writer(start_dt, end_dt, data_frequency)
         chunks = self.prepare_chunks(
             assets=assets,
             data_frequency=data_frequency,
-            start_dt=start,
-            end_dt=end
+            start_dt=start_dt,
+            end_dt=end_dt
         )
         with maybe_show_progress(
                 chunks,
@@ -551,3 +553,23 @@ class ExchangeBundle:
                     writer=writer,
                     empty_rows_behavior='strip'
                 )
+
+    def ingest(self, data_frequency, include_symbols=None,
+               exclude_symbols=None, start=None, end=None,
+               show_progress=True, environ=os.environ):
+        """
+
+        :param data_frequency:
+        :param include_symbols:
+        :param exclude_symbols:
+        :param start:
+        :param end:
+        :param show_progress:
+        :param environ:
+        :return:
+        """
+        assets = self.get_assets(include_symbols, exclude_symbols)
+        start_dt, end_dt = get_adj_dates(start, end, assets, data_frequency)
+
+        self.ingest_assets(assets, start_dt, end_dt, data_frequency,
+                           show_progress)

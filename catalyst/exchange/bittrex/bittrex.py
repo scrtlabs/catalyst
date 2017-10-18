@@ -7,6 +7,7 @@ from six.moves import urllib
 
 from catalyst.exchange.bittrex.bittrex_api import Bittrex_api
 from catalyst.exchange.exchange import Exchange
+from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
     ExchangeRequestError, InvalidOrderStyle, OrderNotFound, OrderCancelError, \
     CreateOrderError
@@ -40,6 +41,8 @@ class Bittrex(Exchange):
 
         self.assets = dict()
         self.load_assets()
+
+        self.bundle = ExchangeBundle(self)
 
     @property
     def account(self):

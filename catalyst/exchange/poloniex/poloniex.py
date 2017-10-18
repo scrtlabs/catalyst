@@ -15,6 +15,7 @@ from six import iteritems
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
+from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.poloniex.poloniex_api import Poloniex_api
 
 # from websocket import create_connection
@@ -50,6 +51,8 @@ class Poloniex(Exchange):
         self.num_candles_limit = 2000
         self.max_requests_per_minute = 20
         self.request_cpt = dict()
+
+        self.bundle = ExchangeBundle(self)
 
     def sanitize_curency_symbol(self, exchange_symbol):
         """
