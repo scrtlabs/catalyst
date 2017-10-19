@@ -17,24 +17,41 @@ log = Logger('test_exchange_bundle')
 
 class ExchangeBundleTestCase:
     def test_ingest_minute(self):
+        data_frequency = 'minute'
         exchange_name = 'bitfinex'
 
-        # start = pd.to_datetime('2017-09-01', utc=True)
-        start = pd.to_datetime('2017-9-1', utc=True)
-        end = pd.to_datetime('2017-9-30', utc=True)
+        exchange = get_exchange(exchange_name)
+        exchange_bundle = ExchangeBundle(exchange)
+        assets = [
+            exchange.get_asset('neo_eth')
+        ]
 
-        exchange_bundle = ExchangeBundle(get_exchange(exchange_name))
+        # start = pd.to_datetime('2017-09-01', utc=True)
+        start = pd.to_datetime('2017-9-15', utc=True)
+        end = pd.to_datetime('2017-9-30', utc=True)
 
         log.info('ingesting exchange bundle {}'.format(exchange_name))
         exchange_bundle.ingest(
-            data_frequency='minute',
-            include_symbols='neo_eth',
+            data_frequency=data_frequency,
+            include_symbols=','.join([asset.symbol for asset in assets]),
             # include_symbols=None,
             exclude_symbols=None,
             start=start,
             end=end,
             show_progress=True
         )
+
+        reader = exchange_bundle.get_reader(data_frequency)
+        for asset in assets:
+            arrays = reader.load_raw_arrays(
+                sids=[asset.sid],
+                fields=['close'],
+                start_dt=start,
+                end_dt=end
+            )
+            print('found {} rows for {} ingestion\n{}'.format(
+                len(arrays[0]), asset.symbol, arrays[0])
+            )
         pass
 
     def test_ingest_minute_all(self):

@@ -453,8 +453,12 @@ class ExchangeBundle:
                             frequency=data_frequency
                         )
 
+                    # Currencies don't always start trading at midnight.
+                    # Checking the last minute of the day instead.
+                    range_start = period_start.replace(hour=23, minute=59) \
+                        if data_frequency == 'minute' else period_start
                     has_data = range_in_bundle(
-                        asset, period_start, period_end, reader
+                        asset, range_start, period_end, reader
                     )
 
                     if not has_data:
