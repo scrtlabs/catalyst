@@ -54,7 +54,10 @@ class BcolzExchangeBarReader(BcolzMinuteBarReader):
         start_idx = self._find_position_of_minute(start_dt)
         end_idx = self._find_position_of_minute(end_dt)
 
-        periods = get_periods_range(start_dt, end_dt, self.data_frequency)
+        periods = self.calendar.minutes_in_range(start_dt, end_dt) \
+            if self.data_frequency == 'minute' \
+            else self.calendar.sessions_in_range(start_dt, end_dt)
+
         num_days = len(periods)
         shape = num_days, len(sids)
 
