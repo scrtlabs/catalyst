@@ -301,7 +301,7 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
         reader = bundle.get_reader(data_frequency)
         if reader is None:
             raise BundleNotFoundError(
-                exchange=exchange.name,
+                exchange=exchange.name.title(),
                 data_frequency=data_frequency
             )
 
@@ -321,9 +321,10 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
             raise PricingDataNotLoadedError(
                 field=field,
                 first_trading_day=first_trading_day,
-                exchange=exchange.name,
+                exchange=exchange.name.title(),
                 symbols=symbols,
-                symbol_list=symbol_list
+                symbol_list=symbol_list,
+                data_frequency=data_frequency
             )
 
         series = dict()
@@ -340,7 +341,7 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
         if dt < first_trading_day:
             raise PricingDataBeforeTradingError(
                 first_trading_day=first_trading_day,
-                exchange=assets[0].exchange,
+                exchange=assets[0].exchange.title(),
                 symbols=[asset.symbol.encode('utf-8') for asset in assets],
                 dt=dt,
             )
@@ -365,10 +366,11 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
                 raise PricingDataNotLoadedError(
                     field=field,
                     first_trading_day=self._get_first_trading_day(assets),
-                    exchange=exchange.name,
+                    exchange=exchange.name.title(),
                     symbols=[asset.symbol.encode('utf-8') for asset in assets],
                     symbol_list=''.join(
-                        [asset.symbol.encode('utf-8') for asset in assets])
+                        [asset.symbol.encode('utf-8') for asset in assets]),
+                    data_frequency=data_frequency
                 )
 
             return values

@@ -130,7 +130,7 @@ class Exchange:
 
         if not symbol:
             raise ValueError('Currency %s not supported by exchange %s' %
-                             (asset['symbol'], self.name))
+                             (asset['symbol'], self.name.title()))
 
         return symbol
 
@@ -174,10 +174,10 @@ class Exchange:
                 asset = self.assets[key]
 
         if not asset:
-            supported_symbols = [pair.symbol for pair in self.assets.values()]
+            supported_symbols = [pair.symbol.encode('utf-8') for pair in self.assets.values()]
             raise SymbolNotFoundOnExchange(
                 symbol=symbol,
-                exchange=self.name,
+                exchange=self.name.title(),
                 supported_symbols=supported_symbols
             )
 
@@ -529,7 +529,7 @@ class Exchange:
         reader = self.bundle.get_reader(data_frequency)
         if reader is None:
             raise BundleNotFoundError(
-                exchange=self.name,
+                exchange=self.name.title(),
                 data_frequency=data_frequency
             )
 
@@ -570,7 +570,7 @@ class Exchange:
             elif field == 'volume':
                 agg = 'sum'
             else:
-                raise ValueError('invalid field')
+                raise ValueError('Invalid field.')
 
             df = df.resample('{}T'.format(candle_size)).agg(agg)
 
@@ -592,7 +592,7 @@ class Exchange:
         if base_position_available is None:
             raise BaseCurrencyNotFoundError(
                 base_currency=self.base_currency,
-                exchange=self.name
+                exchange=self.name.title()
             )
 
         portfolio = self._portfolio
@@ -682,7 +682,7 @@ class Exchange:
             style = ExchangeStopOrder(stop_price, exchange=self.name)
 
         elif style is not None:
-            raise InvalidOrderStyle(exchange=self.name,
+            raise InvalidOrderStyle(exchange=self.name.title(),
                                     style=style.__class__.__name__)
         else:
             raise ValueError('Incomplete order data.')

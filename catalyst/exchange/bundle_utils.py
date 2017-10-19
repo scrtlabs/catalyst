@@ -12,7 +12,7 @@ import pytz
 from catalyst.data.bundles import from_bundle_ingest_dirname
 from catalyst.data.bundles.core import download_without_progress
 from catalyst.exchange.exchange_errors import ApiCandlesError, \
-    PricingDataBeforeTradingError
+    PricingDataBeforeTradingError, NoDataAvailableOnExchange
 from catalyst.exchange.exchange_utils import get_exchange_bundles_folder
 from catalyst.utils.deprecate import deprecated
 from catalyst.utils.paths import data_path
@@ -134,10 +134,17 @@ def get_adj_dates(start, end, assets, data_frequency):
     if end is None or (last_entry is not None and end > last_entry):
         end = last_entry
 
-    if start >= end:
+    if end is None:
+         raise NoDataAvailableOnExchange(
+            exchange=asset.exchange.title(),
+            symbol=[asset.symbol.encode('utf-8')],
+            data_frequency=data_frequency,
+            )
+
+    if end is None or start >= end:
         raise PricingDataBeforeTradingError(
-            symbols=[asset.symbol],
-            exchange=asset.exchange,
+            symbols=[asset.symbol.encode('utf-8')],
+            exchange=asset.exchange.title(),
             first_trading_day=earliest_trade,
             dt=end
         )
