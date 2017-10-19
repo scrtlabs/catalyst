@@ -21,14 +21,14 @@ extensions = [
 
 
 extlinks = {
-    'issue': ('https://github.com/quantopian/zipline/issues/%s', '#'),
-    'commit': ('https://github.com/quantopian/zipline/commit/%s', ''),
+    'issue': ('https://github.com/enigmampc/catalyst/issues/%s', '#'),
+    'commit': ('https://github.com/enigmampc/catalyst/commit/%s', ''),
 }
 
 # -- Docstrings ---------------------------------------------------------------
 
-extensions += ['numpydoc']
-numpydoc_show_class_members = False
+#extensions += ['numpydoc']
+#numpydoc_show_class_members = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['.templates']
@@ -40,8 +40,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Zipline'
-copyright = u'2016, Quantopian Inc.'
+project = u'Catalyst'
+copyright = u'2017, Enigma MPC'
 
 # The full version, including alpha/beta/rc tags, but excluding the commit hash
 #release = version.split('+', 1)[0]
@@ -85,7 +85,7 @@ html_show_sphinx = True
 html_show_copyright = True
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'ziplinedoc'
+htmlhelp_basename = 'catalystdoc'
 
 intersphinx_mapping = {
     'http://docs.python.org/dev': None,
