@@ -12,6 +12,7 @@
 # limitations under the License.
 
 import abc
+from datetime import timedelta
 from time import sleep
 
 import pandas as pd
@@ -19,6 +20,7 @@ from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
 from catalyst.data.data_portal import DataPortal
+from catalyst.errors import HistoryWindowStartsBeforeData
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
@@ -292,6 +294,18 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
         elif data_frequency == 'daily':
             session = self.trading_calendar.minute_to_session_label(end_dt)
             dts = self._get_days_for_window(session, bar_count)
+
+            if len(dts) == 0:
+                symbols = [asset.symbol for asset in assets]
+                raise PricingDataNotLoadedError(
+                    field=field,
+                    symbols=symbols,
+                    exchange=exchange.name,
+                    first_trading_day= \
+                        min([asset.start_date for asset in assets]),
+                    data_frequency=data_frequency,
+                    symbol_list=','.join(symbols)
+                )
 
             self.ensure_after_first_day(dts[0], assets)
 

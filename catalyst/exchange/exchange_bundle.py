@@ -2,16 +2,15 @@ import os
 import shutil
 from datetime import timedelta
 
-import numpy as np
 import pandas as pd
 from logbook import Logger, INFO
 
 from catalyst import get_calendar
 from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
     BcolzMinuteBarMetadata
-from catalyst.exchange.bundle_utils import get_ffill_candles, range_in_bundle, \
+from catalyst.exchange.bundle_utils import range_in_bundle, \
     get_bcolz_chunk, get_delta, get_adj_dates, get_month_start_end, \
-    get_year_start_end, get_periods_range
+    get_year_start_end, get_periods_range, get_df_from_arrays
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
 from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
@@ -192,79 +191,6 @@ class ExchangeBundle:
                 invalid_data_behavior='raise'
             )
 
-    def ingest_candles(self, candles, bar_count, start_dt, end_dt,
-                       data_frequency,
-                       previous_candle=dict()):
-        """
-        Ingest candles obtained via the get_candles API of an exchange.
-
-        Since exchange APIs generally only do not return candles when there
-        are no transactions in the period, we ffill values using the
-        previous candle to ensure that each period has a candle.
-
-        :param bar_count:
-        :param end_dt:
-        :param data_frequency:
-        :param asset:
-        :param writer:
-        :param previous_candle
-        :return:
-        """
-
-        writer = self.get_writer(start_dt, end_dt, data_frequency)
-
-        num_candles = 0
-        data = []
-        for asset in candles:
-            asset_candles = candles[asset]
-            if not asset_candles:
-                log.debug(
-                    'no data: {symbols} on {exchange}, date {end}'.format(
-                        symbols=asset,
-                        exchange=self.exchange.name,
-                        end=end_dt
-                    )
-                )
-                continue
-
-            previous = previous_candle[asset] \
-                if asset in previous_candle else None
-
-            all_dates, all_candles = get_ffill_candles(
-                candles=asset_candles,
-                bar_count=bar_count,
-                end_dt=end_dt,
-                data_frequency=data_frequency,
-                previous_candle=previous
-            )
-            previous_candle[asset] = all_candles[-1]
-
-            df = pd.DataFrame(
-                data=all_candles,
-                index=all_dates,
-                columns=['open', 'high', 'low', 'close', 'volume']
-            )
-
-            if not df.empty:
-                df.sort_index(inplace=True)
-
-                sid = asset.sid
-                num_candles += len(df.values)
-
-                data.append((sid, df))
-
-        log.debug(
-            'writing {num_candles} candles for {bar_count} bars'
-            'ending {end}'.format(
-                num_candles=num_candles,
-                bar_count=bar_count,
-                end=end_dt
-            )
-        )
-        self._write(data, writer, data_frequency)
-
-        return data
-
     def get_calendar_periods_range(self, start_dt, end_dt, data_frequency):
         return self.calendar.minutes_in_range(start_dt, end_dt) \
             if data_frequency == 'minute' \
@@ -295,9 +221,6 @@ class ExchangeBundle:
             period=period
         )
 
-        periods = self.get_calendar_periods_range(
-            start_dt, end_dt, data_frequency
-        )
         reader = self.get_reader(data_frequency, path=path)
         if reader is None:
             raise TempBundleNotFoundError(path=path)
@@ -312,15 +235,11 @@ class ExchangeBundle:
         if not arrays:
             return path
 
-        ohlcv = dict()
-        for index, field in enumerate(
-                ['open', 'high', 'low', 'close', 'volume']):
-            ohlcv[field] = arrays[index].flatten()
-
-        df = pd.DataFrame(
-            data=ohlcv,
-            index=periods
+        periods = self.get_calendar_periods_range(
+            start_dt, end_dt, data_frequency
         )
+
+        df = get_df_from_arrays(arrays, periods)
 
         if empty_rows_behavior is not 'ignore':
             nan_rows = df[df.isnull().T.any().T].index
@@ -369,7 +288,6 @@ class ExchangeBundle:
         if not df.empty:
             df.sort_index(inplace=True)
             data.append((asset.sid, df))
-
         self._write(data, writer, data_frequency)
 
         if cleanup:

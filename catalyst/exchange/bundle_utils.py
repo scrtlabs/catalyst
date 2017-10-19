@@ -135,11 +135,11 @@ def get_adj_dates(start, end, assets, data_frequency):
         end = last_entry
 
     if end is None:
-         raise NoDataAvailableOnExchange(
+        raise NoDataAvailableOnExchange(
             exchange=asset.exchange.title(),
             symbol=[asset.symbol.encode('utf-8')],
             data_frequency=data_frequency,
-            )
+        )
 
     if end is None or start >= end:
         raise PricingDataBeforeTradingError(
@@ -184,8 +184,21 @@ def get_year_start_end(dt):
     return year_start, year_end
 
 
-def get_ffill_candles(candles, bar_count, end_dt, data_frequency,
-                      previous_candle=None):
+def get_df_from_arrays(arrays, periods):
+    ohlcv = dict()
+    for index, field in enumerate(
+            ['open', 'high', 'low', 'close', 'volume']):
+        ohlcv[field] = arrays[index].flatten()
+
+    df = pd.DataFrame(
+        data=ohlcv,
+        index=periods
+    )
+    return df
+
+
+def get_df_from_candles(candles, bar_count, end_dt, data_frequency,
+                        previous_candle=None):
     """
     Create candles for each period of the specified range, forward-filling
     missing candles with the previous value.

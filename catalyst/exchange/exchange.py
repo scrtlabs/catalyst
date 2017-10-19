@@ -1,5 +1,4 @@
 import abc
-import random
 import re
 from abc import ABCMeta, abstractmethod, abstractproperty
 from datetime import timedelta
@@ -12,7 +11,8 @@ from logbook import Logger
 
 from catalyst.data.data_portal import BASE_FIELDS
 from catalyst.exchange.bundle_utils import get_start_dt, \
-    get_delta, get_trailing_candles_dt, get_periods, get_adj_dates
+    get_delta, get_trailing_candles_dt, get_periods, get_adj_dates, \
+    get_df_from_candles
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     InvalidOrderStyle, BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
@@ -100,12 +100,6 @@ class Exchange:
             delta = now - cpt_date
 
             sleep_period = 60 - delta.total_seconds()
-
-            # log.debug(
-            #     'max requests {} reached, sleeping for {} seconds'.format(
-            #         self.max_requests_per_minute,
-            #         sleep_period
-            #     ))
             sleep(sleep_period)
 
             now = pd.Timestamp.utcnow()
@@ -174,7 +168,8 @@ class Exchange:
                 asset = self.assets[key]
 
         if not asset:
-            supported_symbols = [pair.symbol.encode('utf-8') for pair in self.assets.values()]
+            supported_symbols = [pair.symbol.encode('utf-8') for pair in
+                                 self.assets.values()]
             raise SymbolNotFoundOnExchange(
                 symbol=symbol,
                 exchange=self.name.title(),
@@ -367,34 +362,75 @@ class Exchange:
             )
         )
 
-        # Don't use a timezone here
-        dt = pd.Timestamp.utcnow().floor('1 min')
         ohlc = self.get_candles(data_frequency, asset)
         if field not in ohlc:
             raise KeyError('Invalid column: %s' % field)
 
-        if self.minute_writer is not None:
-            df = pd.DataFrame(
-                [ohlc],
-                index=pd.DatetimeIndex([dt]),
-                columns=['open', 'high', 'low', 'close', 'volume']
-            )
-
-            try:
-                # TODO: use victor's modified branch using int64
-                self.minute_writer.write_sid(
-                    sid=asset.sid,
-                    df=df
-                )
-                log.debug('wrote minute data: {}'.format(dt))
-            except Exception as e:
-                log.warn(
-                    'unable to write minute data: {} {}'.format(dt, e))
-
-            value = ohlc[field]
-            log.debug('got spot value: {}'.format(value))
+        value = ohlc[field]
+        log.debug('got spot value: {}'.format(value))
 
         return value
+
+    def get_series_from_bundle(self, assets, start_dt, end_dt, data_frequency,
+                               field):
+        """
+
+        :return:
+        """
+        reader = self.bundle.get_reader(data_frequency)
+
+        if reader is None:
+            raise BundleNotFoundError(
+                exchange=self.name.title(),
+                data_frequency=data_frequency
+            )
+
+        series = dict()
+        try:
+            arrays = reader.load_raw_arrays(
+                sids=[asset.sid for asset in assets],
+                fields=[field],
+                start_dt=start_dt,
+                end_dt=end_dt
+            )
+
+            periods = self.bundle.get_calendar_periods_range(
+                start_dt, end_dt, data_frequency
+            )
+
+            for asset_index, asset in enumerate(assets):
+                asset_values = arrays[asset_index]
+
+                value_series = pd.Series(asset_values[0], index=periods)
+                series[asset] = value_series
+
+        except Exception as e:
+            log.debug('unable to retreive from bundle: {}'.format(e))
+
+        return series
+
+    def get_series_from_candles(self, candles, start_dt, end_dt,
+                                field, previous_value=None):
+        """
+        Get a series of field data for the specified candles.
+
+        :param candles:
+        :param start_dt:
+        :param end_dt:
+        :param field:
+        :param previous_value:
+        :return:
+        """
+
+        dates = [candle['last_traded'] for candle in candles]
+        values = [candle[field] for candle in candles]
+
+        periods = pd.date_range(start_dt, end_dt)
+        series = pd.Series(values, index=dates)
+
+        series.reindex(periods, method='ffill', fill_value=previous_value)
+
+        return series
 
     def get_history_window(self,
                            assets,
@@ -448,11 +484,8 @@ class Exchange:
             raise InvalidHistoryFrequencyError(frequency)
 
         if unit.lower() == 'd':
-            if data_frequency != 'daily':
-                raise MismatchingFrequencyError(
-                    frequency=frequency,
-                    data_frequency=data_frequency
-                )
+            if data_frequency == 'minute':
+                data_frequency = 'daily'
 
         elif unit.lower() == 'm':
             if data_frequency != 'minute':
@@ -467,94 +500,70 @@ class Exchange:
         adj_bar_count = candle_size * bar_count
         start_dt = get_start_dt(end_dt, adj_bar_count, data_frequency)
 
-        start_dt, end_dt = get_adj_dates(start_dt, end_dt, assets,
-                                         data_frequency)
+        adj_start_dt, adj_end_dt = get_adj_dates(
+            start_dt, end_dt, assets, data_frequency
+        )
 
         missing_assets = self.bundle.filter_existing_assets(
             assets=assets,
-            start_dt=start_dt,
-            end_dt=end_dt,
+            start_dt=adj_start_dt,
+            end_dt=adj_end_dt,
             data_frequency=data_frequency
         )
 
         if missing_assets:
             self.bundle.ingest_assets(
                 assets=assets,
-                start_dt=start_dt,
-                end_dt=end_dt,
+                start_dt=adj_start_dt,
+                end_dt=adj_end_dt,
                 data_frequency=data_frequency
             )
 
-        # We check again for data which may be too recent for the consolidated
-        # exchanges service
-        trailing_assets = self.bundle.filter_existing_assets(
+        series = self.get_series_from_bundle(
             assets=assets,
-            start_dt=start_dt,
-            end_dt=end_dt,
-            data_frequency=data_frequency
+            start_dt=adj_start_dt,
+            end_dt=adj_end_dt,
+            data_frequency=data_frequency,
+            field=field
         )
-        if trailing_assets:
-            # Adding bars too recent to be contained in the consolidated
-            # exchanges bundles. We go directly against the exchange
-            # to retrieve the candles.
-            for asset in trailing_assets:
-                trailing_candles_dt = get_trailing_candles_dt(
-                    asset=asset,
-                    start_dt=start_dt,
-                    end_dt=end_dt,
-                    data_frequency=data_frequency
+
+        for asset in assets:
+            if asset not in series or series[asset].index[-1] < end_dt:
+                # Adding bars too recent to be contained in the consolidated
+                # exchanges bundles. We go directly against the exchange
+                # to retrieve the candles.
+
+                trailing_dt = \
+                    series[asset].index[-1] + get_delta(1, data_frequency) \
+                        if asset in series else start_dt
+
+                trailing_bar_count = \
+                    get_periods(trailing_dt, end_dt, data_frequency)
+
+                # The get_history method supports multiple asset
+                candles = self.get_candles(
+                    data_frequency=data_frequency,
+                    assets=asset,
+                    bar_count=trailing_bar_count,
+                    end_dt=end_dt
                 )
 
-                if trailing_candles_dt is not None:
-                    trailing_bar_count = \
-                        get_periods(start_dt, end_dt, data_frequency)
+                last_value = series[asset].iloc(0) if asset in series \
+                    else np.nan
 
-                    # The get_history method supports multiple asset
-                    candles = self.get_candles(
-                        data_frequency=data_frequency,
-                        assets=[asset],
-                        bar_count=trailing_bar_count,
-                        end_dt=end_dt
-                    )
+                candle_series = self.get_series_from_candles(
+                    candles=candles,
+                    start_dt=trailing_dt,
+                    end_dt=end_dt,
+                    field=field,
+                    previous_value=last_value
+                )
 
-                    # TODO: Do I need the previous_candle?
-                    self.bundle.ingest_candles(
-                        candles=candles,
-                        bar_count=trailing_bar_count,
-                        start_dt=start_dt,
-                        end_dt=end_dt,
-                        data_frequency=data_frequency
-                    )
+                if asset in series:
+                    series[asset].append(candle_series)
 
-        reader = self.bundle.get_reader(data_frequency)
-        if reader is None:
-            raise BundleNotFoundError(
-                exchange=self.name.title(),
-                data_frequency=data_frequency
-            )
-
-        values = reader.load_raw_arrays(
-            sids=[asset.sid for asset in assets],
-            fields=[field],
-            start_dt=start_dt,
-            end_dt=end_dt
-        )
-
-        series = dict()
-        for asset_index, asset in enumerate(assets):
-            all_dates = []
-            asset_values = []
-
-            # TODO: use numpy to avoid the loop
-            date = start_dt
-            for value in values[0]:
-                all_dates.append(date)
-                asset_values.append(value[asset_index])
-
-                date += get_delta(1, data_frequency)
-
-            value_series = pd.Series(asset_values, index=all_dates)
-            series[asset] = value_series
+                else:
+                    series[asset] = candle_series
 
         df = pd.DataFrame(series)
 

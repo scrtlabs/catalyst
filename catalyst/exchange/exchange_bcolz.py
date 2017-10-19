@@ -61,12 +61,13 @@ class BcolzExchangeBarReader(BcolzMinuteBarReader):
         num_days = len(periods)
         shape = num_days, len(sids)
 
-        if len(fields) == 1 and fields[0] == 'volume':
-            fields.insert(0, 'close')
+        all_fields = fields[:]
+        if len(all_fields) == 1 and all_fields[0] == 'volume':
+            all_fields.insert(0, 'close')
 
         mask = None
         data = []
-        for field in fields:
+        for field in all_fields:
             if field != 'volume':
                 out = np.full(shape, np.nan)
             else:
@@ -83,6 +84,7 @@ class BcolzExchangeBarReader(BcolzMinuteBarReader):
                     a[mask] * self._ohlc_ratio_inverse_for_sid(sid)
                 )
 
-            data.append(out)
+            if field in fields:
+                data.append(out)
 
         return data
