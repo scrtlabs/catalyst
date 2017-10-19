@@ -17,7 +17,7 @@ log = Logger('test_exchange_bundle')
 
 class ExchangeBundleTestCase:
     def test_ingest_minute(self):
-        exchange_name = 'poloniex'
+        exchange_name = 'bitfinex'
 
         # start = pd.to_datetime('2017-09-01', utc=True)
         start = pd.to_datetime('2017-9-1', utc=True)
@@ -27,8 +27,8 @@ class ExchangeBundleTestCase:
 
         log.info('ingesting exchange bundle {}'.format(exchange_name))
         exchange_bundle.ingest(
-            data_frequency='daily',
-            include_symbols='etc_btc',
+            data_frequency='minute',
+            include_symbols='neo_eth',
             # include_symbols=None,
             exclude_symbols=None,
             start=start,

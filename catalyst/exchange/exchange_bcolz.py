@@ -41,12 +41,14 @@ class BcolzExchangeBarReader(BcolzMinuteBarReader):
 
     def load_raw_arrays(self, fields, start_dt, end_dt, sids):
 
-        if self._data_frequency == 'minute':
-            return super(BcolzExchangeBarReader, self) \
-                .load_raw_arrays(fields, start_dt, end_dt, sids)
+        # if self._data_frequency == 'minute':
+        #     return super(BcolzExchangeBarReader, self) \
+        #         .load_raw_arrays(fields, start_dt, end_dt, sids)
+        #
+        # else:
+        #     return self._load_daily_raw_arrays(fields, start_dt, end_dt, sids)
 
-        else:
-            return self._load_daily_raw_arrays(fields, start_dt, end_dt, sids)
+        return self._load_daily_raw_arrays(fields, start_dt, end_dt, sids)
 
     def _load_daily_raw_arrays(self, fields, start_dt, end_dt, sids):
         start_idx = self._find_position_of_minute(start_dt)
@@ -62,7 +64,10 @@ class BcolzExchangeBarReader(BcolzMinuteBarReader):
         mask = None
         data = []
         for field in fields:
-            out = np.full(shape, np.nan)
+            if field != 'volume':
+                out = np.full(shape, np.nan)
+            else:
+                out = np.zeros(shape, dtype=np.float64)
 
             for i, sid in enumerate(sids):
                 carray = self._open_minute_file(field, sid)

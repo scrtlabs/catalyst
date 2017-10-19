@@ -319,7 +319,6 @@ class ExchangeBundle:
         for index, field in enumerate(
                 ['open', 'high', 'low', 'close', 'volume']):
             ohlcv[field] = arrays[index].flatten()
-            ohlcv[field] = ohlcv[field][~np.isnan(ohlcv[field])]
 
         df = pd.DataFrame(
             data=ohlcv,
