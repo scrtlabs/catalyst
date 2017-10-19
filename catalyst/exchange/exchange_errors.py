@@ -4,7 +4,7 @@ from catalyst.errors import ZiplineError
 
 def silent_except_hook(exctype, excvalue, exctraceback):
     if exctype in [PricingDataBeforeTradingError, PricingDataNotLoadedError,
-                   SymbolNotFoundOnExchange, ]:
+                   SymbolNotFoundOnExchange, NoDataAvailableOnExchange, ]:
         fn = traceback.extract_tb(exctraceback)[-1][0]
         ln = traceback.extract_tb(exctraceback)[-1][1]
         print "Error traceback: {1} (line {2})\n" \
@@ -197,9 +197,14 @@ class PricingDataNotLoadedError(ZiplineError):
            'exchange {exchange} since {first_trading_day} is unavailable. '
            'The bundle data is either out-of-date or has not been loaded yet. '
            'Please ingest data using the command '
-           '`catalyst ingest-exchange -x {exchange} -i {symbol_list}`. '
+           '`catalyst ingest-exchange -x {exchange} -f {data_frequency} -i {symbol_list}`. '
            'See catalyst documentation for details.').strip()
 
 
 class ApiCandlesError(ZiplineError):
     msg = ('Unable to fetch candles from the remote API: {error}.').strip()
+
+class NoDataAvailableOnExchange(ZiplineError):
+    msg = ('Requested data for trading pair {symbol} is not available on exchange {exchange} '
+           'in `{data_frequency}` frequency at this time. '
+           'Check `http://enigma.co/catalyst/status` for market coverage.').strip()
