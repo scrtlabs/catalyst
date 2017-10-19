@@ -1,9 +1,0 @@
-include LICENSE
-
-include etc/requirements*.txt
-recursive-include catalyst *.pyi
-recursive-include catalyst *.pxi
-
-recursive-include catalyst/resources *.*
-include versioneer.py
-include catalyst/_version.py

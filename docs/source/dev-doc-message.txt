@@ -1,3 +1,0 @@
-.. note::
-
-   This page is intended for developers of zipline.
