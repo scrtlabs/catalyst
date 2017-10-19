@@ -1,3 +1,0 @@
-zipline/_version.py export-subst
-*.ipynb binary
-catalyst/_version.py export-subst
