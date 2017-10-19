@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Catalyst'
-copyright = u'2017, Enigma MPC'
+copyright = u'2017, Enigma MPC, Inc.'
 
 # The full version, including alpha/beta/rc tags, but excluding the commit hash
 #release = version.split('+', 1)[0]

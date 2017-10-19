@@ -4,12 +4,12 @@ Install
 Installing with ``pip``
 -----------------------
 
-Installing Zipline via ``pip`` is slightly more involved than the average
+Installing Catalyst via ``pip`` is slightly more involved than the average
 Python package.
 
 There are two reasons for the additional complexity:
 
-1. Zipline ships several C extensions that require access to the CPython C API.
+1. Catalyst ships several C extensions that require access to the CPython C API.
    In order to build the C extensions, ``pip`` needs access to the CPython
    header files for your Python installation.
 
@@ -28,13 +28,19 @@ your particular platform), you should be able to simply run
 
 .. code-block:: bash
 
-   $ pip install zipline
+   $ pip install enigma-catalyst
 
-If you use Python for anything other than Zipline, we **strongly** recommend
+If you use Python for anything other than Catalyst, we **strongly** recommend
 that you install in a `virtualenv
 <https://virtualenv.readthedocs.org/en/latest>`_.  The `Hitchhiker's Guide to
 Python`_ provides an `excellent tutorial on virtualenv
-<http://docs.python-guide.org/en/latest/dev/virtualenvs/>`_.
+<http://docs.python-guide.org/en/latest/dev/virtualenvs/>`_. Here's a summarized
+version:
+
+.. code-block:: bash
+   $ virtualenv catalyst-venv
+   $ source ./catalyst-venv/bin/activate
+   $ pip install enigma-catalyst
 
 GNU/Linux
 ~~~~~~~~~
