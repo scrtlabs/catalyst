@@ -15,7 +15,7 @@ from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
 from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
     InvalidHistoryFrequencyError, PricingDataBeforeTradingError, \
-    TempBundleNotFoundError
+    TempBundleNotFoundError, NoDataAvailableOnExchange
 from catalyst.exchange.exchange_utils import get_exchange_folder
 from catalyst.utils.cli import maybe_show_progress
 from catalyst.utils.paths import ensure_directory
@@ -316,7 +316,7 @@ class ExchangeBundle:
                 asset_start, asset_end = \
                     get_adj_dates(start_dt, end_dt, [asset], data_frequency)
 
-            except PricingDataBeforeTradingError:
+            except NoDataAvailableOnExchange:
                 continue
 
             # Aligning start / end dates with the daily calendar

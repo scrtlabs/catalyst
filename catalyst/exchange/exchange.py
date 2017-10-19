@@ -16,7 +16,7 @@ from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     InvalidOrderStyle, BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
     InvalidHistoryFrequencyError, MismatchingFrequencyError, \
-    BundleNotFoundError
+    BundleNotFoundError, NoDataAvailableOnExchange
 from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
     ExchangeLimitOrder, ExchangeStopOrder
 from catalyst.exchange.exchange_portfolio import ExchangePortfolio
@@ -487,11 +487,13 @@ class Exchange:
                 data_frequency = 'daily'
 
         elif unit.lower() == 'm':
-            if data_frequency != 'minute':
-                raise MismatchingFrequencyError(
-                    frequency=frequency,
-                    data_frequency=data_frequency
-                )
+            # if data_frequency != 'minute':
+            # raise MismatchingFrequencyError(
+            #     frequency=frequency,
+            #     data_frequency=data_frequency
+            # )
+            if data_frequency == 'daily':
+                data_frequency = 'minute'
 
         else:
             raise InvalidHistoryFrequencyError(frequency)
@@ -499,32 +501,41 @@ class Exchange:
         adj_bar_count = candle_size * bar_count
         start_dt = get_start_dt(end_dt, adj_bar_count, data_frequency)
 
-        adj_start_dt, adj_end_dt = get_adj_dates(
-            start_dt, end_dt, assets, data_frequency
-        )
+        try:
+            adj_start_dt, adj_end_dt = get_adj_dates(
+                start_dt, end_dt, assets, data_frequency
+            )
+            in_bundle = True
 
-        missing_assets = self.bundle.filter_existing_assets(
-            assets=assets,
-            start_dt=adj_start_dt,
-            end_dt=adj_end_dt,
-            data_frequency=data_frequency
-        )
+        except NoDataAvailableOnExchange:
+            in_bundle = False
 
-        if missing_assets:
-            self.bundle.ingest_assets(
+        if in_bundle:
+            missing_assets = self.bundle.filter_existing_assets(
                 assets=assets,
                 start_dt=adj_start_dt,
                 end_dt=adj_end_dt,
                 data_frequency=data_frequency
             )
 
-        series = self.get_series_from_bundle(
-            assets=assets,
-            start_dt=adj_start_dt,
-            end_dt=adj_end_dt,
-            data_frequency=data_frequency,
-            field=field
-        )
+            if missing_assets:
+                self.bundle.ingest_assets(
+                    assets=assets,
+                    start_dt=adj_start_dt,
+                    end_dt=adj_end_dt,
+                    data_frequency=data_frequency
+                )
+
+            series = self.get_series_from_bundle(
+                assets=assets,
+                start_dt=adj_start_dt,
+                end_dt=adj_end_dt,
+                data_frequency=data_frequency,
+                field=field
+            )
+
+        else:
+            series = dict()
 
         for asset in assets:
             if asset not in series or series[asset].index[-1] < end_dt:

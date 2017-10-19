@@ -134,19 +134,11 @@ def get_adj_dates(start, end, assets, data_frequency):
     if end is None or (last_entry is not None and end > last_entry):
         end = last_entry
 
-    if end is None:
+    if end is None or start >= end:
         raise NoDataAvailableOnExchange(
             exchange=asset.exchange.title(),
             symbol=[asset.symbol.encode('utf-8')],
             data_frequency=data_frequency,
-        )
-
-    if end is None or start >= end:
-        raise PricingDataBeforeTradingError(
-            symbols=[asset.symbol.encode('utf-8')],
-            exchange=asset.exchange.title(),
-            first_trading_day=earliest_trade,
-            dt=end
         )
 
     return start, end
