@@ -7,7 +7,7 @@ from catalyst.api import symbol
 
 def initialize(context):
     print('initializing')
-    context.asset = symbol('etc_eth')
+    context.asset = symbol('btc_usdt')
 
 
 def handle_data(context, data):
@@ -29,7 +29,7 @@ def handle_data(context, data):
 
 run_algorithm(
     capital_base=250,
-    start=pd.to_datetime('2017-9-01', utc=True),
+    start=pd.to_datetime('2015-2-19', utc=True),
     end=pd.to_datetime('2017-9-30', utc=True),
     data_frequency='daily',
     initialize=initialize,

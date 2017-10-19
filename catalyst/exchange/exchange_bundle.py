@@ -265,12 +265,10 @@ class ExchangeBundle:
 
         return data
 
-    def download_bundle(self, name):
-        """
-
-        :param name:
-        :return:
-        """
+    def get_calendar_periods_range(self, start_dt, end_dt, data_frequency):
+        return self.calendar.minutes_in_range(start_dt, end_dt) \
+            if data_frequency == 'minute' \
+            else self.calendar.sessions_in_range(start_dt, end_dt)
 
     def ingest_ctable(self, asset, data_frequency, period, start_dt, end_dt,
                       writer, empty_rows_behavior='strip', cleanup=False):
@@ -297,10 +295,9 @@ class ExchangeBundle:
             period=period
         )
 
-        periods = self.calendar.minutes_in_range(start_dt, end_dt) \
-            if data_frequency == 'minute' \
-            else self.calendar.sessions_in_range(start_dt, end_dt)
-
+        periods = self.get_calendar_periods_range(
+            start_dt, end_dt, data_frequency
+        )
         reader = self.get_reader(data_frequency, path=path)
         if reader is None:
             raise TempBundleNotFoundError(path=path)
@@ -384,6 +381,8 @@ class ExchangeBundle:
 
     def prepare_chunks(self, assets, data_frequency, start_dt, end_dt):
         """
+        Split a price data request into chunks corresponding to individual
+        bundles.
 
         :param assets:
         :param data_frequency:
@@ -402,17 +401,25 @@ class ExchangeBundle:
             except PricingDataBeforeTradingError:
                 continue
 
-            sessions = get_periods_range(asset_start, asset_end,
-                                         data_frequency)
+            # Aligning start / end dates with the daily calendar
+            sessions = get_periods_range(start_dt, end_dt, data_frequency) \
+                if data_frequency == 'minute' \
+                else self.calendar.sessions_in_range(start_dt, end_dt)
 
-            periods = []
+            if asset_start < sessions[0]:
+                asset_start = sessions[0]
+
+            if asset_end > sessions[-1]:
+                asset_end = sessions[-1]
+
+            chunk_labels = []
             dt = sessions[0]
             while dt <= sessions[-1]:
-                period = '{}-{:02d}'.format(dt.year, dt.month) \
+                label = '{}-{:02d}'.format(dt.year, dt.month) \
                     if data_frequency == 'minute' else '{}'.format(dt.year)
 
-                if period not in periods:
-                    periods.append(period)
+                if label not in chunk_labels:
+                    chunk_labels.append(label)
 
                     # Adjusting the period dates to match the availability
                     # of the trading pair
@@ -451,13 +458,13 @@ class ExchangeBundle:
                     )
 
                     if not has_data:
-                        log.debug('adding period: {}'.format(period))
+                        log.debug('adding period: {}'.format(label))
                         chunks.append(
                             dict(
                                 asset=asset,
                                 period_start=period_start,
                                 period_end=period_end,
-                                period=period
+                                period=label
                             )
                         )
 
