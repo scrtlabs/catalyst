@@ -11,8 +11,7 @@ from logbook import Logger
 
 from catalyst.data.data_portal import BASE_FIELDS
 from catalyst.exchange.bundle_utils import get_start_dt, \
-    get_delta, get_trailing_candles_dt, get_periods, get_adj_dates, \
-    get_df_from_candles
+    get_delta, get_periods, get_adj_dates
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     InvalidOrderStyle, BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
@@ -405,7 +404,7 @@ class Exchange:
                 series[asset] = value_series
 
         except Exception as e:
-            log.debug('unable to retreive from bundle: {}'.format(e))
+            log.debug('unable to retrieve from bundle: {}'.format(e))
 
         return series
 

@@ -78,12 +78,12 @@ class ExchangeBundleTestCase:
         # data_frequency = 'daily'
         # include_symbols = 'neo_btc,bch_btc,eth_btc'
 
-        exchange_name = 'poloniex'
+        exchange_name = 'bitfinex'
         data_frequency = 'daily'
-        include_symbols = 'btc_usdt'
+        include_symbols = 'etc_btc'
 
-        start = pd.to_datetime('2015-01-01', utc=True)
-        end = pd.to_datetime('2015-12-31', utc=True)
+        start = pd.to_datetime('2016-11-01', utc=True)
+        end = pd.to_datetime('2017-10-16', utc=True)
 
         exchange = get_exchange(exchange_name)
         exchange_bundle = ExchangeBundle(exchange)
