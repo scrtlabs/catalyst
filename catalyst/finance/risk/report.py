@@ -63,7 +63,9 @@ from dateutil.relativedelta import relativedelta
 
 from . period import RiskMetricsPeriod
 
-log = logbook.Logger('Risk Report')
+from catalyst.constants import LOG_LEVEL
+
+log = logbook.Logger('Risk Report', level=LOG_LEVEL)
 
 
 class RiskReport(object):

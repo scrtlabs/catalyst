@@ -34,7 +34,9 @@ from catalyst.finance.commission import (
 from catalyst.finance.cancel_policy import NeverCancel
 from catalyst.utils.input_validation import expect_types
 
-log = Logger('Blotter')
+from catalyst.constants import LOG_LEVEL
+
+log = Logger('Blotter', level=LOG_LEVEL)
 warning_logger = Logger('AlgoWarning')
 
 

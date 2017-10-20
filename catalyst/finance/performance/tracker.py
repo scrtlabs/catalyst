@@ -70,7 +70,9 @@ import catalyst.finance.risk as risk
 
 from . position_tracker import PositionTracker
 
-log = logbook.Logger('Performance')
+from catalyst.constants import LOG_LEVEL
+
+log = logbook.Logger('Performance', level=LOG_LEVEL)
 
 
 class PerformanceTracker(object):

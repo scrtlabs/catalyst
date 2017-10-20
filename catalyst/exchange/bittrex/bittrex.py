@@ -16,7 +16,9 @@ from catalyst.finance.order import Order, ORDER_STATUS
 from catalyst.exchange.exchange_utils import get_exchange_symbols_filename, \
     download_exchange_symbols
 
-log = Logger('Bittrex')
+from catalyst.constants import LOG_LEVEL
+
+log = Logger('Bittrex', level=LOG_LEVEL)
 
 URL2 = 'https://bittrex.com/Api/v2.0'
 

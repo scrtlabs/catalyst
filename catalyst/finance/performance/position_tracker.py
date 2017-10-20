@@ -32,7 +32,9 @@ from catalyst.assets import (
 )
 from . position import positiondict
 
-log = logbook.Logger('Performance')
+from catalyst.constants import LOG_LEVEL
+
+log = logbook.Logger('Performance', level=LOG_LEVEL)
 
 
 PositionStats = namedtuple('PositionStats',

@@ -24,7 +24,9 @@ from catalyst.exchange.exchange_utils import get_exchange_symbols
 from catalyst.finance.order import ORDER_STATUS
 from catalyst.finance.transaction import Transaction
 
-log = Logger('Exchange')
+from catalyst.constants import LOG_LEVEL
+
+log = Logger('Exchange', level=LOG_LEVEL)
 
 
 class Exchange:

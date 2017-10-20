@@ -3,7 +3,9 @@ from logbook import Logger
 
 from catalyst.protocol import Portfolio, Positions, Position
 
-log = Logger('ExchangePortfolio')
+from catalyst.constants import LOG_LEVEL
+
+log = Logger('ExchangePortfolio', level=LOG_LEVEL)
 
 
 class ExchangePortfolio(Portfolio):

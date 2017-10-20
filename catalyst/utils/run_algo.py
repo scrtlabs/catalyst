@@ -43,7 +43,9 @@ from catalyst.exchange.exchange_utils import get_exchange_auth, \
     get_algo_object
 from logbook import Logger
 
-log = Logger('run_algo')
+from catalyst.constants import LOG_LEVEL
+
+log = Logger('run_algo', level=LOG_LEVEL)
 
 
 class _RunAlgoError(click.ClickException, ValueError):

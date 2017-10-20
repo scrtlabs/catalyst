@@ -138,8 +138,9 @@ from catalyst.gens.sim_engine import MinuteSimulationClock
 from catalyst.sources.benchmark_source import BenchmarkSource
 from catalyst.catalyst_warnings import ZiplineDeprecationWarning
 
+from catalyst.constants import LOG_LEVEL
 
-log = logbook.Logger("CatalystLog")
+log = logbook.Logger("CatalystLog", level=LOG_LEVEL)
 
 
 class TradingAlgorithm(object):

@@ -44,7 +44,9 @@ from catalyst.utils.calendars import get_calendar
 from catalyst.utils.cli import maybe_show_progress
 from catalyst.utils.memoize import lazyval
 
-logger = logbook.Logger('MinuteBars')
+from catalyst.constants import LOG_LEVEL
+
+logger = logbook.Logger('MinuteBars', level=LOG_LEVEL)
 
 US_EQUITIES_MINUTES_PER_DAY = 390
 FUTURES_MINUTES_PER_DAY = 1440

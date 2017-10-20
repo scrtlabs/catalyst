@@ -40,7 +40,9 @@ from catalyst.utils.cli import maybe_show_progress
 
 from . import core as bundles
 
-log = Logger(__name__)
+from catalyst.constants import LOG_LEVEL
+
+log = Logger(__name__, level=LOG_LEVEL)
 seconds_per_call = (pd.Timedelta('10 minutes') / 2000).total_seconds()
 
 class QuandlBundle(BaseEquityPricingBundle):

@@ -76,7 +76,9 @@ from catalyst.utils.numpy_utils import as_column
 from catalyst.utils.preprocess import preprocess
 from catalyst.utils.sqlite_utils import group_into_chunks, coerce_string_to_eng
 
-log = Logger('assets.py')
+from catalyst.constants import LOG_LEVEL
+
+log = Logger('assets.py', level=LOG_LEVEL)
 
 # A set of fields that need to be converted to strings before building an
 # Asset to avoid unicode fields

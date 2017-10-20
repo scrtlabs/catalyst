@@ -26,7 +26,9 @@ from catalyst.data.loader import load_market_data
 from catalyst.utils.calendars import get_calendar
 from catalyst.utils.memoize import remember_last
 
-log = logbook.Logger('Trading')
+from catalyst.constants import LOG_LEVEL
+
+log = logbook.Logger('Trading', level=LOG_LEVEL)
 
 
 DEFAULT_CAPITAL_BASE = 1e5

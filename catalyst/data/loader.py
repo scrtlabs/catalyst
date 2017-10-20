@@ -32,7 +32,9 @@ from ..utils.paths import (
     data_root,
 )
 
-logger = logbook.Logger('Loader')
+from catalyst.constants import LOG_LEVEL
+
+logger = logbook.Logger('Loader', level=LOG_LEVEL)
 
 # Mapping from index symbol to appropriate bond data
 INDEX_MAPPING = {

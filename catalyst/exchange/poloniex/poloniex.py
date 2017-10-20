@@ -33,7 +33,9 @@ from catalyst.exchange.exchange_utils import get_exchange_symbols_filename, \
     download_exchange_symbols
 from catalyst.finance.transaction import Transaction
 
-log = Logger('Poloniex')
+from catalyst.constants import LOG_LEVEL
+
+log = Logger('Poloniex', level=LOG_LEVEL)
 
 
 class Poloniex(Exchange):

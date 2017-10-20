@@ -33,7 +33,9 @@ requests.adapters.DEFAULT_RETRIES = 20
 
 BITFINEX_URL = 'https://api.bitfinex.com'
 
-log = Logger('Bitfinex')
+from catalyst.constants import LOG_LEVEL
+
+log = Logger('Bitfinex', level=LOG_LEVEL)
 warning_logger = Logger('AlgoWarning')
 
 

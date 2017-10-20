@@ -30,8 +30,10 @@ from catalyst.utils.cli import (
 )
 from catalyst.utils.memoize import lazyval
 
+from catalyst.constants import LOG_LEVEL
+
 logbook.StderrHandler().push_application()
-log = logbook.Logger(__name__)
+log = logbook.Logger(__name__, level=LOG_LEVEL)
 
 DEFAULT_RETRIES = 5
 

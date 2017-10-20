@@ -29,7 +29,9 @@ from catalyst.exchange.exchange_errors import (
     PricingDataNotLoadedError, InvalidHistoryFrequencyError,
     BundleNotFoundError)
 
-log = Logger('DataPortalExchange')
+from catalyst.constants import LOG_LEVEL
+
+log = Logger('DataPortalExchange', level=LOG_LEVEL)
 
 
 class DataPortalExchangeBase(DataPortal):

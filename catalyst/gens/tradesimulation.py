@@ -27,7 +27,9 @@ from catalyst.gens.sim_engine import (
     BEFORE_TRADING_START_BAR
 )
 
-log = Logger('Trade Simulation')
+from catalyst.constants import LOG_LEVEL
+
+log = Logger('Trade Simulation', level=LOG_LEVEL)
 
 
 class AlgorithmSimulator(object):

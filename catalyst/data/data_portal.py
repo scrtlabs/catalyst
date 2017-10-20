@@ -68,7 +68,9 @@ from catalyst.errors import (
     HistoryWindowStartsBeforeData,
 )
 
-log = Logger('DataPortal')
+from catalyst.constants import LOG_LEVEL
+
+log = Logger('DataPortal', level=LOG_LEVEL)
 
 BASE_FIELDS = frozenset([
     "open",

@@ -83,7 +83,9 @@ from catalyst.utils.cli import (
 from ._equities import _compute_row_slices, _read_bcolz_data
 from ._adjustments import load_adjustments_from_sqlite
 
-logger = logbook.Logger('UsEquityPricing')
+from catalyst.constants import LOG_LEVEL
+
+logger = logbook.Logger('UsEquityPricing', level=LOG_LEVEL)
 
 OHLC = frozenset(['open', 'high', 'low', 'close'])
 OHLCV = frozenset(['open', 'high', 'low', 'close', 'volume'])

@@ -36,7 +36,9 @@ from empyrical import (
     sortino_ratio
 )
 
-log = logbook.Logger('Risk Period')
+from catalyst.constants import LOG_LEVEL
+
+log = logbook.Logger('Risk Period', level=LOG_LEVEL)
 
 choose_treasury = functools.partial(risk.choose_treasury,
                                     risk.select_treasury_duration)

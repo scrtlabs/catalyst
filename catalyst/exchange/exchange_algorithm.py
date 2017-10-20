@@ -54,7 +54,9 @@ from catalyst.utils.input_validation import error_keywords, ensure_upper_case, \
 from catalyst.utils.preprocess import preprocess
 from catalyst.utils.math_utils import round_nearest
 
-log = logbook.Logger('exchange_algorithm')
+from catalyst.constants import LOG_LEVEL
+
+log = logbook.Logger('exchange_algorithm', level=LOG_LEVEL)
 
 
 class ExchangeAlgorithmExecutor(AlgorithmSimulator):

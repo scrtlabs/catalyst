@@ -21,15 +21,14 @@ from catalyst.exchange.exchange_utils import get_exchange_folder
 from catalyst.utils.cli import maybe_show_progress
 from catalyst.utils.paths import ensure_directory
 
+from catalyst.constants import LOG_LEVEL
+
+log = Logger('exchange_bundle', level=LOG_LEVEL)
+
+BUNDLE_NAME_TEMPLATE = '{root}/{frequency}_bundle'
 
 def _cachpath(symbol, type_):
     return '-'.join([symbol, type_])
-
-
-BUNDLE_NAME_TEMPLATE = '{root}/{frequency}_bundle'
-log = Logger('exchange_bundle')
-log.level = INFO
-
 
 class ExchangeBundle:
     def __init__(self, exchange):

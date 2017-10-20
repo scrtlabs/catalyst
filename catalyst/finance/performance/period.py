@@ -88,7 +88,10 @@ from six import itervalues, iteritems
 
 import catalyst.protocol as zp
 
-log = logbook.Logger('Performance')
+from catalyst.constants import LOG_LEVEL
+
+log = logbook.Logger('Performance', level=LOG_LEVEL)
+
 TRADE_TYPE = zp.DATASOURCE_TYPE.TRADE
 
 

@@ -22,8 +22,9 @@ from logbook import Logger
 from catalyst.exchange.exchange_errors import \
     MismatchingBaseCurrenciesExchanges
 
+from catalyst.constants import LOG_LEVEL
 
-log = Logger('LiveGraphClock')
+log = Logger('LiveGraphClock', level=LOG_LEVEL)
 
 
 class LiveGraphClock(object):
