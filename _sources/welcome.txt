@@ -7,3 +7,16 @@ data-driven investment strategies.
 
 Features
 ========
+
+-  Ease of use: Catalyst tries to get out of your way so that you can 
+   focus on algorithm development. See examples provided.
+-  Support for several of the top crypto-exchanges by trading volume.
+-  Input of historical pricing data of all crypto-assets by exchange, 
+   with daily and minute resolution.
+-  Backtesting and live-trading functionality, with a seamless transition
+   between the two modes.
+-  Output of performance statistics are based on Pandas DataFrames to 
+   integrate nicely into the existing PyData eco-system.
+-  Statistic and machine learning libraries like matplotlib, scipy, 
+   statsmodels, and sklearn support development, analysis, and 
+   visualization of state-of-the-art trading systems.
