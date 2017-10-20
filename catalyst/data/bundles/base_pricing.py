@@ -47,10 +47,6 @@ class BaseCryptoPricingBundle(BasePricingBundle):
     def minutes_per_day(self):
         return 1440
 
-    @lazyval
-    def five_minutes_per_day(self):
-        return 288
-
     @property
     def splits(self):
         return []
@@ -67,10 +63,6 @@ class BaseEquityPricingBundle(BasePricingBundle):
     @lazyval
     def minutes_per_day(self):
         return 390
-
-    @lazyval
-    def five_minutes_per_day(self):
-        return 78
 
     @property
     def splits(self):

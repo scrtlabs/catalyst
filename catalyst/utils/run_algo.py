@@ -1,16 +1,16 @@
 import os
-import re
-from runpy import run_path
 import sys
 import warnings
-from time import sleep
 from datetime import timedelta
-
-import pandas as pd
+from runpy import run_path
+from time import sleep
 
 import click
+import pandas as pd
 
 from catalyst.exchange.bittrex.bittrex import Bittrex
+from catalyst.exchange.bitfinex.bitfinex import Bitfinex
+from catalyst.exchange.poloniex.poloniex import Poloniex
 
 try:
     from pygments import highlight
@@ -23,29 +23,22 @@ except:
 from toolz import valfilter, concatv
 from functools import partial
 
-from catalyst.algorithm import TradingAlgorithm
-from catalyst.data.bundles.core import load
-from catalyst.data.data_portal import DataPortal
-from catalyst.data.loader import load_crypto_market_data
 from catalyst.finance.trading import TradingEnvironment
-from catalyst.pipeline.data import USEquityPricing, CryptoPricing
-from catalyst.pipeline.loaders import (
-    USEquityPricingLoader,
-    CryptoPricingLoader,
-)
 from catalyst.utils.calendars import get_calendar
 from catalyst.utils.factory import create_simulation_parameters
+from catalyst.data.loader import load_crypto_market_data
 import catalyst.utils.paths as pth
 
-from catalyst.exchange.algorithm_exchange import ExchangeTradingAlgorithm
-from catalyst.exchange.data_portal_exchange import DataPortalExchange
-from catalyst.exchange.bitfinex.bitfinex import Bitfinex
+from catalyst.exchange.exchange_algorithm import ExchangeTradingAlgorithmLive, \
+    ExchangeTradingAlgorithmBacktest
+from catalyst.exchange.data_portal_exchange import DataPortalExchangeLive, \
+    DataPortalExchangeBacktest
 from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
 from catalyst.exchange.exchange_portfolio import ExchangePortfolio
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     ExchangeRequestErrorTooManyAttempts,
-    BaseCurrencyNotFoundError)
+    BaseCurrencyNotFoundError, ExchangeNotFoundError)
 from catalyst.exchange.exchange_utils import get_exchange_auth, \
     get_algo_object
 from logbook import Logger
@@ -148,72 +141,90 @@ def _run(handle_data,
     mode = 'live' if live else 'backtest'
     log.info('running algo in {mode} mode'.format(mode=mode))
 
-    if live and exchange is not None:
-        exchange_name = exchange
-        start = pd.Timestamp.utcnow()
-        end = start + timedelta(minutes=1439)
+    exchange_name = exchange
+    if exchange_name is None:
+        raise ValueError('Please specify at least one exchange.')
 
+    exchange_list = [x.strip().lower() for x in exchange.split(',')]
+
+    exchanges = dict()
+    for exchange_name in exchange_list:
+
+        # Looking for the portfolio from the cache first
         portfolio = get_algo_object(
             algo_name=algo_namespace,
             key='portfolio_{}'.format(exchange_name),
             environ=environ
         )
+
         if portfolio is None:
             portfolio = ExchangePortfolio(
                 start_date=pd.Timestamp.utcnow()
             )
 
+        # This corresponds to the json file containing api token info
         exchange_auth = get_exchange_auth(exchange_name)
         if exchange_name == 'bitfinex':
-            exchange = Bitfinex(
+            exchanges[exchange_name] = Bitfinex(
                 key=exchange_auth['key'],
                 secret=exchange_auth['secret'],
                 base_currency=base_currency,
                 portfolio=portfolio
             )
         elif exchange_name == 'bittrex':
-            exchange = Bittrex(
+            exchanges[exchange_name] = Bittrex(
+                key=exchange_auth['key'],
+                secret=exchange_auth['secret'],
+                base_currency=base_currency,
+                portfolio=portfolio
+            )
+        elif exchange_name == 'poloniex':
+            exchanges[exchange_name] = Poloniex(
                 key=exchange_auth['key'],
                 secret=exchange_auth['secret'],
                 base_currency=base_currency,
                 portfolio=portfolio
             )
         else:
-            raise NotImplementedError(
-                'exchange not supported: %s' % exchange_name)
+            raise ExchangeNotFoundError(exchange_name=exchange_name)
 
     open_calendar = get_calendar('OPEN')
-    sim_params = create_simulation_parameters(
-        start=start,
-        end=end,
-        capital_base=capital_base,
-        data_frequency=data_frequency,
-        emission_rate=data_frequency,
-    )
 
-    if live and exchange is not None:
-        env = TradingEnvironment(
+    env = TradingEnvironment(
+        load=partial(
+            load_crypto_market_data,
             environ=environ,
-            exchange_tz='UTC',
-            asset_db_path=None
-        )
-        env.asset_finder = AssetFinderExchange(exchange)
+            start_dt=start,
+            end_dt=end
+        ),
+        environ=environ,
+        exchange_tz='UTC',
+        asset_db_path=None  # We don't need an asset db, we have exchanges
+    )
+    env.asset_finder = AssetFinderExchange()
+    choose_loader = None  # TODO: use the DataPortal for in the algorithm class for this
 
-        data = DataPortalExchange(
-            exchange=exchange,
+    if live:
+        start = pd.Timestamp.utcnow()
+
+        # TODO: fix the end data.
+        end = start + timedelta(hours=8760)
+
+        data = DataPortalExchangeLive(
+            exchanges=exchanges,
             asset_finder=env.asset_finder,
             trading_calendar=open_calendar,
             first_trading_day=pd.to_datetime('today', utc=True)
         )
-        choose_loader = None
 
-        def fetch_capital_base(attempt_index=0):
+        def fetch_capital_base(exchange, attempt_index=0):
             """
             Fetch the base currency amount required to bootstrap
             the algorithm against the exchange.
 
             The algorithm cannot continue without this value.
 
+            :param exchange: the targeted exchange
             :param attempt_index:
             :return capital_base: the amount of base currency available for
             trading
@@ -224,8 +235,11 @@ def _run(handle_data,
                 balances = exchange.get_balances()
             except ExchangeRequestError as e:
                 if attempt_index < 20:
+                    log.warn('exchange error when retrieving balances, {} '
+                             'trying again in 5 seconds'.format(e))
                     sleep(5)
-                    return fetch_capital_base(attempt_index + 1)
+                    return fetch_capital_base(exchange, attempt_index + 1)
+
                 else:
                     raise ExchangeRequestErrorTooManyAttempts(
                         attempts=attempt_index,
@@ -240,110 +254,59 @@ def _run(handle_data,
                     exchange=exchange_name
                 )
 
+        capital_base = 0
+        for exchange_name in exchanges:
+            exchange = exchanges[exchange_name]
+            capital_base += fetch_capital_base(exchange)
+
         sim_params = create_simulation_parameters(
             start=start,
             end=end,
-            capital_base=fetch_capital_base(),
+            capital_base=capital_base,
             emission_rate='minute',
             data_frequency='minute'
         )
 
-    elif bundle is not None:
-        bundles = bundle.split(',')
+        # TODO: use the constructor instead
+        # sim_params._arena = 'live'
 
-        def get_trading_env_and_data(bundles):
-            env = data = None
-
-            b = 'poloniex'
-            if len(bundles) == 0:
-                return env, data
-            elif len(bundles) == 1:
-                b = bundles[0]
-
-            bundle_data = load(
-                b,
-                environ,
-                bundle_timestamp,
-            )
-
-            prefix, connstr = re.split(
-                r'sqlite:///',
-                str(bundle_data.asset_finder.engine.url),
-                maxsplit=1,
-            )
-            if prefix:
-                raise ValueError(
-                    "invalid url %r, must begin with 'sqlite:///'" %
-                    str(bundle_data.asset_finder.engine.url),
-                )
-
-            env = TradingEnvironment(
-                load=partial(load_crypto_market_data, bundle=b,
-                             bundle_data=bundle_data, environ=environ),
-                bm_symbol='USDT_BTC',
-                trading_calendar=open_calendar,
-                asset_db_path=connstr,
-                environ=environ,
-            )
-
-            first_trading_day = bundle_data.minute_bar_reader.first_trading_day
-
-            data = DataPortal(
-                env.asset_finder,
-                open_calendar,
-                first_trading_day=first_trading_day,
-                minute_reader=bundle_data.minute_bar_reader,
-                five_minute_reader=bundle_data.five_minute_bar_reader,
-                daily_reader=bundle_data.daily_bar_reader,
-                adjustment_reader=bundle_data.adjustment_reader,
-            )
-
-            return env, data
-
-        def get_loader_for_bundle(b):
-            bundle_data = load(
-                b,
-                environ,
-                bundle_timestamp,
-            )
-
-            if b == 'poloniex':
-                return CryptoPricingLoader(
-                    bundle_data,
-                    data_frequency,
-                    CryptoPricing,
-                )
-            elif b == 'quandl':
-                return USEquityPricingLoader(
-                    bundle_data,
-                    data_frequency,
-                    USEquityPricing,
-                )
-            raise ValueError(
-                "No PipelineLoader registered for bundle %s." % b
-            )
-
-        loaders = [get_loader_for_bundle(b) for b in bundles]
-        env, data = get_trading_env_and_data(bundles)
-
-        def choose_loader(column):
-            for loader in loaders:
-                if column in loader.columns:
-                    return loader
-            raise ValueError(
-                "No PipelineLoader registered for column %s." % column
-            )
-
+        algorithm_class = partial(
+            ExchangeTradingAlgorithmLive,
+            exchanges=exchanges,
+            algo_namespace=algo_namespace,
+            live_graph=live_graph
+        )
     else:
-        env = TradingEnvironment(environ=environ)
-        choose_loader = None
+        # Removed the existing Poloniex fork to keep things simple
+        # We can add back the complexity if required.
 
-    TradingAlgorithmClass = (
-        partial(ExchangeTradingAlgorithm, exchange=exchange,
-                algo_namespace=algo_namespace, live_graph=live_graph)
-        if live and exchange else TradingAlgorithm)
+        # I don't think that we should have arbitrary price data bundles
+        # Instead, we should center this data around exchanges.
+        # We still need to support bundles for other misc data, but we
+        # can handle this later.
 
-    perf = TradingAlgorithmClass(
+        data = DataPortalExchangeBacktest(
+            exchanges=exchanges,
+            asset_finder=None,
+            trading_calendar=open_calendar,
+            first_trading_day=start,
+            last_available_session=end
+        )
+
+        sim_params = create_simulation_parameters(
+            start=start,
+            end=end,
+            capital_base=capital_base,
+            data_frequency=data_frequency,
+            emission_rate=data_frequency,
+        )
+
+        algorithm_class = partial(
+            ExchangeTradingAlgorithmBacktest,
+            exchanges=exchanges
+        )
+
+    perf = algorithm_class(
         namespace=namespace,
         env=env,
         get_pipeline_loader=choose_loader,
@@ -514,6 +477,11 @@ def run_algorithm(initialize,
     """
     load_extensions(default_extension, extensions, strict_extensions, environ)
 
+    # I'm not sure that we need this since the modified DataPortal
+    # does not require extensions to be explicitly loaded.
+
+    # This will be useful for arbitrary non-pricing bundles but we may
+    # need to modify the logic.
     if not live:
         non_none_data = valfilter(bool, {
             'data': data is not None,

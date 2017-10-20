@@ -2,10 +2,13 @@ import json, time, csv
 from datetime import datetime
 import pandas as pd
 import os, time, shutil, requests, logbook
+from catalyst.exchange.exchange_utils import get_exchange_symbols_filename
+
 
 DT_START        = int(time.mktime(datetime(2010, 1, 1, 0, 0).timetuple()))
 DT_END          = int(time.time())
 CSV_OUT_FOLDER  = '/var/tmp/catalyst/data/poloniex/'
+CSV_OUT_FOLDER  = '/Volumes/enigma/data/poloniex/'
 CONN_RETRIES    = 2
 
 logbook.StderrHandler().push_application()
@@ -247,11 +250,45 @@ class PoloniexCurator(object):
         df.set_index('date', inplace=True)
         return df[start : end]
 
+    '''
+    Generates a symbols.json file with corresponding start_date for each currencyPair
+    '''
+    def generate_symbols_json(self, filename=None):
+        symbol_map = {}
+
+        if(filename is None):
+            filename = get_exchange_symbols_filename('poloniex')
+
+        with open(filename, 'w') as symbols:
+            for currencyPair in self.currency_pairs:
+                start = None
+                csv_fn     = CSV_OUT_FOLDER + 'crypto_trades-' + currencyPair + '.csv'
+                with open(csv_fn, 'r') as f: 
+                    f.seek(0, os.SEEK_END)
+                    if(f.tell() > 2):                           # First check file is not zero size
+                        f.seek(-2, os.SEEK_END)                 # Jump to the second last byte.
+                        while f.read(1) != b"\n":               # Until EOL is found...
+                            f.seek(-2, os.SEEK_CUR)             # ...jump back the read byte plus one more.
+                        start = pd.to_datetime( f.readline().split(',')[1], infer_datetime_format=True)
+
+                if(start is None):
+                    start = time.gmtime()
+                base, market = currencyPair.lower().split('_')
+                symbol = '{market}_{base}'.format( market=market, base=base )
+                symbol_map[currencyPair] = dict(
+                    symbol = symbol,
+                    start_date = start.strftime("%Y-%m-%d")
+                )
+            json.dump(symbol_map, symbols, sort_keys=True, indent=2, separators=(',',':'))    
+
 
 if __name__ == '__main__':
     pc = PoloniexCurator()
     pc.get_currency_pairs()
-
+    #pc.generate_symbols_json()
+    
     for currencyPair in pc.currency_pairs:
         pc.retrieve_trade_history(currencyPair)
         pc.write_ohlcv_file(currencyPair)
+
+    

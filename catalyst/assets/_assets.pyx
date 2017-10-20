@@ -395,6 +395,9 @@ cdef class TradingPair(Asset):
     cdef readonly float leverage
     cdef readonly object market_currency
     cdef readonly object base_currency
+    cdef readonly object end_daily
+    cdef readonly object end_minute
+    cdef readonly object exchange_symbol
 
     _kwargnames = frozenset({
         'sid',
@@ -408,7 +411,11 @@ cdef class TradingPair(Asset):
         'exchange_full',
         'leverage',
         'market_currency',
-        'base_currency'
+        'base_currency',
+        'end_daily',
+        'end_minute',
+        'exchange_symbol',
+        'min_trade_size'
     })
     def __init__(self,
                  object symbol,
@@ -417,10 +424,14 @@ cdef class TradingPair(Asset):
                  object asset_name=None,
                  int sid=0,
                  float leverage=1.0,
+                 object end_daily=None,
+                 object end_minute=None,
                  object end_date=None,
+                 object exchange_symbol=None,
                  object first_traded=None,
                  object auto_close_date=None,
-                 object exchange_full=None):
+                 object exchange_full=None,
+                 object min_trade_size=None):
         """
         Replicates the Asset constructor with some built-in conventions
         and a new 'leverage' attribute.
@@ -472,10 +483,14 @@ cdef class TradingPair(Asset):
         :param asset_name:
         :param sid:
         :param leverage:
+        :param end_daily
+        :param end_minute
         :param end_date:
+        :param exchange_symbol:
         :param first_traded:
         :param auto_close_date:
         :param exchange_full:
+        :param min_trade_size:
         """
 
         symbol = symbol.lower()
@@ -509,23 +524,33 @@ cdef class TradingPair(Asset):
             first_traded=first_traded,
             auto_close_date=auto_close_date,
             exchange_full=exchange_full,
+            min_trade_size=min_trade_size
         )
 
         self.leverage = leverage
+        self.end_daily = end_daily
+        self.end_minute = end_minute
+        self.exchange_symbol = exchange_symbol
 
     def __repr__(self):
         return 'Trading Pair {symbol}({sid}) Exchange: {exchange}, ' \
                'Introduced On: {start_date}, ' \
                'Market Currency: {market_currency}, ' \
                'Base Currency: {base_currency}, ' \
-               'Exchange Leverage: {leverage}'.format(
+               'Exchange Leverage: {leverage}, ' \
+               'Minimum Trade Size: {min_trade_size} ' \
+               'Last daily ingestion: {end_daily} ' \
+               'Last minutely ingestion: {end_minute}'.format(
             symbol=self.symbol,
             sid=self.sid,
             exchange=self.exchange,
             start_date=self.start_date,
             market_currency=self.market_currency,
             base_currency=self.base_currency,
-            leverage=self.leverage
+            leverage=self.leverage,
+            min_trade_size=self.min_trade_size,
+            end_daily=self.end_daily,
+            end_minute=self.end_minute
         )
 
     cpdef __reduce__(self):
@@ -544,7 +569,8 @@ cdef class TradingPair(Asset):
                                  self.end_date,
                                  self.first_traded,
                                  self.auto_close_date,
-                                 self.exchange_full))
+                                 self.exchange_full,
+                                 self.min_trade_size))
 
 def make_asset_array(int size, Asset asset):
     cdef np.ndarray out = np.empty([size], dtype=object)

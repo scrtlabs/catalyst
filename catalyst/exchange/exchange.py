@@ -1,7 +1,7 @@
 import abc
-import collections
-import random
+import re
 from abc import ABCMeta, abstractmethod, abstractproperty
+from datetime import timedelta
 from time import sleep
 
 import numpy as np
@@ -10,11 +10,13 @@ from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
 from catalyst.data.data_portal import BASE_FIELDS
-from catalyst.errors import (
-    SymbolNotFound,
-)
+from catalyst.exchange.bundle_utils import get_start_dt, \
+    get_delta, get_periods, get_adj_dates
+from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
-    InvalidOrderStyle, BaseCurrencyNotFoundError
+    InvalidOrderStyle, BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
+    InvalidHistoryFrequencyError, MismatchingFrequencyError, \
+    BundleNotFoundError, NoDataAvailableOnExchange, PricingDataNotLoadedError
 from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
     ExchangeLimitOrder, ExchangeStopOrder
 from catalyst.exchange.exchange_portfolio import ExchangePortfolio
@@ -30,12 +32,16 @@ class Exchange:
 
     def __init__(self):
         self.name = None
-        self.trading_pairs = None
         self.assets = {}
         self._portfolio = None
         self.minute_writer = None
         self.minute_reader = None
         self.base_currency = None
+
+        self.num_candles_limit = None
+        self.max_requests_per_minute = None
+        self.request_cpt = None
+        self.bundle = ExchangeBundle(self)
 
     @property
     def positions(self):
@@ -64,6 +70,44 @@ class Exchange:
     def time_skew(self):
         pass
 
+    def ask_request(self):
+        """
+        Asks permission to issue a request to the exchange.
+        The primary purpose is to avoid hitting rate limits.
+
+        The application will pause if the maximum requests per minute
+        permitted by the exchange is exceeded.
+
+        :return boolean:
+
+        """
+        now = pd.Timestamp.utcnow()
+        if not self.request_cpt:
+            self.request_cpt = dict()
+            self.request_cpt[now] = 0
+            return True
+
+        cpt_date = self.request_cpt.keys()[0]
+        cpt = self.request_cpt[cpt_date]
+
+        if now > cpt_date + timedelta(minutes=1):
+            self.request_cpt = dict()
+            self.request_cpt[now] = 0
+            return True
+
+        if cpt >= self.max_requests_per_minute:
+            delta = now - cpt_date
+
+            sleep_period = 60 - delta.total_seconds()
+            sleep(sleep_period)
+
+            now = pd.Timestamp.utcnow()
+            self.request_cpt = dict()
+            self.request_cpt[now] = 0
+            return True
+        else:
+            self.request_cpt[cpt_date] += 1
+
     def get_symbol(self, asset):
         """
         Get the exchange specific symbol of the given asset.
@@ -79,7 +123,7 @@ class Exchange:
 
         if not symbol:
             raise ValueError('Currency %s not supported by exchange %s' %
-                             (asset['symbol'], self.name))
+                             (asset['symbol'], self.name.title()))
 
         return symbol
 
@@ -97,6 +141,19 @@ class Exchange:
 
         return symbols
 
+    def get_assets(self, symbols=None):
+        assets = []
+
+        if symbols is not None:
+            for symbol in symbols:
+                asset = self.get_asset(symbol)
+                assets.append(asset)
+        else:
+            for key in self.assets:
+                assets.append(self.assets[key])
+
+        return assets
+
     def get_asset(self, symbol):
         """
         Find an Asset on the current exchange based on its Catalyst symbol
@@ -110,7 +167,13 @@ class Exchange:
                 asset = self.assets[key]
 
         if not asset:
-            raise SymbolNotFound(symbol=symbol)
+            supported_symbols = [pair.symbol.encode('utf-8') for pair in
+                                 self.assets.values()]
+            raise SymbolNotFoundOnExchange(
+                symbol=symbol,
+                exchange=self.name.title(),
+                supported_symbols=supported_symbols
+            )
 
         return asset
 
@@ -159,13 +222,32 @@ class Exchange:
             else:
                 asset_name = None
 
+            if 'min_trade_size' in asset:
+                min_trade_size = asset['min_trade_size']
+            else:
+                min_trade_size = 0.0000001
+
+            if 'end_daily' in asset and asset['end_daily'] != 'N/A':
+                end_daily = pd.to_datetime(asset['end_daily'], utc=True)
+            else:
+                end_daily = None
+
+            if 'end_minute' in asset and asset['end_minute'] != 'N/A':
+                end_minute = pd.to_datetime(asset['end_minute'], utc=True)
+            else:
+                end_minute = None
+
             trading_pair = TradingPair(
                 symbol=asset['symbol'],
                 exchange=self.name,
                 start_date=start_date,
                 end_date=end_date,
                 leverage=leverage,
-                asset_name=asset_name
+                asset_name=asset_name,
+                min_trade_size=min_trade_size,
+                end_daily=end_daily,
+                end_minute=end_minute,
+                exchange_symbol=exchange_symbol
             )
 
             self.assets[exchange_symbol] = trading_pair
@@ -247,19 +329,14 @@ class Exchange:
          '1D', '7D', '14D', '1M'
         """
         if field not in BASE_FIELDS:
-            raise KeyError('Invalid column: ' + str(field))
+            raise KeyError('Invalid column: {}'.format(field))
 
-        if isinstance(assets, collections.Iterable):
-            values = list()
-            for asset in assets:
-                value = self.get_single_spot_value(
-                    asset, field, data_frequency)
-                values.append(value)
+        values = []
+        for asset in assets:
+            value = self.get_single_spot_value(asset, field, data_frequency)
+            values.append(value)
 
-            return values
-        else:
-            return self.get_single_spot_value(
-                assets, field, data_frequency)
+        return values
 
     def get_single_spot_value(self, asset, field, data_frequency):
         """
@@ -284,56 +361,37 @@ class Exchange:
             )
         )
 
-        if field == 'price':
-            field = 'close'
+        ohlc = self.get_candles(data_frequency, asset)
+        if field not in ohlc:
+            raise KeyError('Invalid column: %s' % field)
 
-        # Don't use a timezone here
-        dt = pd.Timestamp.utcnow().floor('1 min')
-        value = None
-        if self.minute_reader is not None:
-            try:
-                # Slight delay to minimize the chances that multiple algos
-                # might try to hit the cache at the exact same time.
-                sleep_time = random.uniform(0.5, 0.8)
-                sleep(sleep_time)
-                # TODO: This does not always! Why is that? Open an issue with zipline.
-                # See: https://github.com/zipline-live/zipline/issues/26
-                value = self.minute_reader.get_value(
-                    sid=asset.sid,
-                    dt=dt,
-                    field=field
-                )
-            except Exception as e:
-                log.warn('minute data not found: {}'.format(e))
-
-        if value is None or np.isnan(value):
-            ohlc = self.get_candles(data_frequency, asset)
-            if field not in ohlc:
-                raise KeyError('Invalid column: %s' % field)
-
-            if self.minute_writer is not None:
-                df = pd.DataFrame(
-                    [ohlc],
-                    index=pd.DatetimeIndex([dt]),
-                    columns=['open', 'high', 'low', 'close', 'volume']
-                )
-
-                try:
-                    self.minute_writer.write_sid(
-                        sid=asset.sid,
-                        df=df
-                    )
-                    log.debug('wrote minute data: {}'.format(dt))
-                except Exception as e:
-                    log.warn(
-                        'unable to write minute data: {} {}'.format(dt, e))
-
-            value = ohlc[field]
-            log.debug('got spot value: {}'.format(value))
-        else:
-            log.debug('got spot value from cache: {}'.format(value))
+        value = ohlc[field]
+        log.debug('got spot value: {}'.format(value))
 
         return value
+
+    def get_series_from_candles(self, candles, start_dt, end_dt,
+                                field, previous_value=None):
+        """
+        Get a series of field data for the specified candles.
+
+        :param candles:
+        :param start_dt:
+        :param end_dt:
+        :param field:
+        :param previous_value:
+        :return:
+        """
+
+        dates = [candle['last_traded'] for candle in candles]
+        values = [candle[field] for candle in candles]
+
+        periods = pd.date_range(start_dt, end_dt)
+        series = pd.Series(values, index=dates)
+
+        series.reindex(periods, method='ffill', fill_value=previous_value)
+
+        return series
 
     def get_history_window(self,
                            assets,
@@ -341,7 +399,7 @@ class Exchange:
                            bar_count,
                            frequency,
                            field,
-                           data_frequency,
+                           data_frequency=None,
                            ffill=True):
 
         """
@@ -378,23 +436,93 @@ class Exchange:
         A dataframe containing the requested data.
         """
 
-        candles = self.get_candles(
-            data_frequency=frequency,
-            assets=assets,
-            bar_count=bar_count,
-        )
+        freq_match = re.match(r'([0-9].*)(m|M|d|D)', frequency, re.M | re.I)
+        if freq_match:
+            candle_size = int(freq_match.group(1))
+            unit = freq_match.group(2)
 
-        series = dict()
+        else:
+            raise InvalidHistoryFrequencyError(frequency)
+
+        if unit.lower() == 'd':
+            if data_frequency == 'minute':
+                data_frequency = 'daily'
+
+        elif unit.lower() == 'm':
+            if data_frequency == 'daily':
+                data_frequency = 'minute'
+
+        else:
+            raise InvalidHistoryFrequencyError(frequency)
+
+        adj_bar_count = candle_size * bar_count
+        try:
+            series = self.bundle.get_history_window_series_and_load(
+                assets=assets,
+                end_dt=end_dt,
+                bar_count=adj_bar_count,
+                field=field,
+                data_frequency=data_frequency
+            )
+        except PricingDataNotLoadedError:
+            series = dict()
+
         for asset in assets:
-            asset_candles = candles[asset]
+            if asset not in series or series[asset].index[-1] < end_dt:
+                # Adding bars too recent to be contained in the consolidated
+                # exchanges bundles. We go directly against the exchange
+                # to retrieve the candles.
 
-            values = map(lambda candle: candle[field], asset_candles)
-            dates = map(lambda candle: candle['last_traded'], asset_candles)
+                trailing_dt = \
+                    series[asset].index[-1] + get_delta(1, data_frequency) \
+                        if asset in series else start_dt
 
-            value_series = pd.Series(values, index=dates)
-            series[asset] = value_series
+                trailing_bar_count = \
+                    get_periods(trailing_dt, end_dt, data_frequency)
 
-        df = pd.concat(series)
+                # The get_history method supports multiple asset
+                candles = self.get_candles(
+                    data_frequency=data_frequency,
+                    assets=asset,
+                    bar_count=trailing_bar_count,
+                    end_dt=end_dt
+                )
+
+                last_value = series[asset].iloc(0) if asset in series \
+                    else np.nan
+
+                candle_series = self.get_series_from_candles(
+                    candles=candles,
+                    start_dt=trailing_dt,
+                    end_dt=end_dt,
+                    field=field,
+                    previous_value=last_value
+                )
+
+                if asset in series:
+                    series[asset].append(candle_series)
+
+                else:
+                    series[asset] = candle_series
+
+        df = pd.DataFrame(series)
+
+        if candle_size > 1:
+            if field == 'open':
+                agg = 'first'
+            elif field == 'high':
+                agg = 'max'
+            elif field == 'low':
+                agg = 'min'
+            elif field == 'close':
+                agg = 'last'
+            elif field == 'volume':
+                agg = 'sum'
+            else:
+                raise ValueError('Invalid field.')
+
+            df = df.resample('{}T'.format(candle_size)).agg(agg)
+
         return df
 
     def synchronize_portfolio(self):
@@ -413,7 +541,7 @@ class Exchange:
         if base_position_available is None:
             raise BaseCurrencyNotFoundError(
                 base_currency=self.base_currency,
-                exchange=self.name
+                exchange=self.name.title()
             )
 
         portfolio = self._portfolio
@@ -439,18 +567,6 @@ class Exchange:
                     position.amount * position.last_sale_price
                 portfolio.portfolio_value = \
                     portfolio.positions_value + portfolio.cash
-
-    @abstractmethod
-    def get_balances(self):
-        """
-        Retrieve wallet balances for the exchange
-        :return balances: A dict of currency => available balance
-        """
-        pass
-
-    @abstractmethod
-    def create_order(self, asset, amount, is_buy, style):
-        pass
 
     def order(self, asset, amount, limit_price=None, stop_price=None,
               style=None):
@@ -515,7 +631,7 @@ class Exchange:
             style = ExchangeStopOrder(stop_price, exchange=self.name)
 
         elif style is not None:
-            raise InvalidOrderStyle(exchange=self.name,
+            raise InvalidOrderStyle(exchange=self.name.title(),
                                     style=style.__class__.__name__)
         else:
             raise ValueError('Incomplete order data.')
@@ -536,6 +652,34 @@ class Exchange:
             return order.id
         else:
             return None
+
+    # The methods below must be implemented for each exchange.
+    @abstractmethod
+    def get_balances(self):
+        """
+        Retrieve wallet balances for the exchange
+        :return balances: A dict of currency => available balance
+        """
+        pass
+
+    @abstractmethod
+    def create_order(self, asset, amount, is_buy, style):
+        """
+        Place an order on the exchange.
+
+        :param asset : Asset
+            The asset that this order is for.
+        :param amount : int
+            The amount of shares to order. If ``amount`` is positive, this is
+            the number of shares to buy or cover. If ``amount`` is negative,
+            this is the number of shares to sell or short.
+        :param style : ExecutionStyle
+            The execution style for the order.
+        :param is_buy: boolean
+            Is it a buy order?
+        :return:
+        """
+        pass
 
     @abstractmethod
     def get_open_orders(self, asset):
@@ -588,16 +732,34 @@ class Exchange:
         pass
 
     @abstractmethod
-    def get_candles(self, data_frequency, assets, bar_count=None):
+    def get_candles(self, data_frequency, assets, bar_count=None,
+                    start_dt=None, end_dt=None):
         """
         Retrieve OHLCV candles for the given assets
 
         :param data_frequency:
-        :param assets:
-        :param end_dt:
+            The candle frequency: minute or daily
+        :param assets: list[TradingPair]
+            The targeted assets.
         :param bar_count:
-        :param limit:
-        :return:
+            The number of bar desired. (default 1)
+        :param end_dt: datetime, optional
+            The last bar date.
+        :param start_dt: datetime, optional
+            The first bar date.
+
+        :return dict[TradingPair, dict[str, Object]]: OHLCV data
+            A dictionary of OHLCV candles. Each TradingPair instance is
+            mapped to a list of dictionaries with this structure:
+                open: float
+                high: float
+                low: float
+                close: float
+                volume: float
+                last_traded: datetime
+
+            See definition here:
+                http://www.investopedia.com/terms/o/ohlcchart.asp
         """
         pass
 
@@ -615,6 +777,19 @@ class Exchange:
     def get_account(self):
         """
         Retrieve the account parameters.
+        :return:
+        """
+        pass
+
+    @abc.abstractmethod
+    def get_orderbook(self, asset, order_type):
+        """
+        Retrieve the the orderbook for the given trading pair.
+
+        :param asset: TradingPair
+        :param order_type: str
+            The type of orders: bid, ask or all
+
         :return:
         """
         pass

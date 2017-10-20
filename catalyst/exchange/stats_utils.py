@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def get_pretty_stats(stats_df, num_rows=10):
+def get_pretty_stats(stats_df, recorded_cols=None, num_rows=10):
     """
     Format and print the last few rows of a statistics DataFrame.
     See the pyfolio project for the data structure.
@@ -21,6 +21,10 @@ def get_pretty_stats(stats_df, num_rows=10):
     columns = ['starting_cash', 'ending_cash', 'portfolio_value',
                'pnl', 'long_exposure', 'short_exposure', 'orders',
                'transactions', 'positions']
+
+    if recorded_cols is not None:
+        for column in recorded_cols:
+            columns.append(column)
 
     def format_positions(positions):
         parts = []

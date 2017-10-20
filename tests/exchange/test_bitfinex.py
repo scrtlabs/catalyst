@@ -1,12 +1,9 @@
-from catalyst.exchange.bitfinex.bitfinex import Bitfinex
-from .base import BaseExchangeTestCase
 from logbook import Logger
-import pandas as pd
-from catalyst.finance.execution import (MarketOrder,
-                                        LimitOrder,
-                                        StopOrder,
-                                        StopLimitOrder)
+
+from base import BaseExchangeTestCase
+from catalyst.exchange.bitfinex.bitfinex import Bitfinex
 from catalyst.exchange.exchange_utils import get_exchange_auth
+from catalyst.finance.execution import (LimitOrder)
 
 log = Logger('test_bitfinex')
 
@@ -14,7 +11,7 @@ log = Logger('test_bitfinex')
 class BitfinexTestCase(BaseExchangeTestCase):
     @classmethod
     def setup(self):
-        print ('creating bitfinex object')
+        log.info('creating bitfinex object')
         auth = get_exchange_auth('bitfinex')
         self.exchange = Bitfinex(
             key=auth['key'],
@@ -50,13 +47,17 @@ class BitfinexTestCase(BaseExchangeTestCase):
 
     def test_get_candles(self):
         log.info('retrieving candles')
+        ohlcv_neo = self.exchange.get_candles(
+            data_frequency='1m',
+            assets=self.exchange.get_asset('neo_btc')
+        )
         pass
 
     def test_tickers(self):
         log.info('retrieving tickers')
         tickers = self.exchange.tickers([
-            self.exchange.get_asset('eth_usd'),
-            self.exchange.get_asset('btc_usd')
+            self.exchange.get_asset('eth_btc'),
+            self.exchange.get_asset('etc_btc')
         ])
         pass
 
@@ -67,4 +68,10 @@ class BitfinexTestCase(BaseExchangeTestCase):
     def test_get_balances(self):
         log.info('testing exchange balances')
         balances = self.exchange.get_balances()
+        pass
+
+    def test_orderbook(self):
+        log.info('testing order book for bitfinex')
+        asset = self.exchange.get_asset('eth_btc')
+        orderbook = self.exchange.get_orderbook(asset)
         pass

@@ -34,7 +34,6 @@ class AlgorithmSimulator(object):
 
     EMISSION_TO_PERF_KEY_MAP = {
         'minute': 'minute_perf',
-        '5-minute': '5_minute_perf',
         'daily': 'daily_perf'
     }
 
@@ -202,7 +201,7 @@ class AlgorithmSimulator(object):
             stack.enter_context(self.processor)
             stack.enter_context(ZiplineAPI(self.algo))
 
-            if algo.data_frequency in set(('minute', '5-minute')):
+            if algo.data_frequency == 'minute':
                 def execute_order_cancellation_policy():
                     algo.blotter.execute_cancel_policy(SESSION_END)
 

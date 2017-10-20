@@ -111,27 +111,11 @@ class PerformanceTracker(object):
                     self.treasury_curves,
                     self.trading_calendar
                 )
-        elif self.emission_rate == '5-minute':
-            self.all_benchmark_returns = pd.Series(
-                index=pd.date_range(
-                    self.sim_params.first_open,
-                    self.sim_params.last_close,
-                    freq='5min'
-                ),
-            )
-            self.cumulative_risk_metrics = \
-                risk.RiskMetricsCumulative(
-                    self.sim_params,
-                    self.treasury_curves,
-                    self.trading_calendar,
-                    create_first_day_stats=True,
-                )
         elif self.emission_rate == 'minute':
             self.all_benchmark_returns = pd.Series(index=pd.date_range(
                 self.sim_params.first_open, self.sim_params.last_close,
                 freq='Min')
             )
-
             self.cumulative_risk_metrics = \
                 risk.RiskMetricsCumulative(
                     self.sim_params,

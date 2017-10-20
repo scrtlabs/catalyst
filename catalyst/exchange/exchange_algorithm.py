@@ -11,43 +11,50 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+import pickle
 import signal
 import sys
-import pickle
+from collections import deque
 from datetime import timedelta
-from time import sleep
 from os import listdir
 from os.path import isfile, join
-from collections import deque
-import numpy as np
+from time import sleep
 
 import logbook
 import pandas as pd
+from catalyst.assets._assets import TradingPair
 
 import catalyst.protocol as zp
 from catalyst.algorithm import TradingAlgorithm
 from catalyst.data.minute_bars import BcolzMinuteBarWriter, \
     BcolzMinuteBarReader
 from catalyst.errors import OrderInBeforeTradingStart
-from catalyst.exchange.simple_clock import SimpleClock
-from catalyst.exchange.live_graph_clock import LiveGraphClock
+from catalyst.exchange.exchange_blotter import ExchangeBlotter
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     ExchangePortfolioDataError,
-    ExchangeTransactionError
-)
+    ExchangeTransactionError,
+    OrphanOrderError)
+from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
+    ExchangeLimitOrder, ExchangeStopOrder
 from catalyst.exchange.exchange_utils import get_exchange_minute_writer_root, \
     save_algo_object, get_algo_object, get_algo_folder, get_algo_df, \
     save_algo_df
+from catalyst.exchange.live_graph_clock import LiveGraphClock
+from catalyst.exchange.simple_clock import SimpleClock
 from catalyst.exchange.stats_utils import get_pretty_stats
+from catalyst.finance.execution import MarketOrder
 from catalyst.finance.performance.period import calc_period_stats
 from catalyst.gens.tradesimulation import AlgorithmSimulator
 from catalyst.utils.api_support import (
     api_method,
     disallowed_in_before_trading_start)
-from catalyst.utils.input_validation import error_keywords
+from catalyst.utils.input_validation import error_keywords, ensure_upper_case, \
+    expect_types
+from catalyst.utils.preprocess import preprocess
+from catalyst.utils.math_utils import round_nearest
 
-log = logbook.Logger("ExchangeTradingAlgorithm")
+log = logbook.Logger('exchange_algorithm')
 
 
 class ExchangeAlgorithmExecutor(AlgorithmSimulator):
@@ -55,247 +62,65 @@ class ExchangeAlgorithmExecutor(AlgorithmSimulator):
         super(self.__class__, self).__init__(*args, **kwargs)
 
 
-class ExchangeTradingAlgorithm(TradingAlgorithm):
+class ExchangeTradingAlgorithmBase(TradingAlgorithm):
     def __init__(self, *args, **kwargs):
-        self.exchange = kwargs.pop('exchange', None)
-        self.algo_namespace = kwargs.pop('algo_namespace', None)
-        self.live_graph = kwargs.pop('live_graph', None)
+        self.exchanges = kwargs.pop('exchanges', None)
 
-        self._clock = None
-        self.minute_stats = deque(maxlen=60)
+        super(ExchangeTradingAlgorithmBase, self).__init__(*args, **kwargs)
 
-        self.pnl_stats = get_algo_df(self.algo_namespace, 'pnl_stats')
-
-        self.custom_signals_stats = \
-            get_algo_df(self.algo_namespace, 'custom_signals_stats')
-
-        self.exposure_stats = \
-            get_algo_df(self.algo_namespace, 'exposure_stats')
-
-        self.is_running = True
-
-        self.retry_check_open_orders = 5
-        self.retry_synchronize_portfolio = 5
-        self.retry_get_open_orders = 5
-        self.retry_order = 2
-        self.retry_delay = 5
-
-        self.stats_minutes = 5
-
-        super(self.__class__, self).__init__(*args, **kwargs)
-        # self._create_minute_writer()
-
-        signal.signal(signal.SIGINT, self.signal_handler)
-
-        log.info('exchange trading algorithm successfully initialized')
-
-    def _create_minute_writer(self):
-        root = get_exchange_minute_writer_root(self.exchange.name)
-        filename = os.path.join(root, 'metadata.json')
-
-        if os.path.isfile(filename):
-            writer = BcolzMinuteBarWriter.open(
-                root, self.sim_params.end_session)
-        else:
-            writer = BcolzMinuteBarWriter(
-                rootdir=root,
-                calendar=self.trading_calendar,
-                minutes_per_day=1440,
-                start_session=self.sim_params.start_session,
-                end_session=self.sim_params.end_session,
-                write_metadata=True
-            )
-
-        self.exchange.minute_writer = writer
-        self.exchange.minute_reader = BcolzMinuteBarReader(root)
-
-    def signal_handler(self, signal, frame):
-        self.is_running = False
-
-        if self._analyze is None:
-            log.info('Interruption signal detected {}, exiting the '
-                     'algorithm'.format(signal))
-
-        else:
-            log.info('Interruption signal detected {}, calling `analyze()` '
-                     'before exiting the algorithm'.format(signal))
-
-            algo_folder = get_algo_folder(self.algo_namespace)
-            folder = join(algo_folder, 'daily_perf')
-            files = [f for f in listdir(folder) if isfile(join(folder, f))]
-
-            daily_perf_list = []
-            for item in files:
-                filename = join(folder, item)
-                with open(filename, 'rb') as handle:
-                    daily_perf_list.append(pickle.load(handle))
-
-            stats = pd.DataFrame(daily_perf_list)
-
-            self.analyze(stats)
-
-        sys.exit(0)
-
-    @property
-    def clock(self):
-        if self._clock is None:
-            return self._create_clock()
-        else:
-            return self._clock
-
-    def _create_clock(self):
-
-        # The calendar's execution times are the minutes over which we actually
-        # want to run the clock. Typically the execution times simply adhere to
-        # the market open and close times. In the case of the futures calendar,
-        # for example, we only want to simulate over a subset of the full 24
-        # hour calendar, so the execution times dictate a market open time of
-        # 6:31am US/Eastern and a close of 5:00pm US/Eastern.
-
-        # In our case, we are trading around the clock, so the market close
-        # corresponds to the last minute of the day.
-
-        # This method is taken from TradingAlgorithm.
-        # The clock has been replaced to use RealtimeClock
-        # TODO: should we apply a time skew? not sure to understand the utility.
-
-        log.debug('creating clock')
-        if self.live_graph:
-            self._clock = LiveGraphClock(
-                self.sim_params.sessions,
-                time_skew=self.exchange.time_skew,
-                context=self
-            )
-        else:
-            self._clock = SimpleClock(
-                self.sim_params.sessions,
-                time_skew=self.exchange.time_skew
-            )
-
-        return self._clock
-
-    def _create_generator(self, sim_params):
-        if self.perf_tracker is None:
-            self.perf_tracker = get_algo_object(
-                algo_name=self.algo_namespace,
-                key='perf_tracker'
-            )
-
-        # Call the simulation trading algorithm for side-effects:
-        # it creates the perf tracker
-        TradingAlgorithm._create_generator(self, sim_params)
-        self.trading_client = ExchangeAlgorithmExecutor(
-            self,
-            sim_params,
-            self.data_portal,
-            self.clock,
-            self._create_benchmark_source(),
-            self.restrictions,
-            universe_func=self._calculate_universe
-        )
-
-        return self.trading_client.transform()
-
-    def updated_portfolio(self):
+    def round_order(self, amount, asset):
         """
-        We skip the entire performance tracker business and update the
-        portfolio directly.
+        We need fractions with cryptocurrencies
+
+        :param amount:
         :return:
         """
-        return self.exchange.portfolio
+        return round_nearest(amount, asset.min_trade_size)
 
-    def updated_account(self):
-        return self.exchange.account
+    @api_method
+    @preprocess(symbol_str=ensure_upper_case)
+    def symbol(self, symbol_str, exchange_name=None):
+        """Lookup an Equity by its ticker symbol.
 
-    def _synchronize_portfolio(self, attempt_index=0):
-        try:
-            self.exchange.synchronize_portfolio()
+        Parameters
+        ----------
+        symbol_str : str
+            The ticker symbol for the equity to lookup.
+        exchange_name: str
+            The name of the exchange containing the symbol
 
-            # Applying the updated last_sales_price to the positions
-            # in the performance tracker. This seems a bit redundant
-            # but it will make sense when we have multiple exchange portfolios
-            # feeding into the same performance tracker.
-            tracker = self.perf_tracker.todays_performance.position_tracker
-            for asset in self.exchange.portfolio.positions:
-                position = self.exchange.portfolio.positions[asset]
-                tracker.update_position(
-                    asset=asset,
-                    last_sale_date=position.last_sale_date,
-                    last_sale_price=position.last_sale_price
-                )
-        except ExchangeRequestError as e:
-            log.warn(
-                'update portfolio attempt {}: {}'.format(attempt_index, e)
-            )
-            if attempt_index < self.retry_synchronize_portfolio:
-                sleep(self.retry_delay)
-                self._synchronize_portfolio(attempt_index + 1)
-            else:
-                raise ExchangePortfolioDataError(
-                    data_type='update-portfolio',
-                    attempts=attempt_index,
-                    error=e
-                )
+        Returns
+        -------
+        equity : Equity
+            The equity that held the ticker symbol on the current
+            symbol lookup date.
 
-    def _check_open_orders(self, attempt_index=0):
-        try:
-            return self.exchange.check_open_orders()
-        except ExchangeRequestError as e:
-            log.warn(
-                'check open orders attempt {}: {}'.format(attempt_index, e)
-            )
-            if attempt_index < self.retry_check_open_orders:
-                sleep(self.retry_delay)
-                return self._check_open_orders(attempt_index + 1)
-            else:
-                raise ExchangePortfolioDataError(
-                    data_type='order-status',
-                    attempts=attempt_index,
-                    error=e
-                )
+        Raises
+        ------
+        SymbolNotFound
+            Raised when the symbols was not held on the current lookup date.
 
-    def add_pnl_stats(self, period_stats):
-        starting = period_stats['starting_cash']
-        current = period_stats['portfolio_value']
-        appreciation = (current / starting) - 1
-        perc = (appreciation * 100) if current != 0 else 0
+        See Also
+        --------
+        :func:`catalyst.api.set_symbol_lookup_date`
+        """
+        # If the user has not set the symbol lookup date,
+        # use the end_session as the date for sybmol->sid resolution.
 
-        log.debug('adding pnl stats: {:6f}%'.format(perc))
+        _lookup_date = self._symbol_lookup_date \
+            if self._symbol_lookup_date is not None \
+            else self.sim_params.end_session
 
-        df = pd.DataFrame(
-            data=[dict(performance=perc)],
-            index=[period_stats['period_close']]
+        if exchange_name is None:
+            exchange = self.exchanges.values()[0]
+        else:
+            exchange = self.exchanges[exchange_name]
+
+        return self.asset_finder.lookup_symbol(
+            symbol=symbol_str,
+            exchange=exchange,
+            as_of_date=_lookup_date
         )
-        self.pnl_stats = pd.concat([self.pnl_stats, df])
-
-        save_algo_df(self.algo_namespace, 'pnl_stats', self.pnl_stats)
-
-    def add_custom_signals_stats(self, period_stats):
-        log.debug('adding custom signals stats: {}'.format(self.recorded_vars))
-        df = pd.DataFrame(
-            data=[self.recorded_vars],
-            index=[period_stats['period_close']],
-        )
-        self.custom_signals_stats = pd.concat([self.custom_signals_stats, df])
-
-        save_algo_df(self.algo_namespace, 'custom_signals_stats',
-                     self.custom_signals_stats)
-
-    def add_exposure_stats(self, period_stats):
-        data = dict(
-            long_exposure=period_stats['long_exposure'],
-            base_currency=period_stats['ending_cash']
-        )
-        log.debug('adding exposure stats: {}'.format(data))
-
-        df = pd.DataFrame(
-            data=[data],
-            index=[period_stats['period_close']],
-        )
-        self.exposure_stats = pd.concat([self.exposure_stats, df])
-
-        save_algo_df(self.algo_namespace, 'exposure_stats',
-                     self.exposure_stats)
 
     def prepare_period_stats(self, start_dt, end_dt):
         """
@@ -364,6 +189,308 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
 
         return stats
 
+
+class ExchangeTradingAlgorithmBacktest(ExchangeTradingAlgorithmBase):
+    def __init__(self, *args, **kwargs):
+        super(ExchangeTradingAlgorithmBacktest, self).__init__(*args, **kwargs)
+
+        self.blotter = ExchangeBlotter(
+            data_frequency=self.data_frequency,
+            # Default to NeverCancel in catalyst
+            cancel_policy=self.cancel_policy,
+        )
+        log.info('initialized trading algorithm in backtest mode')
+
+    def _calculate_order(self, asset, amount,
+                         limit_price=None, stop_price=None, style=None):
+        # Raises a ZiplineError if invalid parameters are detected.
+        self.validate_order_params(asset,
+                                   amount,
+                                   limit_price,
+                                   stop_price,
+                                   style)
+
+        # Convert deprecated limit_price and stop_price parameters to use
+        # ExecutionStyle objects.
+        style = self.__convert_order_params_for_blotter(limit_price,
+                                                        stop_price,
+                                                        style)
+        return amount, style
+
+    @staticmethod
+    def __convert_order_params_for_blotter(limit_price, stop_price, style):
+        """
+        Helper method for converting deprecated limit_price and stop_price
+        arguments into ExecutionStyle instances.
+
+        This function assumes that either style == None or (limit_price,
+        stop_price) == (None, None).
+        """
+        if style:
+            assert (limit_price, stop_price) == (None, None)
+            return style
+        if limit_price and stop_price:
+            return ExchangeStopLimitOrder(limit_price, stop_price)
+        if limit_price:
+            return ExchangeLimitOrder(limit_price)
+        if stop_price:
+            return ExchangeStopOrder(stop_price)
+        else:
+            return MarketOrder()
+
+
+class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
+    def __init__(self, *args, **kwargs):
+        self.algo_namespace = kwargs.pop('algo_namespace', None)
+        self.live_graph = kwargs.pop('live_graph', None)
+
+        self._clock = None
+        self.minute_stats = deque(maxlen=60)
+
+        self.pnl_stats = get_algo_df(self.algo_namespace, 'pnl_stats')
+
+        self.custom_signals_stats = \
+            get_algo_df(self.algo_namespace, 'custom_signals_stats')
+
+        self.exposure_stats = \
+            get_algo_df(self.algo_namespace, 'exposure_stats')
+
+        self.is_running = True
+
+        self.retry_check_open_orders = 5
+        self.retry_synchronize_portfolio = 5
+        self.retry_get_open_orders = 5
+        self.retry_order = 2
+        self.retry_delay = 5
+
+        self.stats_minutes = 5
+
+        super(ExchangeTradingAlgorithmLive, self).__init__(*args, **kwargs)
+        # TODO: fix precision before re-enabling
+        # self._create_minute_writer()
+
+        signal.signal(signal.SIGINT, self.signal_handler)
+
+        log.info('initialized trading algorithm in live mode')
+
+    def _create_minute_writer(self):
+        root = get_exchange_minute_writer_root(self.exchange.name)
+        filename = os.path.join(root, 'metadata.json')
+
+        if os.path.isfile(filename):
+            writer = BcolzMinuteBarWriter.open(
+                root, self.sim_params.end_session)
+        else:
+            # TODO: need to be able to write more precise numbers
+            writer = BcolzMinuteBarWriter(
+                rootdir=root,
+                calendar=self.trading_calendar,
+                minutes_per_day=1440,
+                start_session=self.sim_params.start_session,
+                end_session=self.sim_params.end_session,
+                write_metadata=True
+            )
+
+        self.exchange.minute_writer = writer
+        self.exchange.minute_reader = BcolzMinuteBarReader(root)
+
+    def signal_handler(self, signal, frame):
+        self.is_running = False
+
+        if self._analyze is None:
+            log.info('Interruption signal detected {}, exiting the '
+                     'algorithm'.format(signal))
+
+        else:
+            log.info('Interruption signal detected {}, calling `analyze()` '
+                     'before exiting the algorithm'.format(signal))
+
+            algo_folder = get_algo_folder(self.algo_namespace)
+            folder = join(algo_folder, 'daily_perf')
+            files = [f for f in listdir(folder) if isfile(join(folder, f))]
+
+            daily_perf_list = []
+            for item in files:
+                filename = join(folder, item)
+                with open(filename, 'rb') as handle:
+                    daily_perf_list.append(pickle.load(handle))
+
+            stats = pd.DataFrame(daily_perf_list)
+
+            self.analyze(stats)
+
+        sys.exit(0)
+
+    @property
+    def clock(self):
+        if self._clock is None:
+            return self._create_clock()
+        else:
+            return self._clock
+
+    def _create_clock(self):
+
+        # The calendar's execution times are the minutes over which we actually
+        # want to run the clock. Typically the execution times simply adhere to
+        # the market open and close times. In the case of the futures calendar,
+        # for example, we only want to simulate over a subset of the full 24
+        # hour calendar, so the execution times dictate a market open time of
+        # 6:31am US/Eastern and a close of 5:00pm US/Eastern.
+
+        # In our case, we are trading around the clock, so the market close
+        # corresponds to the last minute of the day.
+
+        # This method is taken from TradingAlgorithm.
+        # The clock has been replaced to use RealtimeClock
+        # TODO: should we apply a time skew? not sure to understand the utility.
+
+        log.debug('creating clock')
+        if self.live_graph:
+            self._clock = LiveGraphClock(
+                self.sim_params.sessions,
+                context=self
+            )
+        else:
+            self._clock = SimpleClock(
+                self.sim_params.sessions,
+            )
+
+        return self._clock
+
+    def _create_generator(self, sim_params):
+        if self.perf_tracker is None:
+            self.perf_tracker = get_algo_object(
+                algo_name=self.algo_namespace,
+                key='perf_tracker'
+            )
+
+        # Call the simulation trading algorithm for side-effects:
+        # it creates the perf tracker
+        TradingAlgorithm._create_generator(self, sim_params)
+        self.trading_client = ExchangeAlgorithmExecutor(
+            self,
+            sim_params,
+            self.data_portal,
+            self.clock,
+            self._create_benchmark_source(),
+            self.restrictions,
+            universe_func=self._calculate_universe
+        )
+
+        return self.trading_client.transform()
+
+    def updated_portfolio(self):
+        """
+        We skip the entire performance tracker business and update the
+        portfolio directly.
+        :return:
+        """
+        # TODO: build cumulative portfolio
+        return self.perf_tracker.get_portfolio(False)
+
+    def updated_account(self):
+        return self.perf_tracker.get_account(False)
+
+    def _synchronize_portfolio(self, attempt_index=0):
+        try:
+            for exchange_name in self.exchanges:
+                exchange = self.exchanges[exchange_name]
+
+                exchange.synchronize_portfolio()
+
+                # Applying the updated last_sales_price to the positions
+                # in the performance tracker. This seems a bit redundant
+                # but it will make sense when we have multiple exchange portfolios
+                # feeding into the same performance tracker.
+                tracker = self.perf_tracker.todays_performance.position_tracker
+                for asset in exchange.portfolio.positions:
+                    position = exchange.portfolio.positions[asset]
+                    tracker.update_position(
+                        asset=asset,
+                        last_sale_date=position.last_sale_date,
+                        last_sale_price=position.last_sale_price
+                    )
+        except ExchangeRequestError as e:
+            log.warn(
+                'update portfolio attempt {}: {}'.format(attempt_index, e)
+            )
+            if attempt_index < self.retry_synchronize_portfolio:
+                sleep(self.retry_delay)
+                self._synchronize_portfolio(attempt_index + 1)
+            else:
+                raise ExchangePortfolioDataError(
+                    data_type='update-portfolio',
+                    attempts=attempt_index,
+                    error=e
+                )
+
+    def _check_open_orders(self, attempt_index=0):
+        try:
+            orders = list()
+            for exchange_name in self.exchanges:
+                exchange = self.exchanges[exchange_name]
+                exchange_orders = exchange.check_open_orders()
+
+                orders += exchange_orders
+
+            return orders
+        except ExchangeRequestError as e:
+            log.warn(
+                'check open orders attempt {}: {}'.format(attempt_index, e)
+            )
+            if attempt_index < self.retry_check_open_orders:
+                sleep(self.retry_delay)
+                return self._check_open_orders(attempt_index + 1)
+            else:
+                raise ExchangePortfolioDataError(
+                    data_type='order-status',
+                    attempts=attempt_index,
+                    error=e
+                )
+
+    def add_pnl_stats(self, period_stats):
+        starting = period_stats['starting_cash']
+        current = period_stats['portfolio_value']
+        appreciation = (current / starting) - 1
+        perc = (appreciation * 100) if current != 0 else 0
+
+        log.debug('adding pnl stats: {:6f}%'.format(perc))
+
+        df = pd.DataFrame(
+            data=[dict(performance=perc)],
+            index=[period_stats['period_close']]
+        )
+        self.pnl_stats = pd.concat([self.pnl_stats, df])
+
+        save_algo_df(self.algo_namespace, 'pnl_stats', self.pnl_stats)
+
+    def add_custom_signals_stats(self, period_stats):
+        log.debug('adding custom signals stats: {}'.format(self.recorded_vars))
+        df = pd.DataFrame(
+            data=[self.recorded_vars],
+            index=[period_stats['period_close']],
+        )
+        self.custom_signals_stats = pd.concat([self.custom_signals_stats, df])
+
+        save_algo_df(self.algo_namespace, 'custom_signals_stats',
+                     self.custom_signals_stats)
+
+    def add_exposure_stats(self, period_stats):
+        data = dict(
+            long_exposure=period_stats['long_exposure'],
+            base_currency=period_stats['ending_cash']
+        )
+        log.debug('adding exposure stats: {}'.format(data))
+
+        df = pd.DataFrame(
+            data=[data],
+            index=[period_stats['period_close']],
+        )
+        self.exposure_stats = pd.concat([self.exposure_stats, df])
+
+        save_algo_df(self.algo_namespace, 'exposure_stats',
+                     self.exposure_stats)
+
     def handle_data(self, data):
         if not self.is_running:
             return
@@ -394,14 +521,23 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
             self.minute_stats.append(minute_stats)
 
             self.add_pnl_stats(minute_stats)
-            self.add_custom_signals_stats(minute_stats)
+            if self.recorded_vars:
+                self.add_custom_signals_stats(minute_stats)
+                recorded_cols = self.recorded_vars.keys()
+            else:
+                recorded_cols = None
+
             self.add_exposure_stats(minute_stats)
 
             print_df = pd.DataFrame(list(self.minute_stats))
-            log.debug(
+            log.info(
                 'statistics for the last {stats_minutes} minutes:\n{stats}'.format(
                     stats_minutes=self.stats_minutes,
-                    stats=get_pretty_stats(print_df, self.stats_minutes)
+                    stats=get_pretty_stats(
+                        stats_df=print_df,
+                        recorded_cols=recorded_cols,
+                        num_rows=self.stats_minutes
+                    )
                 ))
 
             today = pd.to_datetime('today', utc=True)
@@ -429,11 +565,13 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
             log.warn('unable to save minute perfs to disk: {}'.format(e))
 
         try:
-            save_algo_object(
-                algo_name=self.algo_namespace,
-                key='portfolio_{}'.format(self.exchange.name),
-                obj=self.exchange.portfolio
-            )
+            for exchange_name in self.exchanges:
+                exchange = self.exchanges[exchange_name]
+                save_algo_object(
+                    algo_name=self.algo_namespace,
+                    key='portfolio_{}'.format(exchange_name),
+                    obj=exchange.portfolio
+                )
         except Exception as e:
             log.warn('unable to save portfolio to disk: {}'.format(e))
 
@@ -445,9 +583,10 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
                style=None,
                attempt_index=0):
         try:
-            return self.exchange.order(asset, amount, limit_price,
-                                       stop_price,
-                                       style)
+            exchange = self.exchanges[asset.exchange]
+            return exchange.order(asset, amount, limit_price,
+                                  stop_price,
+                                  style)
         except ExchangeRequestError as e:
             log.warn(
                 'order attempt {}: {}'.format(attempt_index, e)
@@ -466,33 +605,51 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
 
     @api_method
     @disallowed_in_before_trading_start(OrderInBeforeTradingStart())
+    @expect_types(asset=TradingPair)
     def order(self,
               asset,
               amount,
               limit_price=None,
               stop_price=None,
               style=None):
+        """
+        We use the exchange specific portfolio to place orders.
+        The cumulative portfolio does not contain open orders but exchange
+        portfolios do.
+
+        :param asset: TradingPair
+        :param amount: float
+        :param limit_price: float
+        :param stop_price: float
+        :param style: Style
+        :return order: Order
+            The catalyst order object or None
+        """
+
         amount, style = self._calculate_order(asset, amount,
                                               limit_price, stop_price,
                                               style)
 
         order_id = self._order(asset, amount, limit_price, stop_price, style)
 
+        exchange = self.exchanges[asset.exchange]
+        exchange_portfolio = exchange.portfolio
         if order_id is not None:
-            order = self.portfolio.open_orders[order_id]
-            self.perf_tracker.process_order(order)
-            return order
+
+            if order_id in exchange_portfolio.open_orders:
+                order = exchange_portfolio.open_orders[order_id]
+                self.perf_tracker.process_order(order)
+                return order
+
+            else:
+                raise OrphanOrderError(
+                    order_id=order_id,
+                    exchange=exchange.name
+                )
         else:
+            log.warn('unable to order {} {} on exchange {}'.format(
+                amount, asset.symbol, asset.exchange))
             return None
-
-    def round_order(self, amount):
-        """
-        We need fractions with cryptocurrencies
-
-        :param amount:
-        :return:
-        """
-        return amount
 
     @api_method
     def batch_market_order(self, share_counts):
@@ -500,7 +657,18 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
 
     def _get_open_orders(self, asset=None, attempt_index=0):
         try:
-            return self.exchange.get_open_orders(asset)
+            if asset:
+                exchange = self.exchanges[asset.exchange]
+                return exchange.get_open_orders(asset)
+
+            else:
+                open_orders = []
+                for exchange_name in self.exchanges:
+                    exchange = self.exchanges[exchange_name]
+                    exchange_orders = exchange.get_open_orders()
+                    open_orders.append(exchange_orders)
+
+                return open_orders
         except ExchangeRequestError as e:
             log.warn(
                 'open orders attempt {}: {}'.format(attempt_index, e)
@@ -522,12 +690,16 @@ class ExchangeTradingAlgorithm(TradingAlgorithm):
         return self._get_open_orders(asset)
 
     @api_method
-    def get_order(self, order_id):
-        return self.exchange.get_order(order_id)
+    def get_order(self, order_id, exchange_name):
+        exchange = self.exchanges[exchange_name]
+        return exchange.get_order(order_id)
 
     @api_method
-    def cancel_order(self, order_param):
+    def cancel_order(self, order_param, exchange_name):
+        exchange = self.exchanges[exchange_name]
+
         order_id = order_param
         if isinstance(order_param, zp.Order):
             order_id = order_param.id
-        self.exchange.cancel_order(order_id)
+
+        exchange.cancel_order(order_id)

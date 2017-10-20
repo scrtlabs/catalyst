@@ -304,7 +304,7 @@ setup(
                   if '__pycache__' not in root},
     license='Apache 2.0',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
         'Programming Language :: Python',

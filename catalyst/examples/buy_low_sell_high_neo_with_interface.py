@@ -1,16 +1,6 @@
-'''
-This algorithm requires an additional library (ta-lib) beyond those required by catalyst.
-Install it first by running: 
-$ pip install TA-Lib
-
-If you get build errors like "fatal error: ta-lib/ta_libc.h: No such file or directory"
-it typically means that it can't find the underlying TA-Lib library and needs to be installed.
-See https://mrjbq7.github.io/ta-lib/install.html for instructions on how to install 
-the required dependencies.
-'''
-
 import talib
 from logbook import Logger
+import pandas as pd
 
 from catalyst.api import (
     order,
@@ -20,64 +10,62 @@ from catalyst.api import (
     get_open_orders,
 )
 from catalyst.exchange.stats_utils import get_pretty_stats
+from catalyst.utils.run_algo import run_algorithm
 
-algo_namespace = 'buy_low_sell_high_xrp'
+algo_namespace = 'buy_low_sell_high_neo'
 log = Logger(algo_namespace)
 
 
 def initialize(context):
     log.info('initializing algo')
-    context.ASSET_NAME = 'XRP_USD'
-    context.asset = symbol(context.ASSET_NAME)
+    context.asset = symbol('neo_btc', 'bitfinex')
 
-    context.TARGET_POSITIONS = 5000
+    context.TARGET_POSITIONS = 50000
     context.PROFIT_TARGET = 0.1
-    context.SLIPPAGE_ALLOWED = 0.05
+    context.SLIPPAGE_ALLOWED = 0.02
 
     context.retry_check_open_orders = 10
     context.retry_update_portfolio = 10
     context.retry_order = 5
-
-    context.swallow_errors = True
 
     context.errors = []
     pass
 
 
 def _handle_data(context, data):
+    price = data.current(context.asset, 'close')
+    log.info('got price {price}'.format(price=price))
+
+    if price is None:
+        log.warn('no pricing data')
+        return
+
     prices = data.history(
         context.asset,
         fields='price',
-        bar_count=20,
-        frequency='15m'
+        bar_count=1,
+        frequency='1m'
     )
-
     rsi = talib.RSI(prices.values, timeperiod=14)[-1]
     log.info('got rsi: {}'.format(rsi))
 
     # Buying more when RSI is low, this should lower our cost basis
     if rsi <= 30:
-        buy_increment = 50
+        buy_increment = 1
     elif rsi <= 40:
-        buy_increment = 20
+        buy_increment = 0.5
     elif rsi <= 70:
-        buy_increment = 5
+        buy_increment = 0.1
     else:
         buy_increment = None
 
     cash = context.portfolio.cash
     log.info('base currency available: {cash}'.format(cash=cash))
 
-    price = data.current(context.asset, 'price')
-    log.info('got price {price}'.format(price=price))
-
-    record(
-        price=price,
-        rsi=rsi,
-    )
+    record(price=price)
 
     orders = get_open_orders(context.asset)
-    if orders:
+    if len(orders) > 0:
         log.info('skipping bar until all open orders execute')
         return
 
@@ -103,6 +91,7 @@ def _handle_data(context, data):
         elif position.amount > 0 and \
                         price > cost_basis * (1 + context.PROFIT_TARGET):
             profit = (price * position.amount) - (cost_basis * position.amount)
+
             log.info('closing position, taking profit: {}'.format(profit))
             order_target_percent(
                 asset=context.asset,
@@ -116,7 +105,6 @@ def _handle_data(context, data):
 
     if is_buy:
         if buy_increment is None:
-            log.info('the rsi is too high to consider buying {}'.format(rsi))
             return
 
         if price * buy_increment > cash:
@@ -129,20 +117,22 @@ def _handle_data(context, data):
                 cost_basis
             )
         )
+        limit_price = price * (1 + context.SLIPPAGE_ALLOWED)
         order(
             asset=context.asset,
             amount=buy_increment,
-            limit_price=price * (1 + context.SLIPPAGE_ALLOWED)
+            limit_price=limit_price
         )
+        pass
 
 
 def handle_data(context, data):
     log.info('handling bar {}'.format(data.current_dt))
-    try:
-        _handle_data(context, data)
-    except Exception as e:
-        log.warn('aborting the bar on error {}'.format(e))
-        context.errors.append(e)
+    # try:
+    _handle_data(context, data)
+    # except Exception as e:
+    #     log.warn('aborting the bar on error {}'.format(e))
+    #     context.errors.append(e)
 
     log.info('completed bar {}, total execution errors {}'.format(
         data.current_dt,
@@ -155,4 +145,29 @@ def handle_data(context, data):
 
 def analyze(context, stats):
     log.info('the daily stats:\n{}'.format(get_pretty_stats(stats)))
+
     pass
+
+
+# run_algorithm(
+#     initialize=initialize,
+#     handle_data=handle_data,
+#     analyze=analyze,
+#     exchange_name='bitfinex',
+#     live=True,
+#     algo_namespace=algo_namespace,
+#     base_currency='btc',
+#     live_graph=False
+# )
+
+# Backtest
+run_algorithm(
+    capital_base=250,
+    data_frequency='minute',
+    initialize=initialize,
+    handle_data=handle_data,
+    analyze=analyze,
+    exchange_name='bitfinex',
+    algo_namespace=algo_namespace,
+    base_currency='btc'
+)
