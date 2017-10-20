@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Features &mdash; Catalyst 0.3 documentation</title>
+  <title>Naming Convention &mdash; Catalyst 0.3 documentation</title>
   
 
   
@@ -30,7 +30,8 @@
   
 
   
-    <link rel="top" title="Catalyst 0.3 documentation" href="index.html"/> 
+    <link rel="top" title="Catalyst 0.3 documentation" href="index.html"/>
+        <link rel="prev" title="Catalyst Beginner Tutorial" href="beginner-tutorial.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -69,7 +70,7 @@
         
           
           
-              <ul>
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="install.html">Install</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="install.html#installing-with-pip">Installing with <code class="docutils literal"><span class="pre">pip</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="install.html#gnu-linux">GNU/Linux</a></li>
@@ -104,7 +105,7 @@
 <li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#conclusions">Conclusions</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="naming-convention.html">Naming Convention</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Naming Convention</a></li>
 </ul>
 
           
@@ -129,11 +130,11 @@
   <ul class="wy-breadcrumbs">
     <li><a href="index.html">Docs</a> &raquo;</li>
       
-    <li>Features</li>
+    <li>Naming Convention</li>
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="_sources/welcome.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/naming-convention.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -142,41 +143,72 @@
 </div>
           <div role="main" class="document">
             
-  <img alt="https://s3.amazonaws.com/enigmaco-docs/enigma-catalyst.jpg" src="https://s3.amazonaws.com/enigmaco-docs/enigma-catalyst.jpg" />
-<div class="line-block">
-<div class="line"><br /></div>
+  <div class="section" id="naming-convention">
+<h1>Naming Convention<a class="headerlink" href="#naming-convention" title="Permalink to this headline">¶</a></h1>
+<p>Catalyst introduces a standardized naming convention for all asset pairs
+trading on any exchange in the following form:</p>
+<blockquote>
+<div><strong>{market_currency}_{base_currency}</strong></div></blockquote>
+<p>Where {market_currency} is the asset to be traded using {base_currency} as
+the reference, both written in lowercase and separated with an underscore.</p>
+<p>This standardization is needed to overcome the lack of consistency in the
+naming of assets across different exchanges, and making it easier to the user
+to refer to the asset pairs that you want to trade.</p>
+<p>Catalyst maintains a <a class="reference external" href="https://www.enigma.co/catalyst/status">Market Coverage Overview</a>
+where you can check the mapping between Catalyst naming pairs and that of each
+exchange. Catalyst will always expect in all its functions that you will refer to
+the asset pairs by using the Catalyst naming convention.</p>
+<p>If at any point, you input the wrong name for an asset pair, you will get an error
+of that pair not found in the given exchange, and a list of pairs available on that exchange:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>catalyst ingest-exchange -x poloniex -i btc_usd
+</pre></div>
 </div>
-<p>Catalyst is a data-driven crypto investment platform. It supports both
-backtesting and live-trading in a number of different crypto-exchanges.
-Catalyst empowers users to share and curate data and build profitable,
-data-driven investment strategies.</p>
-<div class="section" id="features">
-<h1>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h1>
-<ul class="simple">
-<li>Ease of use: Catalyst tries to get out of your way so that you can
-focus on algorithm development. See
-<a class="reference external" href="https://github.com/enigmampc/catalyst/tree/master/catalyst/examples">examples of trading strategies</a>
-provided.</li>
-<li>Support for several of the top crypto-exchanges by trading volume:
-<a class="reference external" href="https://www.bitfinex.com">Bitfinex</a>, <a class="reference external" href="http://www.bittrex.com">Bittrex</a>,
-and <a class="reference external" href="https://www.poloniex.com">Poloniex</a>.</li>
-<li>Secure: You and only you have access to each exchange API keys for your accounts.</li>
-<li>Input of historical pricing data of all crypto-assets by exchange,
-with daily and minute resolution. See
-<a class="reference external" href="https://www.enigma.co/catalyst/status">Catalyst Market Coverage Overview</a>.</li>
-<li>Backtesting and live-trading functionality, with a seamless transition
-between the two modes.</li>
-<li>Output of performance statistics are based on Pandas DataFrames to
-integrate nicely into the existing PyData eco-system.</li>
-<li>Statistic and machine learning libraries like matplotlib, scipy,
-statsmodels, and sklearn support development, analysis, and
-visualization of state-of-the-art trading systems.</li>
-</ul>
+<div class="highlight-python"><div class="highlight"><pre>Ingesting exchange bundle poloniex...
+Error traceback: /Volumes/Data/Users/victoris/Desktop/Enigma/user-install/catalyst-dev/catalyst/exchange/exchange.py (line 175)
+SymbolNotFoundOnExchange:  Symbol btc_usd not found on exchange Poloniex.
+Choose from: [&#39;rep_usdt&#39;, &#39;gno_btc&#39;, &#39;xvc_btc&#39;, &#39;pink_btc&#39;, &#39;sys_btc&#39;,
+&#39;emc2_btc&#39;, &#39;rads_btc&#39;, &#39;note_btc&#39;, &#39;maid_btc&#39;, &#39;bch_btc&#39;, &#39;gnt_btc&#39;,
+&#39;bcn_btc&#39;, &#39;rep_btc&#39;, &#39;bcy_btc&#39;, &#39;cvc_btc&#39;, &#39;nxt_xmr&#39;, &#39;zec_usdt&#39;,
+&#39;fct_btc&#39;, &#39;gas_btc&#39;, &#39;pot_btc&#39;, &#39;eth_usdt&#39;, &#39;btc_usdt&#39;, &#39;lbc_btc&#39;,
+&#39;dcr_btc&#39;, &#39;etc_usdt&#39;, &#39;omg_eth&#39;, &#39;amp_btc&#39;, &#39;xpm_btc&#39;, &#39;nxt_btc&#39;,
+&#39;vtc_btc&#39;, &#39;steem_eth&#39;, &#39;blk_xmr&#39;, &#39;pasc_btc&#39;, &#39;zec_xmr&#39;, &#39;grc_btc&#39;,
+&#39;nxc_btc&#39;, &#39;btcd_btc&#39;, &#39;ltc_btc&#39;, &#39;dash_btc&#39;, &#39;naut_btc&#39;, &#39;zec_eth&#39;,
+&#39;zec_btc&#39;, &#39;burst_btc&#39;, &#39;zrx_eth&#39;, &#39;bela_btc&#39;, &#39;steem_btc&#39;, &#39;etc_btc&#39;,
+&#39;eth_btc&#39;, &#39;huc_btc&#39;, &#39;strat_btc&#39;, &#39;lsk_btc&#39;, &#39;exp_btc&#39;, &#39;clam_btc&#39;,
+&#39;rep_eth&#39;, &#39;dash_xmr&#39;, &#39;cvc_eth&#39;, &#39;bch_usdt&#39;, &#39;zrx_btc&#39;, &#39;dash_usdt&#39;,
+&#39;blk_btc&#39;, &#39;xrp_btc&#39;, &#39;nxt_usdt&#39;, &#39;neos_btc&#39;, &#39;omg_btc&#39;, &#39;bts_btc&#39;,
+&#39;doge_btc&#39;, &#39;gnt_eth&#39;, &#39;sbd_btc&#39;, &#39;gno_eth&#39;, &#39;xcp_btc&#39;, &#39;ltc_usdt&#39;,
+&#39;btm_btc&#39;, &#39;xmr_usdt&#39;, &#39;lsk_eth&#39;, &#39;omni_btc&#39;, &#39;nav_btc&#39;, &#39;fldc_btc&#39;,
+&#39;ppc_btc&#39;, &#39;xbc_btc&#39;, &#39;dgb_btc&#39;, &#39;sc_btc&#39;, &#39;btcd_xmr&#39;, &#39;vrc_btc&#39;,
+&#39;ric_btc&#39;, &#39;str_btc&#39;, &#39;maid_xmr&#39;, &#39;xmr_btc&#39;, &#39;sjcx_btc&#39;, &#39;via_btc&#39;,
+&#39;xem_btc&#39;, &#39;nmc_btc&#39;, &#39;etc_eth&#39;, &#39;ltc_xmr&#39;, &#39;ardr_btc&#39;, &#39;gas_eth&#39;,
+&#39;flo_btc&#39;, &#39;xrp_usdt&#39;, &#39;game_btc&#39;, &#39;bch_eth&#39;, &#39;bcn_xmr&#39;, &#39;str_usdt&#39;]
+</pre></div>
+</div>
+<p>In the example above, exchange Poloniex does not use USD, but uses instead the
+USDT cryptocurrency asset that is issued on the Bitcoin blockchain via the Omni
+Layer Protocol. Each USDT unit is backed by a U.S Dollar held in the reserves of
+Tether Limited. USDT can be transferred, stored, and spent, just like bitcoins
+or any other cryptocurrency. Given its 1:1 mapping to the USD, is a viable alternative.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>catalyst ingest-exchange -x poloniex -i btc_usdt
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Ingesting exchange bundle poloniex...
+    [====================================]  Fetching poloniex daily candles: :  100%
+</pre></div>
+</div>
 </div>
 
 
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="beginner-tutorial.html" class="btn btn-neutral" title="Catalyst Beginner Tutorial" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>

@@ -9,6 +9,7 @@ Table of Contents
 
    install
    beginner-tutorial
+   naming-convention
 ..   bundles
 ..   development-guidelines
 ..   appendix
