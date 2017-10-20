@@ -498,7 +498,7 @@ def ingest_exchange(exchange_name, data_frequency, start, end,
     exchange = get_exchange(exchange_name)
     exchange_bundle = ExchangeBundle(exchange)
 
-    click.echo('ingesting exchange bundle {}'.format(exchange_name))
+    click.echo('Ingesting exchange bundle {}...'.format(exchange_name))
     exchange_bundle.ingest(
         data_frequency=data_frequency,
         include_symbols=include_symbols,
