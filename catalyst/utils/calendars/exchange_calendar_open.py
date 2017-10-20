@@ -31,4 +31,4 @@ class OpenExchangeCalendar(TradingCalendar):
         return DateOffset(days=1)
 
     def __init__(self, *args, **kwargs):
-        super(OpenExchangeCalendar, self).__init__(start=Timestamp('2015-02-19', tz='UTC'), **kwargs)
+        super(OpenExchangeCalendar, self).__init__(start=Timestamp('2015-3-1', tz='UTC'), **kwargs)

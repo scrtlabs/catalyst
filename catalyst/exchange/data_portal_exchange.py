@@ -12,15 +12,15 @@
 # limitations under the License.
 
 import abc
-from datetime import timedelta
 from time import sleep
 
+import numpy as np
 import pandas as pd
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
 from catalyst.data.data_portal import DataPortal
-from catalyst.errors import HistoryWindowStartsBeforeData
+from catalyst.exchange.bundle_utils import get_start_dt
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
@@ -153,6 +153,10 @@ class DataPortalExchangeBase(DataPortal):
                 exchange = self.exchanges[assets.exchange]
                 spot_values = self.get_exchange_spot_value(
                     exchange, [assets], field, dt, data_frequency)
+
+                if not spot_values:
+                    return np.nan
+
                 return spot_values[0]
 
             else:
@@ -282,109 +286,60 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
                                     field,
                                     data_frequency,
                                     ffill=True):
+        """
+        Fetching price history window from the exchange bundle.
+
+        Using a try... except approach to minimize reads most of the time,
+        when the data exists.
+
+        :param exchange:
+        :param assets:
+        :param end_dt:
+        :param bar_count:
+        :param frequency:
+        :param field:
+        :param data_frequency:
+        :param ffill:
+        :return:
+        """
+
         bundle = self.exchange_bundles[exchange.name]
-
-        if data_frequency == 'minute':
-            dts = self.trading_calendar.minutes_window(
-                end_dt, -bar_count
-            )
-
-            self.ensure_after_first_day(dts[0], assets)
-
-        elif data_frequency == 'daily':
-            session = self.trading_calendar.minute_to_session_label(end_dt)
-            dts = self._get_days_for_window(session, bar_count)
-
-            if len(dts) == 0:
-                symbols = [asset.symbol for asset in assets]
-                raise PricingDataNotLoadedError(
-                    field=field,
-                    symbols=symbols,
-                    exchange=exchange.name,
-                    first_trading_day= \
-                        min([asset.start_date for asset in assets]),
-                    data_frequency=data_frequency,
-                    symbol_list=','.join(symbols)
-                )
-
-            self.ensure_after_first_day(dts[0], assets)
-
-        else:
-            raise InvalidHistoryFrequencyError(frequency=data_frequency)
-
-        reader = bundle.get_reader(data_frequency)
-        if reader is None:
-            raise BundleNotFoundError(
-                exchange=exchange.name.title(),
-                data_frequency=data_frequency
-            )
-
-        try:
-            values = reader.load_raw_arrays(
-                sids=[asset.sid for asset in assets],
-                fields=[field],
-                start_dt=dts[0],
-                end_dt=dts[-1]
-            )[0]
-
-        except Exception:
-            first_trading_day = self._get_first_trading_day(assets)
-            symbols = [asset.symbol.encode('utf-8') for asset in assets]
-
-            symbol_list = ','.join(symbols)
-            raise PricingDataNotLoadedError(
-                field=field,
-                first_trading_day=first_trading_day,
-                exchange=exchange.name.title(),
-                symbols=symbols,
-                symbol_list=symbol_list,
-                data_frequency=data_frequency
-            )
-
-        series = dict()
-        for index, asset in enumerate(assets):
-            asset_values = values[:, index]
-
-            value_series = pd.Series(asset_values, index=dts)
-            series[asset] = value_series
-
+        series = bundle.get_history_window_series_and_load(
+            assets=assets,
+            end_dt=end_dt,
+            bar_count=bar_count,
+            field=field,
+            data_frequency=data_frequency
+        )
         return pd.DataFrame(series)
-
-    def ensure_after_first_day(self, dt, assets):
-        first_trading_day = self._get_first_trading_day(assets)
-        if dt < first_trading_day:
-            raise PricingDataBeforeTradingError(
-                first_trading_day=first_trading_day,
-                exchange=assets[0].exchange.title(),
-                symbols=[asset.symbol.encode('utf-8') for asset in assets],
-                dt=dt,
-            )
 
     def get_exchange_spot_value(self, exchange, assets, field, dt,
                                 data_frequency):
         bundle = self.exchange_bundles[exchange.name]
-        reader = bundle.get_reader(data_frequency)
 
-        self.ensure_after_first_day(dt, assets)
+        if data_frequency == 'daily':
+            dt = dt.floor('1D')
+        else:
+            dt = dt.floor('1 min')
 
-        values = []
-        for asset in assets:
-            try:
-                value = reader.get_value(
-                    sid=asset.sid,
-                    dt=dt,
-                    field=field
+        try:
+            return bundle.get_spot_values(assets, field, dt, data_frequency)
+
+        except PricingDataNotLoadedError:
+            log.info(
+                'pricing data for {symbol} not found on {dt}'
+                ', updating the bundles.'.format(
+                    symbol=[asset.symbol for asset in assets],
+                    dt=dt
                 )
-                values.append(value)
-            except Exception:
-                raise PricingDataNotLoadedError(
-                    field=field,
-                    first_trading_day=self._get_first_trading_day(assets),
-                    exchange=exchange.name.title(),
-                    symbols=[asset.symbol.encode('utf-8') for asset in assets],
-                    symbol_list=''.join(
-                        [asset.symbol.encode('utf-8') for asset in assets]),
-                    data_frequency=data_frequency
-                )
-
-            return values
+            )
+            bundle.ingest_assets(
+                assets=assets,
+                start_dt=self._first_trading_day,
+                end_dt=self._last_available_session,
+                data_frequency=data_frequency,
+                show_progress=True
+            )
+            return bundle.get_spot_values(
+                assets, field, dt, data_frequency, True
+            )

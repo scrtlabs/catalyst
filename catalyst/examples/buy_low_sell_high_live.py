@@ -1,6 +1,7 @@
 import talib
 from logbook import Logger
 
+import pandas as pd
 from catalyst.api import (
     order,
     order_target_percent,
@@ -17,10 +18,10 @@ log = Logger('buy low sell high')
 
 def initialize(context):
     log.info('initializing algo')
-    context.ASSET_NAME = 'XRP_BTC'
+    context.ASSET_NAME = 'etc_btc'
     context.asset = symbol(context.ASSET_NAME)
 
-    context.TARGET_POSITIONS = 300
+    context.TARGET_POSITIONS = 3
     context.PROFIT_TARGET = 0.1
     context.SLIPPAGE_ALLOWED = 0.02
 
@@ -33,6 +34,9 @@ def initialize(context):
 
 
 def _handle_data(context, data):
+    price = data.current(context.asset, 'price')
+    log.info('got price {price}'.format(price=price))
+
     prices = data.history(
         context.asset,
         fields='price',
@@ -44,19 +48,16 @@ def _handle_data(context, data):
 
     # Buying more when RSI is low, this should lower our cost basis
     if rsi <= 30:
-        buy_increment = 50
+        buy_increment = 1
     elif rsi <= 40:
-        buy_increment = 20
-    # elif rsi <= 70:
-    #    buy_increment = 5
+        buy_increment = 0.5
+    elif rsi <= 70:
+        buy_increment = 0.2
     else:
         buy_increment = None
 
     cash = context.portfolio.cash
     log.info('base currency available: {cash}'.format(cash=cash))
-
-    price = data.current(context.asset, 'price')
-    log.info('got price {price}'.format(price=price))
 
     record(
         price=price,
@@ -146,11 +147,22 @@ def analyze(context, stats):
 
 
 run_algorithm(
+    capital_base=1,
     initialize=initialize,
     handle_data=handle_data,
     analyze=analyze,
     exchange_name='bitfinex',
-    live=True,
-    algo_namespace=algo_namespace,
-    base_currency='btc'
+    start=pd.to_datetime('2017-5-01', utc=True),
+    end=pd.to_datetime('2017-10-01', utc=True),
+    base_currency='btc',
+    data_frequency='daily'
 )
+# run_algorithm(
+#     initialize=initialize,
+#     handle_data=handle_data,
+#     analyze=analyze,
+#     exchange_name='poloniex',
+#     live=True,
+#     algo_namespace=algo_namespace,
+#     base_currency='btc'
+# )

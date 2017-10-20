@@ -44,7 +44,6 @@ from catalyst.utils.calendars import get_calendar
 from catalyst.utils.cli import maybe_show_progress
 from catalyst.utils.memoize import lazyval
 
-
 logger = logbook.Logger('MinuteBars')
 
 US_EQUITIES_MINUTES_PER_DAY = 390
@@ -1125,7 +1124,7 @@ class BcolzMinuteBarReader(MinuteBarReader):
             else:
                 return np.nan
 
-        #if field != 'volume':
+        # if field != 'volume':
         value *= self._ohlc_ratio_inverse_for_sid(sid)
         return value
 
@@ -1206,7 +1205,7 @@ class BcolzMinuteBarReader(MinuteBarReader):
             minute_dt.value / NANOS_IN_MINUTE,
             self._minutes_per_day,
             False,
-            )
+        )
 
     def load_raw_arrays(self, fields, start_dt, end_dt, sids):
         """
@@ -1262,10 +1261,10 @@ class BcolzMinuteBarReader(MinuteBarReader):
                 where = values != 0
                 # first slice down to len(where) because we might not have
                 # written data for all the minutes requested
-                #if field != 'volume':
+                # if field != 'volume':
                 out[:len(where), i][where] = (
                     values[where] * self._ohlc_ratio_inverse_for_sid(sid))
-                #else:
+                # else:
                 #    out[:len(where), i][where] = values[where]
 
             results.append(out)
@@ -1353,6 +1352,7 @@ class H5MinuteBarUpdateReader(MinuteBarUpdateReader):
     path : str
         The path of the HDF5 file from which to source data.
     """
+
     def __init__(self, path):
         self._panel = pd.read_hdf(path)
 

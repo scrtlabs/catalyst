@@ -95,7 +95,8 @@ def has_data_for_dates(series_or_df, first_date, last_date):
 
 def load_crypto_market_data(trading_day=None, trading_days=None,
                             bm_symbol=None, bundle=None, bundle_data=None,
-                            environ=None, exchange=None):
+                            environ=None, exchange=None, start_dt=None,
+                            end_dt=None):
     if trading_day is None:
         trading_day = get_calendar('OPEN').trading_day
 
@@ -104,8 +105,11 @@ def load_crypto_market_data(trading_day=None, trading_days=None,
     # if trading_days is None:
     #    trading_days = get_calendar('OPEN').schedule
 
-    first_date = get_calendar('OPEN').first_trading_session
-    now = pd.Timestamp.utcnow()
+    if start_dt is None:
+        start_dt = get_calendar('OPEN').first_trading_session
+
+    if end_dt is None:
+        end_dt = pd.Timestamp.utcnow()
 
     # We expect to have benchmark and treasury data that's current up until
     # **two** full trading days prior to the most recently completed trading
@@ -131,7 +135,7 @@ def load_crypto_market_data(trading_day=None, trading_days=None,
     else:
         last_date = trading_days[trading_days.get_loc(now, method='ffill') - 2]
     '''
-    last_date = trading_days[trading_days.get_loc(now, method='ffill') - 1]
+    last_date = trading_days[trading_days.get_loc(end_dt, method='ffill') - 1]
 
     if exchange is None:
         # This is exceptional, since placing the import at the module scope
@@ -146,14 +150,14 @@ def load_crypto_market_data(trading_day=None, trading_days=None,
     br = exchange.get_history_window(
         assets=[benchmark_asset],
         end_dt=last_date,
-        bar_count=pd.Timedelta(last_date - first_date).days,
+        bar_count=pd.Timedelta(last_date - start_dt).days,
         frequency='1d',
         field='close',
         data_frequency='daily')
     br.columns = ['close']
     br = br.pct_change(1).iloc[1:]
-    br.loc[first_date]=0
-    br=br.sort_index()
+    br.loc[start_dt] = 0
+    br = br.sort_index()
 
     # Override first_date for treasury data since we have it for many more years
     # and is independent of crypto data
@@ -162,10 +166,10 @@ def load_crypto_market_data(trading_day=None, trading_days=None,
         bm_symbol,
         first_date_treasury,
         last_date,
-        now,
+        end_dt,
         environ,
     )
-    benchmark_returns = br[br.index.slice_indexer(first_date, last_date)]
+    benchmark_returns = br[br.index.slice_indexer(start_dt, last_date)]
     treasury_curves = tc[
         tc.index.slice_indexer(first_date_treasury, last_date)]
     return benchmark_returns, treasury_curves

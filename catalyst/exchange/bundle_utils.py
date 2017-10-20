@@ -1,18 +1,15 @@
 import calendar
-import tarfile
-
-import requests
-from datetime import timedelta, datetime, date
 import os
-import pandas as pd
-import numpy as np
+import tarfile
+from datetime import timedelta, datetime, date
 
+import numpy as np
+import pandas as pd
 import pytz
 
 from catalyst.data.bundles import from_bundle_ingest_dirname
 from catalyst.data.bundles.core import download_without_progress
-from catalyst.exchange.exchange_errors import ApiCandlesError, \
-    PricingDataBeforeTradingError, NoDataAvailableOnExchange
+from catalyst.exchange.exchange_errors import NoDataAvailableOnExchange
 from catalyst.exchange.exchange_utils import get_exchange_bundles_folder
 from catalyst.utils.deprecate import deprecated
 from catalyst.utils.paths import data_path
@@ -189,60 +186,6 @@ def get_df_from_arrays(arrays, periods):
     return df
 
 
-def get_df_from_candles(candles, bar_count, end_dt, data_frequency,
-                        previous_candle=None):
-    """
-    Create candles for each period of the specified range, forward-filling
-    missing candles with the previous value.
-
-    :param candles:
-    :param bar_count:
-    :param end_dt:
-    :param data_frequency:
-    :param previous_candle:
-
-    :return:
-    """
-    all_dates = []
-    all_candles = []
-
-    start_dt = get_start_dt(end_dt, bar_count, data_frequency)
-    date = start_dt
-
-    # TODO: this works well with a small number of candles, consider using numpy as needed
-    while date <= end_dt:
-        candle = next((
-            candle for candle in candles if candle['last_traded'] == date
-        ), previous_candle)
-
-        if candle is None:
-            candle = candles[0]
-
-        all_dates.append(date)
-        all_candles.append(candle)
-
-        previous_candle = candle
-
-        date += get_delta(1, data_frequency)
-
-    return all_dates, all_candles
-
-
-def get_trailing_candles_dt(asset, start_dt, end_dt, data_frequency):
-    missing_start = None
-
-    if asset.end_minute is not None and start_dt < asset.end_minute:
-        if asset.end_minute < end_dt:
-            delta = get_delta(1, data_frequency)
-
-            missing_start = asset.end_minute + delta
-
-    else:
-        missing_start = start_dt
-
-    return missing_start
-
-
 def range_in_bundle(asset, start_dt, end_dt, reader):
     """
     Evaluate whether price data of an asset is included has been ingested in
@@ -278,6 +221,7 @@ def range_in_bundle(asset, start_dt, end_dt, reader):
     return has_data
 
 
+@deprecated
 def find_most_recent_time(bundle_name):
     """
     Find most recent "time folder" for a given bundle.
@@ -308,83 +252,3 @@ def find_most_recent_time(bundle_name):
     else:
         return None
 
-
-@deprecated
-def get_history(exchange_name, data_frequency, symbol, start=None, end=None):
-    """
-    History API provides OHLCV data for any of the supported exchanges up to yesterday.
-
-    :param exchange_name: string
-        Required: The name identifier of the exchange (e.g. bitfinex, bittrex, poloniex).
-    :param data_frequency: string
-        Required: The bar frequency (minute or daily)
-    :param symbol: string
-        Required: The trading pair symbol, using Catalyst naming convention
-    :param start: datetime
-        Optional: The start date.
-    :param end: datetime
-        Optional: The end date.
-
-    :return ohlcv: list[dict[string, float]]
-        Each row contains the following dictionary for the resulting bars:
-        'ts'     : int, the timestamp in seconds
-        'open'   : float
-        'high'   : float
-        'low'    : float
-        'close'  : float
-        'volume' : float
-
-    Notes
-    =====
-    Using seconds for the start and end dates for ease of use in the
-    function query parameters.
-
-    Sometimes, one minute goes by without completing a trade of the given
-    trading pair on the given exchange. To minimize the payload size, we
-    don't return identical sequential bars. Post-processing code will
-    forward fill missing bars outside of this function.
-    """
-
-    start_seconds = get_seconds_from_date(start) if start else None
-    end_seconds = get_seconds_from_date(end) if end else None
-
-    if exchange_name not in EXCHANGE_NAMES:
-        raise ValueError(
-            'get_history function only supports the following exchanges: {}'.format(
-                list(EXCHANGE_NAMES)))
-
-    if data_frequency != 'daily' and data_frequency != 'minute':
-        raise ValueError(
-            'get_history currently only supports daily and minute data.'
-        )
-
-    url = '{api_url}/candles?exchange={exchange}&market={symbol}&freq={data_frequency}'.format(
-        api_url=API_URL,
-        exchange=exchange_name,
-        symbol=symbol,
-        data_frequency=data_frequency,
-    )
-
-    if start_seconds:
-        url += '&start={}'.format(start_seconds)
-
-    if end_seconds:
-        url += '&end={}'.format(end_seconds)
-
-    try:
-        response = requests.get(url)
-    except Exception as e:
-        raise ValueError(e)
-
-    data = response.json()
-
-    if 'error' in data:
-        raise ApiCandlesError(error=data['error'])
-
-    for candle in data:
-        last_traded = pd.Timestamp.utcfromtimestamp(candle['ts'])
-        last_traded = last_traded.replace(tzinfo=pytz.UTC)
-
-        candle['last_traded'] = last_traded
-
-    return data

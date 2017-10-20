@@ -191,7 +191,12 @@ def _run(handle_data,
     open_calendar = get_calendar('OPEN')
 
     env = TradingEnvironment(
-        load=partial(load_crypto_market_data, environ=environ),
+        load=partial(
+            load_crypto_market_data,
+            environ=environ,
+            start_dt=start,
+            end_dt=end
+        ),
         environ=environ,
         exchange_tz='UTC',
         asset_db_path=None  # We don't need an asset db, we have exchanges
@@ -263,7 +268,7 @@ def _run(handle_data,
         )
 
         # TODO: use the constructor instead
-        sim_params._arena = 'live'
+        # sim_params._arena = 'live'
 
         algorithm_class = partial(
             ExchangeTradingAlgorithmLive,
@@ -284,7 +289,8 @@ def _run(handle_data,
             exchanges=exchanges,
             asset_finder=None,
             trading_calendar=open_calendar,
-            first_trading_day=None,
+            first_trading_day=start,
+            last_available_session=end
         )
 
         sim_params = create_simulation_parameters(

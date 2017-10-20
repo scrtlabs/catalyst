@@ -48,9 +48,9 @@ class BcolzExchangeBarReader(BcolzMinuteBarReader):
         # else:
         #     return self._load_daily_raw_arrays(fields, start_dt, end_dt, sids)
 
-        return self._load_daily_raw_arrays(fields, start_dt, end_dt, sids)
+        return self._load_raw_arrays(fields, start_dt, end_dt, sids)
 
-    def _load_daily_raw_arrays(self, fields, start_dt, end_dt, sids):
+    def _load_raw_arrays(self, fields, start_dt, end_dt, sids):
         start_idx = self._find_position_of_minute(start_dt)
         end_idx = self._find_position_of_minute(end_dt)
 

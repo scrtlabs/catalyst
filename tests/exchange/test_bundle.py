@@ -3,7 +3,8 @@ from logging import Logger
 import pandas as pd
 
 from catalyst import get_calendar
-from catalyst.exchange.bundle_utils import get_bcolz_chunk
+from catalyst.exchange.bundle_utils import get_bcolz_chunk, get_periods, \
+    get_periods_range
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
 from catalyst.exchange.exchange_bundle import ExchangeBundle, \
@@ -78,12 +79,13 @@ class ExchangeBundleTestCase:
         # data_frequency = 'daily'
         # include_symbols = 'neo_btc,bch_btc,eth_btc'
 
-        exchange_name = 'bitfinex'
+        exchange_name = 'poloniex'
         data_frequency = 'daily'
-        include_symbols = 'etc_btc'
+        include_symbols = 'btc_usdt'
 
-        start = pd.to_datetime('2016-11-01', utc=True)
+        start = pd.to_datetime('2016-1-1', utc=True)
         end = pd.to_datetime('2017-10-16', utc=True)
+        periods = get_periods_range(start, end, data_frequency)
 
         exchange = get_exchange(exchange_name)
         exchange_bundle = ExchangeBundle(exchange)

@@ -163,8 +163,6 @@ def analyze(context, stats):
 # Backtest
 run_algorithm(
     capital_base=250,
-    start=pd.to_datetime('2017-10-01', utc=True),
-    end=pd.to_datetime('2017-10-15', utc=True),
     data_frequency='minute',
     initialize=initialize,
     handle_data=handle_data,

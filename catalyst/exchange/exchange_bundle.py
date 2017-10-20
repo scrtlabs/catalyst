@@ -10,12 +10,13 @@ from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
     BcolzMinuteBarMetadata
 from catalyst.exchange.bundle_utils import range_in_bundle, \
     get_bcolz_chunk, get_delta, get_adj_dates, get_month_start_end, \
-    get_year_start_end, get_periods_range, get_df_from_arrays
+    get_year_start_end, get_periods_range, get_df_from_arrays, get_start_dt
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
 from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
     InvalidHistoryFrequencyError, PricingDataBeforeTradingError, \
-    TempBundleNotFoundError, NoDataAvailableOnExchange
+    TempBundleNotFoundError, NoDataAvailableOnExchange, \
+    PricingDataNotLoadedError
 from catalyst.exchange.exchange_utils import get_exchange_folder
 from catalyst.utils.cli import maybe_show_progress
 from catalyst.utils.paths import ensure_directory
@@ -451,3 +452,152 @@ class ExchangeBundle:
         for frequency in data_frequency.split(','):
             self.ingest_assets(assets, start_dt, end_dt, frequency,
                                show_progress)
+
+    def get_history_window_series_and_load(self,
+                                           assets,
+                                           end_dt,
+                                           bar_count,
+                                           field,
+                                           data_frequency):
+        try:
+            series = self.get_history_window_series(
+                assets=assets,
+                end_dt=end_dt,
+                bar_count=bar_count,
+                field=field,
+                data_frequency=data_frequency
+            )
+            return pd.DataFrame(series)
+
+        except PricingDataNotLoadedError:
+            start_dt = get_start_dt(end_dt, bar_count, data_frequency)
+            log.info(
+                'pricing data for {symbol} not found in range '
+                '{start} to {end}, updating the bundles.'.format(
+                    symbol=[asset.symbol for asset in assets],
+                    start=start_dt,
+                    end=end_dt
+                )
+            )
+            self.ingest_assets(
+                assets=assets,
+                start_dt=start_dt,
+                end_dt=end_dt,
+                data_frequency=data_frequency,
+                show_progress=True
+            )
+            series = self.get_history_window_series(
+                assets=assets,
+                end_dt=end_dt,
+                bar_count=bar_count,
+                field=field,
+                data_frequency=data_frequency,
+                reset_reader=True
+            )
+            return series
+
+    def get_spot_values(self, assets, field, dt, data_frequency,
+                        reset_reader=False):
+        values = []
+        try:
+            reader = self.get_reader(data_frequency)
+            if reset_reader:
+                del self._readers[reader._rootdir]
+                reader = self.get_reader(data_frequency)
+
+            for asset in assets:
+                value = reader.get_value(
+                    sid=asset.sid,
+                    dt=dt,
+                    field=field
+                )
+                values.append(value)
+
+            return values
+
+        except Exception:
+            symbols = [asset.symbol.encode('utf-8') for asset in assets]
+            raise PricingDataNotLoadedError(
+                field=field,
+                first_trading_day=min([asset.start_date for asset in assets]),
+                exchange=self.exchange.name,
+                symbols=symbols,
+                symbol_list=','.join(symbols),
+                data_frequency=data_frequency
+            )
+
+    def get_history_window_series(self,
+                                  assets,
+                                  end_dt,
+                                  bar_count,
+                                  field,
+                                  data_frequency,
+                                  reset_reader=False):
+        start_dt = get_start_dt(end_dt, bar_count, data_frequency)
+        start_dt, end_dt = \
+            get_adj_dates(start_dt, end_dt, assets, data_frequency)
+
+        reader = self.get_reader(data_frequency)
+        if reset_reader:
+            del self._readers[reader._rootdir]
+            reader = self.get_reader(data_frequency)
+
+        if reader is None:
+            symbols = [asset.symbol.encode('utf-8') for asset in assets]
+            raise PricingDataNotLoadedError(
+                field=field,
+                first_trading_day=min([asset.start_date for asset in assets]),
+                exchange=self.exchange.name,
+                symbols=symbols,
+                symbol_list=','.join(symbols),
+                data_frequency=data_frequency
+            )
+
+        for asset in assets:
+            asset_start_dt, asset_end_dt = \
+                get_adj_dates(start_dt, end_dt, assets, data_frequency)
+
+            in_bundle = range_in_bundle(
+                asset, asset_start_dt, asset_end_dt, reader
+            )
+            if not in_bundle:
+                raise PricingDataNotLoadedError(
+                    field=field,
+                    first_trading_day=asset.start_date,
+                    exchange=self.exchange.name,
+                    symbols=asset.symbol,
+                    symbol_list=asset.symbol,
+                    data_frequency=data_frequency
+                )
+
+        series = dict()
+        try:
+            arrays = reader.load_raw_arrays(
+                sids=[asset.sid for asset in assets],
+                fields=[field],
+                start_dt=start_dt,
+                end_dt=end_dt
+            )
+
+        except Exception:
+            symbols = [asset.symbol.encode('utf-8') for asset in assets]
+            raise PricingDataNotLoadedError(
+                field=field,
+                first_trading_day=min([asset.start_date for asset in assets]),
+                exchange=self.exchange.name,
+                symbols=symbols,
+                symbol_list=','.join(symbols),
+                data_frequency=data_frequency
+            )
+
+        periods = self.get_calendar_periods_range(
+            start_dt, end_dt, data_frequency
+        )
+
+        for asset_index, asset in enumerate(assets):
+            asset_values = arrays[asset_index]
+
+            value_series = pd.Series(asset_values[0], index=periods)
+            series[asset] = value_series
+
+        return series
