@@ -56,7 +56,7 @@ class Bitfinex(Exchange):
 
         # Max is 90 but playing it safe
         # https://www.bitfinex.com/posts/188
-        self.max_requests_per_minute = 20
+        self.max_requests_per_minute = 80
         self.request_cpt = dict()
 
         self.bundle = ExchangeBundle(self)
@@ -665,10 +665,11 @@ class Bitfinex(Exchange):
         return time.strftime('%Y-%m-%d',
                              time.gmtime(int(response.json()[-1][0] / 1000)))
 
-    def get_orderbook(self, asset, order_type='all'):
+    def get_orderbook(self, asset, order_type='all', limit=100):
         exchange_symbol = asset.exchange_symbol
         try:
             self.ask_request()
+            # TODO: implement limit
             response = self._request(
                 'book/{}'.format(exchange_symbol), None)
             data = response.json()

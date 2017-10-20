@@ -21,7 +21,7 @@ def initialize(context):
     context.ASSET_NAME = 'etc_btc'
     context.asset = symbol(context.ASSET_NAME)
 
-    context.TARGET_POSITIONS = 3
+    context.TARGET_POSITIONS = 30
     context.PROFIT_TARGET = 0.1
     context.SLIPPAGE_ALLOWED = 0.02
 

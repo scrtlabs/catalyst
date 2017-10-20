@@ -49,7 +49,7 @@ class Poloniex(Exchange):
         self.transactions = defaultdict(list)
 
         self.num_candles_limit = 2000
-        self.max_requests_per_minute = 20
+        self.max_requests_per_minute = 60
         self.request_cpt = dict()
 
         self.bundle = ExchangeBundle(self)

@@ -105,8 +105,8 @@ def load_crypto_market_data(trading_day=None, trading_days=None,
     # if trading_days is None:
     #    trading_days = get_calendar('OPEN').schedule
 
-    if start_dt is None:
-        start_dt = get_calendar('OPEN').first_trading_session
+    # if start_dt is None:
+    start_dt = get_calendar('OPEN').first_trading_session
 
     if end_dt is None:
         end_dt = pd.Timestamp.utcnow()

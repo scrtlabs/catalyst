@@ -268,7 +268,7 @@ def _run(handle_data,
         )
 
         # TODO: use the constructor instead
-        # sim_params._arena = 'live'
+        sim_params._arena = 'live'
 
         algorithm_class = partial(
             ExchangeTradingAlgorithmLive,
