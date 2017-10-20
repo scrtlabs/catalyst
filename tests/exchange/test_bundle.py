@@ -26,7 +26,7 @@ class ExchangeBundleTestCase:
         assets = [
             exchange.get_asset('btc_usdt')
         ]
-        dt = pd.to_datetime('2017-9-29 23:59', utc=True)
+        dt = pd.to_datetime('2017-10-14', utc=True)
 
         values = exchange_bundle.get_spot_values(
             assets=assets,

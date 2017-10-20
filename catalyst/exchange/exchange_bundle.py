@@ -597,7 +597,7 @@ class ExchangeBundle:
         for asset_index, asset in enumerate(assets):
             asset_values = arrays[asset_index]
 
-            value_series = pd.Series(asset_values[0], index=periods)
+            value_series = pd.Series(asset_values.flatten(), index=periods)
             series[asset] = value_series
 
         return series

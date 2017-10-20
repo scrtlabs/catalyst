@@ -18,7 +18,7 @@ log = Logger('buy low sell high')
 
 def initialize(context):
     log.info('initializing algo')
-    context.ASSET_NAME = 'etc_btc'
+    context.ASSET_NAME = 'btc_usdt'
     context.asset = symbol(context.ASSET_NAME)
 
     context.TARGET_POSITIONS = 30
@@ -41,7 +41,7 @@ def _handle_data(context, data):
         context.asset,
         fields='price',
         bar_count=20,
-        frequency='15m'
+        frequency='1d'
     )
     rsi = talib.RSI(prices.values, timeperiod=14)[-1]
     log.info('got rsi: {}'.format(rsi))
@@ -54,7 +54,7 @@ def _handle_data(context, data):
     elif rsi <= 70:
         buy_increment = 0.2
     else:
-        buy_increment = None
+        buy_increment = 0.1
 
     cash = context.portfolio.cash
     log.info('base currency available: {cash}'.format(cash=cash))
@@ -147,14 +147,14 @@ def analyze(context, stats):
 
 
 run_algorithm(
-    capital_base=1,
+    capital_base=100000,
     initialize=initialize,
     handle_data=handle_data,
     analyze=analyze,
-    exchange_name='bitfinex',
+    exchange_name='poloniex',
     start=pd.to_datetime('2017-5-01', utc=True),
-    end=pd.to_datetime('2017-10-01', utc=True),
-    base_currency='btc',
+    end=pd.to_datetime('2017-10-16', utc=True),
+    base_currency='usdt',
     data_frequency='daily'
 )
 # run_algorithm(
