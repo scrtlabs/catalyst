@@ -52,7 +52,7 @@ My first algorithm
 ~~~~~~~~~~~~~~~~~~
 
 Lets take a look at a very simple algorithm from the ``examples``
-directory, ``buy_btc.py``:
+directory: `buy_btc_simple.py <https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/buy_btc_simple.py>`_:
 
 .. code-block:: python
 
@@ -225,16 +225,16 @@ Thus, to execute our algorithm from above and save the results to
 
 .. code-block:: python
 
-    catalyst run -f buy_btc_simple.py -x bitfinex --start 2016-1-1 --end 2016-9-29 -o buy_simple_btc_out.pickle
+    catalyst run -f buy_btc_simple.py -x bitfinex --start 2016-1-1 --end 2017-9-30 -o buy_btc_simple_out.pickle
 
 
-.. 
-.. parsed-literal
+.. parsed-literal:: 
 
-..    AAPL
-..    [2015-11-04 22:45:32.820166] INFO: Performance: Simulated 3521 trading days out of 3521.
-..    [2015-11-04 22:45:32.820314] INFO: Performance: first open: 2000-01-03 14:31:00+00:00
-..    [2015-11-04 22:45:32.820401] INFO: Performance: last close: 2013-12-31 21:00:00+00:00
+    INFO: run_algo: running algo in backtest mode
+    INFO: exchange_algorithm: initialized trading algorithm in backtest mode
+    INFO: Performance: Simulated 639 trading days out of 639.
+    INFO: Performance: first open: 2016-01-01 00:00:00+00:00
+    INFO: Performance: last close: 2017-09-30 23:59:00+00:00
 
 
 ``run`` first calls the ``initialize()`` function, and then
@@ -255,7 +255,7 @@ slippage model that ``catalyst`` uses).
 
 Let's take a quick look at the performance ``DataFrame``. For this, we
 use ``pandas`` from inside the IPython Notebook and print the first ten
-rows. Note that ``catalyst`` makes heavy usage of 
+rows. and print the first ten rows. Note that ``catalyst`` makes heavy usage of 
 `pandas <http://pandas.pydata.org/>`_, especially for data input and 
 outputting so it's worth spending some time to learn it.
 
@@ -265,17 +265,196 @@ outputting so it's worth spending some time to learn it.
     perf = pd.read_pickle('buy_btc_simple_out.pickle') # read in perf DataFrame
     perf.head()
 
+.. raw:: html
+
+    <div style="max-height:1000px;max-width:1500px;overflow:auto;">
+      <table border="1" class="dataframe">
+        <thead>
+          <tr style="text-align: right;">
+            <th></th>
+            <th>algo_volatility</th>
+            <th>algorithm_period_return</th>
+            <th>alpha</th>
+            <th>benchmark_period_return</th>
+            <th>benchmark_volatility</th>
+            <th>beta</th>
+            <th>btc</th>
+            <th>capital_used</th>
+            <th>ending_cash</th>
+            <th>ending_exposure</th>
+            <th>...</th>
+            <th>short_exposure</th>
+            <th>short_value</th>
+            <th>shorts_count</th>
+            <th>sortino</th>
+            <th>starting_cash</th>
+            <th>starting_exposure</th>
+            <th>starting_value</th>
+            <th>trading_days</th>
+            <th>transactions</th>
+            <th>treasury_period_return</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>2016-01-01 23:59:00+00:00</th>
+            <td>NaN</td>
+            <td>0.000000e+00</td>
+            <td>NaN</td>
+            <td>-0.010937</td>
+            <td>NaN</td>
+            <td>NaN</td>
+            <td>433.979999</td>
+            <td>0.000000</td>
+            <td>1.000000e+07</td>
+            <td>0.00</td>
+            <td>...</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+            <td>NaN</td>
+            <td>1.000000e+07</td>
+            <td>0.00</td>
+            <td>0.00</td>
+            <td>1</td>
+            <td>[]</td>
+            <td>0.0227</td>
+          </tr>
+          <tr>
+            <th>2016-01-02 23:59:00+00:00</th>
+            <td>0.000011</td>
+            <td>-9.536708e-07</td>
+            <td>-0.000170</td>
+            <td>-0.006480</td>
+            <td>0.173338</td>
+            <td>-0.000062</td>
+            <td>432.700000</td>
+            <td>-442.236708</td>
+            <td>9.999558e+06</td>
+            <td>432.70</td>
+            <td>...</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+            <td>-11.224972</td>
+            <td>1.000000e+07</td>
+            <td>0.00</td>
+            <td>0.00</td>
+            <td>2</td>
+            <td>[{u'order_id': u'7869f7828fa140328eb40477bb7de...</td>
+            <td>0.0227</td>
+          </tr>
+          <tr>
+            <th>2016-01-03 23:59:00+00:00</th>
+            <td>0.000011</td>
+            <td>-2.328842e-06</td>
+            <td>-0.000176</td>
+            <td>-0.026512</td>
+            <td>0.197857</td>
+            <td>0.000009</td>
+            <td>428.390000</td>
+            <td>-437.831716</td>
+            <td>9.999120e+06</td>
+            <td>856.78</td>
+            <td>...</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+            <td>-12.754262</td>
+            <td>9.999558e+06</td>
+            <td>432.70</td>
+            <td>432.70</td>
+            <td>3</td>
+            <td>[{u'order_id': u'be62ff77760c4599abaac43be9cc9...</td>
+            <td>0.0227</td>
+          </tr>
+          <tr>
+            <th>2016-01-04 23:59:00+00:00</th>
+            <td>0.000011</td>
+            <td>-2.380954e-06</td>
+            <td>-0.000139</td>
+            <td>-0.008640</td>
+            <td>0.269790</td>
+            <td>0.000020</td>
+            <td>432.900000</td>
+            <td>-442.441116</td>
+            <td>9.998677e+06</td>
+            <td>1298.70</td>
+            <td>...</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+            <td>-11.287205</td>
+            <td>9.999120e+06</td>
+            <td>856.78</td>
+            <td>856.78</td>
+            <td>4</td>
+            <td>[{u'order_id': u'd6dca79513214346a646079213526...</td>
+            <td>0.0224</td>
+          </tr>
+          <tr>
+            <th>2016-01-05 23:59:00+00:00</th>
+            <td>0.000011</td>
+            <td>-3.650729e-06</td>
+            <td>-0.000158</td>
+            <td>-0.021426</td>
+            <td>0.245989</td>
+            <td>0.000024</td>
+            <td>431.840000</td>
+            <td>-441.357754</td>
+            <td>9.998236e+06</td>
+            <td>1727.36</td>
+            <td>...</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+            <td>-12.333847</td>
+            <td>9.998677e+06</td>
+            <td>1298.70</td>
+            <td>1298.70</td>
+            <td>5</td>
+            <td>[{u'order_id': u'505275d6646a41f3856b22b16678d...</td>
+            <td>0.0225</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+|
 There is a row for each trading day, starting on the first day of our 
 simulation Jan 1st, 2016. In the columns you can find various
-information about the state of your algorithm. The very first column
+information about the state of your algorithm. The column
 ``btc`` was placed there by the ``record()`` function mentioned earlier
 and allows us to plot the price of bitcoin. For example, we could easily
 examine now how our portfolio value changed over time compared to the
 bitcoin price.
 
-Our algorithm performance as assessed by the
-``portfolio_value`` closely matches that of the bitcoin price. This
-is not surprising as our algorithm only bought bitcoin every chance it got.
+.. code-block:: python
+
+    %pylab inline
+    figsize(12, 12)
+    import matplotlib.pyplot as plt
+
+    ax1 = plt.subplot(211)
+    perf.portfolio_value.plot(ax=ax1)
+    ax1.set_ylabel('portfolio value')
+    ax2 = plt.subplot(212, sharex=ax1)
+    perf.btc.plot(ax=ax2)
+    ax2.set_ylabel('bitcoin price')
+
+.. parsed-literal::
+
+    Populating the interactive namespace from numpy and matplotlib
+
+.. parsed-literal::
+
+    <matplotlib.text.Text at 0x10eaeadd0>
+
+.. image:: https://s3.amazonaws.com/enigmaco-docs/github.io/buy_btc_simple_graph.png
+
+Our algorithm performance as assessed by the ``portfolio_value`` closely 
+matches that of the bitcoin price. This is not surprising as our algorithm 
+only bought bitcoin every chance it got.
 
 
 Access to previous prices using ``history``
@@ -305,13 +484,14 @@ a function we use in the ``handle_data()`` section:
 
 .. code-block:: python
 
-    from catalyst.api import order, record, symbol
+    %%catalyst --start 2016-1-1 --end 2017-9-30 -x bitfinex -o dma.pickle
+    from catalyst.api import order, record, symbol, order_target
 
     def initialize(context):
        context.i = 0
        context.asset = symbol('btc_usd')
 
-   def handle_data(context, data):
+    def handle_data(context, data):
        # Skip first 300 days to get full windows
        context.i += 1
        if context.i < 300:
@@ -335,6 +515,46 @@ a function we use in the ``handle_data()`` section:
        record(btc=data.current(context.asset, 'price'),
               short_mavg=short_mavg,
               long_mavg=long_mavg)
+
+    def analyze(context, perf):
+       import matplotlib.pyplot as plt
+       fig = plt.figure()
+       ax1 = fig.add_subplot(211)
+       perf.portfolio_value.plot(ax=ax1)
+       ax1.set_ylabel('portfolio value in $')
+
+       ax2 = fig.add_subplot(212)
+       perf['btc'].plot(ax=ax2)
+       perf[['short_mavg', 'long_mavg']].plot(ax=ax2)
+
+       perf_trans = perf.ix[[t != [] for t in perf.transactions]]
+       buys = perf_trans.ix[[t[0]['amount'] > 0 for t in perf_trans.transactions]]
+       sells = perf_trans.ix[
+           [t[0]['amount'] < 0 for t in perf_trans.transactions]]
+       ax2.plot(buys.index, perf.short_mavg.ix[buys.index],
+                '^', markersize=10, color='m')
+       ax2.plot(sells.index, perf.short_mavg.ix[sells.index],
+                'v', markersize=10, color='k')
+       ax2.set_ylabel('price in $')
+       plt.legend(loc=0)
+       plt.show()
+
+Here we are explicitly defining an ``analyze()`` function that gets
+automatically called once the backtest is done.
+
+Although it might not be directly apparent, the power of ``history()``
+(pun intended) can not be under-estimated as most algorithms make use of
+prior market developments in one form or another. You could easily
+devise a strategy that trains a classifier with
+`scikit-learn <http://scikit-learn.org/stable/>`__ which tries to
+predict future market movements based on past prices (note, that most of
+the ``scikit-learn`` functions require ``numpy.ndarray``\ s rather than
+``pandas.DataFrame``\ s, so you can simply pass the underlying
+``ndarray`` of a ``DataFrame`` via ``.values``).
+
+We also used the ``order_target()`` function above. This and other
+functions like it can make order management and portfolio rebalancing
+much easier.
 
 
 Conclusions
