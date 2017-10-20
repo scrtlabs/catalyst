@@ -472,7 +472,7 @@ class Exchange:
                 # Adding bars too recent to be contained in the consolidated
                 # exchanges bundles. We go directly against the exchange
                 # to retrieve the candles.
-
+                start_dt = get_start_dt(end_dt, adj_bar_count, data_frequency)
                 trailing_dt = \
                     series[asset].index[-1] + get_delta(1, data_frequency) \
                         if asset in series else start_dt
