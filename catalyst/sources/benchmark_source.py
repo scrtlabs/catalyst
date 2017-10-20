@@ -72,7 +72,13 @@ class BenchmarkSource(object):
                             "benchmark_returns.")
 
     def get_value(self, dt):
-        return self._precalculated_series.loc[dt]
+        try:
+            series = self._precalculated_series
+            value = series.loc[dt]
+            return value
+        except Exception:
+            # TODO: workaround, find permanent fix
+            return 0
 
     def get_range(self, start_dt, end_dt):
         return self._precalculated_series.loc[start_dt:end_dt]

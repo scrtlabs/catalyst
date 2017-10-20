@@ -17,6 +17,25 @@ log = Logger('test_exchange_bundle')
 
 
 class ExchangeBundleTestCase:
+    def test_spot_value(self):
+        data_frequency = 'daily'
+        exchange_name = 'poloniex'
+
+        exchange = get_exchange(exchange_name)
+        exchange_bundle = ExchangeBundle(exchange)
+        assets = [
+            exchange.get_asset('btc_usdt')
+        ]
+        dt = pd.to_datetime('2017-10-14', utc=True)
+
+        values = exchange_bundle.get_spot_values(
+            assets=assets,
+            field='close',
+            dt=dt,
+            data_frequency=data_frequency
+        )
+        pass
+
     def test_ingest_minute(self):
         data_frequency = 'minute'
         exchange_name = 'bitfinex'

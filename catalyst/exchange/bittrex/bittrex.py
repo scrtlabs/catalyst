@@ -360,7 +360,7 @@ class Bittrex(Exchange):
             json.dump(symbol_map, f, sort_keys=True, indent=2,
                       separators=(',', ':'))
 
-    def get_orderbook(self, asset, order_type='all'):
+    def get_orderbook(self, asset, order_type='all', limit=100):
         if order_type == 'all':
             order_type = 'both'
         elif order_type == 'bid':
@@ -371,7 +371,11 @@ class Bittrex(Exchange):
             raise ValueError('invalid type')
 
         exchange_symbol = asset.exchange_symbol
-        data = self.api.getorderbook(market=exchange_symbol, type=order_type)
+        data = self.api.getorderbook(
+            market=exchange_symbol,
+            type=order_type,
+            depth=100
+        )
 
         result = dict()
         for exchange_type in data:
