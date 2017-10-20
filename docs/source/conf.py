@@ -94,6 +94,6 @@ intersphinx_mapping = {
     'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
 }
 
-doctest_global_setup = "import zipline"
+doctest_global_setup = "import catalyst"
 
 todo_include_todos = True
