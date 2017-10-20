@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Zipline Beginner Tutorial &mdash; Catalyst 0.3 documentation</title>
+  <title>Catalyst Beginner Tutorial &mdash; Catalyst 0.3 documentation</title>
   
 
   
@@ -30,7 +30,8 @@
   
 
   
-    <link rel="top" title="Catalyst 0.3 documentation" href="index.html"/> 
+    <link rel="top" title="Catalyst 0.3 documentation" href="index.html"/>
+        <link rel="prev" title="Install" href="install.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -69,7 +70,7 @@
         
           
           
-              <ul>
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="install.html">Install</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="install.html#installing-with-pip">Installing with <code class="docutils literal"><span class="pre">pip</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="install.html#gnu-linux">GNU/Linux</a></li>
@@ -87,6 +88,21 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#getting-help">Getting Help</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Catalyst Beginner Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#basics">Basics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#my-first-algorithm">My first algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-the-algorithm">Running the algorithm</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ingesting-data">Ingesting data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#command-line-interface">Command line interface</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#access-to-previous-prices-using-history">Access to previous prices using <code class="docutils literal"><span class="pre">history</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#working-example-dual-moving-average-cross-over">Working example: Dual Moving Average Cross-Over</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#conclusions">Conclusions</a></li>
 </ul>
 </li>
 </ul>
@@ -113,7 +129,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href="index.html">Docs</a> &raquo;</li>
       
-    <li>Zipline Beginner Tutorial</li>
+    <li>Catalyst Beginner Tutorial</li>
       <li class="wy-breadcrumbs-aside">
         
           
@@ -126,111 +142,146 @@
 </div>
           <div role="main" class="document">
             
-  <div class="section" id="zipline-beginner-tutorial">
-<h1>Zipline Beginner Tutorial<a class="headerlink" href="#zipline-beginner-tutorial" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="catalyst-beginner-tutorial">
+<h1>Catalyst Beginner Tutorial<a class="headerlink" href="#catalyst-beginner-tutorial" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="basics">
 <h2>Basics<a class="headerlink" href="#basics" title="Permalink to this headline">¶</a></h2>
-<p>Zipline is an open-source algorithmic trading simulator written in
-Python.</p>
-<p>The source can be found at: <a class="reference external" href="https://github.com/quantopian/zipline">https://github.com/quantopian/zipline</a></p>
+<p>Catalyst is an open-source algorithmic trading simulator for crypto
+assets written in Python.</p>
+<p>The source can be found at: <a class="reference external" href="https://github.com/enigmampc/catalyst">https://github.com/enigmampc/catalyst</a></p>
 <p>Some benefits include:</p>
 <ul class="simple">
+<li>Support for several of the top crypto-exchanges by trading volume.</li>
 <li>Realistic: slippage, transaction costs, order delays.</li>
 <li>Stream-based: Process each event individually, avoids look-ahead
 bias.</li>
 <li>Batteries included: Common transforms (moving average) as well as
 common risk calculations (Sharpe).</li>
 <li>Developed and continuously updated by
-<a class="reference external" href="https://www.quantopian.com">Quantopian</a> which provides an
-easy-to-use web-interface to Zipline, 10 years of minute-resolution
-historical US stock data, and live-trading capabilities. This
-tutorial is directed at users wishing to use Zipline without using
-Quantopian. If you instead want to get started on Quantopian, see
-<a class="reference external" href="https://www.quantopian.com/faq#get-started">here</a>.</li>
+<a class="reference external" href="https://www.enigma.co">Enigma MPC</a> which is building the Enigma
+data marketplace protocol as well as Catalyst, the first application
+that will run on our protocol. Powered by our financial data
+marketplace, Catalyst empowers users to share and curate data and
+build profitable, data-driven investment strategies.</li>
 </ul>
-<p>This tutorial assumes that you have zipline correctly installed, see the
-<a class="reference external" href="https://github.com/quantopian/zipline#installation">installation
-instructions</a> if
-you haven&#8217;t set up zipline yet.</p>
-<p>Every <code class="docutils literal"><span class="pre">zipline</span></code> algorithm consists of two functions you have to
+<p>This tutorial assumes that you have Catalyst correctly installed, see the
+<a class="reference internal" href="install.html"><em>installation instructions</em></a> if you haven&#8217;t set up
+Catalyst yet.</p>
+<p>Every <code class="docutils literal"><span class="pre">catalyst</span></code> algorithm consists of at least two functions you have to
 define:</p>
 <ul class="simple">
 <li><code class="docutils literal"><span class="pre">initialize(context)</span></code></li>
 <li><code class="docutils literal"><span class="pre">handle_data(context,</span> <span class="pre">data)</span></code></li>
 </ul>
-<p>Before the start of the algorithm, <code class="docutils literal"><span class="pre">zipline</span></code> calls the
+<p>Before the start of the algorithm, <code class="docutils literal"><span class="pre">catalyst</span></code> calls the
 <code class="docutils literal"><span class="pre">initialize()</span></code> function and passes in a <code class="docutils literal"><span class="pre">context</span></code> variable.
 <code class="docutils literal"><span class="pre">context</span></code> is a persistent namespace for you to store variables you
 need to access from one algorithm iteration to the next.</p>
-<p>After the algorithm has been initialized, <code class="docutils literal"><span class="pre">zipline</span></code> calls the
+<p>After the algorithm has been initialized, <code class="docutils literal"><span class="pre">catalyst</span></code> calls the
 <code class="docutils literal"><span class="pre">handle_data()</span></code> function once for each event. At every call, it passes
 the same <code class="docutils literal"><span class="pre">context</span></code> variable and an event-frame called <code class="docutils literal"><span class="pre">data</span></code>
 containing the current trading bar with open, high, low, and close
-(OHLC) prices as well as volume for each stock in your universe. For
-more information on these functions, see the <a class="reference external" href="https://www.quantopian.com/help#api-toplevel">relevant part of the
-Quantopian docs</a>.</p>
+(OHLC) prices as well as volume for each crypto asset in your universe.</p>
 </div>
 <div class="section" id="my-first-algorithm">
 <h2>My first algorithm<a class="headerlink" href="#my-first-algorithm" title="Permalink to this headline">¶</a></h2>
 <p>Lets take a look at a very simple algorithm from the <code class="docutils literal"><span class="pre">examples</span></code>
-directory, <code class="docutils literal"><span class="pre">buyapple.py</span></code>:</p>
-<div class="highlight-python"><div class="highlight"><pre>from zipline.examples import buyapple
-buyapple??
-</pre></div>
-</div>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">zipline.api</span> <span class="kn">import</span> <span class="n">order</span><span class="p">,</span> <span class="n">record</span><span class="p">,</span> <span class="n">symbol</span>
+directory, <code class="docutils literal"><span class="pre">buy_btc.py</span></code>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">catalyst.api</span> <span class="kn">import</span> <span class="n">order</span><span class="p">,</span> <span class="n">record</span><span class="p">,</span> <span class="n">symbol</span>
 
 
 <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
-    <span class="k">pass</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">asset</span> <span class="o">=</span> <span class="n">symbol</span><span class="p">(</span><span class="s">&#39;btc_usd&#39;</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">handle_data</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-    <span class="n">order</span><span class="p">(</span><span class="n">symbol</span><span class="p">(</span><span class="s">&#39;AAPL&#39;</span><span class="p">),</span> <span class="mi">10</span><span class="p">)</span>
-    <span class="n">record</span><span class="p">(</span><span class="n">AAPL</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">symbol</span><span class="p">(</span><span class="s">&#39;AAPL&#39;</span><span class="p">),</span> <span class="s">&#39;price&#39;</span><span class="p">))</span>
+    <span class="n">order</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">record</span><span class="p">(</span><span class="n">btc</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s">&#39;price&#39;</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>As you can see, we first have to import some functions we would like to
 use. All functions commonly used in your algorithm can be found in
-<code class="docutils literal"><span class="pre">zipline.api</span></code>. Here we are using <code class="xref py py-func docutils literal"><span class="pre">order()</span></code> which takes two
-arguments: a security object, and a number specifying how many stocks you would
+<code class="docutils literal"><span class="pre">catalyst.api</span></code>. Here we are using <code class="xref py py-func docutils literal"><span class="pre">order()</span></code> which takes two
+arguments: a cryptoasset object, and a number specifying how many assets you would
 like to order (if negative, <code class="xref py py-func docutils literal"><span class="pre">order()</span></code> will sell/short
-stocks). In this case we want to order 10 shares of Apple at each iteration. For
-more documentation on <code class="docutils literal"><span class="pre">order()</span></code>, see the <a class="reference external" href="https://www.quantopian.com/help#api-order">Quantopian docs</a>.</p>
+assets). In this case we want to order 1 bitcoin at each iteration.</p>
 <p>Finally, the <code class="xref py py-func docutils literal"><span class="pre">record()</span></code> function allows you to save the value
 of a variable at each iteration. You provide it with a name for the variable
 together with the variable itself: <code class="docutils literal"><span class="pre">varname=var</span></code>. After the algorithm
 finished running you will have access to each variable value you tracked
 with <code class="xref py py-func docutils literal"><span class="pre">record()</span></code> under the name you provided (we will see this
-further below). You also see how we can access the current price data of the
-AAPL stock in the <code class="docutils literal"><span class="pre">data</span></code> event frame (for more information see
-<a class="reference external" href="https://www.quantopian.com/help#api-event-properties">here</a>.</p>
+further below). You also see how we can access the current price data of
+a bitcoin in the <code class="docutils literal"><span class="pre">data</span></code> event frame.</p>
 </div>
 <div class="section" id="running-the-algorithm">
 <h2>Running the algorithm<a class="headerlink" href="#running-the-algorithm" title="Permalink to this headline">¶</a></h2>
-<p>To now test this algorithm on financial data, <code class="docutils literal"><span class="pre">zipline</span></code> provides three
-interfaces: A command-line interface, <code class="docutils literal"><span class="pre">IPython</span> <span class="pre">Notebook</span></code> magic, and
-<code class="xref py py-func docutils literal"><span class="pre">run_algorithm()</span></code>.</p>
+<p>To can now test this algorithm on crypto data, <code class="docutils literal"><span class="pre">catalyst</span></code> provides three
+interfaces:</p>
+<ul class="simple">
+<li>A command-line interface,</li>
+<li><code class="docutils literal"><span class="pre">IPython</span> <span class="pre">Notebook</span></code> magic,</li>
+<li>and <code class="xref py py-func docutils literal"><span class="pre">run_algorithm()</span></code>.</li>
+</ul>
 <div class="section" id="ingesting-data">
-<h3>Ingesting Data<a class="headerlink" href="#ingesting-data" title="Permalink to this headline">¶</a></h3>
-<p>If you haven&#8217;t ingested the data, run:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>zipline ingest <span class="o">[</span>-b &lt;bundle&gt;<span class="o">]</span>
-</pre></div>
-</div>
-<p>where <code class="docutils literal"><span class="pre">&lt;bundle&gt;</span></code> is the name of the bundle to ingest, defaulting to
-<a class="reference internal" href="bundles.html#quantopian-quandl-mirror"><span>quantopian-quandl</span></a>.</p>
-<p>you can check out the <a class="reference internal" href="bundles.html#ingesting-data"><span>ingesting data</span></a> section for
-more detail.</p>
+<h3>Ingesting data<a class="headerlink" href="#ingesting-data" title="Permalink to this headline">¶</a></h3>
+<p>In previous versions of Catalyst you needed to manually ingest data before running
+your algorithm to make it available at runtime. Starting with version 0.3, the
+algorithm will automagically ingest the data it needs the first time that encounters
+a data request for data that it doesn&#8217;t have.</p>
+<p>Still, we believe it is important for you to have a high-level understanding
+of how data is managed:</p>
+<ul class="simple">
+<li>Pricing data is split and packaged into <code class="docutils literal"><span class="pre">bundles</span></code>: chunks of data organized
+as time series that are kept up to date daily on Enigma&#8217;s servers. Catalyst
+downloads the bundles that needs at any given time, and reconstructs the whole
+dataset in your hard drive.</li>
+<li>Pricing data is provided in <code class="docutils literal"><span class="pre">daily</span></code> and <code class="docutils literal"><span class="pre">minute</span></code> resolution. Those are different
+bundle datasets, and are managed separately.</li>
+<li>Bundles are exchange-specific, as the pricing data is specific to the trades that
+happen in each exchange. You can optionally specify which exchange you want pricing
+data from.</li>
+<li>Catalyst keeps track of all the downloaded bundles, so that it only has to download
+them once, and will do incremental updates as needed.</li>
+<li>When running in <code class="docutils literal"><span class="pre">live</span> <span class="pre">trading</span></code> mode, Catalyst will first look for historical
+pricing data in the locally stored bundles. If there is anything missing, Catalyst will
+hit the exchange for the most recent data, and merge it with the local bundle to make
+it available for future iterations.</li>
+</ul>
+<p>If you want to learn more, check out the <a class="reference internal" href="bundles.html#ingesting-data"><span>ingesting data</span></a> section
+for more detail.</p>
 </div>
 <div class="section" id="command-line-interface">
 <h3>Command line interface<a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h3>
-<p>After you installed zipline you should be able to execute the following
+<p>After you installed Catalyst you should be able to execute the following
 from your command line (e.g. <code class="docutils literal"><span class="pre">cmd.exe</span></code> on Windows, or the Terminal app
-on OSX):</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>zipline run --help
+on OSX). Displaying here a simplified output for eductional purposes:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>catalyst --help
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>Usage: zipline run [OPTIONS]
+<div class="highlight-python"><div class="highlight"><pre>Usage: catalyst [OPTIONS] COMMAND [ARGS]...
+
+  Top level catalyst entry point.
+
+Options:
+  --version               Show the version and exit.
+  --help                  Show this message and exit.
+
+Commands:
+  ingest-exchange  Ingest data for the given exchange.
+  live             Trade live with the given algorithm.
+  run              Run a backtest for the given algorithm.
+</pre></div>
+</div>
+<p>There are three main modes you can run on Catalyst. The first being <code class="docutils literal"><span class="pre">ingest-exchange</span></code>
+for data ingestion, which we have summarized in the previous section. The second
+is <code class="docutils literal"><span class="pre">live</span></code> to use your algorithm to trade live against a given exchange, and the
+third mode <code class="docutils literal"><span class="pre">run</span></code> is to backtest your algorithm before trading live with it.</p>
+<p>Let&#8217;s start with backtesting, so run this other command to learn more about
+the available options:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>catalyst run --help
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Usage: catalyst run [OPTIONS]
 
   Run a backtest for the given algorithm.
 
@@ -242,13 +293,13 @@ Options:
                                   &#39;-Dname=value&#39;. The value may be any python
                                   expression. These are evaluated in order so
                                   they may refer to previously defined names.
-  --data-frequency [minute|daily]
+  --data-frequency [daily|minute]
                                   The data frequency of the simulation.
                                   [default: daily]
   --capital-base FLOAT            The starting capital for the simulation.
                                   [default: 10000000.0]
   -b, --bundle BUNDLE-NAME        The data bundle to use for the simulation.
-                                  [default: quantopian-quandl]
+                                  [default: poloniex]
   --bundle-timestamp TIMESTAMP    The date to lookup data on or before.
                                   [default: &lt;current-time&gt;]
   -s, --start DATE                The start date of the simulation.
@@ -257,428 +308,65 @@ Options:
                                   is &#39;-&#39; the perf will be written to stdout.
                                   [default: -]
   --print-algo / --no-print-algo  Print the algorithm to stdout.
+  -x, --exchange-name [poloniex|bitfinex|bittrex]
+                                  The name of the targeted exchange
+                                  (supported: bitfinex, bittrex, poloniex).
+  -n, --algo-namespace TEXT       A label assigned to the algorithm for data
+                                  storage purposes.
+  -c, --base-currency TEXT        The base currency used to calculate
+                                  statistics (e.g. usd, btc, eth).
   --help                          Show this message and exit.
 </pre></div>
 </div>
 <p>As you can see there are a couple of flags that specify where to find your
-algorithm (<code class="docutils literal"><span class="pre">-f</span></code>) as well as parameters specifying which data to use,
-defaulting to the <a class="reference internal" href="bundles.html#quantopian-quandl-mirror"><span>Quantopian Quandl WIKI Mirror</span></a>. There are also arguments for
-the date range to run the algorithm over (<code class="docutils literal"><span class="pre">--start</span></code> and <code class="docutils literal"><span class="pre">--end</span></code>). Finally,
-you&#8217;ll want to save the performance metrics of your algorithm so that you can
-analyze how it performed. This is done via the <code class="docutils literal"><span class="pre">--output</span></code> flag and will cause
-it to write the performance <code class="docutils literal"><span class="pre">DataFrame</span></code> in the pickle Python file format.
-Note that you can also define a configuration file with these parameters that
-you can then conveniently pass to the <code class="docutils literal"><span class="pre">-c</span></code> option so that you don&#8217;t have to
-supply the command line args all the time (see the .conf files in the examples
-directory).</p>
+algorithm (<code class="docutils literal"><span class="pre">-f</span></code>) as well as a parameter to specify which exchange to use.
+There are also arguments for the date range to run the algorithm over
+(<code class="docutils literal"><span class="pre">--start</span></code> and <code class="docutils literal"><span class="pre">--end</span></code>). Finally, you&#8217;ll want to save the performance
+metrics of your algorithm so that you can analyze how it performed. This is
+done via the <code class="docutils literal"><span class="pre">--output</span></code> flag and will cause it to write the performance
+<code class="docutils literal"><span class="pre">DataFrame</span></code> in the pickle Python file format. Note that you can also define
+a configuration file with these parameters that you can then conveniently pass
+to the <code class="docutils literal"><span class="pre">-c</span></code> option so that you don&#8217;t have to supply the command line args
+all the time (see the .conf files in the examples directory).</p>
 <p>Thus, to execute our algorithm from above and save the results to
-<code class="docutils literal"><span class="pre">buyapple_out.pickle</span></code> we would call <code class="docutils literal"><span class="pre">zipline</span> <span class="pre">run</span></code> as follows:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">zipline</span> <span class="n">run</span> <span class="o">-</span><span class="n">f</span> <span class="o">../../</span><span class="n">zipline</span><span class="o">/</span><span class="n">examples</span><span class="o">/</span><span class="n">buyapple</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">start</span> <span class="mi">2000</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span> <span class="o">--</span><span class="n">end</span> <span class="mi">2014</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span> <span class="o">-</span><span class="n">o</span> <span class="n">buyapple_out</span><span class="o">.</span><span class="n">pickle</span>
-</pre></div>
-</div>
-<div class="highlight-python"><div class="highlight"><pre>AAPL
-[2015-11-04 22:45:32.820166] INFO: Performance: Simulated 3521 trading days out of 3521.
-[2015-11-04 22:45:32.820314] INFO: Performance: first open: 2000-01-03 14:31:00+00:00
-[2015-11-04 22:45:32.820401] INFO: Performance: last close: 2013-12-31 21:00:00+00:00
+<code class="docutils literal"><span class="pre">buy_btc_simple_out.pickle</span></code> we would call <code class="docutils literal"><span class="pre">catalyst</span> <span class="pre">run</span></code> as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">catalyst</span> <span class="n">run</span> <span class="o">-</span><span class="n">f</span> <span class="n">buy_btc_simple</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">x</span> <span class="n">bitfinex</span> <span class="o">--</span><span class="n">start</span> <span class="mi">2016</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span> <span class="o">--</span><span class="n">end</span> <span class="mi">2016</span><span class="o">-</span><span class="mi">9</span><span class="o">-</span><span class="mi">29</span> <span class="o">-</span><span class="n">o</span> <span class="n">buy_simple_btc_out</span><span class="o">.</span><span class="n">pickle</span>
 </pre></div>
 </div>
 <p><code class="docutils literal"><span class="pre">run</span></code> first calls the <code class="docutils literal"><span class="pre">initialize()</span></code> function, and then
-streams the historical stock price day-by-day through <code class="docutils literal"><span class="pre">handle_data()</span></code>.
-After each call to <code class="docutils literal"><span class="pre">handle_data()</span></code> we instruct <code class="docutils literal"><span class="pre">zipline</span></code> to order 10
-stocks of AAPL. After the call of the <code class="docutils literal"><span class="pre">order()</span></code> function, <code class="docutils literal"><span class="pre">zipline</span></code>
+streams the historical asset price day-by-day through <code class="docutils literal"><span class="pre">handle_data()</span></code>.
+After each call to <code class="docutils literal"><span class="pre">handle_data()</span></code> we instruct <code class="docutils literal"><span class="pre">catalyst</span></code> to order 1
+bitcoin. After the call of the <code class="docutils literal"><span class="pre">order()</span></code> function, <code class="docutils literal"><span class="pre">catalyst</span></code>
 enters the ordered stock and amount in the order book. After the
-<code class="docutils literal"><span class="pre">handle_data()</span></code> function has finished, <code class="docutils literal"><span class="pre">zipline</span></code> looks for any open
+<code class="docutils literal"><span class="pre">handle_data()</span></code> function has finished, <code class="docutils literal"><span class="pre">catalyst</span></code> looks for any open
 orders and tries to fill them. If the trading volume is high enough for
-this stock, the order is executed after adding the commission and
+this asset, the order is executed after adding the commission and
 applying the slippage model which models the influence of your order on
 the stock price, so your algorithm will be charged more than just the
-stock price * 10. (Note, that you can also change the commission and
-slippage model that <code class="docutils literal"><span class="pre">zipline</span></code> uses, see the <a class="reference external" href="https://www.quantopian.com/help#ide-slippage">Quantopian
-docs</a> for more
-information).</p>
-<p>Lets take a quick look at the performance <code class="docutils literal"><span class="pre">DataFrame</span></code>. For this, we
+asset price. (Note, that you can also change the commission and
+slippage model that <code class="docutils literal"><span class="pre">catalyst</span></code> uses).</p>
+<p>Let&#8217;s take a quick look at the performance <code class="docutils literal"><span class="pre">DataFrame</span></code>. For this, we
 use <code class="docutils literal"><span class="pre">pandas</span></code> from inside the IPython Notebook and print the first ten
-rows. Note that <code class="docutils literal"><span class="pre">zipline</span></code> makes heavy usage of <code class="docutils literal"><span class="pre">pandas</span></code>, especially
-for data input and outputting so it&#8217;s worth spending some time to learn
-it.</p>
+rows. Note that <code class="docutils literal"><span class="pre">catalyst</span></code> makes heavy usage of
+<a class="reference external" href="http://pandas.pydata.org/">pandas</a>, especially for data input and
+outputting so it&#8217;s worth spending some time to learn it.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
-<span class="n">perf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="s">&#39;buyapple_out.pickle&#39;</span><span class="p">)</span> <span class="c"># read in perf DataFrame</span>
+<span class="n">perf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="s">&#39;buy_btc_simple_out.pickle&#39;</span><span class="p">)</span> <span class="c"># read in perf DataFrame</span>
 <span class="n">perf</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
-<div style="max-height:1000px;max-width:1500px;overflow:auto;">
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>AAPL</th>
-      <th>algo_volatility</th>
-      <th>algorithm_period_return</th>
-      <th>alpha</th>
-      <th>benchmark_period_return</th>
-      <th>benchmark_volatility</th>
-      <th>beta</th>
-      <th>capital_used</th>
-      <th>ending_cash</th>
-      <th>ending_exposure</th>
-      <th>...</th>
-      <th>short_exposure</th>
-      <th>short_value</th>
-      <th>shorts_count</th>
-      <th>sortino</th>
-      <th>starting_cash</th>
-      <th>starting_exposure</th>
-      <th>starting_value</th>
-      <th>trading_days</th>
-      <th>transactions</th>
-      <th>treasury_period_return</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>2000-01-03 21:00:00</th>
-      <td>3.738314</td>
-      <td>0.000000e+00</td>
-      <td>0.000000e+00</td>
-      <td>-0.065800</td>
-      <td>-0.009549</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.00000</td>
-      <td>10000000.00000</td>
-      <td>0.00000</td>
-      <td>...</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.000000</td>
-      <td>10000000.00000</td>
-      <td>0.00000</td>
-      <td>0.00000</td>
-      <td>1</td>
-      <td>[]</td>
-      <td>0.0658</td>
-    </tr>
-    <tr>
-      <th>2000-01-04 21:00:00</th>
-      <td>3.423135</td>
-      <td>3.367492e-07</td>
-      <td>-3.000000e-08</td>
-      <td>-0.064897</td>
-      <td>-0.047528</td>
-      <td>0.323229</td>
-      <td>0.000001</td>
-      <td>-34.53135</td>
-      <td>9999965.46865</td>
-      <td>34.23135</td>
-      <td>...</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.000000</td>
-      <td>10000000.00000</td>
-      <td>0.00000</td>
-      <td>0.00000</td>
-      <td>2</td>
-      <td>[{u'order_id': u'513357725cb64a539e3dd02b47da7...</td>
-      <td>0.0649</td>
-    </tr>
-    <tr>
-      <th>2000-01-05 21:00:00</th>
-      <td>3.473229</td>
-      <td>4.001918e-07</td>
-      <td>-9.906000e-09</td>
-      <td>-0.066196</td>
-      <td>-0.045697</td>
-      <td>0.329321</td>
-      <td>0.000001</td>
-      <td>-35.03229</td>
-      <td>9999930.43636</td>
-      <td>69.46458</td>
-      <td>...</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.000000</td>
-      <td>9999965.46865</td>
-      <td>34.23135</td>
-      <td>34.23135</td>
-      <td>3</td>
-      <td>[{u'order_id': u'd7d4ad03cfec4d578c0d817dc3829...</td>
-      <td>0.0662</td>
-    </tr>
-    <tr>
-      <th>2000-01-06 21:00:00</th>
-      <td>3.172661</td>
-      <td>4.993979e-06</td>
-      <td>-6.410420e-07</td>
-      <td>-0.065758</td>
-      <td>-0.044785</td>
-      <td>0.298325</td>
-      <td>-0.000006</td>
-      <td>-32.02661</td>
-      <td>9999898.40975</td>
-      <td>95.17983</td>
-      <td>...</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>-12731.780516</td>
-      <td>9999930.43636</td>
-      <td>69.46458</td>
-      <td>69.46458</td>
-      <td>4</td>
-      <td>[{u'order_id': u'1fbf5e9bfd7c4d9cb2e8383e1085e...</td>
-      <td>0.0657</td>
-    </tr>
-    <tr>
-      <th>2000-01-07 21:00:00</th>
-      <td>3.322945</td>
-      <td>5.977002e-06</td>
-      <td>-2.201900e-07</td>
-      <td>-0.065206</td>
-      <td>-0.018908</td>
-      <td>0.375301</td>
-      <td>0.000005</td>
-      <td>-33.52945</td>
-      <td>9999864.88030</td>
-      <td>132.91780</td>
-      <td>...</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>-12629.274583</td>
-      <td>9999898.40975</td>
-      <td>95.17983</td>
-      <td>95.17983</td>
-      <td>5</td>
-      <td>[{u'order_id': u'9ea6b142ff09466b9113331a37437...</td>
-      <td>0.0652</td>
-    </tr>
-  </tbody>
-</table>
-<p>5 rows × 39 columns</p>
-</div><p>As you can see, there is a row for each trading day, starting on the
-first business day of 2000. In the columns you can find various
+<p>There is a row for each trading day, starting on the first day of our
+simulation Jan 1st, 2016. In the columns you can find various
 information about the state of your algorithm. The very first column
-<code class="docutils literal"><span class="pre">AAPL</span></code> was placed there by the <code class="docutils literal"><span class="pre">record()</span></code> function mentioned earlier
-and allows us to plot the price of apple. For example, we could easily
+<code class="docutils literal"><span class="pre">btc</span></code> was placed there by the <code class="docutils literal"><span class="pre">record()</span></code> function mentioned earlier
+and allows us to plot the price of bitcoin. For example, we could easily
 examine now how our portfolio value changed over time compared to the
-AAPL stock price.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="o">%</span><span class="n">pylab</span> <span class="n">inline</span>
-<span class="n">figsize</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
-
-<span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">211</span><span class="p">)</span>
-<span class="n">perf</span><span class="o">.</span><span class="n">portfolio_value</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
-<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;portfolio value&#39;</span><span class="p">)</span>
-<span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">212</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
-<span class="n">perf</span><span class="o">.</span><span class="n">AAPL</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">)</span>
-<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;AAPL stock price&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-python"><div class="highlight"><pre>Populating the interactive namespace from numpy and matplotlib
-</pre></div>
-</div>
-<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.text.Text at 0x7ff5c6147f90&gt;
-</pre></div>
-</div>
-<img alt="_images/tutorial_11_2.png" src="_images/tutorial_11_2.png" />
-<p>As you can see, our algorithm performance as assessed by the
-<code class="docutils literal"><span class="pre">portfolio_value</span></code> closely matches that of the AAPL stock price. This
-is not surprising as our algorithm only bought AAPL every chance it got.</p>
+bitcoin price.</p>
+<p>Our algorithm performance as assessed by the
+<code class="docutils literal"><span class="pre">portfolio_value</span></code> closely matches that of the bitcoin price. This
+is not surprising as our algorithm only bought bitcoin every chance it got.</p>
 </div>
 </div>
-<div class="section" id="ipython-notebook">
-<h2>IPython Notebook<a class="headerlink" href="#ipython-notebook" title="Permalink to this headline">¶</a></h2>
-<p>The <a class="reference external" href="http://ipython.org/notebook.html">IPython Notebook</a> is a very
-powerful browser-based interface to a Python interpreter (this tutorial
-was written in it). As it is already the de-facto interface for most
-quantitative researchers <code class="docutils literal"><span class="pre">zipline</span></code> provides an easy way to run your
-algorithm inside the Notebook without requiring you to use the CLI.</p>
-<p>To use it you have to write your algorithm in a cell and let <code class="docutils literal"><span class="pre">zipline</span></code>
-know that it is supposed to run this algorithm. This is done via the
-<code class="docutils literal"><span class="pre">%%zipline</span></code> IPython magic command that is available after you
-<code class="docutils literal"><span class="pre">import</span> <span class="pre">zipline</span></code> from within the IPython Notebook. This magic takes
-the same arguments as the command line interface described above. Thus
-to run the algorithm from above with the same parameters we just have to
-execute the following cell after importing <code class="docutils literal"><span class="pre">zipline</span></code> to register the
-magic.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="o">%</span><span class="n">load_ext</span> <span class="n">zipline</span>
-</pre></div>
-</div>
-<div class="highlight-python"><div class="highlight"><pre><span class="o">%%</span><span class="n">zipline</span> <span class="o">--</span><span class="n">start</span> <span class="mi">2000</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span> <span class="o">--</span><span class="n">end</span> <span class="mi">2014</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span>
-<span class="kn">from</span> <span class="nn">zipline.api</span> <span class="kn">import</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">record</span>
-
-<span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
-    <span class="k">pass</span>
-
-<span class="k">def</span> <span class="nf">handle_data</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-    <span class="n">order</span><span class="p">(</span><span class="n">symbol</span><span class="p">(</span><span class="s">&#39;AAPL&#39;</span><span class="p">),</span> <span class="mi">10</span><span class="p">)</span>
-    <span class="n">record</span><span class="p">(</span><span class="n">AAPL</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="n">symbol</span><span class="p">(</span><span class="s">&#39;AAPL&#39;</span><span class="p">)]</span><span class="o">.</span><span class="n">price</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Note that we did not have to specify an input file as above since the
-magic will use the contents of the cell and look for your algorithm
-functions there. Also, instead of defining an output file we are
-specifying a variable name with <code class="docutils literal"><span class="pre">-o</span></code> that will be created in the name
-space and contain the performance <code class="docutils literal"><span class="pre">DataFrame</span></code> we looked at above.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">_</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</pre></div>
-</div>
-<div style="max-height:1000px;max-width:1500px;overflow:auto;">
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>AAPL</th>
-      <th>algo_volatility</th>
-      <th>algorithm_period_return</th>
-      <th>alpha</th>
-      <th>benchmark_period_return</th>
-      <th>benchmark_volatility</th>
-      <th>beta</th>
-      <th>capital_used</th>
-      <th>ending_cash</th>
-      <th>ending_exposure</th>
-      <th>...</th>
-      <th>short_exposure</th>
-      <th>short_value</th>
-      <th>shorts_count</th>
-      <th>sortino</th>
-      <th>starting_cash</th>
-      <th>starting_exposure</th>
-      <th>starting_value</th>
-      <th>trading_days</th>
-      <th>transactions</th>
-      <th>treasury_period_return</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>2000-01-03 21:00:00</th>
-      <td>3.738314</td>
-      <td>0.000000e+00</td>
-      <td>0.000000e+00</td>
-      <td>-0.065800</td>
-      <td>-0.009549</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.00000</td>
-      <td>10000000.00000</td>
-      <td>0.00000</td>
-      <td>...</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.000000</td>
-      <td>10000000.00000</td>
-      <td>0.00000</td>
-      <td>0.00000</td>
-      <td>1</td>
-      <td>[]</td>
-      <td>0.0658</td>
-    </tr>
-    <tr>
-      <th>2000-01-04 21:00:00</th>
-      <td>3.423135</td>
-      <td>3.367492e-07</td>
-      <td>-3.000000e-08</td>
-      <td>-0.064897</td>
-      <td>-0.047528</td>
-      <td>0.323229</td>
-      <td>0.000001</td>
-      <td>-34.53135</td>
-      <td>9999965.46865</td>
-      <td>34.23135</td>
-      <td>...</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.000000</td>
-      <td>10000000.00000</td>
-      <td>0.00000</td>
-      <td>0.00000</td>
-      <td>2</td>
-      <td>[{u'commission': 0.3, u'amount': 10, u'sid': 0...</td>
-      <td>0.0649</td>
-    </tr>
-    <tr>
-      <th>2000-01-05 21:00:00</th>
-      <td>3.473229</td>
-      <td>4.001918e-07</td>
-      <td>-9.906000e-09</td>
-      <td>-0.066196</td>
-      <td>-0.045697</td>
-      <td>0.329321</td>
-      <td>0.000001</td>
-      <td>-35.03229</td>
-      <td>9999930.43636</td>
-      <td>69.46458</td>
-      <td>...</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.000000</td>
-      <td>9999965.46865</td>
-      <td>34.23135</td>
-      <td>34.23135</td>
-      <td>3</td>
-      <td>[{u'commission': 0.3, u'amount': 10, u'sid': 0...</td>
-      <td>0.0662</td>
-    </tr>
-    <tr>
-      <th>2000-01-06 21:00:00</th>
-      <td>3.172661</td>
-      <td>4.993979e-06</td>
-      <td>-6.410420e-07</td>
-      <td>-0.065758</td>
-      <td>-0.044785</td>
-      <td>0.298325</td>
-      <td>-0.000006</td>
-      <td>-32.02661</td>
-      <td>9999898.40975</td>
-      <td>95.17983</td>
-      <td>...</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>-12731.780516</td>
-      <td>9999930.43636</td>
-      <td>69.46458</td>
-      <td>69.46458</td>
-      <td>4</td>
-      <td>[{u'commission': 0.3, u'amount': 10, u'sid': 0...</td>
-      <td>0.0657</td>
-    </tr>
-    <tr>
-      <th>2000-01-07 21:00:00</th>
-      <td>3.322945</td>
-      <td>5.977002e-06</td>
-      <td>-2.201900e-07</td>
-      <td>-0.065206</td>
-      <td>-0.018908</td>
-      <td>0.375301</td>
-      <td>0.000005</td>
-      <td>-33.52945</td>
-      <td>9999864.88030</td>
-      <td>132.91780</td>
-      <td>...</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>-12629.274583</td>
-      <td>9999898.40975</td>
-      <td>95.17983</td>
-      <td>95.17983</td>
-      <td>5</td>
-      <td>[{u'commission': 0.3, u'amount': 10, u'sid': 0...</td>
-      <td>0.0652</td>
-    </tr>
-  </tbody>
-</table>
-<p>5 rows × 39 columns</p>
-</div></div>
 <div class="section" id="access-to-previous-prices-using-history">
 <h2>Access to previous prices using <code class="docutils literal"><span class="pre">history</span></code><a class="headerlink" href="#access-to-previous-prices-using-history" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="working-example-dual-moving-average-cross-over">
@@ -697,19 +385,13 @@ we need a new concept: History</p>
 <p><code class="docutils literal"><span class="pre">data.history()</span></code> is a convenience function that keeps a rolling window of
 data for you. The first argument is the number of bars you want to
 collect, the second argument is the unit (either <code class="docutils literal"><span class="pre">'1d'</span></code> for <code class="docutils literal"><span class="pre">'1m'</span></code>
-but note that you need to have minute-level data for using <code class="docutils literal"><span class="pre">1m</span></code>). For
-a more detailed description <code class="docutils literal"><span class="pre">history()</span></code>&#8216;s features, see the
-<a class="reference external" href="https://www.quantopian.com/help#ide-history">Quantopian docs</a>.
-Let&#8217;s look at the strategy which should make this clear:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="o">%%</span><span class="n">zipline</span> <span class="o">--</span><span class="n">start</span> <span class="mi">2000</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span> <span class="o">--</span><span class="n">end</span> <span class="mi">2012</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span> <span class="o">-</span><span class="n">o</span> <span class="n">dma</span><span class="o">.</span><span class="n">pickle</span>
+but note that you need to have minute-level data for using <code class="docutils literal"><span class="pre">1m</span></code>). This is
+a function we use in the <code class="docutils literal"><span class="pre">handle_data()</span></code> section:</p>
+<div class="highlight-python"><div class="highlight"><pre> <span class="kn">from</span> <span class="nn">catalyst.api</span> <span class="kn">import</span> <span class="n">order</span><span class="p">,</span> <span class="n">record</span><span class="p">,</span> <span class="n">symbol</span>
 
-
-<span class="kn">from</span> <span class="nn">zipline.api</span> <span class="kn">import</span> <span class="n">order_target</span><span class="p">,</span> <span class="n">record</span><span class="p">,</span> <span class="n">symbol</span>
-
-<span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
+ <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
     <span class="n">context</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">context</span><span class="o">.</span><span class="n">asset</span> <span class="o">=</span> <span class="n">symbol</span><span class="p">(</span><span class="s">&#39;AAPL&#39;</span><span class="p">)</span>
-
+    <span class="n">context</span><span class="o">.</span><span class="n">asset</span> <span class="o">=</span> <span class="n">symbol</span><span class="p">(</span><span class="s">&#39;btc_usd&#39;</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">handle_data</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
     <span class="c"># Skip first 300 days to get full windows</span>
@@ -732,73 +414,38 @@ Let&#8217;s look at the strategy which should make this clear:</p>
         <span class="n">order_target</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
     <span class="c"># Save values for later inspection</span>
-    <span class="n">record</span><span class="p">(</span><span class="n">AAPL</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s">&#39;price&#39;</span><span class="p">),</span>
+    <span class="n">record</span><span class="p">(</span><span class="n">btc</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s">&#39;price&#39;</span><span class="p">),</span>
            <span class="n">short_mavg</span><span class="o">=</span><span class="n">short_mavg</span><span class="p">,</span>
            <span class="n">long_mavg</span><span class="o">=</span><span class="n">long_mavg</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">analyze</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">perf</span><span class="p">):</span>
-    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-    <span class="n">ax1</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">211</span><span class="p">)</span>
-    <span class="n">perf</span><span class="o">.</span><span class="n">portfolio_value</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
-    <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;portfolio value in $&#39;</span><span class="p">)</span>
-
-    <span class="n">ax2</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">212</span><span class="p">)</span>
-    <span class="n">perf</span><span class="p">[</span><span class="s">&#39;AAPL&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">)</span>
-    <span class="n">perf</span><span class="p">[[</span><span class="s">&#39;short_mavg&#39;</span><span class="p">,</span> <span class="s">&#39;long_mavg&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">)</span>
-
-    <span class="n">perf_trans</span> <span class="o">=</span> <span class="n">perf</span><span class="o">.</span><span class="n">ix</span><span class="p">[[</span><span class="n">t</span> <span class="o">!=</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">perf</span><span class="o">.</span><span class="n">transactions</span><span class="p">]]</span>
-    <span class="n">buys</span> <span class="o">=</span> <span class="n">perf_trans</span><span class="o">.</span><span class="n">ix</span><span class="p">[[</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;amount&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">perf_trans</span><span class="o">.</span><span class="n">transactions</span><span class="p">]]</span>
-    <span class="n">sells</span> <span class="o">=</span> <span class="n">perf_trans</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span>
-        <span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;amount&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">perf_trans</span><span class="o">.</span><span class="n">transactions</span><span class="p">]]</span>
-    <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">buys</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">perf</span><span class="o">.</span><span class="n">short_mavg</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="n">buys</span><span class="o">.</span><span class="n">index</span><span class="p">],</span>
-             <span class="s">&#39;^&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;m&#39;</span><span class="p">)</span>
-    <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">sells</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">perf</span><span class="o">.</span><span class="n">short_mavg</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="n">sells</span><span class="o">.</span><span class="n">index</span><span class="p">],</span>
-             <span class="s">&#39;v&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;k&#39;</span><span class="p">)</span>
-    <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;price in $&#39;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/tutorial_22_1.png" src="_images/tutorial_22_1.png" />
-<p>Here we are explicitly defining an <code class="docutils literal"><span class="pre">analyze()</span></code> function that gets
-automatically called once the backtest is done (this is not possible on
-Quantopian currently).</p>
-<p>Although it might not be directly apparent, the power of <code class="docutils literal"><span class="pre">history()</span></code>
-(pun intended) can not be under-estimated as most algorithms make use of
-prior market developments in one form or another. You could easily
-devise a strategy that trains a classifier with
-<a class="reference external" href="http://scikit-learn.org/stable/">scikit-learn</a> which tries to
-predict future market movements based on past prices (note, that most of
-the <code class="docutils literal"><span class="pre">scikit-learn</span></code> functions require <code class="docutils literal"><span class="pre">numpy.ndarray</span></code>s rather than
-<code class="docutils literal"><span class="pre">pandas.DataFrame</span></code>s, so you can simply pass the underlying
-<code class="docutils literal"><span class="pre">ndarray</span></code> of a <code class="docutils literal"><span class="pre">DataFrame</span></code> via <code class="docutils literal"><span class="pre">.values</span></code>).</p>
-<p>We also used the <code class="docutils literal"><span class="pre">order_target()</span></code> function above. This and other
-functions like it can make order management and portfolio rebalancing
-much easier. See the <a class="reference external" href="https://www.quantopian.com/help#api-order-methods">Quantopian documentation on order
-functions</a> fore
-more details.</p>
 </div>
 </div>
 <div class="section" id="conclusions">
 <h2>Conclusions<a class="headerlink" href="#conclusions" title="Permalink to this headline">¶</a></h2>
 <p>We hope that this tutorial gave you a little insight into the
-architecture, API, and features of <code class="docutils literal"><span class="pre">zipline</span></code>. For next steps, check
+architecture, API, and features of <code class="docutils literal"><span class="pre">catalyst</span></code>. For next steps, check
 out some of the
-<a class="reference external" href="https://github.com/quantopian/zipline/tree/master/zipline/examples">examples</a>.</p>
-<p>Feel free to ask questions on <a class="reference external" href="https://groups.google.com/forum/#!forum/zipline">our mailing
-list</a>, report
-problems on our <a class="reference external" href="https://github.com/quantopian/zipline/issues?state=open">GitHub issue
-tracker</a>,
-<a class="reference external" href="https://github.com/quantopian/zipline/wiki/Contribution-Requests">get
-involved</a>,
-and <a class="reference external" href="https://quantopian.com">checkout Quantopian</a>.</p>
+<a class="reference external" href="https://github.com/enigmampc/catalyst/tree/master/catalyst/examples">examples</a>.
+The natural next step would be too look into the
+<a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/buy_and_hodl.py">buy_and_hodl</a>
+example, which is a more elaborated and realistic version of the <code class="docutils literal"><span class="pre">buy_btc_simple</span></code> example presented in this tutorial.</p>
+<p>Feel free to ask questions on the <code class="docutils literal"><span class="pre">#catalyst_dev</span></code> channel of our
+<a class="reference external" href="https://discord.gg/SJK32GY">Discord group</a> and report
+problems on our <a class="reference external" href="https://github.com/enigmampc/catalyst/issues">GitHub issue tracker</a>.</p>
 </div>
 </div>
 
 
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="install.html" class="btn btn-neutral" title="Install" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>
