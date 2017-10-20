@@ -1,7 +1,7 @@
 import sys
 import os
 
-from zipline import __version__ as version
+#from catalyst import __version__ as version
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -21,14 +21,14 @@ extensions = [
 
 
 extlinks = {
-    'issue': ('https://github.com/quantopian/zipline/issues/%s', '#'),
-    'commit': ('https://github.com/quantopian/zipline/commit/%s', ''),
+    'issue': ('https://github.com/enigmampc/catalyst/issues/%s', '#'),
+    'commit': ('https://github.com/enigmampc/catalyst/commit/%s', ''),
 }
 
 # -- Docstrings ---------------------------------------------------------------
 
-extensions += ['numpydoc']
-numpydoc_show_class_members = False
+#extensions += ['numpydoc']
+#numpydoc_show_class_members = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['.templates']
@@ -40,11 +40,12 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Zipline'
-copyright = u'2016, Quantopian Inc.'
+project = u'Catalyst'
+copyright = u'2017, Enigma MPC, Inc.'
 
 # The full version, including alpha/beta/rc tags, but excluding the commit hash
-release = version.split('+', 1)[0]
+#release = version.split('+', 1)[0]
+release = '0.3'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -84,7 +85,7 @@ html_show_sphinx = True
 html_show_copyright = True
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'ziplinedoc'
+htmlhelp_basename = 'catalystdoc'
 
 intersphinx_mapping = {
     'http://docs.python.org/dev': None,
@@ -93,6 +94,6 @@ intersphinx_mapping = {
     'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
 }
 
-doctest_global_setup = "import zipline"
+doctest_global_setup = "import catalyst"
 
 todo_include_todos = True

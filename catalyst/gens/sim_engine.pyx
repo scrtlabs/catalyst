@@ -20,9 +20,7 @@ cimport cython
 from cpython cimport bool
 
 cdef np.int64_t _nanos_in_minute = 60000000000
-cdef np.int64_t _nanos_in_five_minutes = 5 * _nanos_in_minute
 NANOS_IN_MINUTE = _nanos_in_minute
-NANOS_IN_FIVE_MINUTES = _nanos_in_five_minutes
 
 cpdef enum:
     BAR = 0
@@ -117,24 +115,3 @@ cdef class MinuteSimulationClock:
             yield minute, BAR
             if minute_emission:
                 yield minute, MINUTE_END
-
-cdef class FiveMinuteSimulationClock(MinuteSimulationClock):
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    cdef dict calc_minutes_by_session(self):
-        cdef dict five_minutes_by_session
-        cdef int session_idx
-        cdef np.int64_t session_nano
-        cdef np.ndarray[np.int64_t, ndim=1] five_minutes_nanos
-
-        five_minutes_by_session = {}
-        for session_idx, session_nano in enumerate(self.sessions_nanos):
-            five_minutes_nanos = np.arange(
-                self.market_opens_nanos[session_idx],
-                self.market_closes_nanos[session_idx],
-                _nanos_in_five_minutes
-            )
-            five_minutes_by_session[session_nano] = pd.to_datetime(
-                five_minutes_nanos, utc=True, box=True
-            )
-        return five_minutes_by_session

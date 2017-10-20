@@ -30,8 +30,10 @@ from catalyst.utils.cli import (
 )
 from catalyst.utils.memoize import lazyval
 
+from catalyst.constants import LOG_LEVEL
+
 logbook.StderrHandler().push_application()
-log = logbook.Logger(__name__)
+log = logbook.Logger(__name__, level=LOG_LEVEL)
 
 DEFAULT_RETRIES = 5
 
@@ -58,10 +60,6 @@ class BaseBundle(object):
 
     @lazyval
     def minutes_per_day(self):
-        raise NotImplementedError()
-
-    @lazyval
-    def five_minutes_per_day(self):
         raise NotImplementedError()
 
     @lazyval
@@ -115,7 +113,6 @@ class BaseBundle(object):
                environ,
                asset_db_writer,
                minute_bar_writer,
-               five_minute_bar_writer,
                daily_bar_writer,
                adjustment_writer,
                calendar,
@@ -162,33 +159,13 @@ class BaseBundle(object):
 
                 # Post-process metadata using cached symbol frames, and write to
                 # disk.  This metadata must be written before any attempt to write
-                # either minute or 5-minute data.
+                # minute data.
                 metadata = self._post_process_metadata(
                     raw_metadata,
                     cache,
                     show_progress=show_progress,
                 )
                 asset_db_writer.write(metadata)
-
-                # Compile 5-minute symbol data if bundle supports 5-minute mode and
-                # persist the dataset to disk.
-                '''
-                if '5-minute' in self.frequencies:
-                    five_minute_bar_writer.write(
-                        self._fetch_symbol_iter(
-                            api_key,
-                            cache,
-                            symbol_map,
-                            calendar,
-                            start_session,
-                            end_session,
-                            '5-minute',
-                            retries,
-                        ),
-                        length=len(symbol_map),
-                        show_progress=show_progress,
-                    )
-                '''
 
                 # Compile minute symbol data if bundle supports minute mode and
                 # persist the dataset to disk.

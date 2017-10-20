@@ -1,6 +1,6 @@
 from catalyst.exchange.bittrex.bittrex import Bittrex
 from catalyst.finance.order import Order
-from .base import BaseExchangeTestCase
+from base import BaseExchangeTestCase
 from logbook import Logger
 from catalyst.exchange.exchange_utils import get_exchange_auth
 
@@ -67,8 +67,8 @@ class BittrexTestCase(BaseExchangeTestCase):
     def test_tickers(self):
         log.info('retrieving tickers')
         tickers = self.exchange.tickers([
-            self.exchange.get_asset('ubq_btc'),
-            self.exchange.get_asset('neo_btc')
+            self.exchange.get_asset('eth_btc'),
+            self.exchange.get_asset('etc_btc')
         ])
         assert len(tickers) == 2
         pass
@@ -80,4 +80,10 @@ class BittrexTestCase(BaseExchangeTestCase):
 
     def test_get_account(self):
         log.info('testing account data')
+        pass
+
+    def test_orderbook(self):
+        log.info('testing order book for bittrex')
+        asset = self.exchange.get_asset('eth_btc')
+        orderbook = self.exchange.get_orderbook(asset)
         pass

@@ -61,7 +61,9 @@ Risk Report
 import logbook
 import numpy as np
 
-log = logbook.Logger('Risk')
+from catalyst.constants import LOG_LEVEL
+
+log = logbook.Logger('Risk', level=LOG_LEVEL)
 
 
 TREASURY_DURATIONS = [

@@ -602,7 +602,6 @@ class date_rules(object):
 class time_rules(object):
     market_open = AfterOpen
     market_close = BeforeClose
-    every_5_minutes = Always
     every_minute = Always
 
 

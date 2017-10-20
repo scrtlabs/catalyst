@@ -97,6 +97,8 @@ class PoloniexBundle(BaseCryptoPricingBundle):
                                end_date,
                                frequency):
 
+        # TODO: replace this with direct exchange call
+        # The end date and frequency should be used to calculate the number of bars
         if(frequency == 'minute'):
             pc = PoloniexCurator()
             raw = pc.onemin_to_dataframe(symbol, start_date, end_date)
@@ -146,7 +148,6 @@ class PoloniexBundle(BaseCryptoPricingBundle):
                          data_frequency):
         period_map = {
             'daily': 86400,
-#            '5-minute': 300,
         }
 
         try:
@@ -165,6 +166,7 @@ class PoloniexBundle(BaseCryptoPricingBundle):
         return self._format_polo_query(query_params)
     
     def _format_polo_query(self, query_params):
+        # TODO: got against the exchange object
         return 'https://poloniex.com/public?{query}'.format(
             query=urlencode(query_params),
         )

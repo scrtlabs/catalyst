@@ -24,7 +24,9 @@ from catalyst.errors import (
     TradingControlViolation,
 )
 
-log = logbook.Logger('TradingControl')
+from catalyst.constants import LOG_LEVEL
+
+log = logbook.Logger('TradingControl', level=LOG_LEVEL)
 
 
 class TradingControl(with_metaclass(abc.ABCMeta)):

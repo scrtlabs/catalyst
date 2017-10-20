@@ -12,19 +12,19 @@
 # limitations under the License.
 from datetime import timedelta
 
-import matplotlib.dates as mdates
 import pandas as pd
 from catalyst.gens.sim_engine import (
     BAR,
     SESSION_START
 )
 from logbook import Logger
-from matplotlib import pyplot as plt
-from matplotlib import style
 
-log = Logger('LiveGraphClock')
+from catalyst.exchange.exchange_errors import \
+    MismatchingBaseCurrenciesExchanges
 
-fmt = mdates.DateFormatter('%Y-%m-%d %H:%M')
+from catalyst.constants import LOG_LEVEL
+
+log = Logger('LiveGraphClock', level=LOG_LEVEL)
 
 
 class LiveGraphClock(object):
@@ -55,11 +55,17 @@ class LiveGraphClock(object):
 
     def __init__(self, sessions, context, time_skew=pd.Timedelta('0s')):
 
+        global mdates, plt                  #TODO: Could be cleaner
+        import matplotlib.dates as mdates
+        from matplotlib import pyplot as plt
+        from matplotlib import style
+
         self.sessions = sessions
         self.time_skew = time_skew
         self._last_emit = None
         self._before_trading_start_bar_yielded = True
         self.context = context
+        self.fmt = mdates.DateFormatter('%Y-%m-%d %H:%M')
 
         style.use('dark_background')
 
@@ -97,7 +103,7 @@ class LiveGraphClock(object):
         :return:
         """
         ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
-        ax.xaxis.set_major_formatter(fmt)
+        ax.xaxis.set_major_formatter(self.fmt)
 
         locator = mdates.HourLocator(interval=4)
         locator.MAXTICKS = 5000
@@ -154,17 +160,31 @@ class LiveGraphClock(object):
         context = self.context
         df = context.exposure_stats
 
+        # TODO: list exchanges in graph
+        base_currency = None
+        positions = []
+        for exchange_name in context.exchanges:
+            exchange = context.exchanges[exchange_name]
+
+            if not base_currency:
+                base_currency = exchange.base_currency
+            elif base_currency != exchange.base_currency:
+                raise MismatchingBaseCurrenciesExchanges(
+                    base_currency=base_currency,
+                    exchange_name=exchange.name,
+                    exchange_currency=exchange.base_currency
+                )
+
+            positions += exchange.portfolio.positions
+
         ax.clear()
         ax.set_title('Exposure')
         ax.plot(df.index, df['base_currency'], '-',
                 color='green',
                 linewidth=1.0,
-                label='Base Currency: {}'.format(
-                    context.exchange.base_currency.upper()
-                )
+                label='Base Currency: {}'.format(base_currency.upper())
                 )
 
-        positions = context.exchange.portfolio.positions
         symbols = []
         for position in positions:
             symbols.append(position.symbol)
@@ -172,10 +192,7 @@ class LiveGraphClock(object):
         ax.plot(df.index, df['long_exposure'], '-',
                 color='blue',
                 linewidth=1.0,
-                label='Long Exposure: {}'.format(
-                    ', '.join(symbols).upper()
-                )
-                )
+                label='Long Exposure: {}'.format(', '.join(symbols).upper()))
 
         self.set_legend(ax)
         self.format_ax(ax)

@@ -27,14 +27,15 @@ from catalyst.gens.sim_engine import (
     BEFORE_TRADING_START_BAR
 )
 
-log = Logger('Trade Simulation')
+from catalyst.constants import LOG_LEVEL
+
+log = Logger('Trade Simulation', level=LOG_LEVEL)
 
 
 class AlgorithmSimulator(object):
 
     EMISSION_TO_PERF_KEY_MAP = {
         'minute': 'minute_perf',
-        '5-minute': '5_minute_perf',
         'daily': 'daily_perf'
     }
 
@@ -202,7 +203,7 @@ class AlgorithmSimulator(object):
             stack.enter_context(self.processor)
             stack.enter_context(ZiplineAPI(self.algo))
 
-            if algo.data_frequency in set(('minute', '5-minute')):
+            if algo.data_frequency == 'minute':
                 def execute_order_cancellation_policy():
                     algo.blotter.execute_cancel_policy(SESSION_END)
 

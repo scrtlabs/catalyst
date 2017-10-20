@@ -23,7 +23,9 @@ from catalyst.protocol import (
 )
 from catalyst.assets import Equity
 
-logger = Logger('Requests Source Logger')
+from catalyst.constants import LOG_LEVEL
+
+logger = Logger('Requests Source Logger', level=LOG_LEVEL)
 
 
 def roll_dts_to_midnight(dts, trading_day):

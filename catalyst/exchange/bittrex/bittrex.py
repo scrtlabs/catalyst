@@ -7,13 +7,18 @@ from six.moves import urllib
 
 from catalyst.exchange.bittrex.bittrex_api import Bittrex_api
 from catalyst.exchange.exchange import Exchange
+from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
     ExchangeRequestError, InvalidOrderStyle, OrderNotFound, OrderCancelError, \
     CreateOrderError
 from catalyst.finance.execution import LimitOrder, StopLimitOrder
 from catalyst.finance.order import Order, ORDER_STATUS
+from catalyst.exchange.exchange_utils import get_exchange_symbols_filename, \
+    download_exchange_symbols
 
-log = Logger('Bittrex')
+from catalyst.constants import LOG_LEVEL
+
+log = Logger('Bittrex', level=LOG_LEVEL)
 
 URL2 = 'https://bittrex.com/Api/v2.0'
 
@@ -22,14 +27,24 @@ class Bittrex(Exchange):
     def __init__(self, key, secret, base_currency, portfolio=None):
         self.api = Bittrex_api(key=key, secret=secret.encode('UTF-8'))
         self.name = 'bittrex'
+        self.color = 'blue'
         self.base_currency = base_currency
         self._portfolio = portfolio
+
+        self.num_candles_limit = 2000
+
+        # Not sure what the rate limit is but trying to play it safe
+        # https://bitcoin.stackexchange.com/questions/53778/bittrex-api-rate-limit
+        self.max_requests_per_minute = 60
+        self.request_cpt = dict()
 
         self.minute_writer = None
         self.minute_reader = None
 
         self.assets = dict()
         self.load_assets()
+
+        self.bundle = ExchangeBundle(self)
 
     @property
     def account(self):
@@ -50,42 +65,24 @@ class Bittrex(Exchange):
         """
         return exchange_symbol.lower()
 
-    def fetch_symbol_map(self):
-        """
-        Since Bittrex gives us a complete dictionary of symbols,
-        we can build the symbol map ad-hoc as opposed to maintaining
-        a static file. We must be careful with mapping any unconventional
-        symbol name as appropriate.
-
-        :return symbol_map:
-        """
-        symbol_map = dict()
-
-        markets = self.api.getmarkets()
-        for market in markets:
-            exchange_symbol = market['MarketName']
-            symbol = '{market}_{base}'.format(
-                market=self.sanitize_curency_symbol(market['MarketCurrency']),
-                base=self.sanitize_curency_symbol(market['BaseCurrency'])
-            )
-            symbol_map[exchange_symbol] = dict(
-                symbol=symbol,
-                start_date=pd.to_datetime(market['Created'], utc=True)
-            )
-
-        return symbol_map
-
     def get_balances(self):
         try:
             log.debug('retrieving wallet balances')
+            self.ask_request()
             balances = self.api.getbalances()
+
         except Exception as e:
             raise ExchangeRequestError(error=e)
 
         std_balances = dict()
-        for balance in balances:
-            currency = balance['Currency'].lower()
-            std_balances[currency] = balance['Available']
+        try:
+            for balance in balances:
+                currency = balance['Currency'].lower()
+                std_balances[currency] = balance['Available']
+
+        except TypeError:
+            raise ExchangeRequestError(error=balances)
+
         return std_balances
 
     def create_order(self, asset, amount, is_buy, style):
@@ -98,6 +95,7 @@ class Bittrex(Exchange):
 
             price = style.get_limit_price(is_buy)
             try:
+                self.ask_request()
                 if is_buy:
                     order_status = self.api.buylimit(exchange_symbol, amount,
                                                      price)
@@ -138,6 +136,7 @@ class Bittrex(Exchange):
     def get_open_orders(self, asset):
         symbol = self.get_symbol(asset)
         try:
+            self.ask_request()
             open_orders = self.api.getopenorders(symbol)
         except Exception as e:
             raise ExchangeRequestError(error=e)
@@ -181,6 +180,7 @@ class Bittrex(Exchange):
     def get_order(self, order_id):
         log.info('retrieving order {}'.format(order_id))
         try:
+            self.ask_request()
             order_status = self.api.getorder(order_id)
         except Exception as e:
             raise ExchangeRequestError(error=e)
@@ -196,6 +196,7 @@ class Bittrex(Exchange):
         log.info('cancelling order {}'.format(order_id))
 
         try:
+            self.ask_request()
             status = self.api.cancel(order_id)
         except Exception as e:
             raise ExchangeRequestError(error=e)
@@ -207,7 +208,8 @@ class Bittrex(Exchange):
                 error=status['message']
             )
 
-    def get_candles(self, data_frequency, assets, bar_count=None):
+    def get_candles(self, data_frequency, assets, bar_count=None,
+                    start_date=None):
         """
         Supported Intervals
         -------------------
@@ -298,6 +300,7 @@ class Bittrex(Exchange):
         for asset in assets:
             symbol = self.get_symbol(asset)
             try:
+                self.ask_request()
                 ticker = self.api.getticker(symbol)
             except Exception as e:
                 raise ExchangeRequestError(error=e)
@@ -316,3 +319,76 @@ class Bittrex(Exchange):
     def get_account(self):
         log.info('retrieving account data')
         pass
+
+    def generate_symbols_json(self, filename=None):
+        symbol_map = {}
+
+        fn, r = download_exchange_symbols(self.name)
+        with open(fn) as data_file:
+            cached_symbols = json.load(data_file)
+
+        markets = self.api.getmarkets()
+        for market in markets:
+            exchange_symbol = market['MarketName']
+            symbol = '{market}_{base}'.format(
+                market=self.sanitize_curency_symbol(market['MarketCurrency']),
+                base=self.sanitize_curency_symbol(market['BaseCurrency'])
+            )
+
+            try:
+                end_daily = cached_symbols[exchange_symbol]['end_daily']
+            except KeyError as e:
+                end_daily = 'N/A'
+
+            try:
+                end_minute = cached_symbols[exchange_symbol]['end_minute']
+            except KeyError as e:
+                end_minute = 'N/A'
+
+            symbol_map[exchange_symbol] = dict(
+                symbol=symbol,
+                start_date=pd.to_datetime(market['Created'],
+                                          utc=True).strftime("%Y-%m-%d"),
+                end_daily=end_daily,
+                end_minute=end_minute,
+            )
+
+        if (filename is None):
+            filename = get_exchange_symbols_filename(self.name)
+
+        with open(filename, 'w') as f:
+            json.dump(symbol_map, f, sort_keys=True, indent=2,
+                      separators=(',', ':'))
+
+    def get_orderbook(self, asset, order_type='all', limit=100):
+        if order_type == 'all':
+            order_type = 'both'
+        elif order_type == 'bid':
+            order_type = 'buy'
+        elif order_type == 'ask':
+            order_type = 'sell'
+        else:
+            raise ValueError('invalid type')
+
+        exchange_symbol = asset.exchange_symbol
+        data = self.api.getorderbook(
+            market=exchange_symbol,
+            type=order_type,
+            depth=100
+        )
+
+        result = dict()
+        for exchange_type in data:
+            if exchange_type == 'buy':
+                order_type = 'bids'
+            elif exchange_type == 'sell':
+                order_type = 'asks'
+
+            result[order_type] = []
+            for entry in data[exchange_type]:
+                result[order_type].append(dict(
+                    rate=entry['Rate'],
+                    quantity=entry['Quantity']
+                ))
+
+        return result

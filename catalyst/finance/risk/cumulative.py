@@ -38,7 +38,9 @@ from empyrical import (
     sortino_ratio,
 )
 
-log = logbook.Logger('Risk Cumulative')
+from catalyst.constants import LOG_LEVEL
+
+log = logbook.Logger('Risk Cumulative', level=LOG_LEVEL)
 
 
 choose_treasury = functools.partial(choose_treasury, lambda *args: '10year',

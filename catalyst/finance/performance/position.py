@@ -40,7 +40,9 @@ import logbook
 from catalyst.assets import Future, Asset
 from catalyst.utils.input_validation import expect_types
 
-log = logbook.Logger('Performance')
+from catalyst.constants import LOG_LEVEL
+
+log = logbook.Logger('Performance', level=LOG_LEVEL)
 
 
 class Position(object):

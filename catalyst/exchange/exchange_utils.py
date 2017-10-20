@@ -3,15 +3,15 @@ import os
 import pickle
 import urllib
 from datetime import date, datetime
+
 import pandas as pd
 
 from catalyst.exchange.exchange_errors import ExchangeAuthNotFound, \
     ExchangeSymbolsNotFound
-from catalyst.utils.paths import data_root, ensure_directory
+from catalyst.utils.paths import data_root, ensure_directory, last_modified_time
 
-# TODO: move to aws
-SYMBOLS_URL = 'https://raw.githubusercontent.com/enigmampc/catalyst/' \
-              'master/catalyst/exchange/{exchange}/symbols.json'
+SYMBOLS_URL = 'https://s3.amazonaws.com/enigmaco/catalyst-exchanges/' \
+              '{exchange}/symbols.json'
 
 
 def get_exchange_folder(exchange_name, environ=None):
@@ -25,20 +25,23 @@ def get_exchange_folder(exchange_name, environ=None):
     return exchange_folder
 
 
-def download_exchange_symbols(exchange_name, environ=None):
+def get_exchange_symbols_filename(exchange_name, environ=None):
     exchange_folder = get_exchange_folder(exchange_name, environ)
-    filename = os.path.join(exchange_folder, 'symbols.json')
+    return os.path.join(exchange_folder, 'symbols.json')
 
+
+def download_exchange_symbols(exchange_name, environ=None):
+    filename = get_exchange_symbols_filename(exchange_name)
     url = SYMBOLS_URL.format(exchange=exchange_name)
     response = urllib.urlretrieve(url=url, filename=filename)
     return response
 
 
 def get_exchange_symbols(exchange_name, environ=None):
-    exchange_folder = get_exchange_folder(exchange_name, environ)
-    filename = os.path.join(exchange_folder, 'symbols.json')
+    filename = get_exchange_symbols_filename(exchange_name)
 
-    if not os.path.isfile(filename):
+    if not os.path.isfile(filename) or \
+            pd.Timedelta(pd.Timestamp('now', tz='UTC') - last_modified_time(filename)).days > 1:
         download_exchange_symbols(exchange_name, environ)
 
     if os.path.isfile(filename):
@@ -79,6 +82,9 @@ def get_algo_folder(algo_name, environ=None):
 
 
 def get_algo_object(algo_name, key, environ=None, rel_path=None):
+    if algo_name is None:
+        return None
+
     folder = get_algo_folder(algo_name, environ)
 
     if rel_path is not None:
@@ -156,6 +162,14 @@ def get_exchange_minute_writer_root(exchange_name, environ=None):
     ensure_directory(minute_data_folder)
 
     return minute_data_folder
+
+def get_exchange_bundles_folder(exchange_name, environ=None):
+    exchange_folder = get_exchange_folder(exchange_name, environ)
+
+    temp_bundles = os.path.join(exchange_folder, 'temp_bundles')
+    ensure_directory(temp_bundles)
+
+    return temp_bundles
 
 
 def perf_serial(obj):

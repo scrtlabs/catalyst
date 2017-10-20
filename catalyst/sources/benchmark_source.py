@@ -65,19 +65,6 @@ class BenchmarkSource(object):
                 )
 
                 self._precalculated_series = minute_series
-            elif self.emission_rate == '5-minute':
-                five_minutes = \
-                    trading_calendar.five_minutes_for_sessions_in_range(
-                        sessions[0],
-                        sessions[-1],
-                    )
-
-                five_minute_series = daily_series.reindex(
-                    index=five_minutes,
-                    method='ffill',
-                )
-                
-                self._precalculated_series = five_minute_series
             else:
                 self._precalculated_series = daily_series
         else:
@@ -85,7 +72,13 @@ class BenchmarkSource(object):
                             "benchmark_returns.")
 
     def get_value(self, dt):
-        return self._precalculated_series.loc[dt]
+        try:
+            series = self._precalculated_series
+            value = series.loc[dt]
+            return value
+        except Exception:
+            # TODO: workaround, find permanent fix
+            return 0
 
     def get_range(self, start_dt, end_dt):
         return self._precalculated_series.loc[start_dt:end_dt]
@@ -166,21 +159,6 @@ class BenchmarkSource(object):
                 field="price",
                 data_frequency=self.emission_rate,
                 ffill=True
-            )[asset]
-
-            return benchmark_series.pct_change()[1:]
-        elif self.emission_rate == '5-minute':
-            five_minutes = trading_calendar.five_minutes_for_sessions_in_range(
-                self.sessions[0], self.sessions[-1]
-            )
-            benchmark_series = data_portal.get_history_window(
-                [asset],
-                five_minutes[-1],
-                bar_count=len(five_minutes) + 1,
-                frequency='5m',
-                field='price',
-                data_frequency=self.emission_rate,
-                ffill=True,
             )[asset]
 
             return benchmark_series.pct_change()[1:]
