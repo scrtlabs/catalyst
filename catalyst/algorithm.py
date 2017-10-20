@@ -139,7 +139,7 @@ from catalyst.sources.benchmark_source import BenchmarkSource
 from catalyst.catalyst_warnings import ZiplineDeprecationWarning
 
 
-log = logbook.Logger("ZiplineLog")
+log = logbook.Logger("CatalystLog")
 
 
 class TradingAlgorithm(object):

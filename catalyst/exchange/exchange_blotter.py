@@ -6,7 +6,9 @@ from catalyst.finance.commission import CommissionModel
 from catalyst.finance.slippage import SlippageModel
 from catalyst.finance.transaction import Transaction
 
-log = Logger('exchange_blotter')
+from catalyst.constants import LOG_LEVEL
+
+log = Logger('exchange_blotter', level=LOG_LEVEL)
 
 # It seems like we need to accept greater slippage risk in cryptos
 # Orders won't often close at Equity levels.
