@@ -517,7 +517,7 @@ a function we use in the ``handle_data()`` section:
               long_mavg=long_mavg)
 
     def analyze(context, perf):
-       import matplotlib as plt
+       import matplotlib.pyplot as plt
        fig = plt.figure()
        ax1 = fig.add_subplot(211)
        perf.portfolio_value.plot(ax=ax1)
