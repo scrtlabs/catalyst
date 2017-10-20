@@ -38,6 +38,7 @@ Python`_ provides an `excellent tutorial on virtualenv
 version:
 
 .. code-block:: bash
+
    $ virtualenv catalyst-venv
    $ source ./catalyst-venv/bin/activate
    $ pip install enigma-catalyst
@@ -66,15 +67,17 @@ On `Arch Linux`_, you can acquire the additional dependencies via ``pacman``:
 
    $ pacman -S lapack gcc gcc-fortran pkg-config
 
-There are also AUR packages available for installing `Python 3.4
-<https://aur.archlinux.org/packages/python34/>`_ (Arch's default python is now
-3.5, but Zipline only currently supports 3.4), and `ta-lib
-<https://aur.archlinux.org/packages/ta-lib/>`_, an optional Zipline dependency.
-Python 2 is also installable via:
+.. Commenting it out until Catalyst fully supports Python 3.X
+..
+.. There are also AUR packages available for installing `Python 3.4
+.. <https://aur.archlinux.org/packages/python34/>`_ (Arch's default python is now
+.. 3.5, but Zipline only currently supports 3.4), and `ta-lib
+.. <https://aur.archlinux.org/packages/ta-lib/>`_, an optional Zipline dependency.
+.. Python 2 is also installable via:
 
-.. code-block:: bash
+.. 
 
-   $ pacman -S python2
+..   $ pacman -S python2
 
 OSX
 ~~~
@@ -104,20 +107,20 @@ For windows, the easiest and best supported way to install zipline is to use
 Installing with ``conda``
 -------------------------
 
-Another way to install Zipline is via the ``conda`` package manager, which
+Another way to install Catalyst is via the ``conda`` package manager, which
 comes as part of Continuum Analytics' `Anaconda
 <http://continuum.io/downloads>`_ distribution.
 
 The primary advantage of using Conda over ``pip`` is that conda natively
 understands the complex binary dependencies of packages like ``numpy`` and
-``scipy``.  This means that ``conda`` can install Zipline and its dependencies
-without requiring the use of a second tool to acquire Zipline's non-Python
+``scipy``.  This means that ``conda`` can install Catalyst and its dependencies
+without requiring the use of a second tool to acquire Catalyst's non-Python
 dependencies.
 
 For instructions on how to install ``conda``, see the `Conda Installation
 Documentation <http://conda.pydata.org/docs/download.html>`_
 
-Once conda has been set up you can install Zipline from our ``Quantopian``
+Once conda has been set up you can install Catalyst from our ``Quantopian``
 channel:
 
 .. code-block:: bash
