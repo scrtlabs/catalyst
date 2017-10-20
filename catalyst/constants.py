@@ -1,3 +1,5 @@
 # -*- coding: utf-8 -*-
 
-LOG_LEVEL = 'ERROR'
+import logbook
+
+LOG_LEVEL = logbook.INFO
