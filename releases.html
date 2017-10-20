@@ -30,8 +30,7 @@
   
 
   
-    <link rel="top" title="Catalyst 0.3 documentation" href="index.html"/>
-        <link rel="prev" title="Release Process" href="release-process.html"/> 
+    <link rel="top" title="Catalyst 0.3 documentation" href="index.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -70,242 +69,24 @@
         
           
           
-              <ul class="current">
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Install</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="install.html#installing-with-pip">Installing with <code class="docutils literal"><span class="pre">pip</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="install.html#gnu-linux">GNU/Linux</a></li>
-<li class="toctree-l3"><a class="reference internal" href="install.html#osx">OSX</a></li>
+<li class="toctree-l3"><a class="reference internal" href="install.html#osx">OSX</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="install.html#osx-virtualenv-matplotlib">OSX + virtualenv + matplotlib</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="install.html#windows">Windows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="install.html#amazon-linux-ami">Amazon Linux AMI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="install.html#troubleshooting-pip-install">Troubleshooting <code class="docutils literal"><span class="pre">pip</span></code> Install</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#installing-with-conda">Installing with <code class="docutils literal"><span class="pre">conda</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#installing-with-conda">Installing with <code class="docutils literal"><span class="pre">conda</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="install.html#troubleshooting-conda-install">Troubleshooting <code class="docutils literal"><span class="pre">conda</span></code> Install</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="beginner-tutorial.html">Zipline Beginner Tutorial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#basics">Basics</a></li>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#my-first-algorithm">My first algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#running-the-algorithm">Running the algorithm</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="beginner-tutorial.html#ingesting-data">Ingesting Data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="beginner-tutorial.html#command-line-interface">Command line interface</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#ipython-notebook">IPython Notebook</a></li>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#access-to-previous-prices-using-history">Access to previous prices using <code class="docutils literal"><span class="pre">history</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="beginner-tutorial.html#working-example-dual-moving-average-cross-over">Working example: Dual Moving Average Cross-Over</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#conclusions">Conclusions</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="bundles.html">Data Bundles</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="bundles.html#discovering-available-bundles">Discovering Available Bundles</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bundles.html#ingesting-data">Ingesting Data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bundles.html#old-data">Old Data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bundles.html#running-backtests-with-data-bundles">Running Backtests with Data Bundles</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bundles.html#default-data-bundles">Default Data Bundles</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#quandl-wiki-bundle">Quandl WIKI Bundle</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="bundles.html#quantopian-quandl-wiki-mirror">Quantopian Quandl WIKI Mirror</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#yahoo-bundle-factories">Yahoo Bundle Factories</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="bundles.html#writing-a-new-bundle">Writing a New Bundle</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#environ"><code class="docutils literal"><span class="pre">environ</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#asset-db-writer"><code class="docutils literal"><span class="pre">asset_db_writer</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#minute-bar-writer"><code class="docutils literal"><span class="pre">minute_bar_writer</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#daily-bar-writer"><code class="docutils literal"><span class="pre">daily_bar_writer</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#adjustment-writer"><code class="docutils literal"><span class="pre">adjustment_writer</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#calendar"><code class="docutils literal"><span class="pre">calendar</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#start-session"><code class="docutils literal"><span class="pre">start_session</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#end-session"><code class="docutils literal"><span class="pre">end_session</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#cache"><code class="docutils literal"><span class="pre">cache</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#show-progress"><code class="docutils literal"><span class="pre">show_progress</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#output-dir"><code class="docutils literal"><span class="pre">output_dir</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="development-guidelines.html">Development Guidelines</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#creating-a-development-environment">Creating a Development Environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#development-with-docker">Development with Docker</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#style-guide-running-tests">Style Guide &amp; Running Tests</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#continuous-integration">Continuous Integration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#packaging">Packaging</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#contributing-to-the-docs">Contributing to the Docs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#commit-messages">Commit messages</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#formatting-docstrings">Formatting Docstrings</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="appendix.html">API Reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="appendix.html#running-a-backtest">Running a Backtest</a></li>
-<li class="toctree-l2"><a class="reference internal" href="appendix.html#algorithm-api">Algorithm API</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#data-object">Data Object</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#scheduling-functions">Scheduling Functions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#orders">Orders</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="appendix.html#order-cancellation-policies">Order Cancellation Policies</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#assets">Assets</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#trading-controls">Trading Controls</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#simulation-parameters">Simulation Parameters</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="appendix.html#commission-models">Commission Models</a></li>
-<li class="toctree-l4"><a class="reference internal" href="appendix.html#slippage-models">Slippage Models</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#pipeline">Pipeline</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#miscellaneous">Miscellaneous</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="appendix.html#pipeline-api">Pipeline API</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#built-in-factors">Built-in Factors</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#pipeline-engine">Pipeline Engine</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#data-loaders">Data Loaders</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="appendix.html#asset-metadata">Asset Metadata</a></li>
-<li class="toctree-l2"><a class="reference internal" href="appendix.html#trading-calendar-api">Trading Calendar API</a></li>
-<li class="toctree-l2"><a class="reference internal" href="appendix.html#data-api">Data API</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#writers">Writers</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#readers">Readers</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#bundles">Bundles</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="appendix.html#utilities">Utilities</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#caching">Caching</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#command-line">Command Line</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="release-process.html">Release Process</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="release-process.html#updating-the-release-notes">Updating the Release Notes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="release-process.html#updating-the-python-stub-files">Updating the Python stub files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="release-process.html#updating-the-version">Updating the <code class="docutils literal"><span class="pre">__version__</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="release-process.html#uploading-pypi-packages">Uploading PyPI packages</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="release-process.html#sdist"><code class="docutils literal"><span class="pre">sdist</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="release-process.html#bdist"><code class="docutils literal"><span class="pre">bdist</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="release-process.html#documentation">Documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="release-process.html#uploading-conda-packages">Uploading conda packages</a></li>
-<li class="toctree-l2"><a class="reference internal" href="release-process.html#next-commit">Next Commit</a></li>
-</ul>
-</li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Release Notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#development">Development</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#highlights">Highlights</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#enhancements">Enhancements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#experimental-features">Experimental Features</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#bug-fixes">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#performance">Performance</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#maintenance-and-refactorings">Maintenance and Refactorings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#build">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#documentation">Documentation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#miscellaneous">Miscellaneous</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#release-1-1-0">Release 1.1.0</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id1">Enhancements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id2">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id3">Performance</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id4">Maintenance and Refactorings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id5">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id6">Documentation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id7">Miscellaneous</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#release-1-0-2">Release 1.0.2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id8">Enhancements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#experimental">Experimental</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id9">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id10">Performance</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id11">Maintenance and Refactorings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id12">Documentation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#testing">Testing</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#data-format-changes">Data Format Changes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#release-1-0-1">Release 1.0.1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id13">Enhancements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id14">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id15">Documentation</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#release-1-0-0">Release 1.0.0</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id16">Highlights</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#zipline-1-0-rewrite-1105">Zipline 1.0 Rewrite (#1105)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#new-entry-points-1173-and-1178">New Entry Points (#1173 and #1178)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#data-bundles-1173-and-1178">Data Bundles (#1173 and #1178)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#string-support-in-pipeline-1174">String Support in Pipeline (#1174)</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#id17">Enhancements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id18">Experimental Features</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id19">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id20">Performance</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id21">Maintenance and Refactorings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id22">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id23">Documentation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id24">Miscellaneous</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#release-0-9-0">Release 0.9.0</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id25">Highlights</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id26">Enhancements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id27">Experimental Features</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id28">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id29">Performance</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id30">Maintenance and Refactorings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id31">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id32">Documentation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id33">Miscellaneous</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#release-0-8-4">Release 0.8.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id34">Highlights</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id35">Enhancements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id36">Experimental Features</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id37">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id38">Performance</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id39">Maintenance and Refactorings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id40">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id41">Documentation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id42">Miscellaneous</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#release-0-8-3">Release 0.8.3</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#release-0-8-0">Release 0.8.0</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id43">Highlights</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id44">Enhancements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id45">Experimental Features</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id46">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id47">Performance</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id48">Maintenance and Refactorings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id49">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id50">Documentation</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#release-0-7-0">Release 0.7.0</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id51">Highlights</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id52">Enhancements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id53">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id54">Performance</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id55">Maintenance and Refactorings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id56">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#contributors">Contributors</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#release-0-6-1">Release 0.6.1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id57">Highlights</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id58">Enhancements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id59">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id60">Performance</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id61">Maintenance and Refactorings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id62">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id63">Contributors</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#getting-help">Getting Help</a></li>
 </ul>
 </li>
 </ul>
@@ -2048,13 +1829,6 @@ numbers of commit:</p>
 
           </div>
           <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-      
-        <a href="release-process.html" class="btn btn-neutral" title="Release Process" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
-    </div>
   
 
   <hr/>

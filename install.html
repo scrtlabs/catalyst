@@ -31,7 +31,6 @@
 
   
     <link rel="top" title="Catalyst 0.3 documentation" href="index.html"/>
-        <link rel="next" title="Zipline Beginner Tutorial" href="beginner-tutorial.html"/>
         <link rel="prev" title="&lt;no title&gt;" href="index.html"/> 
 
   
@@ -75,238 +74,20 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="">Install</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#installing-with-pip">Installing with <code class="docutils literal"><span class="pre">pip</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#gnu-linux">GNU/Linux</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#osx">OSX</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#osx">OSX</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#osx-virtualenv-matplotlib">OSX + virtualenv + matplotlib</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#windows">Windows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#amazon-linux-ami">Amazon Linux AMI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#troubleshooting-pip-install">Troubleshooting <code class="docutils literal"><span class="pre">pip</span></code> Install</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#installing-with-conda">Installing with <code class="docutils literal"><span class="pre">conda</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-with-conda">Installing with <code class="docutils literal"><span class="pre">conda</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#troubleshooting-conda-install">Troubleshooting <code class="docutils literal"><span class="pre">conda</span></code> Install</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="beginner-tutorial.html">Zipline Beginner Tutorial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#basics">Basics</a></li>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#my-first-algorithm">My first algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#running-the-algorithm">Running the algorithm</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="beginner-tutorial.html#ingesting-data">Ingesting Data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="beginner-tutorial.html#command-line-interface">Command line interface</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#ipython-notebook">IPython Notebook</a></li>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#access-to-previous-prices-using-history">Access to previous prices using <code class="docutils literal"><span class="pre">history</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="beginner-tutorial.html#working-example-dual-moving-average-cross-over">Working example: Dual Moving Average Cross-Over</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#conclusions">Conclusions</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="bundles.html">Data Bundles</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="bundles.html#discovering-available-bundles">Discovering Available Bundles</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bundles.html#ingesting-data">Ingesting Data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bundles.html#old-data">Old Data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bundles.html#running-backtests-with-data-bundles">Running Backtests with Data Bundles</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bundles.html#default-data-bundles">Default Data Bundles</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#quandl-wiki-bundle">Quandl WIKI Bundle</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="bundles.html#quantopian-quandl-wiki-mirror">Quantopian Quandl WIKI Mirror</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#yahoo-bundle-factories">Yahoo Bundle Factories</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="bundles.html#writing-a-new-bundle">Writing a New Bundle</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#environ"><code class="docutils literal"><span class="pre">environ</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#asset-db-writer"><code class="docutils literal"><span class="pre">asset_db_writer</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#minute-bar-writer"><code class="docutils literal"><span class="pre">minute_bar_writer</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#daily-bar-writer"><code class="docutils literal"><span class="pre">daily_bar_writer</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#adjustment-writer"><code class="docutils literal"><span class="pre">adjustment_writer</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#calendar"><code class="docutils literal"><span class="pre">calendar</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#start-session"><code class="docutils literal"><span class="pre">start_session</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#end-session"><code class="docutils literal"><span class="pre">end_session</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#cache"><code class="docutils literal"><span class="pre">cache</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#show-progress"><code class="docutils literal"><span class="pre">show_progress</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="bundles.html#output-dir"><code class="docutils literal"><span class="pre">output_dir</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="development-guidelines.html">Development Guidelines</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#creating-a-development-environment">Creating a Development Environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#development-with-docker">Development with Docker</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#style-guide-running-tests">Style Guide &amp; Running Tests</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#continuous-integration">Continuous Integration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#packaging">Packaging</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#contributing-to-the-docs">Contributing to the Docs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#commit-messages">Commit messages</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#formatting-docstrings">Formatting Docstrings</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="appendix.html">API Reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="appendix.html#running-a-backtest">Running a Backtest</a></li>
-<li class="toctree-l2"><a class="reference internal" href="appendix.html#algorithm-api">Algorithm API</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#data-object">Data Object</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#scheduling-functions">Scheduling Functions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#orders">Orders</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="appendix.html#order-cancellation-policies">Order Cancellation Policies</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#assets">Assets</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#trading-controls">Trading Controls</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#simulation-parameters">Simulation Parameters</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="appendix.html#commission-models">Commission Models</a></li>
-<li class="toctree-l4"><a class="reference internal" href="appendix.html#slippage-models">Slippage Models</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#pipeline">Pipeline</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#miscellaneous">Miscellaneous</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="appendix.html#pipeline-api">Pipeline API</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#built-in-factors">Built-in Factors</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#pipeline-engine">Pipeline Engine</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#data-loaders">Data Loaders</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="appendix.html#asset-metadata">Asset Metadata</a></li>
-<li class="toctree-l2"><a class="reference internal" href="appendix.html#trading-calendar-api">Trading Calendar API</a></li>
-<li class="toctree-l2"><a class="reference internal" href="appendix.html#data-api">Data API</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#writers">Writers</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#readers">Readers</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#bundles">Bundles</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="appendix.html#utilities">Utilities</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#caching">Caching</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#command-line">Command Line</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="release-process.html">Release Process</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="release-process.html#updating-the-release-notes">Updating the Release Notes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="release-process.html#updating-the-python-stub-files">Updating the Python stub files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="release-process.html#updating-the-version">Updating the <code class="docutils literal"><span class="pre">__version__</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="release-process.html#uploading-pypi-packages">Uploading PyPI packages</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="release-process.html#sdist"><code class="docutils literal"><span class="pre">sdist</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="release-process.html#bdist"><code class="docutils literal"><span class="pre">bdist</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="release-process.html#documentation">Documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="release-process.html#uploading-conda-packages">Uploading conda packages</a></li>
-<li class="toctree-l2"><a class="reference internal" href="release-process.html#next-commit">Next Commit</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="releases.html">Release Notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#development">Development</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#highlights">Highlights</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#enhancements">Enhancements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#experimental-features">Experimental Features</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#bug-fixes">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#performance">Performance</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#maintenance-and-refactorings">Maintenance and Refactorings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#build">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#documentation">Documentation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#miscellaneous">Miscellaneous</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#release-1-1-0">Release 1.1.0</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id1">Enhancements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id2">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id3">Performance</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id4">Maintenance and Refactorings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id5">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id6">Documentation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id7">Miscellaneous</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#release-1-0-2">Release 1.0.2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id8">Enhancements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#experimental">Experimental</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id9">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id10">Performance</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id11">Maintenance and Refactorings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id12">Documentation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#testing">Testing</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#data-format-changes">Data Format Changes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#release-1-0-1">Release 1.0.1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id13">Enhancements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id14">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id15">Documentation</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#release-1-0-0">Release 1.0.0</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id16">Highlights</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="releases.html#zipline-1-0-rewrite-1105">Zipline 1.0 Rewrite (#1105)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="releases.html#new-entry-points-1173-and-1178">New Entry Points (#1173 and #1178)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="releases.html#data-bundles-1173-and-1178">Data Bundles (#1173 and #1178)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="releases.html#string-support-in-pipeline-1174">String Support in Pipeline (#1174)</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id17">Enhancements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id18">Experimental Features</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id19">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id20">Performance</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id21">Maintenance and Refactorings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id22">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id23">Documentation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id24">Miscellaneous</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#release-0-9-0">Release 0.9.0</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id25">Highlights</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id26">Enhancements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id27">Experimental Features</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id28">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id29">Performance</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id30">Maintenance and Refactorings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id31">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id32">Documentation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id33">Miscellaneous</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#release-0-8-4">Release 0.8.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id34">Highlights</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id35">Enhancements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id36">Experimental Features</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id37">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id38">Performance</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id39">Maintenance and Refactorings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id40">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id41">Documentation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id42">Miscellaneous</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#release-0-8-3">Release 0.8.3</a></li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#release-0-8-0">Release 0.8.0</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id43">Highlights</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id44">Enhancements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id45">Experimental Features</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id46">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id47">Performance</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id48">Maintenance and Refactorings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id49">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id50">Documentation</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#release-0-7-0">Release 0.7.0</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id51">Highlights</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id52">Enhancements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id53">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id54">Performance</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id55">Maintenance and Refactorings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id56">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#contributors">Contributors</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#release-0-6-1">Release 0.6.1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id57">Highlights</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id58">Enhancements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id59">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id60">Performance</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id61">Maintenance and Refactorings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id62">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id63">Contributors</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="#getting-help">Getting Help</a></li>
 </ul>
 </li>
 </ul>
@@ -357,7 +138,7 @@ Python package.</p>
 <li>Catalyst ships several C extensions that require access to the CPython C API.
 In order to build the C extensions, <code class="docutils literal"><span class="pre">pip</span></code> needs access to the CPython
 header files for your Python installation.</li>
-<li>Zipline depends on <a class="reference external" href="http://www.numpy.org/">numpy</a>, the core library for
+<li>Catalyst depends on <a class="reference external" href="http://www.numpy.org/">numpy</a>, the core library for
 numerical array computing in Python.  Numpy depends on having the <a class="reference external" href="http://www.netlib.org/lapack">LAPACK</a> linear algebra routines available.</li>
 </ol>
 <p>Because LAPACK and the CPython headers are non-Python dependencies, the correct
@@ -376,7 +157,13 @@ Python</a> provides an <a class="reference external" href="http://docs.python-gu
 version:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>virtualenv catalyst-venv
 <span class="nv">$ </span><span class="nb">source</span> ./catalyst-venv/bin/activate
-<span class="nv">$ </span>pip install enigma-catalyst
+<span class="nv">$ </span>pip install enigma-
+</pre></div>
+</div>
+<p>Though not required by Catalyst directly, our example algorithms use matplotlib
+to visually display the results of the trading algorithms. If you wish to run
+any examples or use matplotlib during development, it can be installed using:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pip install matplotlib
 </pre></div>
 </div>
 <div class="section" id="gnu-linux">
@@ -410,11 +197,111 @@ following brew packages:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>brew install freetype pkg-config gcc openssl
 </pre></div>
 </div>
+<div class="section" id="osx-virtualenv-matplotlib">
+<h4>OSX + virtualenv + matplotlib<a class="headerlink" href="#osx-virtualenv-matplotlib" title="Permalink to this headline">¶</a></h4>
+<p>A note about using matplotlib in virtual enviroments on OSX: it may be necessary to run</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nb">echo</span> <span class="s2">&quot;backend: TkAgg&quot;</span> &gt; ~/.matplotlib/matplotlibrc
+</pre></div>
+</div>
+<p>in order to override the default <code class="docutils literal"><span class="pre">macosx</span></code> backend for your system, which may not
+be accessible from inside the virtual environment. This will allow Catalyst to open
+matplotlib charts from within a virtual environment, which is useful for displaying
+the performance of your backtests.  To learn more about matplotlib backends, please refer to the
+<a class="reference external" href="https://matplotlib.org/faq/usage_faq.html#what-is-a-backend">matplotlib backend documentation</a>.</p>
+</div>
 </div>
 <div class="section" id="windows">
 <h3>Windows<a class="headerlink" href="#windows" title="Permalink to this headline">¶</a></h3>
-<p>For windows, the easiest and best supported way to install zipline is to use
+<p>In Windows, you will need the <a class="reference external" href="https://www.microsoft.com/en-us/download/details.aspx?id=44266">Microsoft Visual C++ Compiler for Python 2.7</a>. This package
+contains the compiler and the set of system headers necessary for producing
+binary wheels for Python 2.7 packages. If it&#8217;s not already in your system, download
+it and install it before proceeding to the next step.</p>
+<p>For windows, the easiest and best supported way to install Catalyst is to use
 <a class="reference internal" href="#conda"><span>Conda</span></a>.</p>
+</div>
+<div class="section" id="amazon-linux-ami">
+<h3>Amazon Linux AMI<a class="headerlink" href="#amazon-linux-ami" title="Permalink to this headline">¶</a></h3>
+<p>The packages <code class="docutils literal"><span class="pre">pip</span></code> and <code class="docutils literal"><span class="pre">setuptools</span></code> that come shipped by default are very outdated.
+Thus, you first need to run:</p>
+<div class="highlight-bash"><div class="highlight"><pre>pip install --upgrade pip setuptools
+</pre></div>
+</div>
+<p>The default installation is also missing the C and C++ compilers, which you install by:</p>
+<div class="highlight-bash"><div class="highlight"><pre>sudo yum install gcc gcc-c++
+</pre></div>
+</div>
+<p>Then you should follow the regular installation instructions outlined at the beginning
+of this page.</p>
+</div>
+<div class="section" id="troubleshooting-pip-install">
+<h3>Troubleshooting <code class="docutils literal"><span class="pre">pip</span></code> Install<a class="headerlink" href="#troubleshooting-pip-install" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><strong>Issue</strong>:</dt>
+<dd>Package enigma-catalyst cannot be found</dd>
+<dt><strong>Solution</strong>:</dt>
+<dd><p class="first">Make sure you have the most up-to-date version of pip installed, by running:</p>
+<div class="highlight-bash"><div class="highlight"><pre>pip install --upgrade pip
+</pre></div>
+</div>
+<p>On Windows, the recommended command is:</p>
+<div class="last highlight-bash"><div class="highlight"><pre>python -m pip install --upgrade pip
+</pre></div>
+</div>
+</dd>
+</dl>
+<hr class="docutils" />
+<dl class="docutils">
+<dt><strong>Issue</strong>:</dt>
+<dd><p class="first">Package enigma-catalyst cannot still be found, even after upgrading pip (see above), with an error similar to:</p>
+<div class="last highlight-bash"><div class="highlight"><pre>Downloading/unpacking enigma-catalyst
+Could not find a version that satisfies the requirement enigma-catalyst <span class="o">(</span>from versions: 0.1.dev9, 0.2.dev2, 0.1.dev4, 0.1.dev5, 0.1.dev3, 0.2.dev1, 0.1.dev8, 0.1.dev6<span class="o">)</span>
+Cleaning up...
+No distributions matching the version <span class="k">for</span> enigma-catalyst
+</pre></div>
+</div>
+</dd>
+<dt><strong>Solution</strong>:</dt>
+<dd><p class="first">In some systems (this error has been reported in Ubuntu), pip is configured to only find stable versions by default. Since Catalyst is in alpha version, pip cannot find a matching version that satisfies the installation requirements. The solution is to include the <cite>&#8211;pre</cite> flag to include pre-release and development versions:</p>
+<div class="last highlight-bash"><div class="highlight"><pre>pip install --pre enigma-catalyst
+</pre></div>
+</div>
+</dd>
+</dl>
+<hr class="docutils" />
+<dl class="docutils">
+<dt><strong>Issue</strong>:</dt>
+<dd>Package enigma-catalyst fails to install because of outdated setuptools</dd>
+<dt><strong>Solution</strong>:</dt>
+<dd><p class="first">Upgrade to the most up-to-date setuptools package by running:</p>
+<div class="last highlight-bash"><div class="highlight"><pre>pip install --upgrade pip setuptools
+</pre></div>
+</div>
+</dd>
+</dl>
+<hr class="docutils" />
+<dl class="docutils">
+<dt><strong>Issue</strong>:</dt>
+<dd>Missing required packages</dd>
+<dt><strong>Solution</strong>:</dt>
+<dd><p class="first">Download <a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/etc/requirements.txt">requirements.txt</a>
+(click on the <em>Raw</em> button and Right click -&gt; Save As...) and use it to
+install all the required dependencies by running:</p>
+<div class="last highlight-bash"><div class="highlight"><pre>pip install -r requirements.txt
+</pre></div>
+</div>
+</dd>
+</dl>
+<hr class="docutils" />
+<dl class="docutils">
+<dt><strong>Issue</strong>:</dt>
+<dd>Installation fails with error: <code class="docutils literal"><span class="pre">fatal</span> <span class="pre">error:</span> <span class="pre">Python.h:</span> <span class="pre">No</span> <span class="pre">such</span> <span class="pre">file</span> <span class="pre">or</span> <span class="pre">directory</span></code></dd>
+<dt><strong>Solution</strong>:</dt>
+<dd><p class="first">Some systems (this issue has been reported in Ubuntu) require <cite>python-dev</cite> for the proper build and installation of package dependencies. The solution is to install python-dev, which is independent of the virtual environment. In Ubuntu, you would need to run:</p>
+<div class="last highlight-bash"><div class="highlight"><pre>sudo apt-get install python-dev
+</pre></div>
+</div>
+</dd>
+</dl>
 </div>
 </div>
 <div class="section" id="installing-with-conda">
@@ -427,12 +314,86 @@ understands the complex binary dependencies of packages like <code class="docuti
 without requiring the use of a second tool to acquire Catalyst&#8217;s non-Python
 dependencies.</p>
 <p>For instructions on how to install <code class="docutils literal"><span class="pre">conda</span></code>, see the <a class="reference external" href="http://conda.pydata.org/docs/download.html">Conda Installation
-Documentation</a></p>
-<p>Once conda has been set up you can install Catalyst from our <code class="docutils literal"><span class="pre">Quantopian</span></code>
-channel:</p>
-<div class="highlight-bash"><div class="highlight"><pre>conda install -c Quantopian zipline
+Documentation</a>. Alternatively, you
+can install MiniConda, which is a smaller footprint (fewer packages and smaller
+size) than its big brother Anaconda, but it still contains all the main packages
+needed. To install MiniConda, you can follow these steps:</p>
+<ol class="arabic simple">
+<li>Download <a class="reference external" href="https://conda.io/miniconda.html">MiniConda</a>. Select Python 2.7 for
+your Operating System.</li>
+<li>Install MiniConda. See the <a class="reference external" href="https://conda.io/docs/user-guide/install/index.html">Installation Instructions</a>
+if you need help.</li>
+<li>Ensure the correct installation by running <code class="docutils literal"><span class="pre">conda</span> <span class="pre">list</span></code> in a Terminal window,
+which should print the list of packages installed with Conda.</li>
+</ol>
+<p>Once either Conda or MiniConda has been set up you can install Catalyst:</p>
+<ol class="arabic">
+<li><p class="first">Download the file <a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/etc/python2.7-environment.yml">python2.7-environment.yml</a>.</p>
+</li>
+<li><p class="first">Open a Terminal window and enter [<code class="docutils literal"><span class="pre">cd/dir</span></code>] into the directory where you saved
+the above <code class="docutils literal"><span class="pre">python2.7-environment.yml</span></code> file.</p>
+</li>
+<li><p class="first">Install using this file. This step can take about 5-10 minutes to install.</p>
+<div class="highlight-bash"><div class="highlight"><pre>conda env create -f python2.7-environment.yml
 </pre></div>
 </div>
+</li>
+<li><p class="first">Activate the environment (which you need to do every time you start a new session
+to run Catalyst):</p>
+<p><strong>Linux or OSX:</strong></p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nb">source </span>activate catalyst
+</pre></div>
+</div>
+<p><strong>Windows:</strong></p>
+<div class="highlight-bash"><div class="highlight"><pre>activate catalyst
+</pre></div>
+</div>
+</li>
+</ol>
+<p>Congratulations! You now have Catalyst installed.</p>
+<div class="section" id="troubleshooting-conda-install">
+<h3>Troubleshooting <code class="docutils literal"><span class="pre">conda</span></code> Install<a class="headerlink" href="#troubleshooting-conda-install" title="Permalink to this headline">¶</a></h3>
+<p>If the command  <code class="docutils literal"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">-f</span> <span class="pre">python2.7-environment.yml</span></code> in step 3 above failed
+for any reason, you can try setting up the environment manually with the following steps:</p>
+<ol class="arabic">
+<li><p class="first">Create the environment:</p>
+<div class="highlight-bash"><div class="highlight"><pre>conda create --name catalyst <span class="nv">python</span><span class="o">=</span>2.7 scipy
+</pre></div>
+</div>
+</li>
+<li><p class="first">Activate the environment:</p>
+<p><strong>Linux or OSX:</strong></p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nb">source </span>activate catalyst
+</pre></div>
+</div>
+<p><strong>Windows:</strong></p>
+<div class="highlight-bash"><div class="highlight"><pre>activate catalyst
+</pre></div>
+</div>
+</li>
+<li><p class="first">Install the Catalyst inside the environment:</p>
+<div class="highlight-bash"><div class="highlight"><pre>pip install enigma-catalyst matplotlib
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="section" id="getting-help">
+<h2>Getting Help<a class="headerlink" href="#getting-help" title="Permalink to this headline">¶</a></h2>
+<p>If after following the instructions above, and going through the <em>Troubleshooting</em> sections,
+you still experience problems installing Catalyst, you can seek additional help through the
+following channels:</p>
+<ul class="simple">
+<li>Join our <a class="reference external" href="https://discord.gg/SJK32GY">Discord community</a>, and head over the #catalyst_dev
+channel where many other users (as well as the project developers) hang out, and can assist
+you with your particular issue. The more descriptive and the more information you can provide,
+the easiest will be for others to help you out.</li>
+<li>Report the problem you are experiencing on our
+<a class="reference external" href="https://github.com/enigmampc/catalyst/issues">GitHub repository</a> following the guidelines
+provided therein. Before you do so, take a moment to browse through all <a class="reference external" href="https://github.com/enigmampc/catalyst/issues?utf8=%E2%9C%93&amp;q=is%3Aissue">previous reported issues</a> in the likely case
+that someone else experienced that same issue before, and you get a hint on how to solve it.</li>
+</ul>
 </div>
 </div>
 
@@ -441,8 +402,6 @@ channel:</p>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="beginner-tutorial.html" class="btn btn-neutral float-right" title="Zipline Beginner Tutorial" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="index.html" class="btn btn-neutral" title="&lt;no title&gt;" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
