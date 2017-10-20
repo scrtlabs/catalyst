@@ -1,4 +1,4 @@
-.. include:: ../../README.rst
+.. include:: welcome.rst
 
 .. toctree::
    :maxdepth: 1
