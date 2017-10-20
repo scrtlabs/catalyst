@@ -1248,7 +1248,7 @@ class BcolzMinuteBarReader(MinuteBarReader):
             if field != 'volume':
                 out = np.full(shape, np.nan)
             else:
-                out = np.zeros(shape, dtype=np.uint64)
+                out = np.zeros(shape, dtype=np.float64)
 
             for i, sid in enumerate(sids):
                 carray = self._open_minute_file(field, sid)

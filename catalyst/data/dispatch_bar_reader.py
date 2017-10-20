@@ -18,6 +18,7 @@ from numpy import (
     full,
     nan,
     int64,
+    float64,
     zeros
 )
 from six import iteritems, with_metaclass
@@ -70,7 +71,9 @@ class AssetDispatchBarReader(with_metaclass(ABCMeta)):
         return self._dt_window_size(start_dt, end_dt), num_sids
 
     def _make_raw_array_out(self, field, shape):
-        if field != 'volume' and field != 'sid':
+        if field == 'volume':
+            out = zeros(shape, dtype=float64)
+        elif field != 'sid':
             out = full(shape, nan)
         else:
             out = zeros(shape, dtype=int64)
