@@ -237,8 +237,11 @@ def _run(handle_data,
                 balances = exchange.get_balances()
             except ExchangeRequestError as e:
                 if attempt_index < 20:
-                    log.warn('exchange error when retrieving balances, {} '
-                             'trying again in 5 seconds'.format(e))
+                    log.warn(
+                        'could not retrieve balances on {}: {}'.format(
+                            exchange.name, e
+                        )
+                    )
                     sleep(5)
                     return fetch_capital_base(exchange, attempt_index + 1)
 
