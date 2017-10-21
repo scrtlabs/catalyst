@@ -9,22 +9,20 @@ import pandas as pd
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
+from catalyst.constants import LOG_LEVEL
 from catalyst.data.data_portal import BASE_FIELDS
 from catalyst.exchange.bundle_utils import get_start_dt, \
-    get_delta, get_periods, get_adj_dates
+    get_delta, get_periods
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     InvalidOrderStyle, BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
-    InvalidHistoryFrequencyError, MismatchingFrequencyError, \
-    BundleNotFoundError, NoDataAvailableOnExchange, PricingDataNotLoadedError
+    InvalidHistoryFrequencyError, PricingDataNotLoadedError
 from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
     ExchangeLimitOrder, ExchangeStopOrder
 from catalyst.exchange.exchange_portfolio import ExchangePortfolio
 from catalyst.exchange.exchange_utils import get_exchange_symbols
 from catalyst.finance.order import ORDER_STATUS
 from catalyst.finance.transaction import Transaction
-
-from catalyst.constants import LOG_LEVEL
 
 log = Logger('Exchange', level=LOG_LEVEL)
 

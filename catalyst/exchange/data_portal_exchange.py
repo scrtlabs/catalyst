@@ -19,17 +19,13 @@ import pandas as pd
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
+from catalyst.constants import LOG_LEVEL
 from catalyst.data.data_portal import DataPortal
-from catalyst.exchange.bundle_utils import get_start_dt
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     ExchangeBarDataError,
-    PricingDataBeforeTradingError,
-    PricingDataNotLoadedError, InvalidHistoryFrequencyError,
-    BundleNotFoundError)
-
-from catalyst.constants import LOG_LEVEL
+    PricingDataNotLoadedError)
 
 log = Logger('DataPortalExchange', level=LOG_LEVEL)
 

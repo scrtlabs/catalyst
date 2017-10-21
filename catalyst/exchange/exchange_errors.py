@@ -1,4 +1,6 @@
-import sys, traceback
+import sys
+import traceback
+
 from catalyst.errors import ZiplineError
 
 

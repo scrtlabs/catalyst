@@ -1,39 +1,32 @@
-import base64
-import hashlib
-import hmac
 import json
-import re
+import json
 import time
 from collections import defaultdict
 
 import numpy as np
 import pandas as pd
 import pytz
-import requests
-# import six
-from six import iteritems
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
+# import six
+from six import iteritems
 
-from catalyst.exchange.exchange_bundle import ExchangeBundle
-from catalyst.exchange.poloniex.poloniex_api import Poloniex_api
-
+from catalyst.constants import LOG_LEVEL
 # from websocket import create_connection
 from catalyst.exchange.exchange import Exchange
+from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     InvalidHistoryFrequencyError,
-    InvalidOrderStyle, OrderCancelError,
-    OrphanOrderReverseError)
+    InvalidOrderStyle, OrphanOrderReverseError)
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder, \
-    ExchangeStopLimitOrder, ExchangeStopOrder
-from catalyst.finance.order import Order, ORDER_STATUS
-from catalyst.protocol import Account
+    ExchangeStopLimitOrder
 from catalyst.exchange.exchange_utils import get_exchange_symbols_filename, \
     download_exchange_symbols
+from catalyst.exchange.poloniex.poloniex_api import Poloniex_api
+from catalyst.finance.order import Order, ORDER_STATUS
 from catalyst.finance.transaction import Transaction
-
-from catalyst.constants import LOG_LEVEL
+from catalyst.protocol import Account
 
 log = Logger('Poloniex', level=LOG_LEVEL)
 

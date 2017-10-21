@@ -1,10 +1,10 @@
 import base64
+import datetime
 import hashlib
 import hmac
 import json
 import re
 import time
-import datetime
 
 import numpy as np
 import pandas as pd
@@ -22,10 +22,10 @@ from catalyst.exchange.exchange_errors import (
     InvalidOrderStyle, OrderCancelError)
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder, \
     ExchangeStopLimitOrder, ExchangeStopOrder
-from catalyst.finance.order import Order, ORDER_STATUS
-from catalyst.protocol import Account
 from catalyst.exchange.exchange_utils import get_exchange_symbols_filename, \
     download_exchange_symbols
+from catalyst.finance.order import Order, ORDER_STATUS
+from catalyst.protocol import Account
 
 # Trying to account for REST api instability
 # https://stackoverflow.com/questions/15431044/can-i-set-max-retries-for-requests-request

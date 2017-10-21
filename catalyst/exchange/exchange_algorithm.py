@@ -26,6 +26,7 @@ from catalyst.assets._assets import TradingPair
 
 import catalyst.protocol as zp
 from catalyst.algorithm import TradingAlgorithm
+from catalyst.constants import LOG_LEVEL
 from catalyst.data.minute_bars import BcolzMinuteBarWriter, \
     BcolzMinuteBarReader
 from catalyst.errors import OrderInBeforeTradingStart
@@ -51,10 +52,8 @@ from catalyst.utils.api_support import (
     disallowed_in_before_trading_start)
 from catalyst.utils.input_validation import error_keywords, ensure_upper_case, \
     expect_types
-from catalyst.utils.preprocess import preprocess
 from catalyst.utils.math_utils import round_nearest
-
-from catalyst.constants import LOG_LEVEL
+from catalyst.utils.preprocess import preprocess
 
 log = logbook.Logger('exchange_algorithm', level=LOG_LEVEL)
 

@@ -1,12 +1,11 @@
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
+from catalyst.constants import LOG_LEVEL
 from catalyst.finance.blotter import Blotter
 from catalyst.finance.commission import CommissionModel
 from catalyst.finance.slippage import SlippageModel
 from catalyst.finance.transaction import Transaction
-
-from catalyst.constants import LOG_LEVEL
 
 log = Logger('exchange_blotter', level=LOG_LEVEL)
 

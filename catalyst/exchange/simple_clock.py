@@ -16,13 +16,13 @@ from time import sleep
 import pandas as pd
 from catalyst.gens.sim_engine import (
     BAR,
-    SESSION_START,
-    MINUTE_END,
-    SESSION_END
+    SESSION_START
 )
 from logbook import Logger
 
-log = Logger('ExchangeClock')
+from catalyst.constants import LOG_LEVEL
+
+log = Logger('ExchangeClock', level=LOG_LEVEL)
 
 
 class SimpleClock(object):

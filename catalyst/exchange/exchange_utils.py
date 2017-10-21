@@ -8,7 +8,8 @@ import pandas as pd
 
 from catalyst.exchange.exchange_errors import ExchangeAuthNotFound, \
     ExchangeSymbolsNotFound
-from catalyst.utils.paths import data_root, ensure_directory, last_modified_time
+from catalyst.utils.paths import data_root, ensure_directory, \
+    last_modified_time
 
 SYMBOLS_URL = 'https://s3.amazonaws.com/enigmaco/catalyst-exchanges/' \
               '{exchange}/symbols.json'

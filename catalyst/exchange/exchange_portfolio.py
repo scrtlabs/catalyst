@@ -1,9 +1,8 @@
 import numpy as np
 from logbook import Logger
 
-from catalyst.protocol import Portfolio, Positions, Position
-
 from catalyst.constants import LOG_LEVEL
+from catalyst.protocol import Portfolio, Positions, Position
 
 log = Logger('ExchangePortfolio', level=LOG_LEVEL)
 

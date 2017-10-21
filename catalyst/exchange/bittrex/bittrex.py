@@ -5,18 +5,17 @@ from catalyst.assets._assets import TradingPair
 from logbook import Logger
 from six.moves import urllib
 
+from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.bittrex.bittrex_api import Bittrex_api
 from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
     ExchangeRequestError, InvalidOrderStyle, OrderNotFound, OrderCancelError, \
     CreateOrderError
-from catalyst.finance.execution import LimitOrder, StopLimitOrder
-from catalyst.finance.order import Order, ORDER_STATUS
 from catalyst.exchange.exchange_utils import get_exchange_symbols_filename, \
     download_exchange_symbols
-
-from catalyst.constants import LOG_LEVEL
+from catalyst.finance.execution import LimitOrder, StopLimitOrder
+from catalyst.finance.order import Order, ORDER_STATUS
 
 log = Logger('Bittrex', level=LOG_LEVEL)
 

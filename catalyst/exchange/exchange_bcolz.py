@@ -3,7 +3,6 @@ import numpy as np
 from catalyst import get_calendar
 from catalyst.data.minute_bars import BcolzMinuteBarReader, \
     BcolzMinuteBarWriter
-from catalyst.exchange.bundle_utils import get_periods, get_periods_range
 
 
 class BcolzExchangeBarWriter(BcolzMinuteBarWriter):
