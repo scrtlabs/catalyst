@@ -24,10 +24,12 @@ from catalyst.utils.paths import ensure_directory
 
 log = Logger('exchange_bundle', level=LOG_LEVEL)
 
-BUNDLE_NAME_TEMPLATE = os.path.join('{root}','{frequency}_bundle')
+BUNDLE_NAME_TEMPLATE = os.path.join('{root}', '{frequency}_bundle')
+
 
 def _cachpath(symbol, type_):
     return '-'.join([symbol, type_])
+
 
 class ExchangeBundle:
     def __init__(self, exchange):
@@ -224,12 +226,18 @@ class ExchangeBundle:
         if reader is None:
             raise TempBundleNotFoundError(path=path)
 
-        arrays = reader.load_raw_arrays(
-            sids=[asset.sid],
-            fields=['open', 'high', 'low', 'close', 'volume'],
-            start_dt=start_dt,
-            end_dt=end_dt
-        )
+        arrays = None
+        try:
+            arrays = reader.load_raw_arrays(
+                sids=[asset.sid],
+                fields=['open', 'high', 'low', 'close', 'volume'],
+                start_dt=start_dt,
+                end_dt=end_dt
+            )
+        except Exception as e:
+            log.warn('skipping ctable for {} from {} to {}: {}'.format(
+                asset.symbol, start_dt, end_dt, e
+            ))
 
         if not arrays:
             return path
@@ -318,8 +326,8 @@ class ExchangeBundle:
             except NoDataAvailableOnExchange:
                 continue
 
-            start_dt = max(start_dt, self.calendar.first_trading_session)
-            start_dt = max(start_dt, asset_start)
+            # start_dt = max(start_dt, self.calendar.first_trading_session)
+            # start_dt = max(start_dt, asset_start)
 
             # Aligning start / end dates with the daily calendar
             sessions = get_periods_range(start_dt, end_dt, data_frequency) \
