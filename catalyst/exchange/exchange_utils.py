@@ -8,7 +8,8 @@ import pandas as pd
 
 from catalyst.exchange.exchange_errors import ExchangeAuthNotFound, \
     ExchangeSymbolsNotFound
-from catalyst.utils.paths import data_root, ensure_directory, last_modified_time
+from catalyst.utils.paths import data_root, ensure_directory, \
+    last_modified_time
 
 SYMBOLS_URL = 'https://s3.amazonaws.com/enigmaco/catalyst-exchanges/' \
               '{exchange}/symbols.json'
@@ -64,11 +65,10 @@ def get_exchange_auth(exchange_name, environ=None):
             data = json.load(data_file)
             return data
     else:
-        raise ExchangeAuthNotFound(
-            exchange=exchange_name,
-            filename=filename
-        )
-
+        data = dict(name=exchange_name, key='', secret='')
+        with open(filename, 'w') as f:
+            json.dump(data, f, sort_keys=False, indent=2, separators=(',', ':'))
+            return data
 
 def get_algo_folder(algo_name, environ=None):
     if not environ:

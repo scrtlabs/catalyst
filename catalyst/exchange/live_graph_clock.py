@@ -10,7 +10,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from datetime import timedelta
 
 import pandas as pd
 from catalyst.gens.sim_engine import (
@@ -19,10 +18,9 @@ from catalyst.gens.sim_engine import (
 )
 from logbook import Logger
 
+from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.exchange_errors import \
     MismatchingBaseCurrenciesExchanges
-
-from catalyst.constants import LOG_LEVEL
 
 log = Logger('LiveGraphClock', level=LOG_LEVEL)
 

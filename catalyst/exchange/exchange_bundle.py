@@ -3,9 +3,10 @@ import shutil
 from datetime import timedelta
 
 import pandas as pd
-from logbook import Logger, INFO
+from logbook import Logger
 
 from catalyst import get_calendar
+from catalyst.constants import LOG_LEVEL
 from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
     BcolzMinuteBarMetadata
 from catalyst.exchange.bundle_utils import range_in_bundle, \
@@ -14,18 +15,16 @@ from catalyst.exchange.bundle_utils import range_in_bundle, \
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
 from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
-    InvalidHistoryFrequencyError, PricingDataBeforeTradingError, \
-    TempBundleNotFoundError, NoDataAvailableOnExchange, \
+    InvalidHistoryFrequencyError, TempBundleNotFoundError, \
+    NoDataAvailableOnExchange, \
     PricingDataNotLoadedError
 from catalyst.exchange.exchange_utils import get_exchange_folder
 from catalyst.utils.cli import maybe_show_progress
 from catalyst.utils.paths import ensure_directory
 
-from catalyst.constants import LOG_LEVEL
-
 log = Logger('exchange_bundle', level=LOG_LEVEL)
 
-BUNDLE_NAME_TEMPLATE = '{root}/{frequency}_bundle'
+BUNDLE_NAME_TEMPLATE = os.path.join('{root}','{frequency}_bundle')
 
 def _cachpath(symbol, type_):
     return '-'.join([symbol, type_])
@@ -172,7 +171,7 @@ class ExchangeBundle:
                 invalid_data_behavior='raise'
             )
         except BcolzMinuteOverlappingData as e:
-            log.warn('chunk already exists: {}'.format(e))
+            log.debug('chunk already exists: {}'.format(e))
         except Exception as e:
             log.warn('error when writing data: {}, trying again'.format(e))
 
@@ -318,6 +317,9 @@ class ExchangeBundle:
 
             except NoDataAvailableOnExchange:
                 continue
+
+            start_dt = max(start_dt, self.calendar.first_trading_session)
+            start_dt = max(start_dt, asset_start)
 
             # Aligning start / end dates with the daily calendar
             sessions = get_periods_range(start_dt, end_dt, data_frequency) \
