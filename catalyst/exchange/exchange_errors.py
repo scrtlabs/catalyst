@@ -6,7 +6,8 @@ from catalyst.errors import ZiplineError
 
 def silent_except_hook(exctype, excvalue, exctraceback):
     if exctype in [PricingDataBeforeTradingError, PricingDataNotLoadedError,
-                   SymbolNotFoundOnExchange, NoDataAvailableOnExchange, ]:
+                   SymbolNotFoundOnExchange, NoDataAvailableOnExchange, 
+                   ExchangeAuthEmpty ]:
         fn = traceback.extract_tb(exctraceback)[-1][0]
         ln = traceback.extract_tb(exctraceback)[-1][1]
         print "Error traceback: {1} (line {2})\n" \
@@ -62,6 +63,13 @@ class ExchangeAuthNotFound(ZiplineError):
     msg = (
         'Please create an auth.json file containing the api token and key for '
         'exchange {exchange}. Place the file here: {filename}'
+    ).strip()
+
+
+class ExchangeAuthEmpty(ZiplineError):
+    msg = (
+        'Please enter your API token key and secret for exchange {exchange} '
+        'in the following file: {filename}'
     ).strip()
 
 

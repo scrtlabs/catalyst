@@ -36,11 +36,11 @@ from catalyst.exchange.data_portal_exchange import DataPortalExchangeLive, \
 from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
 from catalyst.exchange.exchange_portfolio import ExchangePortfolio
 from catalyst.exchange.exchange_errors import (
-    ExchangeRequestError,
+    ExchangeRequestError, ExchangeAuthEmpty,
     ExchangeRequestErrorTooManyAttempts,
     BaseCurrencyNotFoundError, ExchangeNotFoundError)
 from catalyst.exchange.exchange_utils import get_exchange_auth, \
-    get_algo_object
+    get_algo_object, get_exchange_folder
 from logbook import Logger
 
 from catalyst.constants import LOG_LEVEL
@@ -166,6 +166,12 @@ def _run(handle_data,
 
         # This corresponds to the json file containing api token info
         exchange_auth = get_exchange_auth(exchange_name)
+
+        if live and (exchange_auth['key'] == '' or exchange_auth['secret'] == ''):
+            raise ExchangeAuthEmpty(
+                    exchange=exchange_name.title(), 
+                    filename=os.path.join(get_exchange_folder(exchange_name, environ), 'auth.json') )
+
         if exchange_name == 'bitfinex':
             exchanges[exchange_name] = Bitfinex(
                 key=exchange_auth['key'],
