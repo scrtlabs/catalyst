@@ -3,17 +3,15 @@ channels:
 - defaults
 dependencies:
 - certifi=2016.2.28=py27_0
-- libgfortran=3.0.0=1
 - mkl=2017.0.3=0
 - numpy=1.13.1=py27_0
-- openssl=1.0.2l=0
+- openssl=1.0.2l
 - pip=9.0.1=py27_1
 - python=2.7.13=0
-- readline=6.2=2
 - scipy=0.19.1=np113py27_0
 - setuptools=36.4.0=py27_1
-- sqlite=3.13.0=0
-- tk=8.5.18=0
+- sqlite=3.13.0
+- tk=8.5.18
 - wheel=0.29.0=py27_0
 - zlib=1.2.11=0
 - pip:
