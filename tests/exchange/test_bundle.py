@@ -1,9 +1,10 @@
+import hashlib
 from logging import Logger
 
 import pandas as pd
 
 from catalyst import get_calendar
-from catalyst.exchange.bundle_utils import get_bcolz_chunk, get_periods, \
+from catalyst.exchange.bundle_utils import get_bcolz_chunk, \
     get_periods_range
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
@@ -93,16 +94,43 @@ class ExchangeBundleTestCase:
         )
         pass
 
+    def test_ingest_exchange(self):
+        # exchange_name = 'bitfinex'
+        # data_frequency = 'daily'
+        # include_symbols = 'neo_btc,bch_btc,eth_btc'
+
+        exchange_name = 'bittrex'
+        data_frequency = 'daily'
+
+        start = pd.to_datetime('2015-1-1', utc=True)
+        end = pd.to_datetime('2017-10-16', utc=True)
+        periods = get_periods_range(start, end, data_frequency)
+
+        exchange = get_exchange(exchange_name)
+        exchange_bundle = ExchangeBundle(exchange)
+
+        log.info('ingesting exchange bundle {}'.format(exchange_name))
+        exchange_bundle.ingest(
+            data_frequency=data_frequency,
+            include_symbols=None,
+            exclude_symbols=None,
+            start=start,
+            end=end,
+            show_progress=True
+        )
+
+        pass
+
     def test_ingest_daily(self):
         # exchange_name = 'bitfinex'
         # data_frequency = 'daily'
         # include_symbols = 'neo_btc,bch_btc,eth_btc'
 
-        exchange_name = 'poloniex'
+        exchange_name = 'bittrex'
         data_frequency = 'daily'
-        include_symbols = 'btc_usdt'
+        include_symbols = 'wings_eth'
 
-        start = pd.to_datetime('2016-1-1', utc=True)
+        start = pd.to_datetime('2017-1-1', utc=True)
         end = pd.to_datetime('2017-10-16', utc=True)
         periods = get_periods_range(start, end, data_frequency)
 
@@ -283,4 +311,11 @@ class ExchangeBundleTestCase:
             period='2017-5',
         )
 
+        pass
+
+    def test_hash_symbol(self):
+        symbol = 'etc_btc'
+        sid = int(
+            hashlib.sha256(symbol.encode('utf-8')).hexdigest(), 16
+        ) % 10 ** 6
         pass
