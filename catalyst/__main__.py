@@ -525,7 +525,14 @@ def ingest_exchange(exchange_name, data_frequency, start, end,
     help='The bundle data frequency to remove. If not specified, it will '
          'remove both daily and minute bundles.',
 )
-def clean_exchange(exchange_name, data_frequency):
+@click.pass_context
+def clean_exchange(ctx, exchange_name, data_frequency):
+    """Clean up bundles from 'ingest-exchange'.
+    """
+
+    if exchange_name is None:
+        ctx.fail("must specify an exchange name '-x'")
+
     exchange = get_exchange(exchange_name)
     exchange_bundle = ExchangeBundle(exchange)
 
@@ -625,7 +632,7 @@ def ingest(ctx, bundle, exchange_name, compile_locally, assets_version,
          ' This may not be passed with -e / --before or -a / --after',
 )
 def clean(bundle, before, after, keep_last):
-    """Clean up data downloaded with the ingest command.
+    """Clean up bundles from 'ingest'.
     """
     bundles_module.clean(
         bundle,
