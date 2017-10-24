@@ -1,13 +1,12 @@
 import json
 import os
 import pickle
-import urllib
+from six.moves.urllib.request import urlretrieve
 from datetime import date, datetime
 
 import pandas as pd
 
-from catalyst.exchange.exchange_errors import ExchangeAuthNotFound, \
-    ExchangeSymbolsNotFound
+from catalyst.exchange.exchange_errors import ExchangeSymbolsNotFound
 from catalyst.utils.paths import data_root, ensure_directory, \
     last_modified_time
 
@@ -34,7 +33,7 @@ def get_exchange_symbols_filename(exchange_name, environ=None):
 def download_exchange_symbols(exchange_name, environ=None):
     filename = get_exchange_symbols_filename(exchange_name)
     url = SYMBOLS_URL.format(exchange=exchange_name)
-    response = urllib.urlretrieve(url=url, filename=filename)
+    response = urlretrieve(url=url, filename=filename)
     return response
 
 
