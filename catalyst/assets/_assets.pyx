@@ -17,6 +17,8 @@
 """
 Cythonized Asset object.
 """
+import hashlib
+
 cimport cython
 from cpython.number cimport PyNumber_Index
 from cpython.object cimport (
@@ -501,7 +503,11 @@ cdef class TradingPair(Asset):
 
         if sid == 0 or sid is None:
             try:
-                sid = abs(hash(symbol)) % (10 ** 4)
+                # sid = abs(hash(symbol)) % (10 ** 4)
+                # TODO: try to encode the symbol in the main scope
+                sid = int(
+                    hashlib.sha256(symbol.encode('utf-8')).hexdigest(), 16
+                ) % 10 ** 6
             except Exception as e:
                 raise SidHashError(symbol=symbol)
 
