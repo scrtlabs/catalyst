@@ -227,18 +227,18 @@ class ExchangeBundle:
         if reader is None:
             raise TempBundleNotFoundError(path=path)
 
-        # arrays = None
-        # try:
-        arrays = reader.load_raw_arrays(
-            sids=[asset.sid],
-            fields=['open', 'high', 'low', 'close', 'volume'],
-            start_dt=start_dt,
-            end_dt=end_dt
-        )
-        # except Exception as e:
-        #     log.warn('skipping ctable for {} from {} to {}: {}'.format(
-        #         asset.symbol, start_dt, end_dt, e
-        #     ))
+        arrays = None
+        try:
+            arrays = reader.load_raw_arrays(
+                sids=[asset.sid],
+                fields=['open', 'high', 'low', 'close', 'volume'],
+                start_dt=start_dt,
+                end_dt=end_dt
+            )
+        except Exception as e:
+            log.warn('skipping ctable for {} from {} to {}: {}'.format(
+                asset.symbol, start_dt, end_dt, e
+            ))
 
         if not arrays:
             return path
@@ -327,9 +327,6 @@ class ExchangeBundle:
             except NoDataAvailableOnExchange:
                 continue
 
-            # start_dt = max(start_dt, self.calendar.first_trading_session)
-            # start_dt = max(start_dt, asset_start)
-
             # Aligning start / end dates with the daily calendar
             sessions = get_periods_range(start_dt, end_dt, data_frequency) \
                 if data_frequency == 'minute' \
@@ -356,10 +353,15 @@ class ExchangeBundle:
                         period_start, period_end = get_month_start_end(dt)
                         asset_start_month, _ = get_month_start_end(asset_start)
 
+                        if asset_start_month > period_start:
+                            dt += timedelta(days=1)
+                            continue
+
                         if asset_start_month == period_start \
                                 and period_start < asset_start:
                             period_start = asset_start
 
+                        # TODO: ensure to filter out closed currencies
                         _, asset_end_month = get_month_start_end(asset_end)
                         if asset_end_month == period_end \
                                 and period_end > asset_end:
@@ -368,6 +370,10 @@ class ExchangeBundle:
                     elif data_frequency == 'daily':
                         period_start, period_end = get_year_start_end(dt)
                         asset_start_year, _ = get_year_start_end(asset_start)
+
+                        if asset_start_year > period_start:
+                            dt += timedelta(days=1)
+                            continue
 
                         if asset_start_year == period_start \
                                 and period_start < asset_start:
@@ -440,7 +446,7 @@ class ExchangeBundle:
                     end_dt=chunk['period_end'],
                     writer=writer,
                     empty_rows_behavior='strip',
-                    cleanup=True
+                    cleanup=False
                 )
 
     def ingest(self, data_frequency, include_symbols=None,
