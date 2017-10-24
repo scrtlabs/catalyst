@@ -2,8 +2,10 @@ import shutil
 import tempfile
 import pandas as pd
 
-from catalyst import get_calendar
+from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarWriter
+
+from nose.tools import assert_equals
 
 class TestBcolzWriter(object):
 
@@ -18,13 +20,14 @@ class TestBcolzWriter(object):
     	shutil.rmtree(self.root_dir)				# Remove the directory after the test
 
     def test_bcolz_write_daily_past(self):
-        start = pd.to_datetime('2015-01-01')
-        end = pd.to_datetime('2015-12-31')
+        start = pd.to_datetime('2016-01-01')
+        end = pd.to_datetime('2016-12-31')
         freq = 'daily'
 
-        calendar = get_calendar('OPEN')
-        index = calendar.sessions_in_range(start, end)
+        bundle = ExchangeBundle('bitfinex')
+        index = bundle.get_calendar_periods_range(start, end,freq)
         df = pd.DataFrame(index=index, columns=self.columns)
+        assert_equals(len(df.index), 366)
         df.fillna(1, inplace=True)
 
         writer = BcolzExchangeBarWriter(
@@ -44,8 +47,8 @@ class TestBcolzWriter(object):
         end   = pd.to_datetime('today')
         freq  = 'daily'
 
-        calendar = get_calendar('OPEN')
-        index = calendar.sessions_in_range(start, end)
+        bundle = ExchangeBundle('bitfinex')
+        index = bundle.get_calendar_periods_range(start, end,freq)
         df = pd.DataFrame(index=index, columns=self.columns)
         df.fillna(1, inplace=True)
 
@@ -62,13 +65,14 @@ class TestBcolzWriter(object):
         pass
 
     def test_bcolz_write_minute_past(self):
-        start = pd.to_datetime('2015-03-01')
-        end   = pd.to_datetime('2015-03-31')
+        start = pd.to_datetime('2015-04-01')
+        end   = pd.to_datetime('2015-04-30')
         freq  = 'minute'
 
-        calendar = get_calendar('OPEN')
-        index = calendar.sessions_in_range(start, end)
+        bundle = ExchangeBundle('bitfinex')
+        index = bundle.get_calendar_periods_range(start, end,freq)
         df = pd.DataFrame(index=index, columns=self.columns)
+        assert_equals(len(df.index), 30*24*60)
         df.fillna(1, inplace=True)
 
         writer = BcolzExchangeBarWriter(
@@ -81,6 +85,7 @@ class TestBcolzWriter(object):
         data = []
         data.append((1,df))
         writer.write(data)
+        
         pass
 
     def test_bcolz_write_minute_present(self):
@@ -88,8 +93,8 @@ class TestBcolzWriter(object):
         end   = pd.to_datetime('today')
         freq  = 'minute'
 
-        calendar = get_calendar('OPEN')
-        index = calendar.sessions_in_range(start, end)
+        bundle = ExchangeBundle('bitfinex')
+        index = bundle.get_calendar_periods_range(start, end,freq)
         df = pd.DataFrame(index=index, columns=self.columns)
         df.fillna(1, inplace=True)
 
