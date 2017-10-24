@@ -625,6 +625,10 @@ class ExchangeBundle:
         ))
         root = get_exchange_folder(self.exchange.name)
 
+        symbols = os.path.join(root, 'symbols.json')
+        if os.path.isfile(symbols):
+            os.remove(symbols)
+            
         temp_bundles = os.path.join(root, 'temp_bundles')
 
         if os.path.isdir(temp_bundles):
