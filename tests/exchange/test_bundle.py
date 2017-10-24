@@ -1,5 +1,5 @@
 import hashlib
-from logging import Logger
+from logging import getLogger
 
 import pandas as pd
 
@@ -14,7 +14,7 @@ from catalyst.exchange.exchange_utils import get_exchange_folder
 from catalyst.exchange.init_utils import get_exchange
 from catalyst.utils.paths import ensure_directory
 
-log = Logger('test_exchange_bundle')
+log = getLogger('test_exchange_bundle')
 
 
 class TestExchangeBundle:
@@ -298,7 +298,7 @@ class TestExchangeBundle:
         data_frequency = 'minute'
 
         exchange = get_exchange(exchange_name)
-        asset = exchange.get_asset('neo_btc')
+        asset = exchange.get_asset('neos_btc')
 
         path = get_bcolz_chunk(
             exchange_name=exchange_name,
