@@ -17,7 +17,7 @@ from catalyst.utils.paths import ensure_directory
 log = Logger('test_exchange_bundle')
 
 
-class TestExchangeBundleTestCase:
+class TestExchangeBundle:
     def test_spot_value(self):
         data_frequency = 'daily'
         exchange_name = 'poloniex'
@@ -99,12 +99,8 @@ class TestExchangeBundleTestCase:
         # data_frequency = 'daily'
         # include_symbols = 'neo_btc,bch_btc,eth_btc'
 
-        exchange_name = 'bittrex'
-        data_frequency = 'daily'
-
-        start = pd.to_datetime('2015-1-1', utc=True)
-        end = pd.to_datetime('2017-10-16', utc=True)
-        periods = get_periods_range(start, end, data_frequency)
+        exchange_name = 'bitfinex'
+        data_frequency = 'minute'
 
         exchange = get_exchange(exchange_name)
         exchange_bundle = ExchangeBundle(exchange)
@@ -114,8 +110,8 @@ class TestExchangeBundleTestCase:
             data_frequency=data_frequency,
             include_symbols=None,
             exclude_symbols=None,
-            start=start,
-            end=end,
+            start=None,
+            end=None,
             show_progress=True
         )
 

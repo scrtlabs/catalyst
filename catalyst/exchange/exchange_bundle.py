@@ -10,7 +10,7 @@ from catalyst.constants import LOG_LEVEL
 from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
     BcolzMinuteBarMetadata
 from catalyst.exchange.bundle_utils import range_in_bundle, \
-    get_bcolz_chunk, get_delta, get_adj_dates, get_month_start_end, \
+    get_bcolz_chunk, get_delta, get_month_start_end, \
     get_year_start_end, get_periods_range, get_df_from_arrays, get_start_dt
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
@@ -18,8 +18,7 @@ from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
     InvalidHistoryFrequencyError, TempBundleNotFoundError, \
     NoDataAvailableOnExchange, \
     PricingDataNotLoadedError
-from catalyst.exchange.exchange_utils import get_exchange_folder, \
-    get_exchange_bundles_folder
+from catalyst.exchange.exchange_utils import get_exchange_folder
 from catalyst.utils.cli import maybe_show_progress
 from catalyst.utils.paths import ensure_directory
 
@@ -305,6 +304,45 @@ class ExchangeBundle:
 
         return path
 
+    def get_adj_dates(self, start, end, assets, data_frequency):
+        """
+        Contains a date range to the trading availability of the specified pairs.
+
+        :param start:
+        :param end:
+        :param assets:
+        :param data_frequency:
+        :return:
+        """
+        earliest_trade = None
+        last_entry = None
+        for asset in assets:
+            if (earliest_trade is None or earliest_trade > asset.start_date) \
+                    and asset.start_date >= self.calendar.first_session:
+                earliest_trade = asset.start_date
+
+            end_asset = asset.end_minute if data_frequency == 'minute' else \
+                asset.end_daily
+            if end_asset is not None and \
+                    (last_entry is None or end_asset > last_entry):
+                last_entry = end_asset
+
+        if start is None or \
+                (earliest_trade is not None and earliest_trade > start):
+            start = earliest_trade
+
+        if end is None or (last_entry is not None and end > last_entry):
+            end = last_entry
+
+        if end is None or start is None or start >= end:
+            raise NoDataAvailableOnExchange(
+                exchange=asset.exchange.title(),
+                symbol=[asset.symbol],
+                data_frequency=data_frequency,
+            )
+
+        return start, end
+
     def prepare_chunks(self, assets, data_frequency, start_dt, end_dt):
         """
         Split a price data request into chunks corresponding to individual
@@ -321,8 +359,9 @@ class ExchangeBundle:
         chunks = []
         for asset in assets:
             try:
-                asset_start, asset_end = \
-                    get_adj_dates(start_dt, end_dt, [asset], data_frequency)
+                asset_start, asset_end = self.get_adj_dates(
+                    start_dt, end_dt, [asset], data_frequency
+                )
 
             except NoDataAvailableOnExchange:
                 continue
@@ -464,7 +503,9 @@ class ExchangeBundle:
         :return:
         """
         assets = self.get_assets(include_symbols, exclude_symbols)
-        start_dt, end_dt = get_adj_dates(start, end, assets, data_frequency)
+        start_dt, end_dt = self.get_adj_dates(
+            start, end, assets, data_frequency
+        )
 
         for frequency in data_frequency.split(','):
             self.ingest_assets(assets, start_dt, end_dt, frequency,
@@ -551,8 +592,9 @@ class ExchangeBundle:
                                   data_frequency,
                                   reset_reader=False):
         start_dt = get_start_dt(end_dt, bar_count, data_frequency)
-        start_dt, end_dt = \
-            get_adj_dates(start_dt, end_dt, assets, data_frequency)
+        start_dt, end_dt = self.get_adj_dates(
+            start_dt, end_dt, assets, data_frequency
+        )
 
         reader = self.get_reader(data_frequency)
         if reset_reader:
@@ -571,8 +613,9 @@ class ExchangeBundle:
             )
 
         for asset in assets:
-            asset_start_dt, asset_end_dt = \
-                get_adj_dates(start_dt, end_dt, assets, data_frequency)
+            asset_start_dt, asset_end_dt = self.get_adj_dates(
+                start_dt, end_dt, assets, data_frequency
+            )
 
             in_bundle = range_in_bundle(
                 asset, asset_start_dt, asset_end_dt, reader
@@ -628,7 +671,7 @@ class ExchangeBundle:
         symbols = os.path.join(root, 'symbols.json')
         if os.path.isfile(symbols):
             os.remove(symbols)
-            
+
         temp_bundles = os.path.join(root, 'temp_bundles')
 
         if os.path.isdir(temp_bundles):
