@@ -65,8 +65,8 @@ class TestBcolzWriter(object):
         pass
 
     def test_bcolz_write_minute_past(self):
-        start = pd.to_datetime('2015-04-01')
-        end   = pd.to_datetime('2015-04-30')
+        start = pd.to_datetime('2015-04-01 00:00')
+        end   = pd.to_datetime('2015-04-30 23:59')
         freq  = 'minute'
 
         bundle = ExchangeBundle('bitfinex')
@@ -89,7 +89,7 @@ class TestBcolzWriter(object):
         pass
 
     def test_bcolz_write_minute_present(self):
-        start = pd.to_datetime('2017-10-01')
+        start = pd.to_datetime('2017-10-01 00:00')
         end   = pd.to_datetime('today')
         freq  = 'minute'
 
