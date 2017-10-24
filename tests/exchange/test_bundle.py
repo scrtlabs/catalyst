@@ -17,7 +17,7 @@ from catalyst.utils.paths import ensure_directory
 log = Logger('test_exchange_bundle')
 
 
-class ExchangeBundleTestCase:
+class TestExchangeBundleTestCase:
     def test_spot_value(self):
         data_frequency = 'daily'
         exchange_name = 'poloniex'

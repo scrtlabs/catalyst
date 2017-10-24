@@ -8,7 +8,7 @@ from catalyst.exchange.exchange_utils import get_exchange_auth
 log = Logger('test_poloniex')
 
 
-class PoloniexTestCase(BaseExchangeTestCase):
+class TestPoloniexTestCase(BaseExchangeTestCase):
     @classmethod
     def setup(self):
         print ('creating poloniex object')
