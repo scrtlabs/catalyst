@@ -4,10 +4,10 @@ import time
 import hmac
 import hashlib
 
-from six.moves import urllib
 
 # Workaround for backwards compatibility
 # https://stackoverflow.com/questions/3745771/urllib-request-in-python-2-7
+from six.moves import urllib
 urlopen = urllib.request.urlopen
 
 
