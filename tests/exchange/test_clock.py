@@ -11,7 +11,7 @@ import pandas as pd
 log = Logger('ExchangeClockTestCase')
 
 
-class ExchangeClockTestCase(TestCase):
+class TestExchangeClockTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.open_calendar = get_calendar("OPEN")
