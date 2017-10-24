@@ -520,9 +520,10 @@ def ingest_exchange(exchange_name, data_frequency, start, end,
 @click.option(
     '-f',
     '--data-frequency',
-    type=click.Choice({'daily', 'minute', 'daily,minute', 'minute,daily'}),
+    type=click.Choice({'daily', 'minute'}),
     default=None,
-    help='The data frequency of the desired OHLCV bars.',
+    help='The bundle data frequency to remove. If not specified, it will '
+         'remove both daily and minute bundles.',
 )
 def clean_exchange(exchange_name, data_frequency):
     exchange = get_exchange(exchange_name)
