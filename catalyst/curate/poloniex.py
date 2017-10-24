@@ -212,32 +212,32 @@ class PoloniexCurator(object):
     def write_ohlcv_file(self, currencyPair):        
         csv_trades = CSV_OUT_FOLDER + 'crypto_trades-' + currencyPair + '.csv'
         csv_1min   = CSV_OUT_FOLDER + 'crypto_1min-' + currencyPair + '.csv'
-        if( os.path.isfile(csv_1min) ):
-            log.debug(currencyPair+': 1min data already present. Delete the file if you want to rebuild it.')
-        else:
-            df = pd.read_csv(csv_trades, names=['tradeID','date','type','rate','amount','total','globalTradeID'], 
-                    dtype = {'tradeID': int, 'date': str, 'type': str, 'rate': float, 'amount': float, 'total': float, 'globalTradeID': int } )
-            df.drop(['tradeID','type','amount','globalTradeID'], axis=1, inplace=True)
-            df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True) 
-            ohlcv = self.generate_ohlcv(df)
-            try: 
-                with open(csv_1min, 'ab') as csvfile:
-                    csvwriter = csv.writer(csvfile)
-                    for item in ohlcv.itertuples():
-                        if item.Index == 0:
-                            continue
-                        csvwriter.writerow([
-                            item.Index.value // 10 ** 9,
-                            item.open,
-                            item.high,
-                            item.low,
-                            item.close,
-                            item.volume,
-                        ])
-            except Exception as e:
-                log.error('Error opening %s' % csv_fn)
-                log.exception(e)
-            log.debug(currencyPair+': Generated 1min OHLCV data.')
+        #if( os.path.isfile(csv_1min) ):
+        #    log.debug(currencyPair+': 1min data already present. Delete the file if you want to rebuild it.')
+        #else:
+        df = pd.read_csv(csv_trades, names=['tradeID','date','type','rate','amount','total','globalTradeID'], 
+                dtype = {'tradeID': int, 'date': str, 'type': str, 'rate': float, 'amount': float, 'total': float, 'globalTradeID': int } )
+        df.drop(['tradeID','type','amount','globalTradeID'], axis=1, inplace=True)
+        df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True) 
+        ohlcv = self.generate_ohlcv(df)
+        try: 
+            with open(csv_1min, 'ab') as csvfile:
+                csvwriter = csv.writer(csvfile)
+                for item in ohlcv.itertuples():
+                    if item.Index == 0:
+                        continue
+                    csvwriter.writerow([
+                        item.Index.value // 10 ** 9,
+                        item.open,
+                        item.high,
+                        item.low,
+                        item.close,
+                        item.volume,
+                    ])
+        except Exception as e:
+            log.error('Error opening %s' % csv_fn)
+            log.exception(e)
+        log.debug(currencyPair+': Generated 1min OHLCV data.')
 
 
     '''
