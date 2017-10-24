@@ -134,7 +134,7 @@ def get_adj_dates(start, end, assets, data_frequency):
     if end is None or start >= end:
         raise NoDataAvailableOnExchange(
             exchange=asset.exchange.title(),
-            symbol=[asset.symbol.encode('utf-8')],
+            symbol=[asset.symbol],
             data_frequency=data_frequency,
         )
 
@@ -243,12 +243,12 @@ def find_most_recent_time(bundle_name):
     for folder in bundle_folders:
         date = from_bundle_ingest_dirname(folder)
         if not most_recent_bundle or date > \
-                most_recent_bundle[most_recent_bundle.keys()[0]]:
+                most_recent_bundle[list(most_recent_bundle.keys())[0]]:
             most_recent_bundle = dict()
             most_recent_bundle[folder] = date
 
     if most_recent_bundle:
-        return most_recent_bundle.keys()[0]
+        return list(most_recent_bundle.keys())[0]
     else:
         return None
 

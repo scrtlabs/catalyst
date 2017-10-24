@@ -113,7 +113,7 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
             else self.sim_params.end_session
 
         if exchange_name is None:
-            exchange = self.exchanges.values()[0]
+            exchange = list(self.exchanges.values())[0]
         else:
             exchange = self.exchanges[exchange_name]
 
@@ -524,7 +524,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             self.add_pnl_stats(minute_stats)
             if self.recorded_vars:
                 self.add_custom_signals_stats(minute_stats)
-                recorded_cols = self.recorded_vars.keys()
+                recorded_cols = list(self.recorded_vars.keys())
             else:
                 recorded_cols = None
 

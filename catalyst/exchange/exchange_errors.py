@@ -6,12 +6,12 @@ from catalyst.errors import ZiplineError
 
 def silent_except_hook(exctype, excvalue, exctraceback):
     if exctype in [PricingDataBeforeTradingError, PricingDataNotLoadedError,
-                   SymbolNotFoundOnExchange, NoDataAvailableOnExchange, 
-                   ExchangeAuthEmpty ]:
+                   SymbolNotFoundOnExchange, NoDataAvailableOnExchange,
+                   ExchangeAuthEmpty]:
         fn = traceback.extract_tb(exctraceback)[-1][0]
         ln = traceback.extract_tb(exctraceback)[-1][1]
-        print "Error traceback: {1} (line {2})\n" \
-              "{0.__name__}:  {3}".format(exctype, fn, ln, excvalue)
+        print("Error traceback: {1} (line {2})\n"
+              "{0.__name__}:  {3}".format(exctype, fn, ln, excvalue))
     else:
         sys.__excepthook__(exctype, excvalue, exctraceback)
 
@@ -214,7 +214,9 @@ class PricingDataNotLoadedError(ZiplineError):
 class ApiCandlesError(ZiplineError):
     msg = ('Unable to fetch candles from the remote API: {error}.').strip()
 
+
 class NoDataAvailableOnExchange(ZiplineError):
-    msg = ('Requested data for trading pair {symbol} is not available on exchange {exchange} '
-           'in `{data_frequency}` frequency at this time. '
-           'Check `http://enigma.co/catalyst/status` for market coverage.').strip()
+    msg = (
+        'Requested data for trading pair {symbol} is not available on exchange {exchange} '
+        'in `{data_frequency}` frequency at this time. '
+        'Check `http://enigma.co/catalyst/status` for market coverage.').strip()

@@ -353,7 +353,7 @@ class ExchangeBundle:
                         period_start, period_end = get_month_start_end(dt)
                         asset_start_month, _ = get_month_start_end(asset_start)
 
-                        if asset_start_month > period_start:
+                        if asset.start_date > period_start:
                             dt += timedelta(days=1)
                             continue
 
@@ -371,7 +371,7 @@ class ExchangeBundle:
                         period_start, period_end = get_year_start_end(dt)
                         asset_start_year, _ = get_year_start_end(asset_start)
 
-                        if asset_start_year > period_start:
+                        if asset.start_date > period_start:
                             dt += timedelta(days=1)
                             continue
 

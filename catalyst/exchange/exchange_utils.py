@@ -42,7 +42,9 @@ def get_exchange_symbols(exchange_name, environ=None):
     filename = get_exchange_symbols_filename(exchange_name)
 
     if not os.path.isfile(filename) or \
-            pd.Timedelta(pd.Timestamp('now', tz='UTC') - last_modified_time(filename)).days > 1:
+                    pd.Timedelta(pd.Timestamp('now',
+                                              tz='UTC') - last_modified_time(
+                        filename)).days > 1:
         download_exchange_symbols(exchange_name, environ)
 
     if os.path.isfile(filename):
@@ -67,8 +69,10 @@ def get_exchange_auth(exchange_name, environ=None):
     else:
         data = dict(name=exchange_name, key='', secret='')
         with open(filename, 'w') as f:
-            json.dump(data, f, sort_keys=False, indent=2, separators=(',', ':'))
+            json.dump(data, f, sort_keys=False, indent=2,
+                      separators=(',', ':'))
             return data
+
 
 def get_algo_folder(algo_name, environ=None):
     if not environ:
@@ -162,6 +166,7 @@ def get_exchange_minute_writer_root(exchange_name, environ=None):
     ensure_directory(minute_data_folder)
 
     return minute_data_folder
+
 
 def get_exchange_bundles_folder(exchange_name, environ=None):
     exchange_folder = get_exchange_folder(exchange_name, environ)
