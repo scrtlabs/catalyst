@@ -509,6 +509,32 @@ def ingest_exchange(exchange_name, data_frequency, start, end,
     )
 
 
+@main.command(name='clean-exchange')
+@click.option(
+    '-x',
+    '--exchange-name',
+    type=click.Choice({'bitfinex', 'bittrex', 'poloniex'}),
+    help='The name of the exchange bundle to ingest (supported: bitfinex,'
+         ' bittrex, poloniex).',
+)
+@click.option(
+    '-f',
+    '--data-frequency',
+    type=click.Choice({'daily', 'minute', 'daily,minute', 'minute,daily'}),
+    default=None,
+    help='The data frequency of the desired OHLCV bars.',
+)
+def clean_exchange(exchange_name, data_frequency):
+    exchange = get_exchange(exchange_name)
+    exchange_bundle = ExchangeBundle(exchange)
+
+    click.echo('Cleaning exchange bundle {}...'.format(exchange_name))
+    exchange_bundle.clean(
+        data_frequency=data_frequency,
+    )
+    click.echo('Done')
+
+
 @main.command()
 @click.option(
     '-b',
