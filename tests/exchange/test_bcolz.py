@@ -1,10 +1,13 @@
 import shutil
+import random
 import tempfile
 import pandas as pd
 
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarWriter, \
     BcolzExchangeBarReader
+
+from catalyst.exchange.bundle_utils import get_df_from_arrays
 
 from nose.tools import assert_equals
 
@@ -24,7 +27,7 @@ class TestBcolzWriter(object):
         bundle = ExchangeBundle(exchange_name)
         index = bundle.get_calendar_periods_range(start, end, freq)
         df = pd.DataFrame(index=index, columns=self.columns)
-        df.fillna(1, inplace=True)
+        df.fillna(random.random(), inplace=True)
         return df
 
     def test_bcolz_write_daily_past(self):
@@ -107,14 +110,18 @@ class TestBcolzWriter(object):
     def bcolz_exchange_daily_write_read(self, exchange_name):
         start = pd.to_datetime('2017-10-01 00:00')
         end = pd.to_datetime('today')
-        freq = 'minute'
+        freq = 'daily'
+
+        bundle = ExchangeBundle(exchange_name)
 
         df = self.generate_df(exchange_name, freq, start, end)
 
+        print df.index[0],df.index[-1]
+
         writer = BcolzExchangeBarWriter(
             rootdir=self.root_dir,
-            start_session=start,
-            end_session=end,
+            start_session=df.index[0],
+            end_session=df.index[-1],
             data_frequency=freq,
             write_metadata=True)
 
@@ -125,9 +132,15 @@ class TestBcolzWriter(object):
         reader = BcolzExchangeBarReader(rootdir=self.root_dir,
                                         data_frequency=freq)
 
-        dx = reader.load_raw_arrays(self.columns, start, end, [1, ])
+        arrays = reader.load_raw_arrays(self.columns, start, end, [1, ])
 
-        # assert_equals(dx, df)
+        periods = bundle.get_calendar_periods_range(
+            start, end, freq
+        )
+
+        dx = get_df_from_arrays(arrays, periods)
+
+        assert_equals(df.equals(df), True)
         pass
 
     def test_bcolz_bitfinex_daily_write_read(self):
