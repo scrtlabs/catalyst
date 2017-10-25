@@ -92,12 +92,20 @@ class Poloniex_api(object):
                                  post_data.encode('utf-8'),
                                  hashlib.sha512).hexdigest()
             headers = {'Sign': signature, 'Key': self.key}
+
+            post_data = post_data.encode('utf-8')
         else:
             raise ValueError(
-                'Method "' + method + '" not found in neither the Public API or Trading API endpoints')
+                'Method "' + method + '" not found in neither the Public API '
+                                      'or Trading API endpoints'
+            )
 
         self.ask_request()
-        req = urllib.request.Request(url, data=post_data, headers=headers)
+        req = urllib.request.Request(
+            url,
+            data=post_data,
+            headers=headers
+        )
         return json.loads(urlopen(req).read())
 
     def returnticker(self):

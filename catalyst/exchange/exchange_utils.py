@@ -1,7 +1,7 @@
 import json
 import os
 import pickle
-from six.moves.urllib.request import urlretrieve
+from six.moves.urllib import request
 from datetime import date, datetime
 
 import pandas as pd
@@ -33,7 +33,7 @@ def get_exchange_symbols_filename(exchange_name, environ=None):
 def download_exchange_symbols(exchange_name, environ=None):
     filename = get_exchange_symbols_filename(exchange_name)
     url = SYMBOLS_URL.format(exchange=exchange_name)
-    response = urlretrieve(url=url, filename=filename)
+    response = request.urlretrieve(url=url, filename=filename)
     return response
 
 
@@ -154,8 +154,8 @@ def save_algo_df(algo_name, key, df, environ=None, rel_path=None):
 
     filename = os.path.join(folder, key + '.csv')
 
-    with open(filename, 'wb') as handle:
-        df.to_csv(handle)
+    with open(filename, 'wt') as handle:
+        df.to_csv(handle, encoding='UTF_8')
 
 
 def get_exchange_minute_writer_root(exchange_name, environ=None):

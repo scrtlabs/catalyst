@@ -556,6 +556,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         except Exception as e:
             log.warn('unable to calculate performance: {}'.format(e))
 
+        # TODO: pickle does not seem to work in python 3
         try:
             save_algo_object(
                 algo_name=self.algo_namespace,
