@@ -221,7 +221,7 @@ class PoloniexCurator(object):
         df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True) 
         ohlcv = self.generate_ohlcv(df)
         try: 
-            with open(csv_1min, 'ab') as csvfile:
+            with open(csv_1min, 'w') as csvfile:
                 csvwriter = csv.writer(csvfile)
                 for item in ohlcv.itertuples():
                     if item.Index == 0:
