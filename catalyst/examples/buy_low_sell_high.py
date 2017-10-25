@@ -27,7 +27,7 @@ log = Logger(algo_namespace)
 
 def initialize(context):
     log.info('initializing algo')
-    context.ASSET_NAME = 'XRP_USD'
+    context.ASSET_NAME = 'XRP_USDT'
     context.asset = symbol(context.ASSET_NAME)
 
     context.TARGET_POSITIONS = 5000
