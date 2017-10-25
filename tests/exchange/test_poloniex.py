@@ -8,7 +8,7 @@ from catalyst.exchange.exchange_utils import get_exchange_auth
 log = Logger('test_poloniex')
 
 
-class PoloniexTestCase(BaseExchangeTestCase):
+class TestPoloniexTestCase(BaseExchangeTestCase):
     @classmethod
     def setup(self):
         print ('creating poloniex object')
@@ -21,7 +21,7 @@ class PoloniexTestCase(BaseExchangeTestCase):
 
     def test_order(self):
         log.info('creating order')
-        asset = self.exchange.get_asset('neo_btc')
+        asset = self.exchange.get_asset('neos_btc')
         order_id = self.exchange.order(
             asset=asset,
             limit_price=0.0005,
@@ -33,7 +33,7 @@ class PoloniexTestCase(BaseExchangeTestCase):
 
     def test_open_orders(self):
         log.info('retrieving open orders')
-        asset = self.exchange.get_asset('neo_btc')
+        asset = self.exchange.get_asset('neos_btc')
         orders = self.exchange.get_open_orders(asset)
         pass
 
@@ -53,13 +53,13 @@ class PoloniexTestCase(BaseExchangeTestCase):
         log.info('retrieving candles')
         ohlcv_neo = self.exchange.get_candles(
             data_frequency='5m',
-            assets=self.exchange.get_asset('neo_btc')
+            assets=self.exchange.get_asset('neos_btc')
         )
         ohlcv_neo_ubq = self.exchange.get_candles(
             data_frequency='5m',
             assets=[
-                self.exchange.get_asset('neo_btc'),
-                self.exchange.get_asset('ubq_btc')
+                self.exchange.get_asset('neos_btc'),
+                self.exchange.get_asset('via_btc')
             ],
             bar_count=14
         )

@@ -1,13 +1,12 @@
 import json
 import os
 import pickle
-import urllib
+from six.moves.urllib import request
 from datetime import date, datetime
 
 import pandas as pd
 
-from catalyst.exchange.exchange_errors import ExchangeAuthNotFound, \
-    ExchangeSymbolsNotFound
+from catalyst.exchange.exchange_errors import ExchangeSymbolsNotFound
 from catalyst.utils.paths import data_root, ensure_directory, \
     last_modified_time
 
@@ -34,7 +33,7 @@ def get_exchange_symbols_filename(exchange_name, environ=None):
 def download_exchange_symbols(exchange_name, environ=None):
     filename = get_exchange_symbols_filename(exchange_name)
     url = SYMBOLS_URL.format(exchange=exchange_name)
-    response = urllib.urlretrieve(url=url, filename=filename)
+    response = request.urlretrieve(url=url, filename=filename)
     return response
 
 
@@ -42,7 +41,9 @@ def get_exchange_symbols(exchange_name, environ=None):
     filename = get_exchange_symbols_filename(exchange_name)
 
     if not os.path.isfile(filename) or \
-            pd.Timedelta(pd.Timestamp('now', tz='UTC') - last_modified_time(filename)).days > 1:
+                    pd.Timedelta(pd.Timestamp('now',
+                                              tz='UTC') - last_modified_time(
+                        filename)).days > 1:
         download_exchange_symbols(exchange_name, environ)
 
     if os.path.isfile(filename):
@@ -67,8 +68,10 @@ def get_exchange_auth(exchange_name, environ=None):
     else:
         data = dict(name=exchange_name, key='', secret='')
         with open(filename, 'w') as f:
-            json.dump(data, f, sort_keys=False, indent=2, separators=(',', ':'))
+            json.dump(data, f, sort_keys=False, indent=2,
+                      separators=(',', ':'))
             return data
+
 
 def get_algo_folder(algo_name, environ=None):
     if not environ:
@@ -151,8 +154,8 @@ def save_algo_df(algo_name, key, df, environ=None, rel_path=None):
 
     filename = os.path.join(folder, key + '.csv')
 
-    with open(filename, 'wb') as handle:
-        df.to_csv(handle)
+    with open(filename, 'wt') as handle:
+        df.to_csv(handle, encoding='UTF_8')
 
 
 def get_exchange_minute_writer_root(exchange_name, environ=None):
@@ -162,6 +165,7 @@ def get_exchange_minute_writer_root(exchange_name, environ=None):
     ensure_directory(minute_data_folder)
 
     return minute_data_folder
+
 
 def get_exchange_bundles_folder(exchange_name, environ=None):
     exchange_folder = get_exchange_folder(exchange_name, environ)

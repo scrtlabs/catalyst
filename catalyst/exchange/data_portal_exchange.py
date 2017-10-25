@@ -80,7 +80,7 @@ class DataPortalExchangeBase(DataPortal):
                 return pd.concat(df_list)
 
             else:
-                exchange = self.exchanges[exchange_assets.keys()[0]]
+                exchange = self.exchanges[list(exchange_assets.keys())[0]]
                 return self.get_exchange_history_window(
                     exchange,
                     assets,
@@ -165,8 +165,8 @@ class DataPortalExchangeBase(DataPortal):
 
                     exchange_assets[asset.exchange].append(asset)
 
-                if len(exchange_assets.keys()) == 1:
-                    exchange = self.exchanges[exchange_assets.keys()[0]]
+                if len(list(exchange_assets.keys())) == 1:
+                    exchange = self.exchanges[list(exchange_assets.keys())[0]]
                     return self.get_exchange_spot_value(
                         exchange, assets, field, dt, data_frequency)
 

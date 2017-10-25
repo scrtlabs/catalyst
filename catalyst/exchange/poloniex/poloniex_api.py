@@ -19,19 +19,25 @@ class Poloniex_api(object):
         self.max_requests_per_second = 6
         self.request_cpt = dict()
 
-        self.public  = ['returnTicker', 'return24Volume', 'returnOrderBook',
-                        'returnTradeHistory', 'returnChartData',
-                        'returnCurrencies', 'returnLoanOrders']
-        self.trading = ['returnBalances','returnCompleteBalances','returnDepositAddresses',
-                        'generateNewAddress','returnDepositsWithdrawals','returnOpenOrders',
-                        'returnTradeHistory','returnOrderTrades',
+        self.public = ['returnTicker', 'return24Volume', 'returnOrderBook',
+                       'returnTradeHistory', 'returnChartData',
+                       'returnCurrencies', 'returnLoanOrders']
+        self.trading = ['returnBalances', 'returnCompleteBalances',
+                        'returnDepositAddresses',
+                        'generateNewAddress', 'returnDepositsWithdrawals',
+                        'returnOpenOrders',
+                        'returnTradeHistory', 'returnOrderTrades',
                         'buy', 'sell', 'cancelOrder', 'moveOrder',
-                        'withdraw', 'returnFeeInfo','returnAvailableAccountBalances',
+                        'withdraw', 'returnFeeInfo',
+                        'returnAvailableAccountBalances',
                         'returnTradableBalances', 'transferBalance',
-                        'returnMarginAccountSummary','marginBuy','marginSell',
-                        'getMarginPosition', 'closeMarginPosition','createLoanOffer',
-                        'cancelLoanOffer','returnOpenLoanOffers','returnActiveLoans',
-                        'returnLendingHistory','toggleAutoRenew']
+                        'returnMarginAccountSummary', 'marginBuy',
+                        'marginSell',
+                        'getMarginPosition', 'closeMarginPosition',
+                        'createLoanOffer',
+                        'cancelLoanOffer', 'returnOpenLoanOffers',
+                        'returnActiveLoans',
+                        'returnLendingHistory', 'toggleAutoRenew']
 
     def ask_request(self):
         """
@@ -50,7 +56,7 @@ class Poloniex_api(object):
             self.request_cpt[now] = 0
             return True
 
-        cpt_date = self.request_cpt.keys()[0]
+        cpt_date = list(self.request_cpt.keys())[0]
         cpt = self.request_cpt[cpt_date]
 
         if now > cpt_date + 1:
@@ -59,9 +65,8 @@ class Poloniex_api(object):
             return True
 
         if cpt >= self.max_requests_per_second:
-            
-            log.debug('max requests 6 reached, sleeping for 1 seconds')
-            sleep(1)
+
+            time.sleep(1)
 
             now = time.time()
             self.request_cpt = dict()
@@ -73,21 +78,34 @@ class Poloniex_api(object):
     def query(self, method, req={}):
 
         if method in self.public:
-            url = 'https://poloniex.com/public?command=' + method + '&' + urllib.parse.urlencode(req)
+            url = 'https://poloniex.com/public?command=' + method + '&' + \
+                  urllib.parse.urlencode(req)
             headers = {}
             post_data = None
         elif method in self.trading:
             url = 'https://poloniex.com/tradingApi'
             req['command'] = method
-            req['nonce']   = int(time.time()*1000)
-            post_data      = urllib.parse.urlencode(req)
-            signature      = hmac.new(self.secret, post_data, hashlib.sha512).hexdigest()
-            headers        = { 'Sign': signature, 'Key': self.key}
+            req['nonce'] = int(time.time() * 1000)
+            post_data = urllib.parse.urlencode(req)
+
+            signature = hmac.new(self.secret.encode('utf-8'),
+                                 post_data.encode('utf-8'),
+                                 hashlib.sha512).hexdigest()
+            headers = {'Sign': signature, 'Key': self.key}
+
+            post_data = post_data.encode('utf-8')
         else:
-            raise ValueError('Method "' + method + '" not found in neither the Public API or Trading API endpoints')
+            raise ValueError(
+                'Method "' + method + '" not found in neither the Public API '
+                                      'or Trading API endpoints'
+            )
 
         self.ask_request()
-        req = urllib.request.Request(url, data=post_data, headers=headers)
+        req = urllib.request.Request(
+            url,
+            data=post_data,
+            headers=headers
+        )
         return json.loads(urlopen(req).read())
 
     def returnticker(self):
@@ -100,15 +118,17 @@ class Poloniex_api(object):
         return self.query('returnOrderBook', {'currencyPair': market})
 
     def returntradehistory(self, market, start=None, end=None):
-        if(start is not None and end is not None):
-            return self.query('returntradehistory', 
-                              {'currencyPair': market, 'start': start, 'end': end })
+        if (start is not None and end is not None):
+            return self.query('returntradehistory',
+                              {'currencyPair': market, 'start': start,
+                               'end': end})
         else:
-            return self.query('returntradehistory', {'currencyPair': market })
+            return self.query('returntradehistory', {'currencyPair': market})
 
     def returnchartdata(self, market, period, start, end=9999999999):
-        return self.query('returnChartData', {'currencyPair': market, 'period': period,
-                          'start': start, 'end': end})
+        return self.query('returnChartData',
+                          {'currencyPair': market, 'period': period,
+                           'start': start, 'end': end})
 
     def returncurrencies(self):
         return self.query('returnCurrencies', {})
@@ -120,7 +140,7 @@ class Poloniex_api(object):
         return self.query('returnBalances')
 
     def returncompletebalances(self, account):
-        if(account):
+        if (account):
             return self.query('returnCompleteBalances', {'account': account})
         else:
             return self.query('returnCompleteBalances')
@@ -132,43 +152,54 @@ class Poloniex_api(object):
         return self.query('generateNewAddress', {'currency': currency})
 
     def returnDepositsWithdrawals(self, start, end):
-        return self.query('returnDepositsWithdrawals', {'start': start, 'end': end})
+        return self.query('returnDepositsWithdrawals',
+                          {'start': start, 'end': end})
 
     def returnopenorders(self, market):
         return self.query('returnOpenOrders', {'currencyPair': market})
 
     def returntradehistory(self, market):
-        #TODO: optional start and/or end and limit
+        # TODO: optional start and/or end and limit
         return self.query('returnTradeHistory', {'currencyPair': market})
 
     def returnordertrades(self, ordernumber):
         return self.query('returnOrderTrades', {'orderNumber': ordernumber})
 
-    def buy(self, market, amount, rate, fillorkill=0, immediateorcancel=0, postonly=0):
-        if(fillorkill):
-            return self.query('buy', {'currencyPair': market, 'rate':rate, 'amount': amount,
+    def buy(self, market, amount, rate, fillorkill=0, immediateorcancel=0,
+            postonly=0):
+        if (fillorkill):
+            return self.query('buy', {'currencyPair': market, 'rate': rate,
+                                      'amount': amount,
                                       'fillOrKill': fillorkill, })
-        elif(immediateorcancel):
-            return self.query('buy', {'currencyPair': market, 'rate':rate, 'amount': amount,
+        elif (immediateorcancel):
+            return self.query('buy', {'currencyPair': market, 'rate': rate,
+                                      'amount': amount,
                                       'immediateOrCancel': immediateorcancel, })
-        elif(postonly):
-            return self.query('buy', {'currencyPair': market, 'rate':rate, 'amount': amount,
+        elif (postonly):
+            return self.query('buy', {'currencyPair': market, 'rate': rate,
+                                      'amount': amount,
                                       'postOnly': postonly, })
         else:
-            return self.query('buy', {'currencyPair': market, 'rate':rate, 'amount': amount, })
+            return self.query('buy', {'currencyPair': market, 'rate': rate,
+                                      'amount': amount, })
 
-    def sell(self, market, amount, rate, fillorkill=0, immediateorcancel=0, postonly=0):
-        if(fillorkill):
-            return self.query('sell', {'currencyPair': market, 'rate':rate, 'amount': amount,
-                                      'fillOrKill': fillorkill, })
-        elif(immediateorcancel):
-            return self.query('sell', {'currencyPair': market, 'rate':rate, 'amount': amount,
-                                      'immediateOrCancel': immediateorcancel, })
-        elif(postonly):
-            return self.query('sell', {'currencyPair': market, 'rate':rate, 'amount': amount,
-                                      'postOnly': postonly, })
+    def sell(self, market, amount, rate, fillorkill=0, immediateorcancel=0,
+             postonly=0):
+        if (fillorkill):
+            return self.query('sell', {'currencyPair': market, 'rate': rate,
+                                       'amount': amount,
+                                       'fillOrKill': fillorkill, })
+        elif (immediateorcancel):
+            return self.query('sell', {'currencyPair': market, 'rate': rate,
+                                       'amount': amount,
+                                       'immediateOrCancel': immediateorcancel, })
+        elif (postonly):
+            return self.query('sell', {'currencyPair': market, 'rate': rate,
+                                       'amount': amount,
+                                       'postOnly': postonly, })
         else:
-            return self.query('sell', {'currencyPair': market, 'rate':rate, 'amount': amount, })
+            return self.query('sell', {'currencyPair': market, 'rate': rate,
+                                       'amount': amount, })
 
     def cancelorder(self, ordernumber):
         return self.query('cancelOrder', {'orderNumber': ordernumber})
@@ -180,4 +211,3 @@ class Poloniex_api(object):
 
     def returnfeeinfo(self):
         return self.query('returnFeeInfo')
-

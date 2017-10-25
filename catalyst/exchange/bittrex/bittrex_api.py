@@ -4,10 +4,10 @@ import time
 import hmac
 import hashlib
 
-from six.moves import urllib
 
 # Workaround for backwards compatibility
 # https://stackoverflow.com/questions/3745771/urllib-request-in-python-2-7
+from six.moves import urllib
 urlopen = urllib.request.urlopen
 
 
@@ -39,7 +39,10 @@ class Bittrex_api(object):
         if method not in self.public:
             url += '&apikey=' + self.key
             url += '&nonce=' + str(int(time.time()))
-            signature = hmac.new(self.secret, url, hashlib.sha512).hexdigest()
+
+            signature = hmac.new(self.secret.encode('utf-8'),
+                                 url.encode('utf-8'),
+                                 hashlib.sha512).hexdigest()
             headers = {'apisign': signature}
         else:
             headers = {}

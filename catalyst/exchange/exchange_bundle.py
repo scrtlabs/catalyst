@@ -10,7 +10,7 @@ from catalyst.constants import LOG_LEVEL
 from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
     BcolzMinuteBarMetadata
 from catalyst.exchange.bundle_utils import range_in_bundle, \
-    get_bcolz_chunk, get_delta, get_adj_dates, get_month_start_end, \
+    get_bcolz_chunk, get_delta, get_month_start_end, \
     get_year_start_end, get_periods_range, get_df_from_arrays, get_start_dt
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
@@ -24,10 +24,12 @@ from catalyst.utils.paths import ensure_directory
 
 log = Logger('exchange_bundle', level=LOG_LEVEL)
 
-BUNDLE_NAME_TEMPLATE = os.path.join('{root}','{frequency}_bundle')
+BUNDLE_NAME_TEMPLATE = os.path.join('{root}', '{frequency}_bundle')
+
 
 def _cachpath(symbol, type_):
     return '-'.join([symbol, type_])
+
 
 class ExchangeBundle:
     def __init__(self, exchange):
@@ -177,10 +179,7 @@ class ExchangeBundle:
 
             # This is workaround, there is an issue with empty
             # session_label when using a newly created writer
-            key = writer._rootdir if data_frequency == 'minute' \
-                else writer._filename
-
-            del self._writers[key]
+            del self._writers[writer._rootdir]
 
             writer = self.get_writer(writer._start_session,
                                      writer._end_session, data_frequency)
@@ -224,12 +223,18 @@ class ExchangeBundle:
         if reader is None:
             raise TempBundleNotFoundError(path=path)
 
-        arrays = reader.load_raw_arrays(
-            sids=[asset.sid],
-            fields=['open', 'high', 'low', 'close', 'volume'],
-            start_dt=start_dt,
-            end_dt=end_dt
-        )
+        arrays = None
+        try:
+            arrays = reader.load_raw_arrays(
+                sids=[asset.sid],
+                fields=['open', 'high', 'low', 'close', 'volume'],
+                start_dt=start_dt,
+                end_dt=end_dt
+            )
+        except Exception as e:
+            log.warn('skipping ctable for {} from {} to {}: {}'.format(
+                asset.symbol, start_dt, end_dt, e
+            ))
 
         if not arrays:
             return path
@@ -287,6 +292,7 @@ class ExchangeBundle:
         if not df.empty:
             df.sort_index(inplace=True)
             data.append((asset.sid, df))
+
         self._write(data, writer, data_frequency)
 
         if cleanup:
@@ -295,6 +301,45 @@ class ExchangeBundle:
             shutil.rmtree(path)
 
         return path
+
+    def get_adj_dates(self, start, end, assets, data_frequency):
+        """
+        Contains a date range to the trading availability of the specified pairs.
+
+        :param start:
+        :param end:
+        :param assets:
+        :param data_frequency:
+        :return:
+        """
+        earliest_trade = None
+        last_entry = None
+        for asset in assets:
+            if (earliest_trade is None or earliest_trade > asset.start_date) \
+                    and asset.start_date >= self.calendar.first_session:
+                earliest_trade = asset.start_date
+
+            end_asset = asset.end_minute if data_frequency == 'minute' else \
+                asset.end_daily
+            if end_asset is not None and \
+                    (last_entry is None or end_asset > last_entry):
+                last_entry = end_asset
+
+        if start is None or \
+                (earliest_trade is not None and earliest_trade > start):
+            start = earliest_trade
+
+        if end is None or (last_entry is not None and end > last_entry):
+            end = last_entry
+
+        if end is None or start is None or start >= end:
+            raise NoDataAvailableOnExchange(
+                exchange=asset.exchange.title(),
+                symbol=[asset.symbol],
+                data_frequency=data_frequency,
+            )
+
+        return start, end
 
     def prepare_chunks(self, assets, data_frequency, start_dt, end_dt):
         """
@@ -312,26 +357,26 @@ class ExchangeBundle:
         chunks = []
         for asset in assets:
             try:
-                asset_start, asset_end = \
-                    get_adj_dates(start_dt, end_dt, [asset], data_frequency)
+                # Checking if the the asset has price data in the specified
+                # date range
+                adj_start, adj_end = self.get_adj_dates(
+                    start_dt, end_dt, [asset], data_frequency
+                )
 
             except NoDataAvailableOnExchange:
+                # If not, we continue to the next asset
                 continue
 
-            start_dt = max(start_dt, self.calendar.first_trading_session)
-            start_dt = max(start_dt, asset_start)
+            # This is either the first trading day of the asset or the
+            # first session available in the calendar
+            first_trading_dt = asset.start_date \
+                if asset.start_date > self.calendar.first_session \
+                else self.calendar.first_session
 
             # Aligning start / end dates with the daily calendar
-            sessions = get_periods_range(start_dt, end_dt, data_frequency) \
-                if data_frequency == 'minute' \
-                else self.calendar.sessions_in_range(start_dt, end_dt)
+            sessions = self.calendar.sessions_in_range(adj_start, adj_end)
 
-            if asset_start < sessions[0]:
-                asset_start = sessions[0]
-
-            if asset_end > sessions[-1]:
-                asset_end = sessions[-1]
-
+            # We loop through each session to create chunks for each period
             chunk_labels = []
             dt = sessions[0]
             while dt <= sessions[-1]:
@@ -345,29 +390,49 @@ class ExchangeBundle:
                     # of the trading pair
                     if data_frequency == 'minute':
                         period_start, period_end = get_month_start_end(dt)
-                        asset_start_month, _ = get_month_start_end(asset_start)
 
+                        # TODO: redundant gate, we are already filtering dates
+                        if first_trading_dt > period_start:
+                            dt += timedelta(days=1)
+                            continue
+
+                        asset_start_month, _ = get_month_start_end(
+                            first_trading_dt
+                        )
                         if asset_start_month == period_start \
-                                and period_start < asset_start:
-                            period_start = asset_start
+                                and period_start < first_trading_dt:
+                            period_start = first_trading_dt
 
-                        _, asset_end_month = get_month_start_end(asset_end)
+                        # TODO: need to filter closed pairs?
+                        _, asset_end_month = get_month_start_end(
+                            asset.end_minute
+                        )
                         if asset_end_month == period_end \
-                                and period_end > asset_end:
-                            period_end = asset_end
+                                and period_end > asset.end_minute:
+                            period_end = asset.end_minute
 
                     elif data_frequency == 'daily':
                         period_start, period_end = get_year_start_end(dt)
-                        asset_start_year, _ = get_year_start_end(asset_start)
 
+                        # TODO: redundant gate, we are already filtering dates
+                        if first_trading_dt > period_start:
+                            dt += timedelta(days=1)
+                            continue
+
+                        asset_start_year, _ = get_year_start_end(
+                            first_trading_dt
+                        )
                         if asset_start_year == period_start \
-                                and period_start < asset_start:
-                            period_start = asset_start
+                                and period_start < first_trading_dt:
+                            period_start = first_trading_dt
 
-                        _, asset_end_year = get_year_start_end(asset_end)
+                        _, asset_end_year = get_year_start_end(
+                            asset.end_minute
+                        )
                         if asset_end_year == period_end \
-                                and period_end > asset_end:
-                            period_end = asset_end
+                                and period_end > asset.end_minute:
+                            period_end = asset.end_minute
+
                     else:
                         raise InvalidHistoryFrequencyError(
                             frequency=data_frequency
@@ -377,10 +442,13 @@ class ExchangeBundle:
                     # Checking the last minute of the day instead.
                     range_start = period_start.replace(hour=23, minute=59) \
                         if data_frequency == 'minute' else period_start
+
+                    # Checking if the data already exists in the bundle
+                    # for the date range of the chunk. If not, we create
+                    # a chunk for ingestion.
                     has_data = range_in_bundle(
                         asset, range_start, period_end, reader
                     )
-
                     if not has_data:
                         log.debug('adding period: {}'.format(label))
                         chunks.append(
@@ -394,6 +462,7 @@ class ExchangeBundle:
 
                 dt += timedelta(days=1)
 
+        # We sort the chunks by end date to ingest most recent data first
         chunks.sort(key=lambda chunk: chunk['period_end'])
 
         return chunks
@@ -408,13 +477,24 @@ class ExchangeBundle:
         :param end_dt:
         :return:
         """
-        writer = self.get_writer(start_dt, end_dt, data_frequency)
         chunks = self.prepare_chunks(
             assets=assets,
             data_frequency=data_frequency,
             start_dt=start_dt,
             end_dt=end_dt
         )
+
+        # Since chunks are either monthly or yearly, it is possible that
+        # our ingestion data range is greater than specified. We adjust
+        # the boundaries to ensure that the writer can write all data.
+        for chunk in chunks:
+            if chunk['period_start'] < start_dt:
+                start_dt = chunk['period_start']
+
+            if chunk['period_end'] > end_dt:
+                end_dt = chunk['period_end']
+
+        writer = self.get_writer(start_dt, end_dt, data_frequency)
         with maybe_show_progress(
                 chunks,
                 show_progress,
@@ -430,7 +510,8 @@ class ExchangeBundle:
                     start_dt=chunk['period_start'],
                     end_dt=chunk['period_end'],
                     writer=writer,
-                    empty_rows_behavior='strip'
+                    empty_rows_behavior='strip',
+                    cleanup=True
                 )
 
     def ingest(self, data_frequency, include_symbols=None,
@@ -448,7 +529,9 @@ class ExchangeBundle:
         :return:
         """
         assets = self.get_assets(include_symbols, exclude_symbols)
-        start_dt, end_dt = get_adj_dates(start, end, assets, data_frequency)
+        start_dt, end_dt = self.get_adj_dates(
+            start, end, assets, data_frequency
+        )
 
         for frequency in data_frequency.split(','):
             self.ingest_assets(assets, start_dt, end_dt, frequency,
@@ -517,7 +600,7 @@ class ExchangeBundle:
             return values
 
         except Exception:
-            symbols = [asset.symbol.encode('utf-8') for asset in assets]
+            symbols = [asset.symbol for asset in assets]
             raise PricingDataNotLoadedError(
                 field=field,
                 first_trading_day=min([asset.start_date for asset in assets]),
@@ -535,8 +618,9 @@ class ExchangeBundle:
                                   data_frequency,
                                   reset_reader=False):
         start_dt = get_start_dt(end_dt, bar_count, data_frequency)
-        start_dt, end_dt = \
-            get_adj_dates(start_dt, end_dt, assets, data_frequency)
+        start_dt, end_dt = self.get_adj_dates(
+            start_dt, end_dt, assets, data_frequency
+        )
 
         reader = self.get_reader(data_frequency)
         if reset_reader:
@@ -544,7 +628,7 @@ class ExchangeBundle:
             reader = self.get_reader(data_frequency)
 
         if reader is None:
-            symbols = [asset.symbol.encode('utf-8') for asset in assets]
+            symbols = [asset.symbol for asset in assets]
             raise PricingDataNotLoadedError(
                 field=field,
                 first_trading_day=min([asset.start_date for asset in assets]),
@@ -555,8 +639,9 @@ class ExchangeBundle:
             )
 
         for asset in assets:
-            asset_start_dt, asset_end_dt = \
-                get_adj_dates(start_dt, end_dt, assets, data_frequency)
+            asset_start_dt, asset_end_dt = self.get_adj_dates(
+                start_dt, end_dt, assets, data_frequency
+            )
 
             in_bundle = range_in_bundle(
                 asset, asset_start_dt, asset_end_dt, reader
@@ -602,3 +687,34 @@ class ExchangeBundle:
             series[asset] = value_series
 
         return series
+
+    def clean(self, data_frequency):
+        log.debug('cleaning exchange {}, frequency {}'.format(
+            self.exchange.name, data_frequency
+        ))
+        root = get_exchange_folder(self.exchange.name)
+
+        symbols = os.path.join(root, 'symbols.json')
+        if os.path.isfile(symbols):
+            os.remove(symbols)
+
+        temp_bundles = os.path.join(root, 'temp_bundles')
+
+        if os.path.isdir(temp_bundles):
+            log.debug('removing folder and content: {}'.format(temp_bundles))
+            shutil.rmtree(temp_bundles)
+            log.debug('{} removed'.format(temp_bundles))
+
+        frequencies = ['daily', 'minute'] if data_frequency is None \
+            else [data_frequency]
+
+        for frequency in frequencies:
+            label = '{}_bundle'.format(frequency)
+            frequency_bundle = os.path.join(root, label)
+
+            if os.path.isdir(frequency_bundle):
+                log.debug(
+                    'removing folder and content: {}'.format(frequency_bundle)
+                )
+                shutil.rmtree(frequency_bundle)
+                log.debug('{} removed'.format(frequency_bundle))

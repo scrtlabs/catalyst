@@ -1,9 +1,10 @@
-from logging import Logger
+import hashlib
+from logging import getLogger
 
 import pandas as pd
 
 from catalyst import get_calendar
-from catalyst.exchange.bundle_utils import get_bcolz_chunk, get_periods, \
+from catalyst.exchange.bundle_utils import get_bcolz_chunk, \
     get_periods_range
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
@@ -13,10 +14,10 @@ from catalyst.exchange.exchange_utils import get_exchange_folder
 from catalyst.exchange.init_utils import get_exchange
 from catalyst.utils.paths import ensure_directory
 
-log = Logger('test_exchange_bundle')
+log = getLogger('test_exchange_bundle')
 
 
-class ExchangeBundleTestCase:
+class TestExchangeBundle:
     def test_spot_value(self):
         data_frequency = 'daily'
         exchange_name = 'poloniex'
@@ -93,16 +94,39 @@ class ExchangeBundleTestCase:
         )
         pass
 
+    def test_ingest_exchange(self):
+        # exchange_name = 'bitfinex'
+        # data_frequency = 'daily'
+        # include_symbols = 'neo_btc,bch_btc,eth_btc'
+
+        exchange_name = 'bitfinex'
+        data_frequency = 'minute'
+
+        exchange = get_exchange(exchange_name)
+        exchange_bundle = ExchangeBundle(exchange)
+
+        log.info('ingesting exchange bundle {}'.format(exchange_name))
+        exchange_bundle.ingest(
+            data_frequency=data_frequency,
+            include_symbols=None,
+            exclude_symbols=None,
+            start=None,
+            end=None,
+            show_progress=True
+        )
+
+        pass
+
     def test_ingest_daily(self):
         # exchange_name = 'bitfinex'
         # data_frequency = 'daily'
         # include_symbols = 'neo_btc,bch_btc,eth_btc'
 
-        exchange_name = 'poloniex'
+        exchange_name = 'bittrex'
         data_frequency = 'daily'
-        include_symbols = 'btc_usdt'
+        include_symbols = 'wings_eth'
 
-        start = pd.to_datetime('2016-1-1', utc=True)
+        start = pd.to_datetime('2017-1-1', utc=True)
         end = pd.to_datetime('2017-10-16', utc=True)
         periods = get_periods_range(start, end, data_frequency)
 
@@ -274,7 +298,7 @@ class ExchangeBundleTestCase:
         data_frequency = 'minute'
 
         exchange = get_exchange(exchange_name)
-        asset = exchange.get_asset('neo_btc')
+        asset = exchange.get_asset('neos_btc')
 
         path = get_bcolz_chunk(
             exchange_name=exchange_name,
@@ -283,4 +307,11 @@ class ExchangeBundleTestCase:
             period='2017-5',
         )
 
+        pass
+
+    def test_hash_symbol(self):
+        symbol = 'etc_btc'
+        sid = int(
+            hashlib.sha256(symbol.encode('utf-8')).hexdigest(), 16
+        ) % 10 ** 6
         pass

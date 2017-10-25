@@ -7,7 +7,7 @@ from catalyst.exchange.exchange_utils import get_exchange_auth
 log = Logger('test_bittrex')
 
 
-class BittrexTestCase(BaseExchangeTestCase):
+class TestBittrexTestCase(BaseExchangeTestCase):
     @classmethod
     def setup(self):
         print ('creating bittrex object')

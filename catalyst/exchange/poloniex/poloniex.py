@@ -33,7 +33,7 @@ log = Logger('Poloniex', level=LOG_LEVEL)
 
 class Poloniex(Exchange):
     def __init__(self, key, secret, base_currency, portfolio=None):
-        self.api = Poloniex_api(key=key, secret=secret.encode('UTF-8'))
+        self.api = Poloniex_api(key=key, secret=secret)
         self.name = 'poloniex'
         self.assets = {}
         self.load_assets()
@@ -119,9 +119,9 @@ class Poloniex(Exchange):
         return order, executed_price
 
     def get_balances(self):
-        log.debug('retrieving wallets balances')
+        balances = self.api.returnbalances()
         try:
-            balances = self.api.returnbalances()
+            log.debug('retrieving wallets balances')
         except Exception as e:
             log.debug(e)
             raise ExchangeRequestError(error=e)

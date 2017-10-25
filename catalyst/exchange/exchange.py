@@ -87,7 +87,7 @@ class Exchange:
             self.request_cpt[now] = 0
             return True
 
-        cpt_date = self.request_cpt.keys()[0]
+        cpt_date = list(self.request_cpt.keys())[0]
         cpt = self.request_cpt[cpt_date]
 
         if now > cpt_date + timedelta(minutes=1):
@@ -167,8 +167,10 @@ class Exchange:
                 asset = self.assets[key]
 
         if not asset:
-            supported_symbols = [pair.symbol.encode('utf-8') for pair in
-                                 self.assets.values()]
+            supported_symbols = [
+                pair.symbol for pair in list(self.assets.values())
+            ]
+
             raise SymbolNotFoundOnExchange(
                 symbol=symbol,
                 exchange=self.name.title(),
@@ -552,7 +554,7 @@ class Exchange:
             portfolio.starting_cash = portfolio.cash
 
         if portfolio.positions:
-            assets = portfolio.positions.keys()
+            assets = list(portfolio.positions.keys())
             tickers = self.tickers(assets)
 
             portfolio.positions_value = 0.0

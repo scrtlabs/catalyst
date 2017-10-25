@@ -8,7 +8,7 @@ from catalyst.finance.execution import (LimitOrder)
 log = Logger('test_bitfinex')
 
 
-class BitfinexTestCase(BaseExchangeTestCase):
+class TestBitfinexTestCase(BaseExchangeTestCase):
     @classmethod
     def setup(self):
         log.info('creating bitfinex object')

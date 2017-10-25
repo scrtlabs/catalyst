@@ -509,6 +509,40 @@ def ingest_exchange(exchange_name, data_frequency, start, end,
     )
 
 
+@main.command(name='clean-exchange')
+@click.option(
+    '-x',
+    '--exchange-name',
+    type=click.Choice({'bitfinex', 'bittrex', 'poloniex'}),
+    help='The name of the exchange bundle to ingest (supported: bitfinex,'
+         ' bittrex, poloniex).',
+)
+@click.option(
+    '-f',
+    '--data-frequency',
+    type=click.Choice({'daily', 'minute'}),
+    default=None,
+    help='The bundle data frequency to remove. If not specified, it will '
+         'remove both daily and minute bundles.',
+)
+@click.pass_context
+def clean_exchange(ctx, exchange_name, data_frequency):
+    """Clean up bundles from 'ingest-exchange'.
+    """
+
+    if exchange_name is None:
+        ctx.fail("must specify an exchange name '-x'")
+
+    exchange = get_exchange(exchange_name)
+    exchange_bundle = ExchangeBundle(exchange)
+
+    click.echo('Cleaning exchange bundle {}...'.format(exchange_name))
+    exchange_bundle.clean(
+        data_frequency=data_frequency,
+    )
+    click.echo('Done')
+
+
 @main.command()
 @click.option(
     '-b',
@@ -598,7 +632,7 @@ def ingest(ctx, bundle, exchange_name, compile_locally, assets_version,
          ' This may not be passed with -e / --before or -a / --after',
 )
 def clean(bundle, before, after, keep_last):
-    """Clean up data downloaded with the ingest command.
+    """Clean up bundles from 'ingest'.
     """
     bundles_module.clean(
         bundle,

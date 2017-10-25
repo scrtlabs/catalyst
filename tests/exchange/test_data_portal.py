@@ -12,7 +12,7 @@ from catalyst.exchange.exchange_utils import get_exchange_auth
 log = Logger('test_bitfinex')
 
 
-class ExchangeDataPortalTestCase:
+class TestExchangeDataPortalTestCase:
     @classmethod
     def setup(self):
         log.info('creating bitfinex exchange')

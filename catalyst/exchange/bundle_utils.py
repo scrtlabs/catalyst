@@ -103,42 +103,6 @@ def get_start_dt(end_dt, bar_count, data_frequency):
     return start_dt
 
 
-def get_adj_dates(start, end, assets, data_frequency):
-    """
-    Contains a date range to the trading availability of the specified pairs.
-
-    :param start:
-    :param end:
-    :param assets:
-    :param data_frequency:
-    :return:
-    """
-    earliest_trade = None
-    last_entry = None
-    for asset in assets:
-        if earliest_trade is None or earliest_trade > asset.start_date:
-            earliest_trade = asset.start_date
-
-        end_asset = asset.end_minute if data_frequency == 'minute' else \
-            asset.end_daily
-        if end_asset is not None and \
-                (last_entry is None or end_asset > last_entry):
-            last_entry = end_asset
-
-    if start is None or earliest_trade > start:
-        start = earliest_trade
-
-    if end is None or (last_entry is not None and end > last_entry):
-        end = last_entry
-
-    if end is None or start >= end:
-        raise NoDataAvailableOnExchange(
-            exchange=asset.exchange.title(),
-            symbol=[asset.symbol.encode('utf-8')],
-            data_frequency=data_frequency,
-        )
-
-    return start, end
 
 
 def get_month_start_end(dt):
@@ -243,12 +207,12 @@ def find_most_recent_time(bundle_name):
     for folder in bundle_folders:
         date = from_bundle_ingest_dirname(folder)
         if not most_recent_bundle or date > \
-                most_recent_bundle[most_recent_bundle.keys()[0]]:
+                most_recent_bundle[list(most_recent_bundle.keys())[0]]:
             most_recent_bundle = dict()
             most_recent_bundle[folder] = date
 
     if most_recent_bundle:
-        return most_recent_bundle.keys()[0]
+        return list(most_recent_bundle.keys())[0]
     else:
         return None
 

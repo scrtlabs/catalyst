@@ -24,7 +24,7 @@ URL2 = 'https://bittrex.com/Api/v2.0'
 
 class Bittrex(Exchange):
     def __init__(self, key, secret, base_currency, portfolio=None):
-        self.api = Bittrex_api(key=key, secret=secret.encode('UTF-8'))
+        self.api = Bittrex_api(key=key, secret=secret)
         self.name = 'bittrex'
         self.color = 'blue'
         self.base_currency = base_currency
@@ -65,10 +65,10 @@ class Bittrex(Exchange):
         return exchange_symbol.lower()
 
     def get_balances(self):
+        balances = self.api.getbalances()
         try:
             log.debug('retrieving wallet balances')
             self.ask_request()
-            balances = self.api.getbalances()
 
         except Exception as e:
             raise ExchangeRequestError(error=e)
@@ -208,7 +208,7 @@ class Bittrex(Exchange):
             )
 
     def get_candles(self, data_frequency, assets, bar_count=None,
-                    start_date=None):
+                    start_dt=None, end_dt=None):
         """
         Supported Intervals
         -------------------
