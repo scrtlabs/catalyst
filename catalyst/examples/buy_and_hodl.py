@@ -24,7 +24,7 @@ from catalyst.api import (
 )
 
 def initialize(context):
-    context.ASSET_NAME = 'USDT_BTC'
+    context.ASSET_NAME = 'BTC_USDT'
     context.TARGET_HODL_RATIO = 0.8
     context.RESERVE_RATIO = 1.0 - context.TARGET_HODL_RATIO
 
@@ -49,14 +49,14 @@ def handle_data(context, data):
     orders = get_open_orders(context.asset) or []
     for order in orders:
         cancel_order(order)
-    
+
     # Stop buying after passing the reserve threshold
     cash = context.portfolio.cash
     if cash <= reserve_value:
         context.is_buying = False
 
     # Retrieve current asset price from pricing data
-    price = data[context.asset].price
+    price = data.current(context.asset, 'price')
 
     # Check if still buying and could (approximately) afford another purchase
     if context.is_buying and cash > price:
@@ -70,7 +70,7 @@ def handle_data(context, data):
 
     record(
         price=price,
-        volume=data[context.asset].volume,
+        volume=data.current(context.asset, 'volume'),
         cash=cash,
         starting_cash=context.portfolio.starting_cash,
         leverage=context.account.leverage,
