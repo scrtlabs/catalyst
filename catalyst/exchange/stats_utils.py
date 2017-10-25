@@ -49,3 +49,12 @@ def get_pretty_stats(stats_df, recorded_cols=None, num_rows=10):
         columns=columns,
         formatters=formatters
     )
+
+
+def df_to_string(df):
+    pd.set_option('display.expand_frame_repr', False)
+    pd.set_option('precision', 8)
+    pd.set_option('display.width', 1000)
+    pd.set_option('display.max_colwidth', 1000)
+
+    return df.to_string()

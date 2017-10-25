@@ -5,13 +5,14 @@ import pandas as pd
 
 from catalyst import get_calendar
 from catalyst.exchange.bundle_utils import get_bcolz_chunk, \
-    get_periods_range
+    get_periods_range, get_start_dt
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
 from catalyst.exchange.exchange_bundle import ExchangeBundle, \
     BUNDLE_NAME_TEMPLATE
 from catalyst.exchange.exchange_utils import get_exchange_folder
 from catalyst.exchange.init_utils import get_exchange
+from catalyst.exchange.stats_utils import df_to_string
 from catalyst.utils.paths import ensure_directory
 
 log = getLogger('test_exchange_bundle')
@@ -39,12 +40,12 @@ class TestExchangeBundle:
 
     def test_ingest_minute(self):
         data_frequency = 'minute'
-        exchange_name = 'bitfinex'
+        exchange_name = 'poloniex'
 
         exchange = get_exchange(exchange_name)
         exchange_bundle = ExchangeBundle(exchange)
         assets = [
-            exchange.get_asset('neo_eth')
+            exchange.get_asset('burst_btc')
         ]
 
         # start = pd.to_datetime('2017-09-01', utc=True)
@@ -314,4 +315,60 @@ class TestExchangeBundle:
         sid = int(
             hashlib.sha256(symbol.encode('utf-8')).hexdigest(), 16
         ) % 10 ** 6
+        pass
+
+    def test_validate_data(self):
+        exchange_name = 'poloniex'
+        data_frequency = 'minute'
+
+        exchange = get_exchange(exchange_name)
+        exchange_bundle = ExchangeBundle(exchange)
+        assets = [exchange.get_asset('neos_btc')]
+
+        end_dt = pd.to_datetime('2017-10-20', utc=True)
+        bar_count = 100
+
+        bundle_series = exchange_bundle.get_history_window_series(
+            assets=assets,
+            end_dt=end_dt,
+            bar_count=bar_count * 5,
+            field='close',
+            data_frequency='minute',
+        )
+        candles = exchange.get_candles(
+            assets=assets,
+            end_dt=end_dt,
+            bar_count=bar_count,
+            data_frequency='minute'
+        )
+        start_dt = get_start_dt(end_dt, bar_count, data_frequency)
+
+        frames = []
+        for asset in assets:
+            bundle_df = pd.DataFrame(
+                data=dict(bundle_price=bundle_series[asset]),
+                index=bundle_series[asset].index
+            )
+            bundle_df = bundle_df.resample('5T').last()
+
+            exchange_series = exchange.get_series_from_candles(
+                candles=candles[asset],
+                start_dt=start_dt,
+                end_dt=end_dt,
+                field='close'
+            )
+            exchange_df = pd.DataFrame(
+                data=dict(exchange_price=exchange_series),
+                index=exchange_series.index
+            )
+
+            df = exchange_df.join(bundle_df, how='left')
+            df['last_traded'] = df.index
+            df['asset'] = asset.symbol
+            df.set_index(['asset', 'last_traded'], inplace=True)
+
+            frames.append(df)
+
+        df = pd.concat(frames)
+        print('\n' + df_to_string(df))
         pass

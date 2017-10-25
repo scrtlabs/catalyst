@@ -186,7 +186,8 @@ class Poloniex(Exchange):
         '5m', '15m', '30m', '2h', '4h', '1D'
         """
 
-        # TODO: implement end_dt and start_dt filters
+        if end_dt is None:
+            end_dt = pd.Timestamp.utcnow()
 
         if (
                         data_frequency == '5m' or data_frequency == 'minute'):  # TODO: Polo does not have '1m'
@@ -212,8 +213,8 @@ class Poloniex(Exchange):
 
         for asset in asset_list:
 
-            end = int(time.time())
-            if (bar_count is None):
+            end = int(time.mktime(end_dt.timetuple()))
+            if bar_count is None:
                 start = end - 2 * frequency
             else:
                 start = end - bar_count * frequency

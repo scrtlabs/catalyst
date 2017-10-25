@@ -391,11 +391,6 @@ class ExchangeBundle:
                     if data_frequency == 'minute':
                         period_start, period_end = get_month_start_end(dt)
 
-                        # TODO: redundant gate, we are already filtering dates
-                        if first_trading_dt > period_start:
-                            dt += timedelta(days=1)
-                            continue
-
                         asset_start_month, _ = get_month_start_end(
                             first_trading_dt
                         )
@@ -413,11 +408,6 @@ class ExchangeBundle:
 
                     elif data_frequency == 'daily':
                         period_start, period_end = get_year_start_end(dt)
-
-                        # TODO: redundant gate, we are already filtering dates
-                        if first_trading_dt > period_start:
-                            dt += timedelta(days=1)
-                            continue
 
                         asset_start_year, _ = get_year_start_end(
                             first_trading_dt
