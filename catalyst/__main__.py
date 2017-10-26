@@ -38,7 +38,7 @@ except NameError:
     '--default-extension/--no-default-extension',
     is_flag=True,
     default=True,
-    help="Don't load the default catalyst extension.py file in $ZIPLINE_HOME.",
+    help="Don't load the default catalyst extension.py file in $CATALYST_HOME.",
 )
 @click.version_option()
 def main(extension, strict_extensions, default_extension):
@@ -495,6 +495,10 @@ def ingest_exchange(exchange_name, data_frequency, start, end,
     """
     Ingest data for the given exchange.
     """
+
+    if exchange_name is None:
+        ctx.fail("must specify an exchange name '-x'")
+
     exchange = get_exchange(exchange_name)
     exchange_bundle = ExchangeBundle(exchange)
 
