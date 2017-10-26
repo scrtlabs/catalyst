@@ -346,9 +346,13 @@ class ExchangeBundle:
 
             end_asset = asset.end_minute if data_frequency == 'minute' else \
                 asset.end_daily
-            if end_asset is not None and \
-                    (last_entry is None or end_asset > last_entry):
-                last_entry = end_asset
+            if end_asset is not None:
+                if last_entry is None or end_asset > last_entry:
+                    last_entry = end_asset
+
+            else:
+                end = None
+                last_entry = None
 
         if start is None or \
                 (earliest_trade is not None and earliest_trade > start):
@@ -388,8 +392,9 @@ class ExchangeBundle:
                     start_dt, end_dt, [asset], data_frequency
                 )
 
-            except NoDataAvailableOnExchange:
+            except NoDataAvailableOnExchange as e:
                 # If not, we continue to the next asset
+                log.debug('skipping {}: {}'.format(asset.symbol, e))
                 continue
 
             # This is either the first trading day of the asset or the
