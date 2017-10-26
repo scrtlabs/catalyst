@@ -9,9 +9,13 @@ You will all see how to create a universe and filter it base on the exchange and
 The example prints out the closing price of all the pairs for a given market-exchange every 30 minutes.
 The example also contains the ohlcv minute data for the past seven days which could be used to create indicators
 Use this as the backbone to create your own trading strategies.
+
+Variables lookback date and date are used to ensure data for a coin existed on the lookback period specified.
 """
 
+import numpy as np
 import pandas as pd
+from datetime import timedelta
 from catalyst import run_algorithm
 from catalyst.exchange.exchange_utils import get_exchange_symbols
 
@@ -30,18 +34,16 @@ def handle_data(context, data):
     lookback = 60 * 24 * 7  # (minutes, hours, days) of how far to lookback in the data history
     context.i += 1
 
-    # we must first wait until enough minutes, hours or days have passed for data history to work
-    if context.i < lookback:
-        return
-
     # current date formatted into a string
-    today = context.blotter.current_dt.strftime('%Y-%m-%d %H:%M:%S')
-    date, time = str(today).split(' ')
+    today = context.blotter.current_dt
+    date, time = today.strftime('%Y-%m-%d %H:%M:%S').split(' ')
+    lookback_date = today - timedelta(days=(lookback / (60 * 24)))  # subtract the amount of days specified in lookback
+    lookback_date = lookback_date.strftime('%Y-%m-%d %H:%M:%S').split(' ')[0]  # get only the date as a string
 
     # update universe everyday
     new_day = 60 * 24
     if not context.i % new_day:
-        context.universe = universe(context, date)
+        context.universe = universe(context, lookback_date, date)
 
     # get data every 30 minutes
     minutes = 30
@@ -50,25 +52,30 @@ def handle_data(context, data):
         for coin in context.coins:
             pair = str(coin.symbol)
 
-            # ohlcv data (the standard data required for candlestick or indicators/signals)
-            open = data.history(coin, 'open', bar_count=lookback, frequency='1m').ffill().bfill()
-            high = data.history(coin, 'high', bar_count=lookback, frequency='1m').ffill().bfill()
-            low = data.history(coin, 'low', bar_count=lookback, frequency='1m').ffill().bfill()
-            close = data.history(coin, 'price', bar_count=lookback, frequency='1m').ffill().bfill()
-            volume = data.history(coin, 'volume', bar_count=lookback, frequency='1m').ffill().bfill()
+            # 30 minute interval ohlcv data (the standard data required for candlestick or indicators/signals)
+            # 30T means 30 minutes re-sampling of one minute data. change to your desire time interval.
+            open = fill(data.history(coin, 'open', bar_count=lookback, frequency='1m')).resample('30T').first()
+            high = fill(data.history(coin, 'high', bar_count=lookback, frequency='1m')).resample('30T').max()
+            low = fill(data.history(coin, 'low', bar_count=lookback, frequency='1m')).resample('30T').min()
+            close = fill(data.history(coin, 'price', bar_count=lookback, frequency='1m')).resample('30T').last()
+            volume = fill(data.history(coin, 'volume', bar_count=lookback, frequency='1m')).resample('30T').sum()
 
             # close[-1] is the equivalent to current price
             # displays the minute price for each pair every 30 minutes
-            print(today, pair, close[-1])
+            print(today, pair, open[-1], high[-1], low[-1], close[-1], volume[-1])
+
+            # ----------------------------------------------------------------------------------------------------------
+            # -------------------------------------- Insert Your Strategy Here -----------------------------------------
+            # ----------------------------------------------------------------------------------------------------------
 
 
 def analyze(context=None, results=None):
     pass
 
 
-def universe(context, date):
-    # Get the universe for a given exchange and a given base_currency market
-    # Example: Poloniex BTC Market
+# Get the universe for a given exchange and a given base_currency market
+# Example: Poloniex BTC Market
+def universe(context, lookback_date, current_date):
     json_symbols = get_exchange_symbols(context.exchange)  # get all the pairs for the exchange
     poloniex_universe_df = pd.DataFrame.from_dict(json_symbols).transpose().astype(str)  # convert into a dataframe
     poloniex_universe_df['base_currency'] = poloniex_universe_df.apply(lambda row: row.symbol.split('_')[1],
@@ -78,10 +85,21 @@ def universe(context, date):
     # Filter all the exchange pairs to only the ones for a give base currency
     poloniex_universe_df = poloniex_universe_df[poloniex_universe_df['base_currency'] == context.base_currency]
 
-    # Filter all the pairs to ensure that pair existed in the current date
-    poloniex_universe_df = poloniex_universe_df[poloniex_universe_df.start_date < date]
+    # Filter all the pairs to ensure that pair existed in the current date range
+    poloniex_universe_df = poloniex_universe_df[poloniex_universe_df.start_date < lookback_date]
+    poloniex_universe_df = poloniex_universe_df[poloniex_universe_df.end_daily >= current_date]
     context.coins = symbols(*poloniex_universe_df.symbol)  # convert all the pairs to symbols
     return poloniex_universe_df.symbol.tolist()
+
+
+# Replace all NA, NAN or infinite values with its nearest value
+def fill(series):
+    if isinstance(series, pd.Series):
+        return series.replace([np.inf, -np.inf], np.nan).ffill().bfill()
+    elif isinstance(series, np.ndarray):
+        return pd.Series(series).replace([np.inf, -np.inf], np.nan).ffill().bfill().values
+    else:
+        return series
 
 
 if __name__ == '__main__':
