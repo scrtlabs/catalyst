@@ -1,6 +1,6 @@
 """
 Requires Catalyst version 0.3.0 or above
-Tested on Catalyst version 0.3.2
+Tested on Catalyst version 0.3.3
 
 These example aims to provide and easy way for users to learn how to collect data from the different exchanges.
 You simply need to specify the exchange and the market that you want to focus on.
