@@ -1,6 +1,7 @@
 import json
 
 import pandas as pd
+import time
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
 from six.moves import urllib
@@ -13,9 +14,11 @@ from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
     ExchangeRequestError, InvalidOrderStyle, OrderNotFound, OrderCancelError, \
     CreateOrderError
 from catalyst.exchange.exchange_utils import get_exchange_symbols_filename, \
-    download_exchange_symbols
+    download_exchange_symbols, get_symbols_string
 from catalyst.finance.execution import LimitOrder, StopLimitOrder
 from catalyst.finance.order import Order, ORDER_STATUS
+
+# TODO: consider using this: https://github.com/mondeja/bittrex_v2
 
 log = Logger('Bittrex', level=LOG_LEVEL)
 
@@ -217,10 +220,27 @@ class Bittrex(Exchange):
         :param data_frequency:
         :param assets:
         :param bar_count:
+        :param start_dt
+        :param end_dt
         :return:
         """
-        log.info('retrieving candles')
 
+        # TODO: this has no effect at the moment
+        if end_dt is None:
+            end_dt = pd.Timestamp.utcnow()
+
+        log.debug(
+            'retrieving {bars} {freq} candles on {exchange} from '
+            '{end_dt} for markets {symbols}, '.format(
+                bars=bar_count,
+                freq=data_frequency,
+                exchange=self.name,
+                end_dt=end_dt,
+                symbols=get_symbols_string(assets)
+            )
+        )
+
+        data_frequency = data_frequency.lower()
         if data_frequency == 'minute' or data_frequency == '1m':
             frequency = 'oneMin'
         elif data_frequency == '5m':
@@ -229,7 +249,7 @@ class Bittrex(Exchange):
             frequency = 'thirtyMin'
         elif data_frequency == '1h':
             frequency = 'hour'
-        elif data_frequency == 'daily' or data_frequency == '1D':
+        elif data_frequency == 'daily' or data_frequency == '1d':
             frequency = 'day'
         else:
             raise InvalidHistoryFrequencyError(
@@ -238,13 +258,14 @@ class Bittrex(Exchange):
 
         # Making sure that assets are iterable
         asset_list = [assets] if isinstance(assets, TradingPair) else assets
-        ohlc_map = dict()
         for asset in asset_list:
+            end = int(time.mktime(end_dt.timetuple()))
             url = '{url}/pub/market/GetTicks?marketName={symbol}' \
-                  '&tickInterval={frequency}&_=1499127220008'.format(
+                  '&tickInterval={frequency}&_={end}'.format(
                 url=URL2,
                 symbol=self.get_symbol(asset),
-                frequency=frequency
+                frequency=frequency,
+                end=end
             )
 
             try:
@@ -272,6 +293,7 @@ class Bittrex(Exchange):
                 return ohlc
 
             ordered_candles = list(reversed(candles))
+            ohlc_map = dict()
             if bar_count is None:
                 ohlc_map[asset] = ohlc_from_candle(ordered_candles[0])
             else:

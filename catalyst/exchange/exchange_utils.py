@@ -1,6 +1,8 @@
 import json
 import os
 import pickle
+
+from catalyst.assets._assets import TradingPair
 from six.moves.urllib import request
 from datetime import date, datetime
 
@@ -55,6 +57,11 @@ def get_exchange_symbols(exchange_name, environ=None):
             exchange=exchange_name,
             filename=filename
         )
+
+
+def get_symbols_string(assets):
+    array = [assets] if isinstance(assets, TradingPair) else assets
+    return ', '.join([asset.symbol for asset in array])
 
 
 def get_exchange_auth(exchange_name, environ=None):

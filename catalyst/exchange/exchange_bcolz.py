@@ -16,7 +16,7 @@ class BcolzExchangeBarWriter(BcolzMinuteBarWriter):
             end_session = end_session.floor('1d')
 
         minutes_per_day = 1440 if self._data_frequency == 'minute' else 1
-        default_ohlc_ratio = kwargs.pop('default_ohlc_ratio', 1000000)
+        default_ohlc_ratio = kwargs.pop('default_ohlc_ratio', 100000000)
         calendar = get_calendar('OPEN')
 
         super(BcolzExchangeBarWriter, self) \
@@ -79,8 +79,9 @@ class BcolzExchangeBarReader(BcolzMinuteBarReader):
                 if mask is None:
                     mask = a != 0
 
+                inverse_ratio = self._ohlc_ratio_inverse_for_sid(sid)
                 out[:len(mask), i][mask] = (
-                    a[mask] * self._ohlc_ratio_inverse_for_sid(sid)
+                    a[mask] * inverse_ratio
                 )
 
             if field in fields:

@@ -11,7 +11,7 @@ from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
     BcolzMinuteBarMetadata
 from catalyst.exchange.bundle_utils import range_in_bundle, \
     get_bcolz_chunk, get_delta, get_month_start_end, \
-    get_year_start_end, get_periods_range, get_df_from_arrays, get_start_dt
+    get_year_start_end, get_df_from_arrays, get_start_dt
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
 from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
@@ -194,6 +194,71 @@ class ExchangeBundle:
             if data_frequency == 'minute' \
             else self.calendar.sessions_in_range(start_dt, end_dt)
 
+    def ingest_df(self, ohlcv_df, data_frequency, asset, writer,
+                  empty_rows_behavior='strip'):
+        """
+        Ingest a DataFrame of OHLCV data for a given market.
+
+        :param ohlcv_df:
+        :param data_frequency:
+        :param asset:
+        :param writer:
+        :param path:
+        :param empty_rows_behavior:
+        :return:
+        """
+        if empty_rows_behavior is not 'ignore':
+            nan_rows = ohlcv_df[ohlcv_df.isnull().T.any().T].index
+
+            if len(nan_rows) > 0:
+                dates = []
+                previous_date = None
+                for row_date in nan_rows.values:
+                    row_date = pd.to_datetime(row_date)
+
+                    if previous_date is None:
+                        dates.append(row_date)
+
+                    else:
+                        seq_date = previous_date + get_delta(1, data_frequency)
+
+                        if row_date > seq_date:
+                            dates.append(previous_date)
+                            dates.append(row_date)
+
+                    previous_date = row_date
+
+                dates.append(pd.to_datetime(nan_rows.values[-1]))
+
+                name = '{} from {} to {}'.format(
+                    asset.symbol, ohlcv_df.index[0], ohlcv_df.index[-1]
+                )
+                if empty_rows_behavior == 'warn':
+                    log.warn(
+                        '\n{name} with end minute {end_minute} has empty rows '
+                        'in ranges: {dates}'.format(
+                            name=name,
+                            end_minute=asset.end_minute,
+                            dates=dates
+                        )
+                    )
+
+                elif empty_rows_behavior == 'raise':
+                    raise EmptyValuesInBundleError(
+                        name=name,
+                        end_minute=asset.end_minute,
+                        dates=dates
+                    )
+                else:
+                    ohlcv_df.dropna(inplace=True)
+
+        data = []
+        if not ohlcv_df.empty:
+            ohlcv_df.sort_index(inplace=True)
+            data.append((asset.sid, ohlcv_df))
+
+        self._write(data, writer, data_frequency)
+
     def ingest_ctable(self, asset, data_frequency, period, start_dt, end_dt,
                       writer, empty_rows_behavior='strip', cleanup=False):
         """
@@ -242,62 +307,19 @@ class ExchangeBundle:
         periods = self.get_calendar_periods_range(
             start_dt, end_dt, data_frequency
         )
-
         df = get_df_from_arrays(arrays, periods)
-
-        if empty_rows_behavior is not 'ignore':
-            nan_rows = df[df.isnull().T.any().T].index
-
-            if len(nan_rows) > 0:
-                dates = []
-                previous_date = None
-                for row_date in nan_rows.values:
-                    row_date = pd.to_datetime(row_date)
-
-                    if previous_date is None:
-                        dates.append(row_date)
-
-                    else:
-                        seq_date = previous_date + get_delta(1, data_frequency)
-
-                        if row_date > seq_date:
-                            dates.append(previous_date)
-                            dates.append(row_date)
-
-                    previous_date = row_date
-
-                dates.append(pd.to_datetime(nan_rows.values[-1]))
-
-                name = path.split('/')[-1]
-                if empty_rows_behavior == 'warn':
-                    log.warn(
-                        '\n{name} with end minute {end_minute} has empty rows '
-                        'in ranges: {dates}'.format(
-                            name=name,
-                            end_minute=asset.end_minute,
-                            dates=dates
-                        )
-                    )
-
-                elif empty_rows_behavior == 'raise':
-                    raise EmptyValuesInBundleError(
-                        name=name,
-                        end_minute=asset.end_minute,
-                        dates=dates
-                    )
-                else:
-                    df.dropna(inplace=True)
-
-        data = []
-        if not df.empty:
-            df.sort_index(inplace=True)
-            data.append((asset.sid, df))
-
-        self._write(data, writer, data_frequency)
+        self.ingest_df(
+            ohlcv_df=df,
+            data_frequency=data_frequency,
+            asset=asset,
+            writer=writer,
+            empty_rows_behavior=empty_rows_behavior
+        )
 
         if cleanup:
-            log.debug('removing bundle folder following '
-                      'ingestion: {}'.format(path))
+            log.debug(
+                'removing bundle folder following ingestion: {}'.format(path)
+            )
             shutil.rmtree(path)
 
         return path
@@ -315,15 +337,22 @@ class ExchangeBundle:
         earliest_trade = None
         last_entry = None
         for asset in assets:
-            if (earliest_trade is None or earliest_trade > asset.start_date) \
-                    and asset.start_date >= self.calendar.first_session:
-                earliest_trade = asset.start_date
+            if earliest_trade is None or earliest_trade > asset.start_date:
+                if asset.start_date >= self.calendar.first_session:
+                    earliest_trade = asset.start_date
+
+                else:
+                    earliest_trade = self.calendar.first_session
 
             end_asset = asset.end_minute if data_frequency == 'minute' else \
                 asset.end_daily
-            if end_asset is not None and \
-                    (last_entry is None or end_asset > last_entry):
-                last_entry = end_asset
+            if end_asset is not None:
+                if last_entry is None or end_asset > last_entry:
+                    last_entry = end_asset
+
+            else:
+                end = None
+                last_entry = None
 
         if start is None or \
                 (earliest_trade is not None and earliest_trade > start):
@@ -363,8 +392,9 @@ class ExchangeBundle:
                     start_dt, end_dt, [asset], data_frequency
                 )
 
-            except NoDataAvailableOnExchange:
+            except NoDataAvailableOnExchange as e:
                 # If not, we continue to the next asset
+                log.debug('skipping {}: {}'.format(asset.symbol, e))
                 continue
 
             # This is either the first trading day of the asset or the
@@ -391,11 +421,6 @@ class ExchangeBundle:
                     if data_frequency == 'minute':
                         period_start, period_end = get_month_start_end(dt)
 
-                        # TODO: redundant gate, we are already filtering dates
-                        if first_trading_dt > period_start:
-                            dt += timedelta(days=1)
-                            continue
-
                         asset_start_month, _ = get_month_start_end(
                             first_trading_dt
                         )
@@ -414,11 +439,6 @@ class ExchangeBundle:
                     elif data_frequency == 'daily':
                         period_start, period_end = get_year_start_end(dt)
 
-                        # TODO: redundant gate, we are already filtering dates
-                        if first_trading_dt > period_start:
-                            dt += timedelta(days=1)
-                            continue
-
                         asset_start_year, _ = get_year_start_end(
                             first_trading_dt
                         )
@@ -427,11 +447,11 @@ class ExchangeBundle:
                             period_start = first_trading_dt
 
                         _, asset_end_year = get_year_start_end(
-                            asset.end_minute
+                            asset.end_daily
                         )
                         if asset_end_year == period_end \
-                                and period_end > asset.end_minute:
-                            period_end = asset.end_minute
+                                and period_end > asset.end_daily:
+                            period_end = asset.end_daily
 
                     else:
                         raise InvalidHistoryFrequencyError(

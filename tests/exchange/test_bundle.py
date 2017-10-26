@@ -5,13 +5,14 @@ import pandas as pd
 
 from catalyst import get_calendar
 from catalyst.exchange.bundle_utils import get_bcolz_chunk, \
-    get_periods_range
+    get_periods_range, get_start_dt
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
 from catalyst.exchange.exchange_bundle import ExchangeBundle, \
     BUNDLE_NAME_TEMPLATE
 from catalyst.exchange.exchange_utils import get_exchange_folder
 from catalyst.exchange.init_utils import get_exchange
+from catalyst.exchange.stats_utils import df_to_string
 from catalyst.utils.paths import ensure_directory
 
 log = getLogger('test_exchange_bundle')
@@ -44,11 +45,11 @@ class TestExchangeBundle:
         exchange = get_exchange(exchange_name)
         exchange_bundle = ExchangeBundle(exchange)
         assets = [
-            exchange.get_asset('neo_eth')
+            exchange.get_asset('iot_btc')
         ]
 
         # start = pd.to_datetime('2017-09-01', utc=True)
-        start = pd.to_datetime('2017-9-15', utc=True)
+        start = pd.to_datetime('2017-9-01', utc=True)
         end = pd.to_datetime('2017-9-30', utc=True)
 
         log.info('ingesting exchange bundle {}'.format(exchange_name))
@@ -314,4 +315,114 @@ class TestExchangeBundle:
         sid = int(
             hashlib.sha256(symbol.encode('utf-8')).hexdigest(), 16
         ) % 10 ** 6
+        pass
+
+    def test_validate_data(self):
+        exchange_name = 'bitfinex'
+        data_frequency = 'minute'
+
+        exchange = get_exchange(exchange_name)
+        exchange_bundle = ExchangeBundle(exchange)
+        assets = [exchange.get_asset('iot_btc')]
+
+        end_dt = pd.to_datetime('2017-9-2 1:00', utc=True)
+        bar_count = 60
+
+        bundle_series = exchange_bundle.get_history_window_series(
+            assets=assets,
+            end_dt=end_dt,
+            bar_count=bar_count * 5,
+            field='close',
+            data_frequency='minute',
+        )
+        candles = exchange.get_candles(
+            assets=assets,
+            end_dt=end_dt,
+            bar_count=bar_count,
+            data_frequency='minute'
+        )
+        start_dt = get_start_dt(end_dt, bar_count, data_frequency)
+
+        frames = []
+        for asset in assets:
+            bundle_df = pd.DataFrame(
+                data=dict(bundle_price=bundle_series[asset]),
+                index=bundle_series[asset].index
+            )
+            exchange_series = exchange.get_series_from_candles(
+                candles=candles[asset],
+                start_dt=start_dt,
+                end_dt=end_dt,
+                data_frequency=data_frequency,
+                field='close'
+            )
+            exchange_df = pd.DataFrame(
+                data=dict(exchange_price=exchange_series),
+                index=exchange_series.index
+            )
+
+            df = exchange_df.join(bundle_df, how='left')
+            df['last_traded'] = df.index
+            df['asset'] = asset.symbol
+            df.set_index(['asset', 'last_traded'], inplace=True)
+
+            frames.append(df)
+
+        df = pd.concat(frames)
+        print('\n' + df_to_string(df))
+        pass
+
+    def test_ingest_candles(self):
+        exchange_name = 'bitfinex'
+        data_frequency = 'minute'
+
+        exchange = get_exchange(exchange_name)
+        bundle = ExchangeBundle(exchange)
+        assets = [exchange.get_asset('iot_btc')]
+
+        end_dt = pd.to_datetime('2017-10-20', utc=True)
+        bar_count = 100
+
+        start_dt = get_start_dt(end_dt, bar_count, data_frequency)
+        candles = exchange.get_candles(
+            assets=assets,
+            start_dt=start_dt,
+            end_dt=end_dt,
+            bar_count=bar_count,
+            data_frequency=data_frequency
+        )
+
+        writer = bundle.get_writer(start_dt, end_dt, data_frequency)
+        for asset in assets:
+            dates = [candle['last_traded'] for candle in candles[asset]]
+
+            values = dict()
+            for field in ['open', 'high', 'low', 'close', 'volume']:
+                values[field] = [candle[field] for candle in candles[asset]]
+
+            periods = bundle.get_calendar_periods_range(
+                start_dt, end_dt, data_frequency
+            )
+            df = pd.DataFrame(values, index=dates)
+            df = df.loc[periods].fillna(method='ffill')
+
+            # TODO: why do I get an extra bar?
+            bundle.ingest_df(
+                ohlcv_df=df,
+                data_frequency=data_frequency,
+                asset=asset,
+                writer=writer,
+                empty_rows_behavior='raise'
+            )
+
+        bundle_series = bundle.get_history_window_series(
+            assets=assets,
+            end_dt=end_dt,
+            bar_count=bar_count,
+            field='close',
+            data_frequency=data_frequency,
+            reset_reader=True
+        )
+        df = pd.DataFrame(bundle_series)
+        print('\n' + df_to_string(df))
         pass

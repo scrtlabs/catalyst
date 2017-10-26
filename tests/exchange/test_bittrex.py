@@ -1,3 +1,4 @@
+import pandas as pd
 from catalyst.exchange.bittrex.bittrex import Bittrex
 from catalyst.finance.order import Order
 from base import BaseExchangeTestCase
@@ -7,15 +8,15 @@ from catalyst.exchange.exchange_utils import get_exchange_auth
 log = Logger('test_bittrex')
 
 
-class TestBittrexTestCase(BaseExchangeTestCase):
+class TestBittrex(BaseExchangeTestCase):
     @classmethod
     def setup(self):
-        print ('creating bittrex object')
         auth = get_exchange_auth('bittrex')
         self.exchange = Bittrex(
             key=auth['key'],
             secret=auth['secret'],
-            base_currency='btc'
+            base_currency=None,
+            portfolio=None
         )
 
     def test_order(self):
@@ -52,15 +53,18 @@ class TestBittrexTestCase(BaseExchangeTestCase):
         log.info('retrieving candles')
         ohlcv_neo = self.exchange.get_candles(
             data_frequency='5m',
-            assets=self.exchange.get_asset('neo_btc')
+            assets=self.exchange.get_asset('neo_btc'),
+            bar_count=20,
+            end_dt=pd.to_datetime('2017-10-20', utc=True)
         )
         ohlcv_neo_ubq = self.exchange.get_candles(
-            data_frequency='5m',
+            data_frequency='1d',
             assets=[
                 self.exchange.get_asset('neo_btc'),
                 self.exchange.get_asset('ubq_btc')
             ],
-            bar_count=14
+            bar_count=14,
+            end_dt=pd.to_datetime('2017-10-20', utc=True)
         )
         pass
 

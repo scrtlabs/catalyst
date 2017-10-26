@@ -7,7 +7,7 @@ from catalyst.api import symbol
 
 def initialize(context):
     print('initializing')
-    context.asset = symbol('btc_usd')
+    context.asset = symbol('burst_btc')
 
 
 def handle_data(context, data):
@@ -20,7 +20,7 @@ def handle_data(context, data):
         context.asset,
         fields='price',
         bar_count=15,
-        frequency='1m'
+        frequency='1d'
     )
     rsi = talib.RSI(prices.values, timeperiod=14)[-1]
     print('got rsi: {}'.format(rsi))
@@ -35,7 +35,7 @@ run_algorithm(
     initialize=initialize,
     handle_data=handle_data,
     analyze=None,
-    exchange_name='bitfinex',
+    exchange_name='poloniex',
     algo_namespace='simple_loop',
     base_currency='btc'
 )

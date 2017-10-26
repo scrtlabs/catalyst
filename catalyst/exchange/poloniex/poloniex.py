@@ -22,7 +22,7 @@ from catalyst.exchange.exchange_errors import (
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder, \
     ExchangeStopLimitOrder
 from catalyst.exchange.exchange_utils import get_exchange_symbols_filename, \
-    download_exchange_symbols
+    download_exchange_symbols, get_symbols_string
 from catalyst.exchange.poloniex.poloniex_api import Poloniex_api
 from catalyst.finance.order import Order, ORDER_STATUS
 from catalyst.finance.transaction import Transaction
@@ -186,22 +186,35 @@ class Poloniex(Exchange):
         '5m', '15m', '30m', '2h', '4h', '1D'
         """
 
-        # TODO: implement end_dt and start_dt filters
+        if end_dt is None:
+            end_dt = pd.Timestamp.utcnow()
 
-        if (
-                        data_frequency == '5m' or data_frequency == 'minute'):  # TODO: Polo does not have '1m'
+        log.debug(
+            'retrieving {bars} {freq} candles on {exchange} from '
+            '{end_dt} for markets {symbols}, '.format(
+                bars=bar_count,
+                freq=data_frequency,
+                exchange=self.name,
+                end_dt=end_dt,
+                symbols=get_symbols_string(assets)
+            )
+        )
+
+        if data_frequency == '5m':
             frequency = 300
-        elif (data_frequency == '15m'):
+        elif data_frequency == '15m':
             frequency = 900
-        elif (data_frequency == '30m'):
+        elif data_frequency == '30m':
             frequency = 1800
-        elif (data_frequency == '2h'):
+        elif data_frequency == '2h':
             frequency = 7200
-        elif (data_frequency == '4h'):
+        elif data_frequency == '4h':
             frequency = 14400
-        elif (data_frequency == '1D' or data_frequency == 'daily'):
+        elif data_frequency == '1D' or data_frequency == 'daily':
             frequency = 86400
         else:
+            # Poloniex does not offer 1m data candles
+            # It is likely to error out there frequently
             raise InvalidHistoryFrequencyError(
                 frequency=data_frequency
             )
@@ -212,8 +225,8 @@ class Poloniex(Exchange):
 
         for asset in asset_list:
 
-            end = int(time.time())
-            if (bar_count is None):
+            end = int(time.mktime(end_dt.timetuple()))
+            if bar_count is None:
                 start = end - 2 * frequency
             else:
                 start = end - bar_count * frequency
