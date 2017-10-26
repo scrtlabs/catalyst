@@ -373,7 +373,7 @@ class Exchange:
         return value
 
     def get_series_from_candles(self, candles, start_dt, end_dt,
-                                field, previous_value=None):
+                                data_frequency, field, previous_value=None):
         """
         Get a series of field data for the specified candles.
 
@@ -388,9 +388,12 @@ class Exchange:
         dates = [candle['last_traded'] for candle in candles]
         values = [candle[field] for candle in candles]
 
-        periods = pd.date_range(start_dt, end_dt)
+        periods = self.bundle.get_calendar_periods_range(
+            start_dt, end_dt, data_frequency
+        )
         series = pd.Series(values, index=dates)
 
+        #TODO: ensure that this working as expected, if not use fillna
         series.reindex(periods, method='ffill', fill_value=previous_value)
 
         return series
@@ -487,6 +490,7 @@ class Exchange:
                     data_frequency=data_frequency,
                     assets=asset,
                     bar_count=trailing_bar_count,
+                    start_dt=start_dt,
                     end_dt=end_dt
                 )
 
@@ -497,6 +501,7 @@ class Exchange:
                     candles=candles,
                     start_dt=trailing_dt,
                     end_dt=end_dt,
+                    data_frequency=data_frequency,
                     field=field,
                     previous_value=last_value
                 )
@@ -784,13 +789,14 @@ class Exchange:
         pass
 
     @abc.abstractmethod
-    def get_orderbook(self, asset, order_type):
+    def get_orderbook(self, asset, order_type, limit):
         """
         Retrieve the the orderbook for the given trading pair.
 
         :param asset: TradingPair
         :param order_type: str
             The type of orders: bid, ask or all
+        :param limit
 
         :return:
         """

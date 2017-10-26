@@ -194,6 +194,71 @@ class ExchangeBundle:
             if data_frequency == 'minute' \
             else self.calendar.sessions_in_range(start_dt, end_dt)
 
+    def ingest_df(self, ohlcv_df, data_frequency, asset, writer,
+                  empty_rows_behavior='strip'):
+        """
+        Ingest a DataFrame of OHLCV data for a given market.
+
+        :param ohlcv_df:
+        :param data_frequency:
+        :param asset:
+        :param writer:
+        :param path:
+        :param empty_rows_behavior:
+        :return:
+        """
+        if empty_rows_behavior is not 'ignore':
+            nan_rows = ohlcv_df[ohlcv_df.isnull().T.any().T].index
+
+            if len(nan_rows) > 0:
+                dates = []
+                previous_date = None
+                for row_date in nan_rows.values:
+                    row_date = pd.to_datetime(row_date)
+
+                    if previous_date is None:
+                        dates.append(row_date)
+
+                    else:
+                        seq_date = previous_date + get_delta(1, data_frequency)
+
+                        if row_date > seq_date:
+                            dates.append(previous_date)
+                            dates.append(row_date)
+
+                    previous_date = row_date
+
+                dates.append(pd.to_datetime(nan_rows.values[-1]))
+
+                name = '{} from {} to {}'.format(
+                    asset.symbol, ohlcv_df.index[0], ohlcv_df.index[-1]
+                )
+                if empty_rows_behavior == 'warn':
+                    log.warn(
+                        '\n{name} with end minute {end_minute} has empty rows '
+                        'in ranges: {dates}'.format(
+                            name=name,
+                            end_minute=asset.end_minute,
+                            dates=dates
+                        )
+                    )
+
+                elif empty_rows_behavior == 'raise':
+                    raise EmptyValuesInBundleError(
+                        name=name,
+                        end_minute=asset.end_minute,
+                        dates=dates
+                    )
+                else:
+                    ohlcv_df.dropna(inplace=True)
+
+        data = []
+        if not ohlcv_df.empty:
+            ohlcv_df.sort_index(inplace=True)
+            data.append((asset.sid, ohlcv_df))
+
+        self._write(data, writer, data_frequency)
+
     def ingest_ctable(self, asset, data_frequency, period, start_dt, end_dt,
                       writer, empty_rows_behavior='strip', cleanup=False):
         """
@@ -242,62 +307,19 @@ class ExchangeBundle:
         periods = self.get_calendar_periods_range(
             start_dt, end_dt, data_frequency
         )
-
         df = get_df_from_arrays(arrays, periods)
-
-        if empty_rows_behavior is not 'ignore':
-            nan_rows = df[df.isnull().T.any().T].index
-
-            if len(nan_rows) > 0:
-                dates = []
-                previous_date = None
-                for row_date in nan_rows.values:
-                    row_date = pd.to_datetime(row_date)
-
-                    if previous_date is None:
-                        dates.append(row_date)
-
-                    else:
-                        seq_date = previous_date + get_delta(1, data_frequency)
-
-                        if row_date > seq_date:
-                            dates.append(previous_date)
-                            dates.append(row_date)
-
-                    previous_date = row_date
-
-                dates.append(pd.to_datetime(nan_rows.values[-1]))
-
-                name = path.split('/')[-1]
-                if empty_rows_behavior == 'warn':
-                    log.warn(
-                        '\n{name} with end minute {end_minute} has empty rows '
-                        'in ranges: {dates}'.format(
-                            name=name,
-                            end_minute=asset.end_minute,
-                            dates=dates
-                        )
-                    )
-
-                elif empty_rows_behavior == 'raise':
-                    raise EmptyValuesInBundleError(
-                        name=name,
-                        end_minute=asset.end_minute,
-                        dates=dates
-                    )
-                else:
-                    df.dropna(inplace=True)
-
-        data = []
-        if not df.empty:
-            df.sort_index(inplace=True)
-            data.append((asset.sid, df))
-
-        self._write(data, writer, data_frequency)
+        self.ingest_df(
+            ohlcv_df=df,
+            data_frequency=data_frequency,
+            asset=asset,
+            writer=writer,
+            empty_rows_behavior=empty_rows_behavior
+        )
 
         if cleanup:
-            log.debug('removing bundle folder following '
-                      'ingestion: {}'.format(path))
+            log.debug(
+                'removing bundle folder following ingestion: {}'.format(path)
+            )
             shutil.rmtree(path)
 
         return path
@@ -315,9 +337,12 @@ class ExchangeBundle:
         earliest_trade = None
         last_entry = None
         for asset in assets:
-            if (earliest_trade is None or earliest_trade > asset.start_date) \
-                    and asset.start_date >= self.calendar.first_session:
-                earliest_trade = asset.start_date
+            if earliest_trade is None or earliest_trade > asset.start_date:
+                if asset.start_date >= self.calendar.first_session:
+                    earliest_trade = asset.start_date
+
+                else:
+                    earliest_trade = self.calendar.first_session
 
             end_asset = asset.end_minute if data_frequency == 'minute' else \
                 asset.end_daily

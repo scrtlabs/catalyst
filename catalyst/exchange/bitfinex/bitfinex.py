@@ -23,7 +23,7 @@ from catalyst.exchange.exchange_errors import (
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder, \
     ExchangeStopLimitOrder, ExchangeStopOrder
 from catalyst.exchange.exchange_utils import get_exchange_symbols_filename, \
-    download_exchange_symbols
+    download_exchange_symbols, get_symbols_string
 from catalyst.finance.order import Order, ORDER_STATUS
 from catalyst.protocol import Account
 
@@ -255,6 +255,16 @@ class Bitfinex(Exchange):
         '1m', '5m', '15m', '30m', '1h', '3h', '6h', '12h', '1D', '7D', '14D',
          '1M'
         """
+        log.debug(
+            'retrieving {bars} {freq} candles on {exchange} from '
+            '{end_dt} for markets {symbols}, '.format(
+                bars=bar_count,
+                freq=data_frequency,
+                exchange=self.name,
+                end_dt=end_dt,
+                symbols=get_symbols_string(assets)
+            )
+        )
 
         freq_match = re.match(r'([0-9].*)(m|h|d)', data_frequency, re.M | re.I)
         if freq_match:
