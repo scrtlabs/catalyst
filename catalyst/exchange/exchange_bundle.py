@@ -11,7 +11,7 @@ from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
     BcolzMinuteBarMetadata
 from catalyst.exchange.bundle_utils import range_in_bundle, \
     get_bcolz_chunk, get_delta, get_month_start_end, \
-    get_year_start_end, get_periods_range, get_df_from_arrays, get_start_dt
+    get_year_start_end, get_df_from_arrays, get_start_dt
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
 from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
@@ -346,9 +346,13 @@ class ExchangeBundle:
 
             end_asset = asset.end_minute if data_frequency == 'minute' else \
                 asset.end_daily
-            if end_asset is not None and \
-                    (last_entry is None or end_asset > last_entry):
-                last_entry = end_asset
+            if end_asset is not None:
+                if last_entry is None or end_asset > last_entry:
+                    last_entry = end_asset
+
+            else:
+                end = None
+                last_entry = None
 
         if start is None or \
                 (earliest_trade is not None and earliest_trade > start):
@@ -388,8 +392,9 @@ class ExchangeBundle:
                     start_dt, end_dt, [asset], data_frequency
                 )
 
-            except NoDataAvailableOnExchange:
+            except NoDataAvailableOnExchange as e:
                 # If not, we continue to the next asset
+                log.debug('skipping {}: {}'.format(asset.symbol, e))
                 continue
 
             # This is either the first trading day of the asset or the
@@ -442,11 +447,11 @@ class ExchangeBundle:
                             period_start = first_trading_dt
 
                         _, asset_end_year = get_year_start_end(
-                            asset.end_minute
+                            asset.end_daily
                         )
                         if asset_end_year == period_end \
-                                and period_end > asset.end_minute:
-                            period_end = asset.end_minute
+                                and period_end > asset.end_daily:
+                            period_end = asset.end_daily
 
                     else:
                         raise InvalidHistoryFrequencyError(
