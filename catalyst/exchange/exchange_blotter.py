@@ -5,7 +5,7 @@ from catalyst.constants import LOG_LEVEL
 from catalyst.finance.blotter import Blotter
 from catalyst.finance.commission import CommissionModel
 from catalyst.finance.slippage import SlippageModel
-from catalyst.finance.transaction import Transaction
+from catalyst.finance.transaction import Transaction, create_transaction
 
 log = Logger('exchange_blotter', level=LOG_LEVEL)
 
@@ -97,13 +97,16 @@ class TradingPairFixedSlippage(SlippageModel):
 
             execution_price, execution_volume = self.process_order(data, order)
 
-            transaction = Transaction(
-                asset=order.asset,
-                amount=abs(execution_volume),
-                dt=dt,
-                price=execution_price,
-                order_id=order.id
+            transaction = create_transaction(
+                order, dt, execution_price, execution_volume
             )
+            # transaction = Transaction(
+            #     asset=order.asset,
+            #     amount=abs(execution_volume),
+            #     dt=dt,
+            #     price=execution_price,
+            #     order_id=order.id
+            # )
 
             self._volume_for_bar += abs(transaction.amount)
             yield order, transaction
