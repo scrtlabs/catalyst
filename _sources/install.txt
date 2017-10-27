@@ -39,6 +39,7 @@ version:
 
 .. code-block:: bash
 
+   $ pip install virtualenv
    $ virtualenv catalyst-venv
    $ source ./catalyst-venv/bin/activate
    $ pip install enigma-catalyst
