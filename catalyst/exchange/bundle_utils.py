@@ -103,8 +103,6 @@ def get_start_dt(end_dt, bar_count, data_frequency):
     return start_dt
 
 
-
-
 def get_month_start_end(dt):
     """
     Returns the first and last day of the month for the specified date.
@@ -215,4 +213,3 @@ def find_most_recent_time(bundle_name):
         return list(most_recent_bundle.keys())[0]
     else:
         return None
-

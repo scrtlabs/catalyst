@@ -26,6 +26,7 @@ from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     ExchangeBarDataError,
     PricingDataNotLoadedError)
+from catalyst.exchange.exchange_utils import get_frequency, resample_history_df
 
 log = Logger('DataPortalExchange', level=LOG_LEVEL)
 
@@ -300,16 +301,23 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
         :param ffill:
         :return:
         """
-
         bundle = self.exchange_bundles[exchange.name]
+
+        candle_size, unit, data_frequency = get_frequency(
+            frequency, data_frequency
+        )
+        adj_bar_count = candle_size * bar_count
+
         series = bundle.get_history_window_series_and_load(
             assets=assets,
             end_dt=end_dt,
-            bar_count=bar_count,
+            bar_count=adj_bar_count,
             field=field,
             data_frequency=data_frequency
         )
-        return pd.DataFrame(series)
+
+        df = resample_history_df(pd.DataFrame(series), candle_size, field)
+        return df
 
     def get_exchange_spot_value(self, exchange, assets, field, dt,
                                 data_frequency):

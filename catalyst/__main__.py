@@ -9,7 +9,7 @@ from six import text_type
 
 from catalyst.data import bundles as bundles_module
 from catalyst.exchange.exchange_bundle import ExchangeBundle
-from catalyst.exchange.init_utils import get_exchange
+from catalyst.exchange.factory import get_exchange
 from catalyst.utils.cli import Date, Timestamp
 from catalyst.utils.run_algo import _run, load_extensions
 

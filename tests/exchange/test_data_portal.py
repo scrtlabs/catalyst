@@ -1,47 +1,37 @@
 import pandas as pd
+from catalyst.exchange.exchange_data_portal import DataPortalExchangeBacktest, \
+    DataPortalExchangeLive
 from logbook import Logger
+from test_utils import rnd_history_date_days, rnd_bar_count
 
 from catalyst import get_calendar
 from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
 from catalyst.exchange.bitfinex.bitfinex import Bitfinex
 from catalyst.exchange.bittrex.bittrex import Bittrex
-from catalyst.exchange.data_portal_exchange import DataPortalExchangeBacktest, \
-    DataPortalExchangeLive
-from catalyst.exchange.exchange_utils import get_exchange_auth
+from catalyst.exchange.exchange_utils import get_exchange_auth, \
+    get_common_assets
+from catalyst.exchange.factory import get_exchange, get_exchanges
 
 log = Logger('test_bitfinex')
 
 
-class TestExchangeDataPortalTestCase:
+class TestExchangeDataPortal:
     @classmethod
     def setup(self):
         log.info('creating bitfinex exchange')
-        auth_bitfinex = get_exchange_auth('bitfinex')
-        self.bitfinex = Bitfinex(
-            key=auth_bitfinex['key'],
-            secret=auth_bitfinex['secret'],
-            base_currency='usd'
-        )
-
-        log.info('creating bittrex exchange')
-        auth_bitfinex = get_exchange_auth('bittrex')
-        self.bittrex = Bittrex(
-            key=auth_bitfinex['key'],
-            secret=auth_bitfinex['secret'],
-            base_currency='usd'
-        )
-
+        exchanges = get_exchanges(['bitfinex', 'bittrex', 'poloniex'])
         open_calendar = get_calendar('OPEN')
         asset_finder = AssetFinderExchange()
 
         self.data_portal_live = DataPortalExchangeLive(
-            exchanges=dict(bitfinex=self.bitfinex, bittrex=self.bittrex),
+            exchanges=exchanges,
             asset_finder=asset_finder,
             trading_calendar=open_calendar,
             first_trading_day=pd.to_datetime('today', utc=True)
         )
+
         self.data_portal_backtest = DataPortalExchangeBacktest(
-            exchanges=dict(bitfinex=self.bitfinex),
+            exchanges=exchanges,
             asset_finder=asset_finder,
             trading_calendar=open_calendar,
             first_trading_day=None  # will set dynamically based on assets
@@ -106,3 +96,20 @@ class TestExchangeDataPortalTestCase:
             assets, 'close', date, 'minute')
         log.info('found spot value {}'.format(value))
         pass
+
+    def test_history_compare_exchanges(self):
+        exchanges = get_exchanges(['bittrex', 'bitfinex', 'poloniex'])
+        assets = get_common_assets(exchanges)
+
+        date = rnd_history_date_days()
+        bar_count = rnd_bar_count()
+        data = self.data_portal_backtest.get_history_window(
+            assets=assets,
+            end_dt=date,
+            bar_count=bar_count,
+            frequency='1d',
+            field='close',
+            data_frequency='daily'
+        )
+
+        log.info('found history window: {}'.format(data))

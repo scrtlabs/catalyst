@@ -20,7 +20,8 @@ from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
 from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
     ExchangeLimitOrder, ExchangeStopOrder
 from catalyst.exchange.exchange_portfolio import ExchangePortfolio
-from catalyst.exchange.exchange_utils import get_exchange_symbols
+from catalyst.exchange.exchange_utils import get_exchange_symbols, \
+    get_frequency, resample_history_df
 from catalyst.finance.order import ORDER_STATUS
 from catalyst.finance.transaction import Transaction
 
@@ -393,7 +394,7 @@ class Exchange:
         )
         series = pd.Series(values, index=dates)
 
-        #TODO: ensure that this working as expected, if not use fillna
+        # TODO: ensure that this working as expected, if not use fillna
         series.reindex(periods, method='ffill', fill_value=previous_value)
 
         return series
@@ -441,25 +442,9 @@ class Exchange:
         A dataframe containing the requested data.
         """
 
-        freq_match = re.match(r'([0-9].*)(m|M|d|D)', frequency, re.M | re.I)
-        if freq_match:
-            candle_size = int(freq_match.group(1))
-            unit = freq_match.group(2)
-
-        else:
-            raise InvalidHistoryFrequencyError(frequency)
-
-        if unit.lower() == 'd':
-            if data_frequency == 'minute':
-                data_frequency = 'daily'
-
-        elif unit.lower() == 'm':
-            if data_frequency == 'daily':
-                data_frequency = 'minute'
-
-        else:
-            raise InvalidHistoryFrequencyError(frequency)
-
+        candle_size, unit, data_frequency = get_frequency(
+            frequency, data_frequency
+        )
         adj_bar_count = candle_size * bar_count
         try:
             series = self.bundle.get_history_window_series_and_load(
@@ -512,23 +497,7 @@ class Exchange:
                 else:
                     series[asset] = candle_series
 
-        df = pd.DataFrame(series)
-
-        if candle_size > 1:
-            if field == 'open':
-                agg = 'first'
-            elif field == 'high':
-                agg = 'max'
-            elif field == 'low':
-                agg = 'min'
-            elif field == 'close':
-                agg = 'last'
-            elif field == 'volume':
-                agg = 'sum'
-            else:
-                raise ValueError('Invalid field.')
-
-            df = df.resample('{}T'.format(candle_size)).agg(agg)
+        df = resample_history_df(pd.DataFrame(series), candle_size, field)
 
         return df
 
