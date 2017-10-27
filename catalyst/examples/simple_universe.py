@@ -77,19 +77,19 @@ def analyze(context=None, results=None):
 # Example: Poloniex BTC Market
 def universe(context, lookback_date, current_date):
     json_symbols = get_exchange_symbols(context.exchange)  # get all the pairs for the exchange
-    poloniex_universe_df = pd.DataFrame.from_dict(json_symbols).transpose().astype(str)  # convert into a dataframe
-    poloniex_universe_df['base_currency'] = poloniex_universe_df.apply(lambda row: row.symbol.split('_')[1],
+    universe_df = pd.DataFrame.from_dict(json_symbols).transpose().astype(str)  # convert into a dataframe
+    universe_df['base_currency'] = universe_df.apply(lambda row: row.symbol.split('_')[1],
                                                                        axis=1)
-    poloniex_universe_df['market_currency'] = poloniex_universe_df.apply(lambda row: row.symbol.split('_')[0],
+    universe_df['market_currency'] = universe_df.apply(lambda row: row.symbol.split('_')[0],
                                                                          axis=1)
     # Filter all the exchange pairs to only the ones for a give base currency
-    poloniex_universe_df = poloniex_universe_df[poloniex_universe_df['base_currency'] == context.base_currency]
+    universe_df = universe_df[universe_df['base_currency'] == context.base_currency]
 
     # Filter all the pairs to ensure that pair existed in the current date range
-    poloniex_universe_df = poloniex_universe_df[poloniex_universe_df.start_date < lookback_date]
-    poloniex_universe_df = poloniex_universe_df[poloniex_universe_df.end_daily >= current_date]
-    context.coins = symbols(*poloniex_universe_df.symbol)  # convert all the pairs to symbols
-    return poloniex_universe_df.symbol.tolist()
+    universe_df = universe_df[universe_df.start_date < lookback_date]
+    universe_df = universe_df[universe_df.end_daily >= current_date]
+    context.coins = symbols(*universe_df.symbol)  # convert all the pairs to symbols
+    return universe_df.symbol.tolist()
 
 
 # Replace all NA, NAN or infinite values with its nearest value
@@ -112,7 +112,6 @@ if __name__ == '__main__':
                                 handle_data=handle_data,
                                 analyze=analyze,
                                 exchange_name='poloniex',
-                                bundle='poloniex',
                                 data_frequency='minute',
                                 base_currency='btc',
                                 live=False,
