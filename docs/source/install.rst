@@ -41,7 +41,7 @@ version:
 
    $ virtualenv catalyst-venv
    $ source ./catalyst-venv/bin/activate
-   $ pip install enigma-
+   $ pip install enigma-catalyst
 
 Though not required by Catalyst directly, our example algorithms use matplotlib 
 to visually display the results of the trading algorithms. If you wish to run 
