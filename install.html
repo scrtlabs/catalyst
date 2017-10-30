@@ -79,10 +79,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#osx-virtualenv-matplotlib">OSX + virtualenv + matplotlib</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#windows">Windows</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#troubleshooting-visual-c-compiler-install">Troubleshooting Visual C++ Compiler Install</a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="#windows">Windows</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#amazon-linux-ami">Amazon Linux AMI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#troubleshooting-pip-install">Troubleshooting <code class="docutils literal"><span class="pre">pip</span></code> Install</a></li>
 </ul>
@@ -259,14 +256,40 @@ binary wheels for Python 2.7 packages. If it&#8217;s not already in your system,
 it and install it before proceeding to the next step.</p>
 <p>For windows, the easiest and best supported way to install Catalyst is to use
 <a class="reference internal" href="#conda"><span>Conda</span></a>.</p>
-<div class="section" id="troubleshooting-visual-c-compiler-install">
-<h4>Troubleshooting Visual C++ Compiler Install<a class="headerlink" href="#troubleshooting-visual-c-compiler-install" title="Permalink to this headline">¶</a></h4>
-<p>We run into two different errors when trying to install the the <cite>Microsoft Visual C++
-Compiler for Python 2.7</cite> mentioned above:</p>
+<p>Some problems we have encountered installing the <strong>Visual C++ Compiler</strong> mentioned above
+are as follows:</p>
+<ul>
+<li><p class="first"><strong>The system administrator has set policies to prevent this installation</strong>.</p>
+<p>In some systems, there is a default <em>Windows Software Restriction</em> policy that
+prevents the installation of some software packages like this one. You&#8217;ll have
+to change the Registry to circumvent this:</p>
 <ul class="simple">
-<li></li>
+<li>Click <code class="docutils literal"><span class="pre">Start</span></code>, and search for <code class="docutils literal"><span class="pre">regedit</span></code> and launch the <code class="docutils literal"><span class="pre">Registry</span> <span class="pre">Editor</span></code></li>
+<li>Navigate to the following folder:
+<code class="docutils literal"><span class="pre">HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Installer</span></code></li>
+<li>If there is an entry for <code class="docutils literal"><span class="pre">DisableMSI</span></code>, set the Value data to 0.</li>
+<li>If there is no such entry, click on the <code class="docutils literal"><span class="pre">Edit</span></code> menu -&gt; <code class="docutils literal"><span class="pre">New</span></code> -&gt; <code class="docutils literal"><span class="pre">DWORD</span> <span class="pre">(32-bit)</span> <span class="pre">Value</span></code>
+and enter <code class="docutils literal"><span class="pre">DisableMSI</span></code> as the Name (and by default you get 0 as the Value Data)</li>
 </ul>
+</li>
+</ul>
+<div class="line-block">
+<div class="line"><br /></div>
 </div>
+<ul>
+<li><p class="first"><strong>The installer has encountered an unexpected error installing this package.
+This may indicate a problem with this package. The error code is 2503.</strong></p>
+<p>We have observed this when trying to install a package without enough administrator
+permissions. Even when you are logged in as an Administrator, you have to explictily
+install this package with administrator privileges:</p>
+<ul class="simple">
+<li>Click <code class="docutils literal"><span class="pre">Start</span></code> and find <code class="docutils literal"><span class="pre">CMD</span></code> or <code class="docutils literal"><span class="pre">Command</span> <span class="pre">Prompt</span></code></li>
+<li>Right click on it and choose <code class="docutils literal"><span class="pre">Run</span> <span class="pre">as</span> <span class="pre">administrator</span></code></li>
+<li><code class="docutils literal"><span class="pre">cd</span></code> into the folder where you downloaded <code class="docutils literal"><span class="pre">VCForPython27.msi</span></code></li>
+<li>Run <code class="docutils literal"><span class="pre">msiexec</span> <span class="pre">/i</span> <span class="pre">VCForPython27.msi</span></code></li>
+</ul>
+</li>
+</ul>
 </div>
 <div class="section" id="amazon-linux-ami">
 <h3>Amazon Linux AMI<a class="headerlink" href="#amazon-linux-ami" title="Permalink to this headline">¶</a></h3>

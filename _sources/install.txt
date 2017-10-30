@@ -133,13 +133,34 @@ it and install it before proceeding to the next step.
 For windows, the easiest and best supported way to install Catalyst is to use
 :ref:`Conda <conda>`.
 
-Troubleshooting Visual C++ Compiler Install
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Some problems we have encountered installing the **Visual C++ Compiler** mentioned above 
+are as follows:
 
-We run into two different errors when trying to install the the `Microsoft Visual C++ 
-Compiler for Python 2.7` mentioned above:
+- **The system administrator has set policies to prevent this installation**.
+  
+  In some systems, there is a default *Windows Software Restriction* policy that
+  prevents the installation of some software packages like this one. You'll have 
+  to change the Registry to circumvent this:
 
--  
+  - Click ``Start``, and search for ``regedit`` and launch the ``Registry Editor``
+  - Navigate to the following folder:
+    ``HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Installer``
+  - If there is an entry for ``DisableMSI``, set the Value data to 0.
+  - If there is no such entry, click on the ``Edit`` menu -> ``New`` -> ``DWORD (32-bit) Value`` 
+    and enter ``DisableMSI`` as the Name (and by default you get 0 as the Value Data)
+
+|
+- **The installer has encountered an unexpected error installing this package. 
+  This may indicate a problem with this package. The error code is 2503.**
+
+  We have observed this when trying to install a package without enough administrator 
+  permissions. Even when you are logged in as an Administrator, you have to explictily 
+  install this package with administrator privileges:
+
+  - Click ``Start`` and find ``CMD`` or ``Command Prompt``
+  - Right click on it and choose ``Run as administrator``
+  - ``cd`` into the folder where you downloaded ``VCForPython27.msi``
+  - Run ``msiexec /i VCForPython27.msi``
 
 
 Amazon Linux AMI
