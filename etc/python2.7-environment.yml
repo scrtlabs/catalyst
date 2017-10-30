@@ -3,17 +3,17 @@ channels:
 - defaults
 dependencies:
 - certifi=2016.2.28=py27_0
-- mkl=2017.0.3=0
+- mkl=2017.0.3
 - numpy=1.13.1=py27_0
 - openssl=1.0.2l
 - pip=9.0.1=py27_1
-- python=2.7.13=0
+- python=2.7.13
 - scipy=0.19.1=np113py27_0
 - setuptools=36.4.0=py27_1
 - sqlite=3.13.0
 - tk=8.5.18
 - wheel=0.29.0=py27_0
-- zlib=1.2.11=0
+- zlib=1.2.11
 - pip:
   - alembic==0.9.6
   - backports.functools-lru-cache==1.4
