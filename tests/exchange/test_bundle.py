@@ -137,10 +137,10 @@ class TestExchangeBundle:
         log.info('ingesting exchange bundle {}'.format(exchange_name))
         exchange_bundle.ingest(
             data_frequency=data_frequency,
-            include_symbols=include_symbols,
+            include_symbols=None,
             exclude_symbols=None,
-            start=start,
-            end=end,
+            start=None,
+            end=None,
             show_progress=True
         )
 
