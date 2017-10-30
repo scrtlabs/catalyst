@@ -10,6 +10,7 @@ Table of Contents
    install
    beginner-tutorial
    naming-convention
+   videos
 ..   bundles
 ..   development-guidelines
 ..   appendix

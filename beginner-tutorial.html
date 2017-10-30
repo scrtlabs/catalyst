@@ -79,10 +79,7 @@
 <li class="toctree-l4"><a class="reference internal" href="install.html#osx-virtualenv-matplotlib">OSX + virtualenv + matplotlib</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="install.html#windows">Windows</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="install.html#troubleshooting-visual-c-compiler-install">Troubleshooting Visual C++ Compiler Install</a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="install.html#windows">Windows</a></li>
 <li class="toctree-l3"><a class="reference internal" href="install.html#amazon-linux-ami">Amazon Linux AMI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="install.html#troubleshooting-pip-install">Troubleshooting <code class="docutils literal"><span class="pre">pip</span></code> Install</a></li>
 </ul>
@@ -110,6 +107,11 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="naming-convention.html">Naming Convention</a></li>
+<li class="toctree-l1"><a class="reference internal" href="videos.html">Videos</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="videos.html#installation-macos">Installation: MacOS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="videos.html#installation-windows">Installation: Windows</a></li>
+</ul>
+</li>
 </ul>
 
           
@@ -528,9 +530,6 @@ information about the state of your algorithm. The column
 and allows us to plot the price of bitcoin. For example, we could easily
 examine now how our portfolio value changed over time compared to the
 bitcoin price.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="o">%</span><span class="n">load_ext</span> <span class="n">catalyst</span>
-</pre></div>
-</div>
 <div class="highlight-python"><div class="highlight"><pre><span class="o">%</span><span class="n">pylab</span> <span class="n">inline</span>
 <span class="n">figsize</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
@@ -575,8 +574,7 @@ data for you. The first argument is the number of bars you want to
 collect, the second argument is the unit (either <code class="docutils literal"><span class="pre">'1d'</span></code> for <code class="docutils literal"><span class="pre">'1m'</span></code>
 but note that you need to have minute-level data for using <code class="docutils literal"><span class="pre">1m</span></code>). This is
 a function we use in the <code class="docutils literal"><span class="pre">handle_data()</span></code> section:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="o">%%</span><span class="n">catalyst</span> <span class="o">--</span><span class="n">start</span> <span class="mi">2016</span><span class="o">-</span><span class="mi">4</span><span class="o">-</span><span class="mi">1</span> <span class="o">--</span><span class="n">end</span> <span class="mi">2017</span><span class="o">-</span><span class="mi">9</span><span class="o">-</span><span class="mi">30</span> <span class="o">-</span><span class="n">x</span> <span class="n">bitfinex</span>
-
+<div class="highlight-python"><div class="highlight"><pre><span class="o">%%</span><span class="n">catalyst</span> <span class="o">--</span><span class="n">start</span> <span class="mi">2016</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span> <span class="o">--</span><span class="n">end</span> <span class="mi">2017</span><span class="o">-</span><span class="mi">9</span><span class="o">-</span><span class="mi">30</span> <span class="o">-</span><span class="n">x</span> <span class="n">bitfinex</span> <span class="o">-</span><span class="n">o</span> <span class="n">dma</span><span class="o">.</span><span class="n">pickle</span>
 <span class="kn">from</span> <span class="nn">catalyst.api</span> <span class="kn">import</span> <span class="n">order</span><span class="p">,</span> <span class="n">record</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">order_target</span>
 
 <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
@@ -584,16 +582,16 @@ a function we use in the <code class="docutils literal"><span class="pre">handle
    <span class="n">context</span><span class="o">.</span><span class="n">asset</span> <span class="o">=</span> <span class="n">symbol</span><span class="p">(</span><span class="s">&#39;btc_usd&#39;</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">handle_data</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-   <span class="c"># Skip first 150 days to get full windows</span>
+   <span class="c"># Skip first 300 days to get full windows</span>
    <span class="n">context</span><span class="o">.</span><span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
-   <span class="k">if</span> <span class="n">context</span><span class="o">.</span><span class="n">i</span> <span class="o">&lt;</span> <span class="mi">150</span><span class="p">:</span>
+   <span class="k">if</span> <span class="n">context</span><span class="o">.</span><span class="n">i</span> <span class="o">&lt;</span> <span class="mi">300</span><span class="p">:</span>
        <span class="k">return</span>
 
    <span class="c"># Compute averages</span>
    <span class="c"># data.history() has to be called with the same params</span>
    <span class="c"># from above and returns a pandas dataframe.</span>
-   <span class="n">short_mavg</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">history</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s">&#39;price&#39;</span><span class="p">,</span> <span class="n">bar_count</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="s">&quot;1d&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-   <span class="n">long_mavg</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">history</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s">&#39;price&#39;</span><span class="p">,</span> <span class="n">bar_count</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="s">&quot;1d&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+   <span class="n">short_mavg</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">history</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s">&#39;price&#39;</span><span class="p">,</span> <span class="n">bar_count</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="s">&quot;1d&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+   <span class="n">long_mavg</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">history</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s">&#39;price&#39;</span><span class="p">,</span> <span class="n">bar_count</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="s">&quot;1d&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 
    <span class="c"># Trading logic</span>
    <span class="k">if</span> <span class="n">short_mavg</span> <span class="o">&gt;</span> <span class="n">long_mavg</span><span class="p">:</span>
@@ -610,7 +608,7 @@ a function we use in the <code class="docutils literal"><span class="pre">handle
 
 <span class="k">def</span> <span class="nf">analyze</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">perf</span><span class="p">):</span>
    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
-   <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">12</span><span class="p">))</span>
+   <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
    <span class="n">ax1</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">211</span><span class="p">)</span>
    <span class="n">perf</span><span class="o">.</span><span class="n">portfolio_value</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
    <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;portfolio value in $&#39;</span><span class="p">)</span>
