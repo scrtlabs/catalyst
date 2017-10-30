@@ -39,6 +39,7 @@ version:
 
 .. code-block:: bash
 
+   $ pip install virtualenv
    $ virtualenv catalyst-venv
    $ source ./catalyst-venv/bin/activate
    $ pip install enigma-catalyst
@@ -131,6 +132,15 @@ it and install it before proceeding to the next step.
 
 For windows, the easiest and best supported way to install Catalyst is to use
 :ref:`Conda <conda>`.
+
+Troubleshooting Visual C++ Compiler Install
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We run into two different errors when trying to install the the `Microsoft Visual C++ 
+Compiler for Python 2.7` mentioned above:
+
+-  
+
 
 Amazon Linux AMI
 ~~~~~~~~~~~~~~~~
