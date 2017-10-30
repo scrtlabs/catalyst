@@ -487,6 +487,10 @@ but note that you need to have minute-level data for using ``1m``). This is
 a function we use in the ``handle_data()`` section:
 
 .. code-block:: python
+  
+  %load_ext catalyst
+
+.. code-block:: python
 
     %%catalyst --start 2016-4-1 --end 2017-9-30 -x bitfinex
 
