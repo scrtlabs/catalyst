@@ -9,6 +9,7 @@ Table of Contents
 
    install
    beginner-tutorial
+   live-trading
    naming-convention
    videos
    development-guidelines

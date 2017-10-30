@@ -1,0 +1,336 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Live Trading &mdash; Catalyst 0.3 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Catalyst 0.3 documentation" href="index.html"/>
+        <link rel="next" title="Naming Convention" href="naming-convention.html"/>
+        <link rel="prev" title="Catalyst Beginner Tutorial" href="beginner-tutorial.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="index.html" class="icon icon-home"> Catalyst
+        
+
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Install</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#installing-with-pip">Installing with <code class="docutils literal"><span class="pre">pip</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="install.html#gnu-linux">GNU/Linux</a></li>
+<li class="toctree-l3"><a class="reference internal" href="install.html#osx">OSX</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="install.html#osx-virtualenv-matplotlib">OSX + virtualenv + matplotlib</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="install.html#windows">Windows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="install.html#amazon-linux-ami">Amazon Linux AMI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="install.html#troubleshooting-pip-install">Troubleshooting <code class="docutils literal"><span class="pre">pip</span></code> Install</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#installing-with-conda">Installing with <code class="docutils literal"><span class="pre">conda</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="install.html#troubleshooting-conda-install">Troubleshooting <code class="docutils literal"><span class="pre">conda</span></code> Install</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#getting-help">Getting Help</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="beginner-tutorial.html">Catalyst Beginner Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#basics">Basics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#my-first-algorithm">My first algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#running-the-algorithm">Running the algorithm</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="beginner-tutorial.html#ingesting-data">Ingesting data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="beginner-tutorial.html#command-line-interface">Command line interface</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#access-to-previous-prices-using-history">Access to previous prices using <code class="docutils literal"><span class="pre">history</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="beginner-tutorial.html#working-example-dual-moving-average-cross-over">Working example: Dual Moving Average Cross-Over</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#conclusions">Conclusions</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Live Trading</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#supported-exchanges">Supported Exchanges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#authentication">Authentication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#currency-symbols">Currency Symbols</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#trading-an-algorithm">Trading an Algorithm</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="naming-convention.html">Naming Convention</a></li>
+<li class="toctree-l1"><a class="reference internal" href="videos.html">Videos</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="videos.html#installation-macos">Installation: MacOS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="videos.html#installation-windows">Installation: Windows</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="development-guidelines.html">Development Guidelines</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#creating-a-development-environment">Creating a Development Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#git-branching-structure">Git Branching Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#contributing-to-the-docs">Contributing to the Docs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#commit-messages">Commit messages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#formatting-docstrings">Formatting Docstrings</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Catalyst</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Live Trading</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/live-trading.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="live-trading">
+<h1>Live Trading<a class="headerlink" href="#live-trading" title="Permalink to this headline">¶</a></h1>
+<p>This document explains how to get started with live trading.</p>
+<div class="section" id="supported-exchanges">
+<h2>Supported Exchanges<a class="headerlink" href="#supported-exchanges" title="Permalink to this headline">¶</a></h2>
+<p>Catalyst can trade against these exchanges:</p>
+<ul class="simple">
+<li>Bitfinex, id= <code class="docutils literal"><span class="pre">bitfinex</span></code></li>
+<li>Bittrex, id= <code class="docutils literal"><span class="pre">bittrex</span></code></li>
+<li>Poloniex, id= <code class="docutils literal"><span class="pre">poloniex</span></code></li>
+</ul>
+</div>
+<div class="section" id="authentication">
+<h2>Authentication<a class="headerlink" href="#authentication" title="Permalink to this headline">¶</a></h2>
+<p>Most exchanges require token key/secret combination for authentication. By
+convention, Catalyst uses an <code class="docutils literal"><span class="pre">auth.json</span></code> file to hold this data.</p>
+<p>This example illustrates the convention using the <em>Bitfinex</em> exchange.
+Here is how to generate key and secret values for the Bitfinex exchange:
+<a class="reference external" href="https://docs.bitfinex.com/v1/docs/api-access">https://docs.bitfinex.com/v1/docs/api-access</a>. Most exchanges follow
+a similar process.</p>
+<p>The auth.json file:</p>
+<div class="highlight-json"><div class="highlight"><pre><span class="p">{</span>
+  <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;bitfinex&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;my-key&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;secret&quot;</span><span class="p">:</span> <span class="s2">&quot;my-secret&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The file goes here: <code class="docutils literal"><span class="pre">~/.catalyst/data/exchanges/bitfinex/auth.json</span></code></p>
+<p>Note that the <cite>bitfinex</cite> part in the directory above corresponds to the id of the Bitfinex
+exchange as defined in the &#8220;Supported Exchanges&#8221; section above.
+Attempting to run an algorithm where the targeted exchange is missing
+its <code class="docutils literal"><span class="pre">auth.json</span></code> file will create the directory structure and create an empty
+auth.json file, but will result in an error.</p>
+</div>
+<div class="section" id="currency-symbols">
+<h2>Currency Symbols<a class="headerlink" href="#currency-symbols" title="Permalink to this headline">¶</a></h2>
+<p>Catalyst introduces a universal convention to reference
+trading pairs and individual currencies. This
+is required to ensure that the <code class="docutils literal"><span class="pre">symbol()</span></code> api predictably
+returns the correct asset regardless of the targeted exchange.</p>
+<p>Exchanges tend to use their own convention to represent currencies
+(e.g. XBT and BTC both represent Bitcoin on different exchanges).
+Trading pairs are also inconsistent. For example, Bitfinex
+puts the market currency before the base currency without a
+separator, Bittrex puts the base currency first and uses a dash
+seperator.</p>
+<p>Here is the Catalyst convention:</p>
+<p><em>[Market Currency]_[Base Currency]</em> all lowercase.</p>
+<p>Currency symbols (e.g. btc, eth, ltc) follow the Bittrex convention.</p>
+<p>Here are some examples:</p>
+<div class="highlight-json"><div class="highlight"><pre># With Bitfinex
+bitcoin_usd_asset = symbol(&#39;btc_usd&#39;)
+ethereum_bitcoin_asset = symbol(&#39;eth_btc&#39;)
+
+# With Bittrex
+ethereum_bitcoin_asset = symbol(&#39;eth_btc&#39;)
+neo_ethereum_asset = symbol(&#39;neo_eth)
+</pre></div>
+</div>
+<p>Note that the trading pairs are always referenced in the same manner.
+However, not all trading pairs are available on all exchanges. An
+error will occur if the specified trading pair is not trading
+on the exchange. To check which currency pairs are available on each
+of the supported exchanges, see <a href="#id1"><span class="problematic" id="id2">`Catalyst Market Coverage &lt;https://www.enigma.co/catalyst/status`_</span></a>.</p>
+</div>
+<div class="section" id="trading-an-algorithm">
+<h2>Trading an Algorithm<a class="headerlink" href="#trading-an-algorithm" title="Permalink to this headline">¶</a></h2>
+<p>There is no special convention to follow when writing an
+algorithm for live trading. The same algorithm should work in
+backtest and live execution mode without modification.</p>
+<p>What differs are the arguments provided to the catalyst client or
+<cite>run_algorithm()</cite> interface. Here is the same example in both interfaces:</p>
+<div class="highlight-bash"><div class="highlight"><pre>catalyst live -f my_algo_code -x bitfinex -c btc -n my_algo_name
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">run_algorithm</span><span class="p">(</span>
+    <span class="n">initialize</span><span class="o">=</span><span class="n">initialize</span><span class="p">,</span>
+    <span class="n">handle_data</span><span class="o">=</span><span class="n">handle_data</span><span class="p">,</span>
+    <span class="n">analyze</span><span class="o">=</span><span class="n">analyze</span><span class="p">,</span>
+    <span class="n">exchange_name</span><span class="o">=</span><span class="s">&#39;bitfinex&#39;</span><span class="p">,</span>
+    <span class="n">live</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">algo_namespace</span><span class="o">=</span><span class="s">&#39;my_algo_name&#39;</span><span class="p">,</span>
+    <span class="n">base_currency</span><span class="o">=</span><span class="s">&#39;btc&#39;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Here is the breakdown of the new arguments:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">live</span></code>: Boolean flag which enables live trading.</li>
+<li><code class="docutils literal"><span class="pre">exchange_name</span></code>: The name of the targeted exchange
+(supported values: <em>bitfinex</em>, <em>bittrex</em>).</li>
+<li><code class="docutils literal"><span class="pre">algo_namespace</span></code>: A arbitrary label assigned to your algorithm for
+data storage purposes.</li>
+<li><code class="docutils literal"><span class="pre">base_currency</span></code>: The base currency used to calculate the
+statistics of your algorithm. Currently, the base currency of all
+trading pairs of your algorithm must match this value.</li>
+</ul>
+<p>Here is a complete algorithm for reference:
+<a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/buy_low_sell_high_live.py">Buy Low and Sell High</a></p>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="naming-convention.html" class="btn btn-neutral float-right" title="Naming Convention" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="beginner-tutorial.html" class="btn btn-neutral" title="Catalyst Beginner Tutorial" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Enigma MPC, Inc..
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.3',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
