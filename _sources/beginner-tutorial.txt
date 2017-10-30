@@ -255,7 +255,7 @@ slippage model that ``catalyst`` uses).
 
 Let's take a quick look at the performance ``DataFrame``. For this, we
 use ``pandas`` from inside the IPython Notebook and print the first ten
-rows. and print the first ten rows. Note that ``catalyst`` makes heavy usage of 
+rows. Note that ``catalyst`` makes heavy usage of 
 `pandas <http://pandas.pydata.org/>`_, especially for data input and 
 outputting so it's worth spending some time to learn it.
 
