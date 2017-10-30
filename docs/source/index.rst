@@ -11,6 +11,7 @@ Table of Contents
    beginner-tutorial
    naming-convention
    videos
+   development-guidelines
 ..   bundles
 ..   development-guidelines
 ..   appendix
