@@ -12,6 +12,7 @@ Table of Contents
    live-trading
    naming-convention
    videos
+   resources
    development-guidelines
    releases
 ..   bundles
