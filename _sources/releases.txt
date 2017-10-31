@@ -2,6 +2,23 @@
 Release Notes
 =============
 
+Version 0.3.4
+^^^^^^^^^^^^^
+**Release Date**: 2017-10-31
+
+Bug Fixes
+~~~~~~~~~
+
+- Fixed issue with auto-ingestion of minute data
+- Fixed issue with sell orders in backtesting
+- Fixed data frequency issues with data.history() in backtesting
+
+
+Build
+~~~~~
+
+- Added more unit tests
+
 Version 0.3.3
 ^^^^^^^^^^^^^
 **Release Date**: 2017-10-26
@@ -57,6 +74,12 @@ Version 0.3
 ^^^^^^^^^^^
 **Release Date**: 2017-10-20
 
+- Standardized live and backtesting syntax
+- Added a repository for historical data
+- Added supported for multiple exchanges per algorithm
+- Added a standardized dictionary of symbols for each exchange
+- Added auto-ingestion of bundle data while backtesting
+- Bug fixes
 
 
 Version 0.2.dev5

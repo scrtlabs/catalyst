@@ -105,6 +105,11 @@
 <li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#conclusions">Conclusions</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="jupyter.html">Catalyst &amp; Jupyter Notebook</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="jupyter.html#install">Install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jupyter.html#running-algorithms">Running Algorithms</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="live-trading.html">Live Trading</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="live-trading.html#supported-exchanges">Supported Exchanges</a></li>
 <li class="toctree-l2"><a class="reference internal" href="live-trading.html#authentication">Authentication</a></li>
@@ -118,6 +123,10 @@
 <li class="toctree-l2"><a class="reference internal" href="videos.html#installation-windows">Installation: Windows</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="resources.html">Resources</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="resources.html#related-3rd-party-apis">Related 3rd Party APIs</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="development-guidelines.html">Development Guidelines</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#creating-a-development-environment">Creating a Development Environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#git-branching-structure">Git Branching Structure</a></li>
@@ -127,18 +136,23 @@
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Release Notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-3-3">Version 0.3.3</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-3-4">Version 0.3.4</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#bug-fixes">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#build">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-3-2">Version 0.3.2</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-3-3">Version 0.3.3</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id1">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id2">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-3-1">Version 0.3.1</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-3-2">Version 0.3.2</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id3">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-3-1">Version 0.3.1</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id5">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#version-0-3">Version 0.3</a></li>
@@ -192,19 +206,37 @@
             
   <div class="section" id="release-notes">
 <h1>Release Notes<a class="headerlink" href="#release-notes" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="version-0-3-4">
+<h2>Version 0.3.4<a class="headerlink" href="#version-0-3-4" title="Permalink to this headline">¶</a></h2>
+<p><strong>Release Date</strong>: 2017-10-31</p>
+<div class="section" id="bug-fixes">
+<h3>Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Fixed issue with auto-ingestion of minute data</li>
+<li>Fixed issue with sell orders in backtesting</li>
+<li>Fixed data frequency issues with data.history() in backtesting</li>
+</ul>
+</div>
+<div class="section" id="build">
+<h3>Build<a class="headerlink" href="#build" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Added more unit tests</li>
+</ul>
+</div>
+</div>
 <div class="section" id="version-0-3-3">
 <h2>Version 0.3.3<a class="headerlink" href="#version-0-3-3" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2017-10-26</p>
-<div class="section" id="bug-fixes">
-<h3>Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id1">
+<h3>Bug Fixes<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fix missing -x in ingest-exchange</li>
 <li>Fix issue with daily chunks end date (data bundles)</li>
 <li>Fix issue in the prepare_chunk logic (data bundles)</li>
 </ul>
 </div>
-<div class="section" id="build">
-<h3>Build<a class="headerlink" href="#build" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id2">
+<h3>Build<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Added data validation unit tests</li>
 </ul>
@@ -213,8 +245,8 @@
 <div class="section" id="version-0-3-2">
 <h2>Version 0.3.2<a class="headerlink" href="#version-0-3-2" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2017-10-25</p>
-<div class="section" id="id1">
-<h3>Bug Fixes<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id3">
+<h3>Bug Fixes<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fix to work with empty data bundles</li>
 <li>Fix Windows path of <code class="docutils literal"><span class="pre">$HOME/.catalyst</span></code> folder</li>
@@ -223,8 +255,8 @@
 <li>Fix an issue with asset date in chunks</li>
 </ul>
 </div>
-<div class="section" id="id2">
-<h3>Build<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id4">
+<h3>Build<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Python3 adjustments</li>
 <li>Added method to clean bundle folders, and remove symbols.json</li>
@@ -235,8 +267,8 @@
 <div class="section" id="version-0-3-1">
 <h2>Version 0.3.1<a class="headerlink" href="#version-0-3-1" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2017-10-22</p>
-<div class="section" id="id3">
-<h3>Bug Fixes<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id5">
+<h3>Bug Fixes<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fixed OS-dependent path issue in data bundle</li>
 <li>Changed handling of empty <code class="docutils literal"><span class="pre">auth.json</span></code>, instead of throwing an error for missing file</li>
@@ -248,6 +280,14 @@
 <div class="section" id="version-0-3">
 <h2>Version 0.3<a class="headerlink" href="#version-0-3" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2017-10-20</p>
+<ul class="simple">
+<li>Standardized live and backtesting syntax</li>
+<li>Added a repository for historical data</li>
+<li>Added supported for multiple exchanges per algorithm</li>
+<li>Added a standardized dictionary of symbols for each exchange</li>
+<li>Added auto-ingestion of bundle data while backtesting</li>
+<li>Bug fixes</li>
+</ul>
 </div>
 <div class="section" id="version-0-2-dev5">
 <h2>Version 0.2.dev5<a class="headerlink" href="#version-0-2-dev5" title="Permalink to this headline">¶</a></h2>
