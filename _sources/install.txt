@@ -327,7 +327,7 @@ for any reason, you can try setting up the environment manually with the followi
 
    .. code-block:: bash
 
-      conda create --name catalyst python=2.7 scipy
+      conda create --name catalyst python=2.7 scipy zlib
 
 2. Activate the environment:
 
