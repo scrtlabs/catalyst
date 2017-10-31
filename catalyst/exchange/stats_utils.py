@@ -1,4 +1,44 @@
 import pandas as pd
+import numpy as np
+
+
+def crossover(source, target):
+    """
+    The `x`-series is defined as having crossed over `y`-series if the value
+    of `x` is greater than the value of `y` and the value of `x` was less than
+    the value of `y` on the bar immediately preceding the current bar.
+
+    :param source:
+    :param target:
+    :return:
+    """
+    if source[-1] is np.nan or source[-2] is np.nan \
+            or target[-1] is np.nan or target[-2] is np.nan:
+        return False
+
+    if source[-1] > target[-1] and source[-2] < target[-2]:
+        return True
+    else:
+        return False
+
+
+def crossunder(source, target):
+    """
+    The `x`-series is defined as having crossed under `y`-series if the value
+    of `x` is less than the value of `y` and the value of `x` was greater than
+    the value of `y` on the bar immediately preceding the current bar.
+    :param source:
+    :param target:
+    :return:
+    """
+    if source[-1] is np.nan or source[-2] is np.nan \
+            or target[-1] is np.nan or target[-2] is np.nan:
+        return False
+
+    if source[-1] < target[-1] and source[-2] > target[-2]:
+        return True
+    else:
+        return False
 
 
 def get_pretty_stats(stats_df, recorded_cols=None, num_rows=10):
