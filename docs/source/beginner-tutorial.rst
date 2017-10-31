@@ -255,7 +255,7 @@ slippage model that ``catalyst`` uses).
 
 Let's take a quick look at the performance ``DataFrame``. For this, we
 use ``pandas`` from inside the IPython Notebook and print the first ten
-rows. and print the first ten rows. Note that ``catalyst`` makes heavy usage of 
+rows. Note that ``catalyst`` makes heavy usage of 
 `pandas <http://pandas.pydata.org/>`_, especially for data input and 
 outputting so it's worth spending some time to learn it.
 
@@ -431,6 +431,10 @@ bitcoin price.
 
 .. code-block:: python
 
+    %load_ext catalyst
+
+.. code-block:: python
+
     %pylab inline
     figsize(12, 12)
     import matplotlib.pyplot as plt
@@ -483,8 +487,13 @@ but note that you need to have minute-level data for using ``1m``). This is
 a function we use in the ``handle_data()`` section:
 
 .. code-block:: python
+  
+  %load_ext catalyst
 
-    %%catalyst --start 2016-1-1 --end 2017-9-30 -x bitfinex -o dma.pickle
+.. code-block:: python
+
+    %%catalyst --start 2016-4-1 --end 2017-9-30 -x bitfinex
+
     from catalyst.api import order, record, symbol, order_target
 
     def initialize(context):
@@ -492,16 +501,16 @@ a function we use in the ``handle_data()`` section:
        context.asset = symbol('btc_usd')
 
     def handle_data(context, data):
-       # Skip first 300 days to get full windows
+       # Skip first 150 days to get full windows
        context.i += 1
-       if context.i < 300:
+       if context.i < 150:
            return
 
        # Compute averages
        # data.history() has to be called with the same params
        # from above and returns a pandas dataframe.
-       short_mavg = data.history(context.asset, 'price', bar_count=100, frequency="1d").mean()
-       long_mavg = data.history(context.asset, 'price', bar_count=300, frequency="1d").mean()
+       short_mavg = data.history(context.asset, 'price', bar_count=50, frequency="1d").mean()
+       long_mavg = data.history(context.asset, 'price', bar_count=150, frequency="1d").mean()
 
        # Trading logic
        if short_mavg > long_mavg:
@@ -518,7 +527,7 @@ a function we use in the ``handle_data()`` section:
 
     def analyze(context, perf):
        import matplotlib.pyplot as plt
-       fig = plt.figure()
+       fig = plt.figure(figsize=(12,12))
        ax1 = fig.add_subplot(211)
        perf.portfolio_value.plot(ax=ax1)
        ax1.set_ylabel('portfolio value in $')
