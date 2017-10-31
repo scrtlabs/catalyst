@@ -559,6 +559,20 @@ cdef class TradingPair(Asset):
             end_minute=self.end_minute
         )
 
+    def is_exchange_open(self, dt_minute):
+        """
+        Parameters
+        ----------
+        dt_minute: pd.Timestamp (UTC, tz-aware)
+            The minute to check.
+
+        Returns
+        -------
+        boolean: whether the asset's exchange is open at the given minute.
+        """
+        #TODO: consider implementing to spot holds
+        return True
+
     cpdef __reduce__(self):
         """
         Function used by pickle to determine how to serialize/deserialize this
