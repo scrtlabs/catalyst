@@ -1,17 +1,20 @@
 import hashlib
+import tempfile
 from logging import getLogger
 
+import os
 import pandas as pd
 
 from catalyst import get_calendar
 from catalyst.exchange.bundle_utils import get_bcolz_chunk, \
-    get_periods_range, get_start_dt
+    get_periods_range, get_start_dt, get_month_start_end, get_df_from_arrays, \
+    get_year_start_end
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
 from catalyst.exchange.exchange_bundle import ExchangeBundle, \
     BUNDLE_NAME_TEMPLATE
 from catalyst.exchange.exchange_utils import get_exchange_folder
-from catalyst.exchange.init_utils import get_exchange
+from catalyst.exchange.factory import get_exchange
 from catalyst.exchange.stats_utils import df_to_string
 from catalyst.utils.paths import ensure_directory
 
@@ -45,11 +48,11 @@ class TestExchangeBundle:
         exchange = get_exchange(exchange_name)
         exchange_bundle = ExchangeBundle(exchange)
         assets = [
-            exchange.get_asset('iot_btc')
+            exchange.get_asset('xmr_btc')
         ]
 
         # start = pd.to_datetime('2017-09-01', utc=True)
-        start = pd.to_datetime('2017-9-01', utc=True)
+        start = pd.to_datetime('2016-01-01', utc=True)
         end = pd.to_datetime('2017-9-30', utc=True)
 
         log.info('ingesting exchange bundle {}'.format(exchange_name))
@@ -425,4 +428,58 @@ class TestExchangeBundle:
         )
         df = pd.DataFrame(bundle_series)
         print('\n' + df_to_string(df))
+        pass
+
+    def bundle_to_csv(self):
+        exchange_name = 'poloniex'
+        data_frequency = 'daily'
+        period = '2016'
+
+        exchange = get_exchange(exchange_name)
+        bundle = ExchangeBundle(exchange)
+        asset = exchange.get_asset('xmr_btc')
+
+        path = get_bcolz_chunk(
+            exchange_name=exchange.name,
+            symbol=asset.symbol,
+            data_frequency=data_frequency,
+            period=period
+        )
+
+        dt = pd.to_datetime(period, utc=True)
+        if data_frequency == 'minute':
+            start_dt, end_dt = get_month_start_end(dt)
+        else:
+            start_dt, end_dt = get_year_start_end(dt)
+
+        reader = bundle.get_reader(data_frequency, path=path)
+        arrays = None
+        try:
+            arrays = reader.load_raw_arrays(
+                sids=[asset.sid],
+                fields=['open', 'high', 'low', 'close', 'volume'],
+                start_dt=start_dt,
+                end_dt=end_dt
+            )
+        except Exception as e:
+            log.warn('skipping ctable for {} from {} to {}: {}'.format(
+                asset.symbol, start_dt, end_dt, e
+            ))
+
+        periods = bundle.get_calendar_periods_range(
+            start_dt, end_dt, data_frequency
+        )
+        df = get_df_from_arrays(arrays, periods)
+
+        folder = os.path.join(
+            tempfile.gettempdir(), 'catalyst', exchange.name, asset.symbol
+        )
+        ensure_directory(folder)
+
+        path = os.path.join(folder, period + '.csv')
+
+        log.info('creating csv file: {}'.format(path))
+        print('HEAD\n{}'.format(df.head(10)))
+        print('TAIL\n{}'.format(df.tail(10)))
+        df.to_csv(path)
         pass

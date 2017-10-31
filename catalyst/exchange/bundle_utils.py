@@ -103,34 +103,59 @@ def get_start_dt(end_dt, bar_count, data_frequency):
     return start_dt
 
 
-def get_month_start_end(dt):
+def get_period_label(dt, data_frequency):
     """
-    Returns the first and last day of the month for the specified date.
+    The period label for the specified date and frequency.
 
     :param dt:
+    :param data_frequency:
+    :return:
+    """
+    return '{}-{:02d}'.format(dt.year, dt.month) if data_frequency == 'minute' \
+        else '{}'.format(dt.year)
+
+
+def get_month_start_end(dt, first_day=None, last_day=None):
+    """
+    The first and last day of the month for the specified date.
+
+    :param dt:
+    :param first_day
+    :param last_day
     :return:
     """
     month_range = calendar.monthrange(dt.year, dt.month)
-    month_start = pd.to_datetime(datetime(
-        dt.year, dt.month, 1, 0, 0, 0, 0
-    ), utc=True)
 
-    month_end = pd.to_datetime(datetime(
-        dt.year, dt.month, month_range[1], 23, 59, 0, 0
-    ), utc=True)
+    if first_day:
+        month_start = first_day
+    else:
+        month_start = pd.to_datetime(datetime(
+            dt.year, dt.month, 1, 0, 0, 0, 0
+        ), utc=True)
+
+    if last_day:
+        month_end = last_day
+    else:
+        month_end = pd.to_datetime(datetime(
+            dt.year, dt.month, month_range[1], 23, 59, 0, 0
+        ), utc=True)
 
     return month_start, month_end
 
 
-def get_year_start_end(dt):
+def get_year_start_end(dt, first_day=None, last_day=None):
     """
-    Returns the first and last day of the year for the specified date.
+    The first and last day of the year for the specified date.
 
     :param dt:
+    :param first_day
+    :param last_day
     :return:
     """
-    year_start = pd.to_datetime(date(dt.year, 1, 1), utc=True)
-    year_end = pd.to_datetime(date(dt.year, 12, 31), utc=True)
+    year_start = first_day if first_day \
+        else pd.to_datetime(date(dt.year, 1, 1), utc=True)
+    year_end = last_day if last_day \
+        else pd.to_datetime(date(dt.year, 12, 31), utc=True)
 
     return year_start, year_end
 

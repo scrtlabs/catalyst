@@ -301,7 +301,7 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
         :param ffill:
         :return:
         """
-        bundle = self.exchange_bundles[exchange.name]
+        bundle = self.exchange_bundles[exchange.name]  # type: ExchangeBundle
 
         candle_size, unit, data_frequency = get_frequency(
             frequency, data_frequency
@@ -313,14 +313,32 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
             end_dt=end_dt,
             bar_count=adj_bar_count,
             field=field,
-            data_frequency=data_frequency
+            data_frequency=data_frequency,
+            algo_end_dt=self._last_available_session,
         )
 
         df = resample_history_df(pd.DataFrame(series), candle_size, field)
         return df
 
-    def get_exchange_spot_value(self, exchange, assets, field, dt,
-                                data_frequency):
+    def get_exchange_spot_value(self,
+                                exchange,  # type: Exchange
+                                assets,  # type: List[TradingPair]
+                                field,  # type: str
+                                dt,  # type: Timestamp
+                                data_frequency  # type: str
+                                ):
+        # type: (...) -> float
+        """
+        A spot value for the exchange bundle. Try to ingest data if not in
+        the bundle.
+
+        :param exchange:
+        :param assets:
+        :param field:
+        :param dt:
+        :param data_frequency:
+        :return:
+        """
         bundle = self.exchange_bundles[exchange.name]
 
         if data_frequency == 'daily':
