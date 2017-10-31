@@ -9,6 +9,7 @@ Table of Contents
 
    install
    beginner-tutorial
+   jupyter
    live-trading
    naming-convention
    videos
