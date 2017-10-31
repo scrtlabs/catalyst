@@ -13,8 +13,9 @@ Table of Contents
    naming-convention
    videos
    development-guidelines
+   releases
 ..   bundles
 ..   development-guidelines
 ..   appendix
 ..   release-process
-..   releases
+
