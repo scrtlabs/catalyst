@@ -11,10 +11,10 @@ log = Logger('exchange_blotter', level=LOG_LEVEL)
 
 # It seems like we need to accept greater slippage risk in cryptos
 # Orders won't often close at Equity levels.
-# TODO: consider adjusting dynamically based on trading pair
-DEFAULT_SLIPPAGE_SPREAD = 0.02
-DEFAULT_MAKER_FEE = 0.001
-DEFAULT_TAKER_FEE = 0.002
+# TODO: should work with set_commission and set_slippage
+DEFAULT_SLIPPAGE_SPREAD = 0.0001
+DEFAULT_MAKER_FEE = 0.15
+DEFAULT_TAKER_FEE = 0.25
 
 
 class TradingPairFeeSchedule(CommissionModel):
@@ -100,13 +100,6 @@ class TradingPairFixedSlippage(SlippageModel):
             transaction = create_transaction(
                 order, dt, execution_price, execution_volume
             )
-            # transaction = Transaction(
-            #     asset=order.asset,
-            #     amount=abs(execution_volume),
-            #     dt=dt,
-            #     price=execution_price,
-            #     order_id=order.id
-            # )
 
             self._volume_for_bar += abs(transaction.amount)
             yield order, transaction
