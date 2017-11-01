@@ -240,7 +240,7 @@ class Bitfinex(Exchange):
         # TODO: fetch account data and keep in cache
         return None
 
-    def get_candles(self, data_frequency, assets, bar_count=None,
+    def get_candles(self, freq, assets, bar_count=None,
                     start_dt=None, end_dt=None):
         """
         Retrieve OHLVC candles from Bitfinex
@@ -259,39 +259,36 @@ class Bitfinex(Exchange):
             'retrieving {bars} {freq} candles on {exchange} from '
             '{end_dt} for markets {symbols}, '.format(
                 bars=bar_count,
-                freq=data_frequency,
+                freq=freq,
                 exchange=self.name,
                 end_dt=end_dt,
                 symbols=get_symbols_string(assets)
             )
         )
 
-        freq_match = re.match(r'([0-9].*)(m|h|d)', data_frequency, re.M | re.I)
+        allowed_frequencies = ['1T', '5T', '15T', '30T', '60T', '180T',
+                               '360T', '720T', '1D', '7D', '14D', '30D']
+        if freq not in allowed_frequencies:
+            raise InvalidHistoryFrequencyError(frequency=freq)
+
+        freq_match = re.match(r'([0-9].*)(T|H|D)', freq, re.M | re.I)
         if freq_match:
             number = int(freq_match.group(1))
             unit = freq_match.group(2)
 
-            if unit == 'd':
-                converted_unit = 'D'
+            if unit == 'T':
+                if number in [60, 180, 360, 720]:
+                    number = number / 60
+                    converted_unit = 'h'
+                else:
+                    converted_unit = 'm'
             else:
                 converted_unit = unit
 
             frequency = '{}{}'.format(number, converted_unit)
-            allowed_frequencies = ['1m', '5m', '15m', '30m', '1h', '3h', '6h',
-                                   '12h', '1D', '7D', '14D', '1M']
 
-            if frequency not in allowed_frequencies:
-                raise InvalidHistoryFrequencyError(
-                    frequency=data_frequency
-                )
-        elif data_frequency == 'minute':
-            frequency = '1m'
-        elif data_frequency == 'daily':
-            frequency = '1D'
         else:
-            raise InvalidHistoryFrequencyError(
-                frequency=data_frequency
-            )
+            raise InvalidHistoryFrequencyError(frequency=freq)
 
         # Making sure that assets are iterable
         asset_list = [assets] if isinstance(assets, TradingPair) else assets

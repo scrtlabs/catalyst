@@ -10,7 +10,7 @@ from datetime import date, datetime
 import pandas as pd
 
 from catalyst.exchange.exchange_errors import ExchangeSymbolsNotFound, \
-    InvalidHistoryFrequencyError
+    InvalidHistoryFrequencyError, InvalidHistoryFrequencyAlias
 from catalyst.utils.paths import data_root, ensure_directory, \
     last_modified_time
 
@@ -313,50 +313,61 @@ def get_common_assets(exchanges):
 
 
 def get_frequency(freq, data_frequency):
-    if freq == 'daily':
-        freq = '1d'
-    elif freq == 'minute':
-        freq = '1m'
+    if freq == 'minute':
+        unit = 'T'
+        candle_size = 1
 
-    freq_match = re.match(r'([0-9].*)(m|M|d|D)', freq, re.M | re.I)
-    if freq_match:
-        candle_size = int(freq_match.group(1))
-        unit = freq_match.group(2)
+    elif freq == 'daily':
+        unit = 'D'
+        candle_size = 1
 
     else:
-        raise InvalidHistoryFrequencyError(freq)
+        freq_match = re.match(r'([0-9].*)?(m|M|d|D|h|H|T)', freq, re.M | re.I)
+        if freq_match:
+            candle_size = int(freq_match.group(1)) if freq_match.group(1) \
+                else 1
+            unit = freq_match.group(2)
+
+        else:
+            raise InvalidHistoryFrequencyError(frequency=freq)
 
     if unit.lower() == 'd':
+        alias = '{}D'.format(candle_size)
+
         if data_frequency == 'minute':
             data_frequency = 'daily'
 
-    elif unit.lower() == 'm':
+    elif unit.lower() == 'm' or unit == 'T':
+        alias = '{}T'.format(candle_size)
+
         if data_frequency == 'daily':
             data_frequency = 'minute'
 
-    else:
-        raise InvalidHistoryFrequencyError(freq)
-
-    return candle_size, unit, data_frequency
-
-
-def resample_history_df(df, candle_size, field):
-    if candle_size > 1:
-        if field == 'open':
-            agg = 'first'
-        elif field == 'high':
-            agg = 'max'
-        elif field == 'low':
-            agg = 'min'
-        elif field == 'close':
-            agg = 'last'
-        elif field == 'volume':
-            agg = 'sum'
-        else:
-            raise ValueError('Invalid field.')
-
-        # TODO: pad with nan?
-        return df.resample('{}T'.format(candle_size)).agg(agg)
+    # elif unit.lower() == 'h':
+    #     candle_size = candle_size * 60
+    #
+    #     alias = '{}T'.format(candle_size)
+    #     if data_frequency == 'daily':
+    #         data_frequency = 'minute'
 
     else:
-        return df
+        raise InvalidHistoryFrequencyAlias(freq=freq)
+
+    return alias, candle_size, unit, data_frequency
+
+
+def resample_history_df(df, freq, field):
+    if field == 'open':
+        agg = 'first'
+    elif field == 'high':
+        agg = 'max'
+    elif field == 'low':
+        agg = 'min'
+    elif field == 'close':
+        agg = 'last'
+    elif field == 'volume':
+        agg = 'sum'
+    else:
+        raise ValueError('Invalid field.')
+
+    return df.resample(freq).agg(agg)

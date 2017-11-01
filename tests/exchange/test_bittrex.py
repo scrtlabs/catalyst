@@ -52,13 +52,13 @@ class TestBittrex(BaseExchangeTestCase):
     def test_get_candles(self):
         log.info('retrieving candles')
         ohlcv_neo = self.exchange.get_candles(
-            data_frequency='5m',
+            freq='5T',
             assets=self.exchange.get_asset('neo_btc'),
             bar_count=20,
             end_dt=pd.to_datetime('2017-10-20', utc=True)
         )
         ohlcv_neo_ubq = self.exchange.get_candles(
-            data_frequency='1d',
+            freq='1D',
             assets=[
                 self.exchange.get_asset('neo_btc'),
                 self.exchange.get_asset('ubq_btc')

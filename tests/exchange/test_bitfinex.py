@@ -8,7 +8,7 @@ from catalyst.finance.execution import (LimitOrder)
 log = Logger('test_bitfinex')
 
 
-class TestBitfinexTestCase(BaseExchangeTestCase):
+class TestBitfinex(BaseExchangeTestCase):
     @classmethod
     def setup(self):
         log.info('creating bitfinex object')
@@ -48,7 +48,7 @@ class TestBitfinexTestCase(BaseExchangeTestCase):
     def test_get_candles(self):
         log.info('retrieving candles')
         ohlcv_neo = self.exchange.get_candles(
-            data_frequency='1m',
+            freq='1T',
             assets=self.exchange.get_asset('neo_btc')
         )
         pass

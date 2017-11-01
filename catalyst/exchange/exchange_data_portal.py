@@ -303,7 +303,7 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
         """
         bundle = self.exchange_bundles[exchange.name]  # type: ExchangeBundle
 
-        candle_size, unit, data_frequency = get_frequency(
+        freq, candle_size, unit, data_frequency = get_frequency(
             frequency, data_frequency
         )
         adj_bar_count = candle_size * bar_count
@@ -317,7 +317,7 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
             algo_end_dt=self._last_available_session,
         )
 
-        df = resample_history_df(pd.DataFrame(series), candle_size, field)
+        df = resample_history_df(pd.DataFrame(series), freq, field)
         return df
 
     def get_exchange_spot_value(self,

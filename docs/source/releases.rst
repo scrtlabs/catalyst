@@ -12,6 +12,7 @@ Bug Fixes
 - Fixed issue with auto-ingestion of minute data
 - Fixed issue with sell orders in backtesting
 - Fixed data frequency issues with data.history() in backtesting
+- Fixed an issue with can_trade()
 
 
 Build

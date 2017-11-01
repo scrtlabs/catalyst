@@ -86,6 +86,14 @@ class AlgoPickleNotFound(ZiplineError):
     ).strip()
 
 
+class InvalidHistoryFrequencyAlias(ZiplineError):
+    msg = (
+        'Invalid frequency alias {freq}. Valid suffixes are M (minute) '
+        'and D (day). For example, these aliases would be valid '
+        '1M, 5M, 1D.'
+    ).strip()
+
+
 class InvalidHistoryFrequencyError(ZiplineError):
     msg = (
         'Frequency {frequency} not supported by the exchange.'

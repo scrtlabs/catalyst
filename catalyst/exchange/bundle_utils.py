@@ -71,25 +71,18 @@ def get_delta(periods, data_frequency):
         if data_frequency == 'minute' else timedelta(days=periods)
 
 
-def get_periods_range(start_dt, end_dt, data_frequency):
-    freq = 'T' if data_frequency == 'minute' else 'D'
+def get_periods_range(start_dt, end_dt, freq):
+    if freq == 'minute':
+        freq = 'T'
+
+    elif freq == 'daily':
+        freq = 'D'
 
     return pd.date_range(start_dt, end_dt, freq=freq)
 
 
-def get_periods(start_dt, end_dt, data_frequency):
-    delta = end_dt - start_dt
-
-    if data_frequency == 'minute':
-        delta_periods = delta.total_seconds() / 60
-
-    elif data_frequency == 'daily':
-        delta_periods = delta.total_seconds() / 60 / 60 / 24
-
-    else:
-        raise ValueError('frequency not supported')
-
-    return int(delta_periods)
+def get_periods(start_dt, end_dt, freq):
+    return len(get_periods_range(start_dt, end_dt, freq))
 
 
 def get_start_dt(end_dt, bar_count, data_frequency):

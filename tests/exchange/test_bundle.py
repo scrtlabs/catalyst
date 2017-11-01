@@ -126,9 +126,9 @@ class TestExchangeBundle:
         # data_frequency = 'daily'
         # include_symbols = 'neo_btc,bch_btc,eth_btc'
 
-        exchange_name = 'bittrex'
+        exchange_name = 'poloniex'
         data_frequency = 'daily'
-        include_symbols = 'wings_eth'
+        include_symbols = 'eth_btc'
 
         start = pd.to_datetime('2017-1-1', utc=True)
         end = pd.to_datetime('2017-10-16', utc=True)
@@ -140,10 +140,10 @@ class TestExchangeBundle:
         log.info('ingesting exchange bundle {}'.format(exchange_name))
         exchange_bundle.ingest(
             data_frequency=data_frequency,
-            include_symbols=None,
+            include_symbols=include_symbols,
             exclude_symbols=None,
-            start=None,
-            end=None,
+            start=start,
+            end=end,
             show_progress=True
         )
 
@@ -342,7 +342,7 @@ class TestExchangeBundle:
             assets=assets,
             end_dt=end_dt,
             bar_count=bar_count,
-            data_frequency='minute'
+            freq='1T'
         )
         start_dt = get_start_dt(end_dt, bar_count, data_frequency)
 
@@ -392,7 +392,7 @@ class TestExchangeBundle:
             start_dt=start_dt,
             end_dt=end_dt,
             bar_count=bar_count,
-            data_frequency=data_frequency
+            freq='1T'
         )
 
         writer = bundle.get_writer(start_dt, end_dt, data_frequency)
@@ -437,7 +437,7 @@ class TestExchangeBundle:
 
         exchange = get_exchange(exchange_name)
         bundle = ExchangeBundle(exchange)
-        asset = exchange.get_asset('xmr_btc')
+        asset = exchange.get_asset('eth_btc')
 
         path = get_bcolz_chunk(
             exchange_name=exchange.name,
