@@ -1,16 +1,3 @@
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import pandas as pd
 from catalyst.gens.sim_engine import (
     BAR,
@@ -33,8 +20,8 @@ class LiveGraphClock(object):
 
     This mixes the clock with a live graph.
 
-    Note
-    ----
+    Notes
+    -----
     This seemingly awkward approach allows us to run the program using a single
     thread. This is important because Matplotlib does not play nice with
     multi-threaded environments. Zipline probably does not either.
@@ -53,7 +40,7 @@ class LiveGraphClock(object):
 
     def __init__(self, sessions, context, time_skew=pd.Timedelta('0s')):
 
-        global mdates, plt                  #TODO: Could be cleaner
+        global mdates, plt  # TODO: Could be cleaner
         import matplotlib.dates as mdates
         from matplotlib import pyplot as plt
         from matplotlib import style
@@ -95,11 +82,12 @@ class LiveGraphClock(object):
         """
         Trying to assign reasonable parameters to the time axis.
 
-        TODO: room for improvement
+        Parameters
+        ----------
+        ax:
 
-        :param ax:
-        :return:
         """
+        # TODO: room for improvement
         ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
         ax.xaxis.set_major_formatter(self.fmt)
 
@@ -113,9 +101,21 @@ class LiveGraphClock(object):
         ax.grid(True)
 
     def set_legend(self, ax):
+        """
+        Set legend on the chart.
+
+        Parameters
+        ----------
+        ax
+
+        """
         ax.legend(loc='upper left', ncol=1, fontsize=10, numpoints=1)
 
     def draw_pnl(self):
+        """
+        Draw p&l line on the chart.
+
+        """
         ax = self.ax_pnl
         df = self.context.pnl_stats
 
@@ -136,6 +136,10 @@ class LiveGraphClock(object):
         self.format_ax(ax)
 
     def draw_custom_signals(self):
+        """
+        Draw custom signals on the chart.
+
+        """
         ax = self.ax_custom_signals
         df = self.context.custom_signals_stats
 
@@ -154,6 +158,10 @@ class LiveGraphClock(object):
         self.format_ax(ax)
 
     def draw_exposure(self):
+        """
+        Draw exposure line on the chart.
+
+        """
         ax = self.ax_exposure
         context = self.context
         df = context.exposure_stats

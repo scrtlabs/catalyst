@@ -397,17 +397,24 @@ class Exchange:
         """
         Similar to 'get_spot_value' but for a single asset
 
-        Note
-        ----
+        Notes
+        -----
         We're writing each minute bar to disk using zipline's machinery.
         This is especially useful when running multiple algorithms
         concurrently. By using local data when possible, we try to reaching
         request limits on exchanges.
 
-        :param asset:
-        :param field:
-        :param data_frequency:
-        :return value: The spot value of the given asset / field
+        Parameters
+        ----------
+        asset: TradingPair
+        field: str
+        data_frequency: str
+
+        Returns
+        -------
+        float
+            The spot value of the given asset / field
+
         """
         log.debug(
             'fetching spot value {field} for symbol {symbol}'.format(
@@ -503,7 +510,9 @@ class Exchange:
 
         Returns
         -------
-        A dataframe containing the requested data.
+        DataFrame
+            A dataframe containing the requested data.
+
         """
         start_dt = get_start_dt(end_dt, bar_count, data_frequency)
 

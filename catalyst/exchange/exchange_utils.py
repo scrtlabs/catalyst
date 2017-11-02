@@ -63,9 +63,15 @@ def download_exchange_symbols(exchange_name, environ=None):
     """
     Downloads the exchange's symbols.json from the repository.
 
-    :param exchange_name:
-    :param environ:
-    :return: response
+    Parameters
+    ----------
+    exchange_name: str
+    environ:
+
+    Returns
+    -------
+    str
+
     """
     filename = get_exchange_symbols_filename(exchange_name)
     url = SYMBOLS_URL.format(exchange=exchange_name)
@@ -77,9 +83,15 @@ def get_exchange_symbols(exchange_name, environ=None):
     """
     The de-serialized content of the exchange's symbols.json.
 
-    :param exchange_name:
-    :param environ:
-    :return:
+    Parameters
+    ----------
+    exchange_name: str
+    environ:
+
+    Returns
+    -------
+    Object
+
     """
     filename = get_exchange_symbols_filename(exchange_name)
 
@@ -104,8 +116,14 @@ def get_symbols_string(assets):
     """
     A concatenated string of symbols from a list of assets.
 
-    :param assets:
-    :return:
+    Parameters
+    ----------
+    assets: list[TradingPair]
+
+    Returns
+    -------
+    str
+
     """
     array = [assets] if isinstance(assets, TradingPair) else assets
     return ', '.join([asset.symbol for asset in array])
@@ -115,9 +133,15 @@ def get_exchange_auth(exchange_name, environ=None):
     """
     The de-serialized contend of the exchange's auth.json file.
 
-    :param exchange_name:
-    :param environ:
-    :return:
+    Parameters
+    ----------
+    exchange_name: str
+    environ:
+
+    Returns
+    -------
+    Object
+
     """
     exchange_folder = get_exchange_folder(exchange_name, environ)
     filename = os.path.join(exchange_folder, 'auth.json')
@@ -138,9 +162,15 @@ def get_algo_folder(algo_name, environ=None):
     """
     The algorithm root folder of the algorithm.
 
-    :param algo_name:
-    :param environ:
-    :return:
+    Parameters
+    ----------
+    algo_name: str
+    environ:
+
+    Returns
+    -------
+    str
+
     """
     if not environ:
         environ = os.environ
@@ -156,11 +186,17 @@ def get_algo_object(algo_name, key, environ=None, rel_path=None):
     """
     The de-serialized object of the algo name and key.
 
-    :param algo_name:
-    :param key:
-    :param environ:
-    :param rel_path:
-    :return:
+    Parameters
+    ----------
+    algo_name: str
+    key: str
+    environ:
+    rel_path: str
+
+    Returns
+    -------
+    Object
+
     """
     if algo_name is None:
         return None
@@ -186,12 +222,14 @@ def save_algo_object(algo_name, key, obj, environ=None, rel_path=None):
     """
     Serialize and save an object by algo name and key.
 
-    :param algo_name:
-    :param key:
-    :param obj:
-    :param environ:
-    :param rel_path:
-    :return:
+    Parameters
+    ----------
+    algo_name: str
+    key: str
+    obj: Object
+    environ:
+    rel_path: str
+
     """
     folder = get_algo_folder(algo_name, environ)
 
@@ -209,11 +247,17 @@ def get_algo_df(algo_name, key, environ=None, rel_path=None):
     """
     The de-serialized DataFrame of an algo name and key.
 
-    :param algo_name:
-    :param key:
-    :param environ:
-    :param rel_path:
-    :return:
+    Parameters
+    ----------
+    algo_name: str
+    key: str
+    environ:
+    rel_path: str
+
+    Returns
+    -------
+    DataFrame
+
     """
     folder = get_algo_folder(algo_name, environ)
 
@@ -236,12 +280,14 @@ def save_algo_df(algo_name, key, df, environ=None, rel_path=None):
     """
     Serialize to csv and save a DataFrame by algo name and key.
 
-    :param algo_name:
-    :param key:
-    :param df:
-    :param environ:
-    :param rel_path:
-    :return:
+    Parameters
+    ----------
+    algo_name: str
+    key: str
+    df: DataFrame
+    environ:
+    rel_path: str
+
     """
     folder = get_algo_folder(algo_name, environ)
 
@@ -259,9 +305,15 @@ def get_exchange_minute_writer_root(exchange_name, environ=None):
     """
     The minute writer folder for the exchange.
 
-    :param exchange_name:
-    :param environ:
-    :return:
+    Parameters
+    ----------
+    exchange_name: str
+    environ:
+
+    Returns
+    -------
+    BcolzExchangeBarWriter
+
     """
     exchange_folder = get_exchange_folder(exchange_name, environ)
 
@@ -275,9 +327,15 @@ def get_exchange_bundles_folder(exchange_name, environ=None):
     """
     The temp folder for bundle downloads by algo name.
 
-    :param exchange_name:
-    :param environ:
-    :return:
+    Parameters
+    ----------
+    exchange_name: str
+    environ:
+
+    Returns
+    -------
+    str
+
     """
     exchange_folder = get_exchange_folder(exchange_name, environ)
 
@@ -291,8 +349,14 @@ def perf_serial(obj):
     """
     JSON serializer for objects not serializable by default json code
 
-    :param obj:
-    :return:
+    Parameters
+    ----------
+    obj: Object
+
+    Returns
+    -------
+    str
+
     """
     if isinstance(obj, (datetime, date)):
         return obj.isoformat()
@@ -304,8 +368,14 @@ def get_common_assets(exchanges):
     """
     The assets available in all specified exchanges.
 
-    :param exchanges:
-    :return:
+    Parameters
+    ----------
+    exchanges: list[Exchange]
+
+    Returns
+    -------
+    list[TradingPair]
+
     """
     symbols = []
     for exchange_name in exchanges:
@@ -324,6 +394,23 @@ def get_common_assets(exchanges):
 
 
 def get_frequency(freq, data_frequency):
+    """
+    Get the frequency parameters.
+
+    Notes
+    -----
+    We're trying to use Pandas convention for frequency aliases.
+
+    Parameters
+    ----------
+    freq: str
+    data_frequency: str
+
+    Returns
+    -------
+    str, int, str, str
+
+    """
     if freq == 'minute':
         unit = 'T'
         candle_size = 1
@@ -368,6 +455,20 @@ def get_frequency(freq, data_frequency):
 
 
 def resample_history_df(df, freq, field):
+    """
+    Resample the OHCLV DataFrame using the specified frequency.
+
+    Parameters
+    ----------
+    df: DataFrame
+    freq: str
+    field: str
+
+    Returns
+    -------
+    DataFrame
+
+    """
     if field == 'open':
         agg = 'first'
     elif field == 'high':

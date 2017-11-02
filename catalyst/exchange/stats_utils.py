@@ -1,5 +1,5 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
 def crossover(source, target):
@@ -8,9 +8,15 @@ def crossover(source, target):
     of `x` is greater than the value of `y` and the value of `x` was less than
     the value of `y` on the bar immediately preceding the current bar.
 
-    :param source:
-    :param target:
-    :return:
+    Parameters
+    ----------
+    source: Series
+    target: Series
+
+    Returns
+    -------
+    bool
+
     """
     if source[-1] is np.nan or source[-2] is np.nan \
             or target[-1] is np.nan or target[-2] is np.nan:
@@ -27,9 +33,16 @@ def crossunder(source, target):
     The `x`-series is defined as having crossed under `y`-series if the value
     of `x` is less than the value of `y` and the value of `x` was greater than
     the value of `y` on the bar immediately preceding the current bar.
-    :param source:
-    :param target:
-    :return:
+
+    Parameters
+    ----------
+    source: Series
+    target: Series
+
+    Returns
+    -------
+    bool
+
     """
     if source[-1] is np.nan or source[-2] is np.nan \
             or target[-1] is np.nan or target[-2] is np.nan:
@@ -46,9 +59,15 @@ def get_pretty_stats(stats_df, recorded_cols=None, num_rows=10):
     Format and print the last few rows of a statistics DataFrame.
     See the pyfolio project for the data structure.
 
-    :param stats_df:
-    :param num_rows:
-    :return:
+    Parameters
+    ----------
+    stats_df: DataFrame
+    num_rows: int
+
+    Returns
+    -------
+    str
+
     """
     stats_df.set_index('period_close', drop=True, inplace=True)
     stats_df.dropna(axis=1, how='all', inplace=True)
@@ -92,6 +111,18 @@ def get_pretty_stats(stats_df, recorded_cols=None, num_rows=10):
 
 
 def df_to_string(df):
+    """
+    Create a formatted str representation of the DataFrame.
+
+    Parameters
+    ----------
+    df: DataFrame
+
+    Returns
+    -------
+    str
+
+    """
     pd.set_option('display.expand_frame_repr', False)
     pd.set_option('precision', 8)
     pd.set_option('display.width', 1000)
