@@ -59,7 +59,10 @@ class ExchangeBundle:
         """
         Get a data writer object, either a new object or from cache
 
-        :return: BcolzMinuteBarReader or BcolzDailyBarReader
+        Returns
+        -------
+        BcolzMinuteBarReader | BcolzDailyBarReader
+
         """
         if path is None:
             root = get_exchange_folder(self.exchange.name)
@@ -88,7 +91,10 @@ class ExchangeBundle:
         """
         Get a data writer object, either a new object or from cache
 
-        :return: BcolzMinuteBarWriter or BcolzDailyBarWriter
+        Returns
+        -------
+        BcolzMinuteBarWriter | BcolzDailyBarWriter
+
         """
         root = get_exchange_folder(self.exchange.name)
         path = BUNDLE_NAME_TEMPLATE.format(
@@ -144,13 +150,19 @@ class ExchangeBundle:
             If the data exists, the chunk ingestion is complete.
             If any data is missing we ingest the data.
 
-        :param assets: list[TradingPair]
+        Parameters
+        ----------
+        assets: list[TradingPair]
             The assets is scope.
-        :param start_dt:
+        start_dt: datetime
             The chunk start date.
-        :param end_dt:
+        end_dt: datetime
             The chunk end date.
-        :return: list[TradingPair]
+        data_frequency: str
+
+        Returns
+        -------
+        list[TradingPair]
             The assets missing from the bundle
         """
         reader = self.get_reader(data_frequency)
@@ -164,13 +176,6 @@ class ExchangeBundle:
         return missing_assets
 
     def _write(self, data, writer, data_frequency):
-        """
-        Write data to the writer
-
-        :param df:
-        :param writer:
-        :return:
-        """
         try:
             writer.write(
                 data=data,
@@ -195,6 +200,20 @@ class ExchangeBundle:
             )
 
     def get_calendar_periods_range(self, start_dt, end_dt, data_frequency):
+        """
+        Get a list of dates for the specified range.
+
+        Parameters
+        ----------
+        start_dt: datetime
+        end_dt: datetime
+        data_frequency: str
+
+        Returns
+        -------
+        list[datetime]
+
+        """
         return self.calendar.minutes_in_range(start_dt, end_dt) \
             if data_frequency == 'minute' \
             else self.calendar.sessions_in_range(start_dt, end_dt)
@@ -204,13 +223,14 @@ class ExchangeBundle:
         """
         Ingest a DataFrame of OHLCV data for a given market.
 
-        :param ohlcv_df:
-        :param data_frequency:
-        :param asset:
-        :param writer:
-        :param path:
-        :param empty_rows_behavior:
-        :return:
+        Parameters
+        ----------
+        ohlcv_df: DataFrame
+        data_frequency: str
+        asset: TradingPair
+        writer:
+        empty_rows_behavior: str
+
         """
         if empty_rows_behavior is not 'ignore':
             nan_rows = ohlcv_df[ohlcv_df.isnull().T.any().T].index
@@ -269,14 +289,16 @@ class ExchangeBundle:
         """
         Merge a ctable bundle chunk into the main bundle for the exchange.
 
-        :param asset: TradingPair
-        :param data_frequency: str
-        :param period: str
-        :param writer:
-        :param empty_rows_behavior: str
+        Parameters
+        ----------
+        asset: TradingPair
+        data_frequency: str
+        period: str
+        writer:
+        empty_rows_behavior: str
             Ensure that the bundle does not have any missing data.
 
-        :param cleanup: bool
+        cleanup: bool
             Remove the temp bundle directory after ingestion.
 
         :return:
@@ -331,13 +353,19 @@ class ExchangeBundle:
 
     def get_adj_dates(self, start, end, assets, data_frequency):
         """
-        Contains a date range to the trading availability of the specified pairs.
+        Contains a date range to the trading availability of the specified
+        markets.
 
-        :param start:
-        :param end:
-        :param assets:
-        :param data_frequency:
-        :return:
+        Parameters
+        ----------
+        start: datetime
+        end: datetime
+        assets: list[TradingPair]
+        data_frequency: str
+
+        Returns
+        -------
+        datetime, datetime
         """
         earliest_trade = None
         last_entry = None
@@ -380,11 +408,17 @@ class ExchangeBundle:
         Split a price data request into chunks corresponding to individual
         bundles.
 
-        :param assets:
-        :param data_frequency:
-        :param start_dt:
-        :param end_dt:
-        :return:
+        Parameters
+        ----------
+        assets: list[TradingPair]
+        data_frequency: str
+        start_dt: datetime
+        end_dt: datetime
+
+        Returns
+        -------
+        dict[TradingPair, list[dict(str, Object]]]
+
         """
         reader = self.get_reader(data_frequency)
 
@@ -456,10 +490,12 @@ class ExchangeBundle:
         """
         Determine if data is missing from the bundle and attempt to ingest it.
 
-        :param assets:
-        :param start_dt:
-        :param end_dt:
-        :return:
+        Parameters
+        ----------
+        assets: list[TradingPair]
+        start_dt: datetime
+        end_dt: datetime
+
         """
 
         if start_dt is None:
@@ -538,15 +574,18 @@ class ExchangeBundle:
                exclude_symbols=None, start=None, end=None,
                show_progress=True, environ=os.environ):
         """
+        Inject data based on specified parameters.
 
-        :param data_frequency:
-        :param include_symbols:
-        :param exclude_symbols:
-        :param start:
-        :param end:
-        :param show_progress:
-        :param environ:
-        :return:
+        Parameters
+        ----------
+        data_frequency: str
+        include_symbols: str
+        exclude_symbols: str
+        start: datetime
+        end: datetime
+        show_progress: bool
+        environ:
+
         """
         assets = self.get_assets(include_symbols, exclude_symbols)
 
@@ -562,16 +601,22 @@ class ExchangeBundle:
                                            data_frequency,  # type: str
                                            algo_end_dt=None  # type: Timestamp
                                            ):
-        # type: (...) -> Dict[str, Series]
         """
         Retrieve price data history, ingest missing data.
 
-        :param assets:
-        :param end_dt:
-        :param bar_count:
-        :param field:
-        :param data_frequency:
-        :return:
+        Parameters
+        ----------
+        assets: list[TradingPair]
+        end_dt: datetime
+        bar_count: int
+        field: str
+        data_frequency: str
+        algo_end_dt: datetime
+
+        Returns
+        -------
+        Series
+
         """
         try:
             series = self.get_history_window_series(

@@ -1,16 +1,3 @@
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import abc
 from time import sleep
 
@@ -238,6 +225,25 @@ class DataPortalExchangeLive(DataPortalExchangeBase):
                                     field,
                                     data_frequency,
                                     ffill=True):
+        """
+        Fetching price history window from the exchange.
+
+        Parameters
+        ----------
+        exchange: Exchange
+        assets: list[TradingPair]
+        end_dt: datetime
+        bar_count: int
+        frequency: str
+        field: str
+        data_frequency: str
+        ffill: bool
+
+        Returns
+        -------
+        DataFrame
+
+        """
         df = exchange.get_history_window(
             assets,
             end_dt,
@@ -250,6 +256,22 @@ class DataPortalExchangeLive(DataPortalExchangeBase):
 
     def get_exchange_spot_value(self, exchange, assets, field, dt,
                                 data_frequency):
+        """
+        A spot value for the exchange.
+
+        Parameters
+        ----------
+        exchange: Exchange
+        assets: list[TradingPair]
+        field: str
+        dt: datetime
+        data_frequency: str
+
+        Returns
+        -------
+        float
+
+        """
         exchange_spot_values = exchange.get_spot_value(
             assets, field, dt, data_frequency)
 
@@ -288,18 +310,21 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
         """
         Fetching price history window from the exchange bundle.
 
-        Using a try... except approach to minimize reads most of the time,
-        when the data exists.
+        Parameters
+        ----------
+        exchange: Exchange
+        assets: list[TradingPair]
+        end_dt: datetime
+        bar_count: int
+        frequency: str
+        field: str
+        data_frequency: str
+        ffill: bool
 
-        :param exchange:
-        :param assets:
-        :param end_dt:
-        :param bar_count:
-        :param frequency:
-        :param field:
-        :param data_frequency:
-        :param ffill:
-        :return:
+        Returns
+        -------
+        DataFrame
+
         """
         bundle = self.exchange_bundles[exchange.name]  # type: ExchangeBundle
 
@@ -321,26 +346,30 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
         return df
 
     def get_exchange_spot_value(self,
-                                exchange,  # type: Exchange
-                                assets,  # type: List[TradingPair]
-                                field,  # type: str
-                                dt,  # type: Timestamp
-                                data_frequency  # type: str
+                                exchange,
+                                assets,
+                                field,
+                                dt,
+                                data_frequency
                                 ):
-        # type: (...) -> float
         """
         A spot value for the exchange bundle. Try to ingest data if not in
         the bundle.
 
-        :param exchange:
-        :param assets:
-        :param field:
-        :param dt:
-        :param data_frequency:
-        :return:
+        Parameters
+        ----------
+        exchange: Exchange
+        assets: list[TradingPair]
+        field: str
+        dt: datetime
+        data_frequency: str
+
+        Returns
+        -------
+        float
+
         """
         bundle = self.exchange_bundles[exchange.name]
-
         if data_frequency == 'daily':
             dt = dt.floor('1D')
         else:

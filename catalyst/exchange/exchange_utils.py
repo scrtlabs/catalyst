@@ -2,12 +2,11 @@ import json
 import os
 import pickle
 import re
-
-from catalyst.assets._assets import TradingPair
-from six.moves.urllib import request
 from datetime import date, datetime
 
 import pandas as pd
+from catalyst.assets._assets import TradingPair
+from six.moves.urllib import request
 
 from catalyst.exchange.exchange_errors import ExchangeSymbolsNotFound, \
     InvalidHistoryFrequencyError, InvalidHistoryFrequencyAlias
@@ -22,9 +21,15 @@ def get_exchange_folder(exchange_name, environ=None):
     """
     The root path of an exchange folder.
 
-    :param exchange_name:
-    :param environ:
-    :return:
+    Parameters
+    ----------
+    exchange_name: str
+    environ:
+
+    Returns
+    -------
+    str
+
     """
     if not environ:
         environ = os.environ
@@ -40,9 +45,15 @@ def get_exchange_symbols_filename(exchange_name, environ=None):
     """
     The absolute path of the exchange's symbol.json file.
 
-    :param exchange_name:
-    :param environ:
-    :return:
+    Parameters
+    ----------
+    exchange_name:
+    environ:
+
+    Returns
+    -------
+    str
+
     """
     exchange_folder = get_exchange_folder(exchange_name, environ)
     return os.path.join(exchange_folder, 'symbols.json')

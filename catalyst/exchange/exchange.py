@@ -1,5 +1,4 @@
 import abc
-import re
 from abc import ABCMeta, abstractmethod, abstractproperty
 from datetime import timedelta
 from time import sleep
@@ -16,7 +15,7 @@ from catalyst.exchange.bundle_utils import get_start_dt, \
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     InvalidOrderStyle, BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
-    InvalidHistoryFrequencyError, PricingDataNotLoadedError, \
+    PricingDataNotLoadedError, \
     NoDataAvailableOnExchange
 from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
     ExchangeLimitOrder, ExchangeStopOrder
@@ -53,9 +52,11 @@ class Exchange:
     @property
     def portfolio(self):
         """
-        Return the Portfolio
+        The exchange portfolio
 
-        :return:
+        Returns
+        -------
+        ExchangePortfolio
         """
         if self._portfolio is None:
             self._portfolio = ExchangePortfolio(
@@ -75,9 +76,16 @@ class Exchange:
 
     def is_open(self, dt):
         """
-        Is the exchange open?
-        :param dt:
-        :return:
+        Is the exchange open
+
+        Parameters
+        ----------
+        dt: Timestamp
+
+        Returns
+        -------
+        bool
+
         """
         # TODO: implement for each exchange.
         return True
@@ -90,7 +98,9 @@ class Exchange:
         The application will pause if the maximum requests per minute
         permitted by the exchange is exceeded.
 
-        :return boolean:
+        Returns
+        -------
+        bool
 
         """
         now = pd.Timestamp.utcnow()
@@ -122,10 +132,16 @@ class Exchange:
 
     def get_symbol(self, asset):
         """
-        Get the exchange specific symbol of the given asset.
+        The the exchange specific symbol of the specified market.
 
-        :param asset: Asset
-        :return: symbol: str
+        Parameters
+        ----------
+        asset: TradingPair
+
+        Returns
+        -------
+        str
+
         """
         symbol = None
 
@@ -143,17 +159,34 @@ class Exchange:
         """
         Get a list of symbols corresponding to each given asset.
 
-        :param assets: Asset[]
-        :return:
+        Parameters
+        ----------
+        assets: list[TradingPair]
+
+        Returns
+        -------
+        list[str]
+
         """
         symbols = []
-
         for asset in assets:
             symbols.append(self.get_symbol(asset))
 
         return symbols
 
     def get_assets(self, symbols=None):
+        """
+        The list of markets for the specified symbols.
+
+        Parameters
+        ----------
+        symbols: list[str]
+
+        Returns
+        -------
+        list[TradingPair]
+
+        """
         assets = []
 
         if symbols is not None:
@@ -168,9 +201,16 @@ class Exchange:
 
     def get_asset(self, symbol):
         """
-        Find an Asset on the current exchange based on its Catalyst symbol
-        :param symbol: the [target]_[base] currency pair symbol
-        :return: Asset
+        The market for the specified symbol.
+
+        Parameters
+        ----------
+        symbol: str
+
+        Returns
+        -------
+        TradingPair
+
         """
         asset = None
 
@@ -201,7 +241,6 @@ class Exchange:
         currency pair symbol. The universal symbol is contained in the
         'symbol' attribute of each asset.
 
-
         Notes
         -----
         The sid of each asset is calculated based on a numeric hash of the
@@ -210,8 +249,8 @@ class Exchange:
 
         This method can be overridden if an exchange offers equivalent data
         via its api.
-        """
 
+        """
         symbol_map = self.fetch_symbol_map()
         for exchange_symbol in symbol_map:
             asset = symbol_map[exchange_symbol]
@@ -272,8 +311,10 @@ class Exchange:
         For each executed order found, create a transaction and apply to the
         Portfolio.
 
-        :return:
-        transactions: Transaction[]
+        Returns
+        -------
+        list[Transaction]
+
         """
         transactions = list()
         if self.portfolio.open_orders:
@@ -390,14 +431,20 @@ class Exchange:
         """
         Get a series of field data for the specified candles.
 
-        :param candles:
-        :param start_dt:
-        :param end_dt:
-        :param field:
-        :param previous_value:
-        :return:
-        """
+        Parameters
+        ----------
+        candles: list[dict[str, float]]
+        start_dt: datetime
+        end_dt: datetime
+        data_frequency: str
+        field: str
+        previous_value: float
 
+        Returns
+        -------
+        Series
+
+        """
         dates = [candle['last_traded'] for candle in candles]
         values = [candle[field] for candle in candles]
         series = pd.Series(values, index=dates)
@@ -430,10 +477,11 @@ class Exchange:
 
         Parameters
         ----------
-        assets : list of catalyst.data.Asset objects
+        assets : list[TradingPair]
             The assets whose data is desired.
 
-        end_dt: not applicable to cryptocurrencies
+        end_dt: datetime
+            The date of the last bar
 
         bar_count: int
             The number of bars desired.
@@ -493,10 +541,11 @@ class Exchange:
 
         Parameters
         ----------
-        assets : list of catalyst.data.Asset objects
+        assets : list[TradingPair]
             The assets whose data is desired.
 
-        end_dt: not applicable to cryptocurrencies
+        end_dt: datetime
+            The date of the last bar.
 
         bar_count: int
             The number of bars desired.
@@ -518,9 +567,10 @@ class Exchange:
 
         Returns
         -------
-        A dataframe containing the requested data.
-        """
+        DataFrame
+            A dataframe containing the requested data.
 
+        """
         freq, candle_size, unit, data_frequency = get_frequency(
             frequency, data_frequency
         )
@@ -591,7 +641,6 @@ class Exchange:
         Update the portfolio cash and position balances based on the
         latest ticker prices.
 
-        :return:
         """
         log.debug('synchronizing portfolio with exchange {}'.format(self.name))
         balances = self.get_balances()
@@ -635,16 +684,20 @@ class Exchange:
 
         Parameters
         ----------
-        asset : Asset
+        asset : TradingPair
             The asset that this order is for.
+
         amount : int
             The amount of shares to order. If ``amount`` is positive, this is
             the number of shares to buy or cover. If ``amount`` is negative,
             this is the number of shares to sell or short.
+
         limit_price : float, optional
             The limit price for the order.
+
         stop_price : float, optional
             The stop price for the order.
+
         style : ExecutionStyle, optional
             The execution style for the order.
 
@@ -669,6 +722,7 @@ class Exchange:
         :class:`catalyst.finance.execution.ExecutionStyle`
         :func:`catalyst.api.order_value`
         :func:`catalyst.api.order_percent`
+
         """
         if amount == 0:
             log.warn('skipping order amount of 0')
@@ -718,8 +772,12 @@ class Exchange:
     @abstractmethod
     def get_balances(self):
         """
-        Retrieve wallet balances for the exchange
-        :return balances: A dict of currency => available balance
+        Retrieve wallet balances for the exchange.
+
+        Returns
+        -------
+        dict[TradingPair, float]
+
         """
         pass
 
@@ -728,17 +786,25 @@ class Exchange:
         """
         Place an order on the exchange.
 
-        :param asset : Asset
-            The asset that this order is for.
-        :param amount : int
+        Parameters
+        ----------
+        asset: TradingPair
+            The target market.
+
+        amount: float
             The amount of shares to order. If ``amount`` is positive, this is
             the number of shares to buy or cover. If ``amount`` is negative,
             this is the number of shares to sell or short.
-        :param style : ExecutionStyle
-            The execution style for the order.
-        :param is_buy: boolean
+
+        is_buy: bool
             Is it a buy order?
-        :return:
+
+        style: ExecutionStyle
+
+        Returns
+        -------
+        Order
+
         """
         pass
 
@@ -798,19 +864,27 @@ class Exchange:
         """
         Retrieve OHLCV candles for the given assets
 
-        :param freq:
+        Parameters
+        ----------
+        freq: str
             The frequency alias per convention:
             http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
-        :param assets: list[TradingPair]
+
+        assets: list[TradingPair]
             The targeted assets.
-        :param bar_count:
+
+        bar_count: int
             The number of bar desired. (default 1)
-        :param end_dt: datetime, optional
+
+        end_dt: datetime, optional
             The last bar date.
-        :param start_dt: datetime, optional
+
+        start_dt: datetime, optional
             The first bar date.
 
-        :return dict[TradingPair, dict[str, Object]]: OHLCV data
+        Returns
+        -------
+        dict[TradingPair, dict[str, Object]]
             A dictionary of OHLCV candles. Each TradingPair instance is
             mapped to a list of dictionaries with this structure:
                 open: float
@@ -830,8 +904,14 @@ class Exchange:
         """
         Retrieve current tick data for the given assets
 
-        :param assets:
-        :return:
+        Parameters
+        ----------
+        assets: list[TradingPair]
+
+        Returns
+        -------
+        list[dict[str, float]
+
         """
         pass
 
@@ -839,7 +919,6 @@ class Exchange:
     def get_account(self):
         """
         Retrieve the account parameters.
-        :return:
         """
         pass
 
@@ -848,11 +927,15 @@ class Exchange:
         """
         Retrieve the the orderbook for the given trading pair.
 
-        :param asset: TradingPair
-        :param order_type: str
+        Parameters
+        ----------
+        asset: TradingPair
+        order_type: str
             The type of orders: bid, ask or all
-        :param limit
+        limit: int
 
-        :return:
+        Returns
+        -------
+        list[dict[str, float]
         """
         pass
