@@ -431,7 +431,7 @@ class TestExchangeBundle:
         pass
 
     def bundle_to_csv(self):
-        exchange_name = 'poloniex'
+        exchange_name = 'bitfinex'
         data_frequency = 'daily'
         period = '2016'
 
@@ -445,14 +445,13 @@ class TestExchangeBundle:
             data_frequency=data_frequency,
             period=period
         )
-
-        dt = pd.to_datetime(period, utc=True)
-        if data_frequency == 'minute':
-            start_dt, end_dt = get_month_start_end(dt)
-        else:
-            start_dt, end_dt = get_year_start_end(dt)
-
         reader = bundle.get_reader(data_frequency, path=path)
+        start_dt = reader.first_trading_day
+        end_dt = reader.last_available_dt
+
+        if data_frequency == 'daily':
+            end_dt = end_dt - pd.Timedelta(hours=23, minutes=59)
+
         arrays = None
         try:
             arrays = reader.load_raw_arrays(

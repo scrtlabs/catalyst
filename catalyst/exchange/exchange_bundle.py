@@ -284,7 +284,7 @@ class ExchangeBundle:
 
         self._write(data, writer, data_frequency)
 
-    def ingest_ctable(self, asset, data_frequency, period, start_dt, end_dt,
+    def ingest_ctable(self, asset, data_frequency, period,
                       writer, empty_rows_behavior='strip', cleanup=False):
         """
         Merge a ctable bundle chunk into the main bundle for the exchange.
@@ -314,6 +314,12 @@ class ExchangeBundle:
         reader = self.get_reader(data_frequency, path=path)
         if reader is None:
             raise TempBundleNotFoundError(path=path)
+
+        start_dt = reader.first_trading_day
+        end_dt = reader.last_available_dt
+
+        if data_frequency == 'daily':
+            end_dt = end_dt - pd.Timedelta(hours=23, minutes=59)
 
         arrays = None
         try:
@@ -420,6 +426,12 @@ class ExchangeBundle:
         dict[TradingPair, list[dict(str, Object]]]
 
         """
+        get_start_end = get_month_start_end \
+            if data_frequency == 'minute' else get_year_start_end
+
+        start_dt, _ = get_start_end(start_dt)
+        _, end_dt = get_start_end(end_dt)
+
         reader = self.get_reader(data_frequency)
 
         chunks = dict()
@@ -450,8 +462,6 @@ class ExchangeBundle:
 
             chunks[asset] = []
             for index, dt in enumerate(dates):
-                get_start_end = get_month_start_end \
-                    if data_frequency == 'minute' else get_year_start_end
 
                 period_start, period_end = get_start_end(
                     dt=dt,
@@ -543,8 +553,6 @@ class ExchangeBundle:
                             asset=chunk['asset'],
                             data_frequency=data_frequency,
                             period=chunk['period'],
-                            start_dt=chunk['period_start'],
-                            end_dt=chunk['period_end'],
                             writer=writer,
                             empty_rows_behavior='strip',
                             cleanup=True
@@ -563,8 +571,6 @@ class ExchangeBundle:
                         asset=chunk['asset'],
                         data_frequency=data_frequency,
                         period=chunk['period'],
-                        start_dt=chunk['period_start'],
-                        end_dt=chunk['period_end'],
                         writer=writer,
                         empty_rows_behavior='strip',
                         cleanup=True

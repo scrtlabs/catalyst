@@ -328,17 +328,20 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
         """
         bundle = self.exchange_bundles[exchange.name]  # type: ExchangeBundle
 
-        freq, candle_size, unit, data_frequency = get_frequency(
+        freq, candle_size, unit, adj_data_frequency = get_frequency(
             frequency, data_frequency
         )
         adj_bar_count = candle_size * bar_count
+
+        if data_frequency == 'minute' and adj_data_frequency == 'daily':
+            end_dt = end_dt.floor('1D')
 
         series = bundle.get_history_window_series_and_load(
             assets=assets,
             end_dt=end_dt,
             bar_count=adj_bar_count,
             field=field,
-            data_frequency=data_frequency,
+            data_frequency=adj_data_frequency,
             algo_end_dt=self._last_available_session,
         )
 
