@@ -1,16 +1,3 @@
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import abc
 from time import sleep
 
@@ -26,6 +13,7 @@ from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     ExchangeBarDataError,
     PricingDataNotLoadedError)
+from catalyst.exchange.exchange_utils import get_frequency, resample_history_df
 
 log = Logger('DataPortalExchange', level=LOG_LEVEL)
 
@@ -237,6 +225,25 @@ class DataPortalExchangeLive(DataPortalExchangeBase):
                                     field,
                                     data_frequency,
                                     ffill=True):
+        """
+        Fetching price history window from the exchange.
+
+        Parameters
+        ----------
+        exchange: Exchange
+        assets: list[TradingPair]
+        end_dt: datetime
+        bar_count: int
+        frequency: str
+        field: str
+        data_frequency: str
+        ffill: bool
+
+        Returns
+        -------
+        DataFrame
+
+        """
         df = exchange.get_history_window(
             assets,
             end_dt,
@@ -249,6 +256,22 @@ class DataPortalExchangeLive(DataPortalExchangeBase):
 
     def get_exchange_spot_value(self, exchange, assets, field, dt,
                                 data_frequency):
+        """
+        A spot value for the exchange.
+
+        Parameters
+        ----------
+        exchange: Exchange
+        assets: list[TradingPair]
+        field: str
+        dt: datetime
+        data_frequency: str
+
+        Returns
+        -------
+        float
+
+        """
         exchange_spot_values = exchange.get_spot_value(
             assets, field, dt, data_frequency)
 
@@ -287,34 +310,69 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
         """
         Fetching price history window from the exchange bundle.
 
-        Using a try... except approach to minimize reads most of the time,
-        when the data exists.
+        Parameters
+        ----------
+        exchange: Exchange
+        assets: list[TradingPair]
+        end_dt: datetime
+        bar_count: int
+        frequency: str
+        field: str
+        data_frequency: str
+        ffill: bool
 
-        :param exchange:
-        :param assets:
-        :param end_dt:
-        :param bar_count:
-        :param frequency:
-        :param field:
-        :param data_frequency:
-        :param ffill:
-        :return:
+        Returns
+        -------
+        DataFrame
+
         """
+        bundle = self.exchange_bundles[exchange.name]  # type: ExchangeBundle
 
-        bundle = self.exchange_bundles[exchange.name]
+        freq, candle_size, unit, adj_data_frequency = get_frequency(
+            frequency, data_frequency
+        )
+        adj_bar_count = candle_size * bar_count
+
+        if data_frequency == 'minute' and adj_data_frequency == 'daily':
+            end_dt = end_dt.floor('1D')
+
         series = bundle.get_history_window_series_and_load(
             assets=assets,
             end_dt=end_dt,
-            bar_count=bar_count,
+            bar_count=adj_bar_count,
             field=field,
-            data_frequency=data_frequency
+            data_frequency=adj_data_frequency,
+            algo_end_dt=self._last_available_session,
         )
-        return pd.DataFrame(series)
 
-    def get_exchange_spot_value(self, exchange, assets, field, dt,
-                                data_frequency):
+        df = resample_history_df(pd.DataFrame(series), freq, field)
+        return df
+
+    def get_exchange_spot_value(self,
+                                exchange,
+                                assets,
+                                field,
+                                dt,
+                                data_frequency
+                                ):
+        """
+        A spot value for the exchange bundle. Try to ingest data if not in
+        the bundle.
+
+        Parameters
+        ----------
+        exchange: Exchange
+        assets: list[TradingPair]
+        field: str
+        dt: datetime
+        data_frequency: str
+
+        Returns
+        -------
+        float
+
+        """
         bundle = self.exchange_bundles[exchange.name]
-
         if data_frequency == 'daily':
             dt = dt.floor('1D')
         else:

@@ -3,6 +3,7 @@ from logbook import Logger
 
 from catalyst.constants import LOG_LEVEL
 from catalyst.protocol import Portfolio, Positions, Position
+from catalyst.utils.deprecate import deprecated
 
 log = Logger('ExchangePortfolio', level=LOG_LEVEL)
 
@@ -29,10 +30,15 @@ class ExchangePortfolio(Portfolio):
         self.positions_value = 0.0
         self.open_orders = dict()
 
-    def calculate_pnl(self):
-        log.debug('calculating pnl')
-
     def create_order(self, order):
+        """
+        Create an open order and store in memory.
+
+        Parameters
+        ----------
+        order: Order
+
+        """
         log.debug('creating order {}'.format(order.id))
         self.open_orders[order.id] = order
 
@@ -47,6 +53,18 @@ class ExchangePortfolio(Portfolio):
         log.debug('open order added to portfolio')
 
     def execute_order(self, order, transaction):
+        """
+        Update the open orders and positions to apply an executed order.
+
+        Unlike with backtesting, we do not need to add slippage and fees.
+        The executed price includes transaction fees.
+
+        Parameters
+        ----------
+        order: Order
+        transaction: Transaction
+
+        """
         log.debug('executing order {}'.format(order.id))
         del self.open_orders[order.id]
 
@@ -71,7 +89,9 @@ class ExchangePortfolio(Portfolio):
 
         log.debug('updated portfolio with executed order')
 
+    @deprecated
     def execute_transaction(self, transaction):
+        # TODO: almost duplicate of execute_order. Not sure why Poloniex needs this.
         log.debug('executing transaction {}'.format(transaction.order_id))
 
         order_position = self.positions[transaction.asset] \
@@ -96,6 +116,14 @@ class ExchangePortfolio(Portfolio):
         log.debug('updated portfolio with executed order')
 
     def remove_order(self, order):
+        """
+        Removing an open order.
+
+        Parameters
+        ----------
+        order: Order
+
+        """
         log.info('removing cancelled order {}'.format(order.id))
         del self.open_orders[order.id]
 

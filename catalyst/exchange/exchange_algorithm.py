@@ -127,7 +127,13 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
         """
         Creates a dictionary representing the state of the tracker.
 
+        Parameters
+        ----------
+        start_dt: datetime
+        end_dt: datetime
 
+        Notes
+        -----
         I rewrote this in an attempt to better control the stats.
         I don't want things to happen magically through complex logic
         pertaining to backtesting.
@@ -296,6 +302,18 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         self.exchange.minute_reader = BcolzMinuteBarReader(root)
 
     def signal_handler(self, signal, frame):
+        """
+        Handles the keyboard interruption signal.
+
+        Parameters
+        ----------
+        signal
+        frame
+
+        Returns
+        -------
+
+        """
         self.is_running = False
 
         if self._analyze is None:
@@ -384,7 +402,11 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         """
         We skip the entire performance tracker business and update the
         portfolio directly.
-        :return:
+
+        Returns
+        -------
+        ExchangePortfolio
+
         """
         # TODO: build cumulative portfolio
         return self.perf_tracker.get_portfolio(False)
@@ -450,6 +472,17 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                 )
 
     def add_pnl_stats(self, period_stats):
+        """
+        Save p&l stats.
+
+        Parameters
+        ----------
+        period_stats
+
+        Returns
+        -------
+
+        """
         starting = period_stats['starting_cash']
         current = period_stats['portfolio_value']
         appreciation = (current / starting) - 1
@@ -466,6 +499,17 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         save_algo_df(self.algo_namespace, 'pnl_stats', self.pnl_stats)
 
     def add_custom_signals_stats(self, period_stats):
+        """
+        Save custom signals stats.
+
+        Parameters
+        ----------
+        period_stats
+
+        Returns
+        -------
+
+        """
         log.debug('adding custom signals stats: {}'.format(self.recorded_vars))
         df = pd.DataFrame(
             data=[self.recorded_vars],
@@ -477,6 +521,17 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                      self.custom_signals_stats)
 
     def add_exposure_stats(self, period_stats):
+        """
+        Save exposure stats.
+
+        Parameters
+        ----------
+        period_stats
+
+        Returns
+        -------
+
+        """
         data = dict(
             long_exposure=period_stats['long_exposure'],
             base_currency=period_stats['ending_cash']
@@ -493,6 +548,14 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                      self.exposure_stats)
 
     def handle_data(self, data):
+        """
+        Wrapper around the handle_data method of each algo.
+
+        Parameters
+        ----------
+        data
+
+        """
         if not self.is_running:
             return
 
@@ -619,15 +682,16 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         The cumulative portfolio does not contain open orders but exchange
         portfolios do.
 
-        :param asset: TradingPair
-        :param amount: float
-        :param limit_price: float
-        :param stop_price: float
-        :param style: Style
-        :return order: Order
+        Parameters
+        ----------
+        asset: TradingPair
+        amount: float
+        limit_price: float
+        stop_price: float
+        style: Style
+        order: Order
             The catalyst order object or None
         """
-
         amount, style = self._calculate_order(asset, amount,
                                               limit_price, stop_price,
                                               style)
@@ -689,15 +753,53 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                         'get_open_orders. Use `asset` instead.')
     @api_method
     def get_open_orders(self, asset=None):
+        """Retrieve all of the current open orders.
+
+        Parameters
+        ----------
+        asset : Asset
+            If passed and not None, return only the open orders for the given
+            asset instead of all open orders.
+
+        Returns
+        -------
+        open_orders : dict[list[Order]] or list[Order]
+            If no asset is passed this will return a dict mapping Assets
+            to a list containing all the open orders for the asset.
+            If an asset is passed then this will return a list of the open
+            orders for this asset.
+        """
         return self._get_open_orders(asset)
 
     @api_method
     def get_order(self, order_id, exchange_name):
+        """Lookup an order based on the order id returned from one of the
+        order functions.
+
+        Parameters
+        ----------
+        order_id : str
+            The unique identifier for the order.
+
+        Returns
+        -------
+        order : Order
+            The order object.
+        execution_price: float
+            The execution price per share of the order
+        """
         exchange = self.exchanges[exchange_name]
         return exchange.get_order(order_id)
 
     @api_method
     def cancel_order(self, order_param, exchange_name):
+        """Cancel an open order.
+
+        Parameters
+        ----------
+        order_param : str or Order
+            The order_id or order object to cancel.
+        """
         exchange = self.exchanges[exchange_name]
 
         order_id = order_param

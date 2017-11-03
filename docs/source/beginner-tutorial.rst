@@ -255,7 +255,7 @@ slippage model that ``catalyst`` uses).
 
 Let's take a quick look at the performance ``DataFrame``. For this, we
 use ``pandas`` from inside the IPython Notebook and print the first ten
-rows. and print the first ten rows. Note that ``catalyst`` makes heavy usage of 
+rows. Note that ``catalyst`` makes heavy usage of 
 `pandas <http://pandas.pydata.org/>`_, especially for data input and 
 outputting so it's worth spending some time to learn it.
 
@@ -485,6 +485,10 @@ data for you. The first argument is the number of bars you want to
 collect, the second argument is the unit (either ``'1d'`` for ``'1m'``
 but note that you need to have minute-level data for using ``1m``). This is
 a function we use in the ``handle_data()`` section:
+
+.. code-block:: python
+  
+  %load_ext catalyst
 
 .. code-block:: python
 

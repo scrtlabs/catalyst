@@ -1,9 +1,14 @@
 import os
+import os
 import shutil
-from datetime import timedelta
+from itertools import chain
 
 import pandas as pd
+from catalyst.assets._assets import TradingPair
 from logbook import Logger
+from pandas.tslib import Timestamp
+from pytz import UTC
+from six import itervalues
 
 from catalyst import get_calendar
 from catalyst.constants import LOG_LEVEL
@@ -11,11 +16,11 @@ from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
     BcolzMinuteBarMetadata
 from catalyst.exchange.bundle_utils import range_in_bundle, \
     get_bcolz_chunk, get_delta, get_month_start_end, \
-    get_year_start_end, get_df_from_arrays, get_start_dt
+    get_year_start_end, get_df_from_arrays, get_start_dt, get_period_label
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
 from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
-    InvalidHistoryFrequencyError, TempBundleNotFoundError, \
+    TempBundleNotFoundError, \
     NoDataAvailableOnExchange, \
     PricingDataNotLoadedError
 from catalyst.exchange.exchange_utils import get_exchange_folder
@@ -54,7 +59,10 @@ class ExchangeBundle:
         """
         Get a data writer object, either a new object or from cache
 
-        :return: BcolzMinuteBarReader or BcolzDailyBarReader
+        Returns
+        -------
+        BcolzMinuteBarReader | BcolzDailyBarReader
+
         """
         if path is None:
             root = get_exchange_folder(self.exchange.name)
@@ -83,7 +91,10 @@ class ExchangeBundle:
         """
         Get a data writer object, either a new object or from cache
 
-        :return: BcolzMinuteBarWriter or BcolzDailyBarWriter
+        Returns
+        -------
+        BcolzMinuteBarWriter | BcolzDailyBarWriter
+
         """
         root = get_exchange_folder(self.exchange.name)
         path = BUNDLE_NAME_TEMPLATE.format(
@@ -139,13 +150,19 @@ class ExchangeBundle:
             If the data exists, the chunk ingestion is complete.
             If any data is missing we ingest the data.
 
-        :param assets: list[TradingPair]
+        Parameters
+        ----------
+        assets: list[TradingPair]
             The assets is scope.
-        :param start_dt:
+        start_dt: datetime
             The chunk start date.
-        :param end_dt:
+        end_dt: datetime
             The chunk end date.
-        :return: list[TradingPair]
+        data_frequency: str
+
+        Returns
+        -------
+        list[TradingPair]
             The assets missing from the bundle
         """
         reader = self.get_reader(data_frequency)
@@ -159,13 +176,6 @@ class ExchangeBundle:
         return missing_assets
 
     def _write(self, data, writer, data_frequency):
-        """
-        Write data to the writer
-
-        :param df:
-        :param writer:
-        :return:
-        """
         try:
             writer.write(
                 data=data,
@@ -190,6 +200,20 @@ class ExchangeBundle:
             )
 
     def get_calendar_periods_range(self, start_dt, end_dt, data_frequency):
+        """
+        Get a list of dates for the specified range.
+
+        Parameters
+        ----------
+        start_dt: datetime
+        end_dt: datetime
+        data_frequency: str
+
+        Returns
+        -------
+        list[datetime]
+
+        """
         return self.calendar.minutes_in_range(start_dt, end_dt) \
             if data_frequency == 'minute' \
             else self.calendar.sessions_in_range(start_dt, end_dt)
@@ -199,13 +223,14 @@ class ExchangeBundle:
         """
         Ingest a DataFrame of OHLCV data for a given market.
 
-        :param ohlcv_df:
-        :param data_frequency:
-        :param asset:
-        :param writer:
-        :param path:
-        :param empty_rows_behavior:
-        :return:
+        Parameters
+        ----------
+        ohlcv_df: DataFrame
+        data_frequency: str
+        asset: TradingPair
+        writer:
+        empty_rows_behavior: str
+
         """
         if empty_rows_behavior is not 'ignore':
             nan_rows = ohlcv_df[ohlcv_df.isnull().T.any().T].index
@@ -259,19 +284,21 @@ class ExchangeBundle:
 
         self._write(data, writer, data_frequency)
 
-    def ingest_ctable(self, asset, data_frequency, period, start_dt, end_dt,
+    def ingest_ctable(self, asset, data_frequency, period,
                       writer, empty_rows_behavior='strip', cleanup=False):
         """
         Merge a ctable bundle chunk into the main bundle for the exchange.
 
-        :param asset: TradingPair
-        :param data_frequency: str
-        :param period: str
-        :param writer:
-        :param empty_rows_behavior: str
+        Parameters
+        ----------
+        asset: TradingPair
+        data_frequency: str
+        period: str
+        writer:
+        empty_rows_behavior: str
             Ensure that the bundle does not have any missing data.
 
-        :param cleanup: bool
+        cleanup: bool
             Remove the temp bundle directory after ingestion.
 
         :return:
@@ -287,6 +314,12 @@ class ExchangeBundle:
         reader = self.get_reader(data_frequency, path=path)
         if reader is None:
             raise TempBundleNotFoundError(path=path)
+
+        start_dt = reader.first_trading_day
+        end_dt = reader.last_available_dt
+
+        if data_frequency == 'daily':
+            end_dt = end_dt - pd.Timedelta(hours=23, minutes=59)
 
         arrays = None
         try:
@@ -326,13 +359,19 @@ class ExchangeBundle:
 
     def get_adj_dates(self, start, end, assets, data_frequency):
         """
-        Contains a date range to the trading availability of the specified pairs.
+        Contains a date range to the trading availability of the specified
+        markets.
 
-        :param start:
-        :param end:
-        :param assets:
-        :param data_frequency:
-        :return:
+        Parameters
+        ----------
+        start: datetime
+        end: datetime
+        assets: list[TradingPair]
+        data_frequency: str
+
+        Returns
+        -------
+        datetime, datetime
         """
         earliest_trade = None
         last_entry = None
@@ -375,15 +414,27 @@ class ExchangeBundle:
         Split a price data request into chunks corresponding to individual
         bundles.
 
-        :param assets:
-        :param data_frequency:
-        :param start_dt:
-        :param end_dt:
-        :return:
+        Parameters
+        ----------
+        assets: list[TradingPair]
+        data_frequency: str
+        start_dt: datetime
+        end_dt: datetime
+
+        Returns
+        -------
+        dict[TradingPair, list[dict(str, Object]]]
+
         """
+        get_start_end = get_month_start_end \
+            if data_frequency == 'minute' else get_year_start_end
+
+        start_dt, _ = get_start_end(start_dt)
+        _, end_dt = get_start_end(end_dt)
+
         reader = self.get_reader(data_frequency)
 
-        chunks = []
+        chunks = dict()
         for asset in assets:
             try:
                 # Checking if the the asset has price data in the specified
@@ -397,106 +448,75 @@ class ExchangeBundle:
                 log.debug('skipping {}: {}'.format(asset.symbol, e))
                 continue
 
-            # This is either the first trading day of the asset or the
-            # first session available in the calendar
-            first_trading_dt = asset.start_date \
-                if asset.start_date > self.calendar.first_session \
-                else self.calendar.first_session
+            dates = pd.date_range(
+                start=get_period_label(adj_start, data_frequency),
+                end=get_period_label(adj_end, data_frequency),
+                freq='MS' if data_frequency == 'minute' else 'AS',
+                tz=UTC
+            )
 
-            # Aligning start / end dates with the daily calendar
-            sessions = self.calendar.sessions_in_range(adj_start, adj_end)
+            # Adjusting the last date of the range to avoid
+            # going over the asset's trading bounds
+            dates.values[0] = adj_start
+            dates.values[-1] = adj_end
 
-            # We loop through each session to create chunks for each period
-            chunk_labels = []
-            dt = sessions[0]
-            while dt <= sessions[-1]:
-                label = '{}-{:02d}'.format(dt.year, dt.month) \
-                    if data_frequency == 'minute' else '{}'.format(dt.year)
+            chunks[asset] = []
+            for index, dt in enumerate(dates):
 
-                if label not in chunk_labels:
-                    chunk_labels.append(label)
+                period_start, period_end = get_start_end(
+                    dt=dt,
+                    first_day=dt if index == 0 else None,
+                    last_day=dt if index == len(dates) - 1 else None
+                )
 
-                    # Adjusting the period dates to match the availability
-                    # of the trading pair
-                    if data_frequency == 'minute':
-                        period_start, period_end = get_month_start_end(dt)
+                # Currencies don't always start trading at midnight.
+                # Checking the last minute of the day instead.
+                range_start = period_start.replace(hour=23, minute=59) \
+                    if data_frequency == 'minute' else period_start
 
-                        asset_start_month, _ = get_month_start_end(
-                            first_trading_dt
+                # Checking if the data already exists in the bundle
+                # for the date range of the chunk. If not, we create
+                # a chunk for ingestion.
+                has_data = range_in_bundle(
+                    asset, range_start, period_end, reader
+                )
+                if not has_data:
+                    chunks[asset].append(
+                        dict(
+                            asset=asset,
+                            period_start=period_start,
+                            period_end=period_end,
+                            period=get_period_label(dt, data_frequency)
                         )
-                        if asset_start_month == period_start \
-                                and period_start < first_trading_dt:
-                            period_start = first_trading_dt
-
-                        # TODO: need to filter closed pairs?
-                        _, asset_end_month = get_month_start_end(
-                            asset.end_minute
-                        )
-                        if asset_end_month == period_end \
-                                and period_end > asset.end_minute:
-                            period_end = asset.end_minute
-
-                    elif data_frequency == 'daily':
-                        period_start, period_end = get_year_start_end(dt)
-
-                        asset_start_year, _ = get_year_start_end(
-                            first_trading_dt
-                        )
-                        if asset_start_year == period_start \
-                                and period_start < first_trading_dt:
-                            period_start = first_trading_dt
-
-                        _, asset_end_year = get_year_start_end(
-                            asset.end_daily
-                        )
-                        if asset_end_year == period_end \
-                                and period_end > asset.end_daily:
-                            period_end = asset.end_daily
-
-                    else:
-                        raise InvalidHistoryFrequencyError(
-                            frequency=data_frequency
-                        )
-
-                    # Currencies don't always start trading at midnight.
-                    # Checking the last minute of the day instead.
-                    range_start = period_start.replace(hour=23, minute=59) \
-                        if data_frequency == 'minute' else period_start
-
-                    # Checking if the data already exists in the bundle
-                    # for the date range of the chunk. If not, we create
-                    # a chunk for ingestion.
-                    has_data = range_in_bundle(
-                        asset, range_start, period_end, reader
                     )
-                    if not has_data:
-                        log.debug('adding period: {}'.format(label))
-                        chunks.append(
-                            dict(
-                                asset=asset,
-                                period_start=period_start,
-                                period_end=period_end,
-                                period=label
-                            )
-                        )
 
-                dt += timedelta(days=1)
-
-        # We sort the chunks by end date to ingest most recent data first
-        chunks.sort(key=lambda chunk: chunk['period_end'])
+            # We sort the chunks by end date to ingest most recent data first
+            chunks[asset].sort(key=lambda chunk: chunk['period_end'])
 
         return chunks
 
-    def ingest_assets(self, assets, start_dt, end_dt, data_frequency,
-                      show_progress=False):
+    def ingest_assets(self, assets, data_frequency, start_dt=None, end_dt=None,
+                      show_progress=False, asset_chunks=False):
         """
         Determine if data is missing from the bundle and attempt to ingest it.
 
-        :param assets:
-        :param start_dt:
-        :param end_dt:
-        :return:
+        Parameters
+        ----------
+        assets: list[TradingPair]
+        start_dt: datetime
+        end_dt: datetime
+
         """
+
+        if start_dt is None:
+            start_dt = self.calendar.first_session
+
+        if end_dt is None:
+            end_dt = pd.Timestamp.utcnow()
+
+        start_dt, end_dt = self.get_adj_dates(
+            start_dt, end_dt, assets, data_frequency
+        )
         chunks = self.prepare_chunks(
             assets=assets,
             data_frequency=data_frequency,
@@ -507,7 +527,8 @@ class ExchangeBundle:
         # Since chunks are either monthly or yearly, it is possible that
         # our ingestion data range is greater than specified. We adjust
         # the boundaries to ensure that the writer can write all data.
-        for chunk in chunks:
+        all_chunks = list(chain.from_iterable(itervalues(chunks)))
+        for chunk in all_chunks:
             if chunk['period_start'] < start_dt:
                 start_dt = chunk['period_start']
 
@@ -515,54 +536,94 @@ class ExchangeBundle:
                 end_dt = chunk['period_end']
 
         writer = self.get_writer(start_dt, end_dt, data_frequency)
-        with maybe_show_progress(
-                chunks,
-                show_progress,
-                label='Fetching {exchange} {frequency} candles: '.format(
-                    exchange=self.exchange.name,
-                    frequency=data_frequency
-                )) as it:
-            for chunk in it:
-                self.ingest_ctable(
-                    asset=chunk['asset'],
-                    data_frequency=data_frequency,
-                    period=chunk['period'],
-                    start_dt=chunk['period_start'],
-                    end_dt=chunk['period_end'],
-                    writer=writer,
-                    empty_rows_behavior='strip',
-                    cleanup=True
-                )
+
+        if asset_chunks:
+            for asset in chunks:
+                with maybe_show_progress(
+                        chunks[asset],
+                        show_progress,
+                        label='Ingesting {frequency} price data for '
+                              '{symbol} on {exchange}'.format(
+                            exchange=self.exchange.name,
+                            frequency=data_frequency,
+                            symbol=asset.symbol
+                        )) as it:
+                    for chunk in it:
+                        self.ingest_ctable(
+                            asset=chunk['asset'],
+                            data_frequency=data_frequency,
+                            period=chunk['period'],
+                            writer=writer,
+                            empty_rows_behavior='strip',
+                            cleanup=True
+                        )
+        else:
+            with maybe_show_progress(
+                    all_chunks,
+                    show_progress,
+                    label='Ingesting {frequency} price data on '
+                          '{exchange}'.format(
+                        exchange=self.exchange.name,
+                        frequency=data_frequency,
+                    )) as it:
+                for chunk in it:
+                    self.ingest_ctable(
+                        asset=chunk['asset'],
+                        data_frequency=data_frequency,
+                        period=chunk['period'],
+                        writer=writer,
+                        empty_rows_behavior='strip',
+                        cleanup=True
+                    )
 
     def ingest(self, data_frequency, include_symbols=None,
                exclude_symbols=None, start=None, end=None,
                show_progress=True, environ=os.environ):
         """
+        Inject data based on specified parameters.
 
-        :param data_frequency:
-        :param include_symbols:
-        :param exclude_symbols:
-        :param start:
-        :param end:
-        :param show_progress:
-        :param environ:
-        :return:
+        Parameters
+        ----------
+        data_frequency: str
+        include_symbols: str
+        exclude_symbols: str
+        start: datetime
+        end: datetime
+        show_progress: bool
+        environ:
+
         """
         assets = self.get_assets(include_symbols, exclude_symbols)
-        start_dt, end_dt = self.get_adj_dates(
-            start, end, assets, data_frequency
-        )
 
         for frequency in data_frequency.split(','):
-            self.ingest_assets(assets, start_dt, end_dt, frequency,
+            self.ingest_assets(assets, frequency, start, end,
                                show_progress)
 
     def get_history_window_series_and_load(self,
-                                           assets,
-                                           end_dt,
-                                           bar_count,
-                                           field,
-                                           data_frequency):
+                                           assets,  # type: List[TradingPair]
+                                           end_dt,  # type: Timestamp
+                                           bar_count,  # type: int
+                                           field,  # type: str
+                                           data_frequency,  # type: str
+                                           algo_end_dt=None  # type: Timestamp
+                                           ):
+        """
+        Retrieve price data history, ingest missing data.
+
+        Parameters
+        ----------
+        assets: list[TradingPair]
+        end_dt: datetime
+        bar_count: int
+        field: str
+        data_frequency: str
+        algo_end_dt: datetime
+
+        Returns
+        -------
+        Series
+
+        """
         try:
             series = self.get_history_window_series(
                 assets=assets,
@@ -586,9 +647,10 @@ class ExchangeBundle:
             self.ingest_assets(
                 assets=assets,
                 start_dt=start_dt,
-                end_dt=end_dt,
+                end_dt=algo_end_dt,
                 data_frequency=data_frequency,
-                show_progress=True
+                show_progress=True,
+                asset_chunks=True
             )
             series = self.get_history_window_series(
                 assets=assets,
@@ -596,12 +658,29 @@ class ExchangeBundle:
                 bar_count=bar_count,
                 field=field,
                 data_frequency=data_frequency,
-                reset_reader=True
+                reset_reader=False
             )
             return series
 
-    def get_spot_values(self, assets, field, dt, data_frequency,
-                        reset_reader=False):
+    def get_spot_values(self,
+                        assets,  # type: List[TradingPair]
+                        field,  # type: str
+                        dt,  # type: Timestamp
+                        data_frequency,  # type: str
+                        reset_reader=False  # type: bool
+                        ):
+        # type: (...) -> List[float]
+        """
+        The spot values for the gives assets, field and date. Reads from
+        the exchange data bundle.
+
+        :param assets:
+        :param field:
+        :param dt:
+        :param data_frequency:
+        :param reset_reader:
+        :return:
+        """
         values = []
         try:
             reader = self.get_reader(data_frequency)

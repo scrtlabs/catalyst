@@ -9,9 +9,15 @@ Table of Contents
 
    install
    beginner-tutorial
+   jupyter
+   live-trading
    naming-convention
+   videos
+   resources
+   development-guidelines
+   releases
 ..   bundles
 ..   development-guidelines
 ..   appendix
 ..   release-process
-..   releases
+

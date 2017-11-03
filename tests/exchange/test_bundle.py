@@ -1,17 +1,20 @@
 import hashlib
+import tempfile
 from logging import getLogger
 
+import os
 import pandas as pd
 
 from catalyst import get_calendar
 from catalyst.exchange.bundle_utils import get_bcolz_chunk, \
-    get_periods_range, get_start_dt
+    get_periods_range, get_start_dt, get_month_start_end, get_df_from_arrays, \
+    get_year_start_end
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
 from catalyst.exchange.exchange_bundle import ExchangeBundle, \
     BUNDLE_NAME_TEMPLATE
 from catalyst.exchange.exchange_utils import get_exchange_folder
-from catalyst.exchange.init_utils import get_exchange
+from catalyst.exchange.factory import get_exchange
 from catalyst.exchange.stats_utils import df_to_string
 from catalyst.utils.paths import ensure_directory
 
@@ -45,11 +48,11 @@ class TestExchangeBundle:
         exchange = get_exchange(exchange_name)
         exchange_bundle = ExchangeBundle(exchange)
         assets = [
-            exchange.get_asset('iot_btc')
+            exchange.get_asset('xmr_btc')
         ]
 
         # start = pd.to_datetime('2017-09-01', utc=True)
-        start = pd.to_datetime('2017-9-01', utc=True)
+        start = pd.to_datetime('2016-01-01', utc=True)
         end = pd.to_datetime('2017-9-30', utc=True)
 
         log.info('ingesting exchange bundle {}'.format(exchange_name))
@@ -123,9 +126,9 @@ class TestExchangeBundle:
         # data_frequency = 'daily'
         # include_symbols = 'neo_btc,bch_btc,eth_btc'
 
-        exchange_name = 'bittrex'
+        exchange_name = 'poloniex'
         data_frequency = 'daily'
-        include_symbols = 'wings_eth'
+        include_symbols = 'eth_btc'
 
         start = pd.to_datetime('2017-1-1', utc=True)
         end = pd.to_datetime('2017-10-16', utc=True)
@@ -339,7 +342,7 @@ class TestExchangeBundle:
             assets=assets,
             end_dt=end_dt,
             bar_count=bar_count,
-            data_frequency='minute'
+            freq='1T'
         )
         start_dt = get_start_dt(end_dt, bar_count, data_frequency)
 
@@ -389,7 +392,7 @@ class TestExchangeBundle:
             start_dt=start_dt,
             end_dt=end_dt,
             bar_count=bar_count,
-            data_frequency=data_frequency
+            freq='1T'
         )
 
         writer = bundle.get_writer(start_dt, end_dt, data_frequency)
@@ -425,4 +428,57 @@ class TestExchangeBundle:
         )
         df = pd.DataFrame(bundle_series)
         print('\n' + df_to_string(df))
+        pass
+
+    def bundle_to_csv(self):
+        exchange_name = 'bitfinex'
+        data_frequency = 'daily'
+        period = '2016'
+
+        exchange = get_exchange(exchange_name)
+        bundle = ExchangeBundle(exchange)
+        asset = exchange.get_asset('eth_btc')
+
+        path = get_bcolz_chunk(
+            exchange_name=exchange.name,
+            symbol=asset.symbol,
+            data_frequency=data_frequency,
+            period=period
+        )
+        reader = bundle.get_reader(data_frequency, path=path)
+        start_dt = reader.first_trading_day
+        end_dt = reader.last_available_dt
+
+        if data_frequency == 'daily':
+            end_dt = end_dt - pd.Timedelta(hours=23, minutes=59)
+
+        arrays = None
+        try:
+            arrays = reader.load_raw_arrays(
+                sids=[asset.sid],
+                fields=['open', 'high', 'low', 'close', 'volume'],
+                start_dt=start_dt,
+                end_dt=end_dt
+            )
+        except Exception as e:
+            log.warn('skipping ctable for {} from {} to {}: {}'.format(
+                asset.symbol, start_dt, end_dt, e
+            ))
+
+        periods = bundle.get_calendar_periods_range(
+            start_dt, end_dt, data_frequency
+        )
+        df = get_df_from_arrays(arrays, periods)
+
+        folder = os.path.join(
+            tempfile.gettempdir(), 'catalyst', exchange.name, asset.symbol
+        )
+        ensure_directory(folder)
+
+        path = os.path.join(folder, period + '.csv')
+
+        log.info('creating csv file: {}'.format(path))
+        print('HEAD\n{}'.format(df.head(10)))
+        print('TAIL\n{}'.format(df.tail(10)))
+        df.to_csv(path)
         pass

@@ -39,17 +39,25 @@ class BcolzExchangeBarReader(BcolzMinuteBarReader):
         return self._data_frequency
 
     def load_raw_arrays(self, fields, start_dt, end_dt, sids):
+        """
+        Parameters
+        ----------
+        fields : list of str
+           'open', 'high', 'low', 'close', or 'volume'
+        start_dt: Timestamp
+           Beginning of the window range.
+        end_dt: Timestamp
+           End of the window range.
+        sids : list of int
+           The asset identifiers in the window.
 
-        # if self._data_frequency == 'minute':
-        #     return super(BcolzExchangeBarReader, self) \
-        #         .load_raw_arrays(fields, start_dt, end_dt, sids)
-        #
-        # else:
-        #     return self._load_daily_raw_arrays(fields, start_dt, end_dt, sids)
-
-        return self._load_raw_arrays(fields, start_dt, end_dt, sids)
-
-    def _load_raw_arrays(self, fields, start_dt, end_dt, sids):
+        Returns
+        -------
+        list of np.ndarray
+            A list with an entry per field of ndarrays with shape
+            (minutes in range, sids) with a dtype of float64, containing the
+            values for the respective field over start and end dt range.
+        """
         start_idx = self._find_position_of_minute(start_dt)
         end_idx = self._find_position_of_minute(end_dt)
 

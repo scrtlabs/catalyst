@@ -1,6 +1,13 @@
 Install
 =======
 
+To get started with Catalyst, you will need to install it in your computer. 
+Like any other piece of software, Catalyst has a number of dependencies 
+(other software on which it depends to run) that you will need to install, as 
+well. We recommend using a software named ``Conda`` that will manage all 
+these dependencies for you, and set up the environment needed to get you up 
+and running as easily as possible. See :ref:`Installing with Conda <conda>`.
+
 Installing with ``pip``
 -----------------------
 
@@ -9,19 +16,20 @@ Python package.
 
 There are two reasons for the additional complexity:
 
-1. Catalyst ships several C extensions that require access to the CPython C API.
-   In order to build the C extensions, ``pip`` needs access to the CPython
-   header files for your Python installation.
+1. Catalyst ships several C extensions that require access to the CPython C 
+   API. In order to build the C extensions, ``pip`` needs access to the 
+   CPython header files for your Python installation.
 
 2. Catalyst depends on `numpy <http://www.numpy.org/>`_, the core library for
    numerical array computing in Python.  Numpy depends on having the `LAPACK
    <http://www.netlib.org/lapack>`_ linear algebra routines available.
 
-Because LAPACK and the CPython headers are non-Python dependencies, the correct
-way to install them varies from platform to platform.  If you'd rather use a
-single tool to install Python and non-Python dependencies, or if you're already
-using `Anaconda <http://continuum.io/downloads>`_ as your Python distribution,
-you can skip to the :ref:`Installing with Conda <conda>` section.
+Because LAPACK and the CPython headers are non-Python dependencies, the 
+correctway to install them varies from platform to platform.  If you'd rather 
+use a single tool to install Python and non-Python dependencies, or if you're 
+already using `Anaconda <http://continuum.io/downloads>`_ as your Python 
+distribution, you can skip to the :ref:`Installing with Conda <conda>` 
+section.
 
 Once you've installed the necessary additional dependencies (see below for
 your particular platform), you should be able to simply run
@@ -34,8 +42,8 @@ If you use Python for anything other than Catalyst, we **strongly** recommend
 that you install in a `virtualenv
 <https://virtualenv.readthedocs.org/en/latest>`_.  The `Hitchhiker's Guide to
 Python`_ provides an `excellent tutorial on virtualenv
-<http://docs.python-guide.org/en/latest/dev/virtualenvs/>`_. Here's a summarized
-version:
+<http://docs.python-guide.org/en/latest/dev/virtualenvs/>`_. Here's a 
+summarized version:
 
 .. code-block:: bash
 
@@ -44,9 +52,10 @@ version:
    $ source ./catalyst-venv/bin/activate
    $ pip install enigma-catalyst
 
-Though not required by Catalyst directly, our example algorithms use matplotlib 
-to visually display the results of the trading algorithms. If you wish to run 
-any examples or use matplotlib during development, it can be installed using:
+Though not required by Catalyst directly, our example algorithms use 
+matplotlib to visually display the results of the trading algorithms. If you 
+wish to run any examples or use matplotlib during development, it can be 
+installed using:
 
 .. code-block:: bash
 
@@ -91,12 +100,12 @@ On `Arch Linux`_, you can acquire the additional dependencies via ``pacman``:
 OSX
 ~~~
 
-The version of Python shipped with OSX by default is generally out of date, and
-has a number of quirks because it's used directly by the operating system.  For
-these reasons, many developers choose to install and use a separate Python
+The version of Python shipped with OSX by default is generally out of date, 
+and has a number of quirks because it's used directly by the operating system.
+For these reasons, many developers choose to install and use a separate Python
 installation. The `Hitchhiker's Guide to Python`_ provides an excellent guide
-to `Installing Python on OSX <http://docs.python-guide.org/en/latest/>`_, which
-explains how to install Python with the `Homebrew`_ manager.
+to `Installing Python on OSX <http://docs.python-guide.org/en/latest/>`_, 
+which explains how to install Python with the `Homebrew`_ manager.
 
 Assuming you've installed Python with Homebrew, you'll also likely need the
 following brew packages:
@@ -108,58 +117,85 @@ following brew packages:
 OSX + virtualenv + matplotlib
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A note about using matplotlib in virtual enviroments on OSX: it may be necessary to run
+A note about using matplotlib in virtual enviroments on OSX: it may be 
+necessary to run
 
 .. code-block:: bash
 
    echo "backend: TkAgg" > ~/.matplotlib/matplotlibrc
 
-in order to override the default ``macosx`` backend for your system, which may not 
-be accessible from inside the virtual environment. This will allow Catalyst to open 
-matplotlib charts from within a virtual environment, which is useful for displaying 
-the performance of your backtests.  To learn more about matplotlib backends, please refer to the
+in order to override the default ``macosx`` backend for your system, which 
+may not be accessible from inside the virtual environment. This will allow 
+Catalyst to open matplotlib charts from within a virtual environment, which 
+is useful for displaying the performance of your backtests.  To learn more 
+about matplotlib backends, please refer to the
 `matplotlib backend documentation <https://matplotlib.org/faq/usage_faq.html#what-is-a-backend>`_.
 
+.. _windows:
 
 Windows
 ~~~~~~~
 
 In Windows, you will need the `Microsoft Visual C++ Compiler for Python 2.7 
-<https://www.microsoft.com/en-us/download/details.aspx?id=44266>`_. This package 
-contains the compiler and the set of system headers necessary for producing 
-binary wheels for Python 2.7 packages. If it's not already in your system, download
-it and install it before proceeding to the next step.
+<https://www.microsoft.com/en-us/download/details.aspx?id=44266>`_. This 
+package contains the compiler and the set of system headers necessary for 
+producing binary wheels for Python 2.7 packages. If it's not already in your 
+system, download it and install it before proceeding to the next step.
 
 For windows, the easiest and best supported way to install Catalyst is to use
 :ref:`Conda <conda>`.
 
-Troubleshooting Visual C++ Compiler Install
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Some problems we have encountered installing the **Visual C++ Compiler** 
+mentioned above are as follows:
 
-We run into two different errors when trying to install the the `Microsoft Visual C++ 
-Compiler for Python 2.7` mentioned above:
+- **The system administrator has set policies to prevent this installation**.
+  
+  In some systems, there is a default *Windows Software Restriction* policy 
+  that prevents the installation of some software packages like this one. 
+  You'll have to change the Registry to circumvent this:
 
--  
+  - Click ``Start``, and search for ``regedit`` and launch the 
+    ``Registry Editor``
+  - Navigate to the following folder:
+    ``HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Installer``
+  - If there is an entry for ``DisableMSI``, set the Value data to 0.
+  - If there is no such entry, click on the ``Edit`` menu -> ``New`` -> 
+    ``DWORD (32-bit) Value`` and enter ``DisableMSI`` as the Name (and by 
+    default you get 0 as the Value Data)
+
+|
+- **The installer has encountered an unexpected error installing this package. 
+  This may indicate a problem with this package. The error code is 2503.**
+
+  We have observed this when trying to install a package without enough 
+  administrator permissions. Even when you are logged in as an Administrator, 
+  you have to explictily install this package with administrator privileges:
+
+  - Click ``Start`` and find ``CMD`` or ``Command Prompt``
+  - Right click on it and choose ``Run as administrator``
+  - ``cd`` into the folder where you downloaded ``VCForPython27.msi``
+  - Run ``msiexec /i VCForPython27.msi``
 
 
 Amazon Linux AMI
 ~~~~~~~~~~~~~~~~
 
-The packages ``pip`` and ``setuptools`` that come shipped by default are very outdated. 
-Thus, you first need to run:
+The packages ``pip`` and ``setuptools`` that come shipped by default are very 
+outdated. Thus, you first need to run:
 
 .. code-block:: bash
 
    pip install --upgrade pip setuptools
 
-The default installation is also missing the C and C++ compilers, which you install by:
+The default installation is also missing the C and C++ compilers, which you 
+install by:
 
 .. code-block:: bash
 
    sudo yum install gcc gcc-c++
 
-Then you should follow the regular installation instructions outlined at the beginning 
-of this page.
+Then you should follow the regular installation instructions outlined at the 
+beginning of this page.
 
 
 Troubleshooting ``pip`` Install
@@ -184,17 +220,24 @@ Troubleshooting ``pip`` Install
 ----
 
 **Issue**: 
-   Package enigma-catalyst cannot still be found, even after upgrading pip (see above), with an error similar to:
+   Package enigma-catalyst cannot still be found, even after upgrading pip 
+   (see above), with an error similar to:
 
    .. code-block:: bash
 
       Downloading/unpacking enigma-catalyst
-      Could not find a version that satisfies the requirement enigma-catalyst (from versions: 0.1.dev9, 0.2.dev2, 0.1.dev4, 0.1.dev5, 0.1.dev3, 0.2.dev1, 0.1.dev8, 0.1.dev6)
+      Could not find a version that satisfies the requirement enigma-catalyst 
+      (from versions: 0.1.dev9, 0.2.dev2, 0.1.dev4, 0.1.dev5, 0.1.dev3, 
+      0.2.dev1, 0.1.dev8, 0.1.dev6)
       Cleaning up...
       No distributions matching the version for enigma-catalyst
 
 **Solution**:
-   In some systems (this error has been reported in Ubuntu), pip is configured to only find stable versions by default. Since Catalyst is in alpha version, pip cannot find a matching version that satisfies the installation requirements. The solution is to include the `--pre` flag to include pre-release and development versions:
+   In some systems (this error has been reported in Ubuntu), pip is configured 
+   to only find stable versions by default. Since Catalyst is in alpha 
+   version, pip cannot find a matching version that satisfies the installation 
+   requirements. The solution is to include the `--pre` flag to include 
+   pre-release and development versions:
 
    .. code-block:: bash
 
@@ -230,10 +273,14 @@ Troubleshooting ``pip`` Install
 ----
 
 **Issue**: 
-   Installation fails with error: ``fatal error: Python.h: No such file or directory``
+   Installation fails with error: 
+   ``fatal error: Python.h: No such file or directory``
 
 **Solution**: 
-   Some systems (this issue has been reported in Ubuntu) require `python-dev` for the proper build and installation of package dependencies. The solution is to install python-dev, which is independent of the virtual environment. In Ubuntu, you would need to run:
+   Some systems (this issue has been reported in Ubuntu) require `python-dev` 
+   for the proper build and installation of package dependencies. The solution 
+   is to install python-dev, which is independent of the virtual environment. 
+   In Ubuntu, you would need to run:
 
    .. code-block:: bash
 
@@ -251,36 +298,41 @@ comes as part of Continuum Analytics' `Anaconda
 
 The primary advantage of using Conda over ``pip`` is that conda natively
 understands the complex binary dependencies of packages like ``numpy`` and
-``scipy``.  This means that ``conda`` can install Catalyst and its dependencies
-without requiring the use of a second tool to acquire Catalyst's non-Python
-dependencies.
+``scipy``.  This means that ``conda`` can install Catalyst and its 
+dependencies without requiring the use of a second tool to acquire Catalyst's 
+non-Python dependencies.
+
+  For Windows, you will need the *Microsoft Visual C++ Compiler for Python 
+  2.7*. Follow the instructions on the :ref:`Windows` section and come back 
+  here.
 
 For instructions on how to install ``conda``, see the `Conda Installation
-Documentation <http://conda.pydata.org/docs/download.html>`_. Alternatively, you 
-can install MiniConda, which is a smaller footprint (fewer packages and smaller 
-size) than its big brother Anaconda, but it still contains all the main packages 
-needed. To install MiniConda, you can follow these steps:
+Documentation <http://conda.pydata.org/docs/download.html>`_. Alternatively, 
+you can install MiniConda, which is a smaller footprint (fewer packages and 
+smaller size) than its big brother Anaconda, but it still contains all the 
+main packages needed. To install MiniConda, you can follow these steps:
 
-1. Download `MiniConda <https://conda.io/miniconda.html>`_. Select Python 2.7 for 
-   your Operating System.
-2. Install MiniConda. See the `Installation Instructions <https://conda.io/docs/user-guide/install/index.html>`_
-   if you need help.
-3. Ensure the correct installation by running ``conda list`` in a Terminal window,
-   which should print the list of packages installed with Conda.
+1. Download `MiniConda <https://conda.io/miniconda.html>`_. Select Python 2.7 
+   for your Operating System.
+2. Install MiniConda. See the `Installation Instructions 
+   <https://conda.io/docs/user-guide/install/index.html>`_ if you need help.
+3. Ensure the correct installation by running ``conda list`` in a Terminal 
+   window, which should print the list of packages installed with Conda.
 
 Once either Conda or MiniConda has been set up you can install Catalyst:
 
-1. Download the file `python2.7-environment.yml <https://github.com/enigmampc/catalyst/blob/master/etc/python2.7-environment.yml>`_.
-2. Open a Terminal window and enter [``cd/dir``] into the directory where you saved
-   the above ``python2.7-environment.yml`` file.
+1. Download the file `python2.7-environment.yml 
+   <https://github.com/enigmampc/catalyst/blob/master/etc/python2.7-environment.yml>`_.
+2. Open a Terminal window and enter [``cd/dir``] into the directory where you 
+   saved the above ``python2.7-environment.yml`` file.
 3. Install using this file. This step can take about 5-10 minutes to install.
 
    .. code-block:: bash
 
       conda env create -f python2.7-environment.yml
 
-4. Activate the environment (which you need to do every time you start a new session
-   to run Catalyst):
+4. Activate the environment (which you need to do every time you start a new 
+   session to run Catalyst):
 
    **Linux or OSX:**
 
@@ -299,14 +351,15 @@ Congratulations! You now have Catalyst installed.
 Troubleshooting ``conda`` Install
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If the command  ``conda env create -f python2.7-environment.yml`` in step 3 above failed 
-for any reason, you can try setting up the environment manually with the following steps:
+If the command  ``conda env create -f python2.7-environment.yml`` in step 3 
+above failed for any reason, you can try setting up the environment manually 
+with the following steps:
 
 1. Create the environment:
 
    .. code-block:: bash
 
-      conda create --name catalyst python=2.7 scipy
+      conda create --name catalyst python=2.7 scipy zlib
 
 2. Activate the environment:
 
@@ -331,20 +384,23 @@ for any reason, you can try setting up the environment manually with the followi
 Getting Help
 ------------
 
-If after following the instructions above, and going through the *Troubleshooting* sections, 
-you still experience problems installing Catalyst, you can seek additional help through the 
-following channels:
+If after following the instructions above, and going through the 
+*Troubleshooting* sections, you still experience problems installing Catalyst,
+you can seek additional help through the following channels:
 
-- Join our `Discord community <https://discord.gg/SJK32GY>`_, and head over the #catalyst_dev 
-  channel where many other users (as well as the project developers) hang out, and can assist 
-  you with your particular issue. The more descriptive and the more information you can provide, 
-  the easiest will be for others to help you out.
+- Join our `Discord community <https://discord.gg/SJK32GY>`_, and head over 
+  the #catalyst_dev channel where many other users (as well as the project 
+  developers) hang out, and can assist you with your particular issue. The 
+  more descriptive and the more information you can provide, the easiest will 
+  be for others to help you out.
 
 - Report the problem you are experiencing on our 
-  `GitHub repository <https://github.com/enigmampc/catalyst/issues>`_ following the guidelines 
-  provided therein. Before you do so, take a moment to browse through all `previous reported issues
-  <https://github.com/enigmampc/catalyst/issues?utf8=%E2%9C%93&q=is%3Aissue>`_ in the likely case
-  that someone else experienced that same issue before, and you get a hint on how to solve it.
+  `GitHub repository <https://github.com/enigmampc/catalyst/issues>`_ 
+  following the guidelines provided therein. Before you do so, take a moment 
+  to browse through all `previous reported issues
+  <https://github.com/enigmampc/catalyst/issues?utf8=%E2%9C%93&q=is%3Aissue>`_ 
+  in the likely case that someone else experienced that same issue before, 
+  and you get a hint on how to solve it.
 
 
 .. _`Debian-derived`: https://www.debian.org/misc/children-distros

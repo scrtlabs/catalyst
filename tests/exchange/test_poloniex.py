@@ -8,7 +8,7 @@ from catalyst.exchange.exchange_utils import get_exchange_auth
 log = Logger('test_poloniex')
 
 
-class TestPoloniexTestCase(BaseExchangeTestCase):
+class TestPoloniex(BaseExchangeTestCase):
     @classmethod
     def setup(self):
         print ('creating poloniex object')
@@ -52,11 +52,11 @@ class TestPoloniexTestCase(BaseExchangeTestCase):
     def test_get_candles(self):
         log.info('retrieving candles')
         ohlcv_neo = self.exchange.get_candles(
-            data_frequency='5m',
-            assets=self.exchange.get_asset('neos_btc')
+            freq='5T',
+            assets=self.exchange.get_asset('eth_btc')
         )
         ohlcv_neo_ubq = self.exchange.get_candles(
-            data_frequency='5m',
+            freq='5T',
             assets=[
                 self.exchange.get_asset('neos_btc'),
                 self.exchange.get_asset('via_btc')

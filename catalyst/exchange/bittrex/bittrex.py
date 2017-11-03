@@ -210,14 +210,14 @@ class Bittrex(Exchange):
                 error=status['message']
             )
 
-    def get_candles(self, data_frequency, assets, bar_count=None,
+    def get_candles(self, freq, assets, bar_count=None,
                     start_dt=None, end_dt=None):
         """
         Supported Intervals
         -------------------
         day, oneMin, fiveMin, thirtyMin, hour
 
-        :param data_frequency:
+        :param freq:
         :param assets:
         :param bar_count:
         :param start_dt
@@ -233,28 +233,25 @@ class Bittrex(Exchange):
             'retrieving {bars} {freq} candles on {exchange} from '
             '{end_dt} for markets {symbols}, '.format(
                 bars=bar_count,
-                freq=data_frequency,
+                freq=freq,
                 exchange=self.name,
                 end_dt=end_dt,
                 symbols=get_symbols_string(assets)
             )
         )
 
-        data_frequency = data_frequency.lower()
-        if data_frequency == 'minute' or data_frequency == '1m':
+        if freq == '1T':
             frequency = 'oneMin'
-        elif data_frequency == '5m':
+        elif freq == '5T':
             frequency = 'fiveMin'
-        elif data_frequency == '30m':
+        elif freq == '30T':
             frequency = 'thirtyMin'
-        elif data_frequency == '1h':
+        elif freq == '60T':
             frequency = 'hour'
-        elif data_frequency == 'daily' or data_frequency == '1d':
+        elif freq == '1D':
             frequency = 'day'
         else:
-            raise InvalidHistoryFrequencyError(
-                frequency=data_frequency
-            )
+            raise InvalidHistoryFrequencyError(frequency=freq)
 
         # Making sure that assets are iterable
         asset_list = [assets] if isinstance(assets, TradingPair) else assets
@@ -297,6 +294,7 @@ class Bittrex(Exchange):
             if bar_count is None:
                 ohlc_map[asset] = ohlc_from_candle(ordered_candles[0])
             else:
+                # TODO: optimize
                 ohlc_bars = []
                 for candle in ordered_candles[:bar_count]:
                     ohlc = ohlc_from_candle(candle)

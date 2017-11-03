@@ -1,14 +1,15 @@
 import json
 import os
 import pickle
-
-from catalyst.assets._assets import TradingPair
-from six.moves.urllib import request
+import re
 from datetime import date, datetime
 
 import pandas as pd
+from catalyst.assets._assets import TradingPair
+from six.moves.urllib import request
 
-from catalyst.exchange.exchange_errors import ExchangeSymbolsNotFound
+from catalyst.exchange.exchange_errors import ExchangeSymbolsNotFound, \
+    InvalidHistoryFrequencyError, InvalidHistoryFrequencyAlias
 from catalyst.utils.paths import data_root, ensure_directory, \
     last_modified_time
 
@@ -17,6 +18,19 @@ SYMBOLS_URL = 'https://s3.amazonaws.com/enigmaco/catalyst-exchanges/' \
 
 
 def get_exchange_folder(exchange_name, environ=None):
+    """
+    The root path of an exchange folder.
+
+    Parameters
+    ----------
+    exchange_name: str
+    environ:
+
+    Returns
+    -------
+    str
+
+    """
     if not environ:
         environ = os.environ
 
@@ -28,11 +42,37 @@ def get_exchange_folder(exchange_name, environ=None):
 
 
 def get_exchange_symbols_filename(exchange_name, environ=None):
+    """
+    The absolute path of the exchange's symbol.json file.
+
+    Parameters
+    ----------
+    exchange_name:
+    environ:
+
+    Returns
+    -------
+    str
+
+    """
     exchange_folder = get_exchange_folder(exchange_name, environ)
     return os.path.join(exchange_folder, 'symbols.json')
 
 
 def download_exchange_symbols(exchange_name, environ=None):
+    """
+    Downloads the exchange's symbols.json from the repository.
+
+    Parameters
+    ----------
+    exchange_name: str
+    environ:
+
+    Returns
+    -------
+    str
+
+    """
     filename = get_exchange_symbols_filename(exchange_name)
     url = SYMBOLS_URL.format(exchange=exchange_name)
     response = request.urlretrieve(url=url, filename=filename)
@@ -40,6 +80,19 @@ def download_exchange_symbols(exchange_name, environ=None):
 
 
 def get_exchange_symbols(exchange_name, environ=None):
+    """
+    The de-serialized content of the exchange's symbols.json.
+
+    Parameters
+    ----------
+    exchange_name: str
+    environ:
+
+    Returns
+    -------
+    Object
+
+    """
     filename = get_exchange_symbols_filename(exchange_name)
 
     if not os.path.isfile(filename) or \
@@ -60,11 +113,36 @@ def get_exchange_symbols(exchange_name, environ=None):
 
 
 def get_symbols_string(assets):
+    """
+    A concatenated string of symbols from a list of assets.
+
+    Parameters
+    ----------
+    assets: list[TradingPair]
+
+    Returns
+    -------
+    str
+
+    """
     array = [assets] if isinstance(assets, TradingPair) else assets
     return ', '.join([asset.symbol for asset in array])
 
 
 def get_exchange_auth(exchange_name, environ=None):
+    """
+    The de-serialized contend of the exchange's auth.json file.
+
+    Parameters
+    ----------
+    exchange_name: str
+    environ:
+
+    Returns
+    -------
+    Object
+
+    """
     exchange_folder = get_exchange_folder(exchange_name, environ)
     filename = os.path.join(exchange_folder, 'auth.json')
 
@@ -81,6 +159,19 @@ def get_exchange_auth(exchange_name, environ=None):
 
 
 def get_algo_folder(algo_name, environ=None):
+    """
+    The algorithm root folder of the algorithm.
+
+    Parameters
+    ----------
+    algo_name: str
+    environ:
+
+    Returns
+    -------
+    str
+
+    """
     if not environ:
         environ = os.environ
 
@@ -92,6 +183,21 @@ def get_algo_folder(algo_name, environ=None):
 
 
 def get_algo_object(algo_name, key, environ=None, rel_path=None):
+    """
+    The de-serialized object of the algo name and key.
+
+    Parameters
+    ----------
+    algo_name: str
+    key: str
+    environ:
+    rel_path: str
+
+    Returns
+    -------
+    Object
+
+    """
     if algo_name is None:
         return None
 
@@ -113,6 +219,18 @@ def get_algo_object(algo_name, key, environ=None, rel_path=None):
 
 
 def save_algo_object(algo_name, key, obj, environ=None, rel_path=None):
+    """
+    Serialize and save an object by algo name and key.
+
+    Parameters
+    ----------
+    algo_name: str
+    key: str
+    obj: Object
+    environ:
+    rel_path: str
+
+    """
     folder = get_algo_folder(algo_name, environ)
 
     if rel_path is not None:
@@ -125,16 +243,22 @@ def save_algo_object(algo_name, key, obj, environ=None, rel_path=None):
         pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def append_algo_object(algo_name, key, obj, environ=None):
-    algo_folder = get_algo_folder(algo_name, environ)
-    filename = os.path.join(algo_folder, key + '.p')
-
-    mode = 'a+b' if os.path.isfile(filename) else 'wb'
-    with open(filename, mode) as handle:
-        pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-
 def get_algo_df(algo_name, key, environ=None, rel_path=None):
+    """
+    The de-serialized DataFrame of an algo name and key.
+
+    Parameters
+    ----------
+    algo_name: str
+    key: str
+    environ:
+    rel_path: str
+
+    Returns
+    -------
+    DataFrame
+
+    """
     folder = get_algo_folder(algo_name, environ)
 
     if rel_path is not None:
@@ -153,6 +277,18 @@ def get_algo_df(algo_name, key, environ=None, rel_path=None):
 
 
 def save_algo_df(algo_name, key, df, environ=None, rel_path=None):
+    """
+    Serialize to csv and save a DataFrame by algo name and key.
+
+    Parameters
+    ----------
+    algo_name: str
+    key: str
+    df: DataFrame
+    environ:
+    rel_path: str
+
+    """
     folder = get_algo_folder(algo_name, environ)
 
     if rel_path is not None:
@@ -166,6 +302,19 @@ def save_algo_df(algo_name, key, df, environ=None, rel_path=None):
 
 
 def get_exchange_minute_writer_root(exchange_name, environ=None):
+    """
+    The minute writer folder for the exchange.
+
+    Parameters
+    ----------
+    exchange_name: str
+    environ:
+
+    Returns
+    -------
+    BcolzExchangeBarWriter
+
+    """
     exchange_folder = get_exchange_folder(exchange_name, environ)
 
     minute_data_folder = os.path.join(exchange_folder, 'minute_data')
@@ -175,6 +324,19 @@ def get_exchange_minute_writer_root(exchange_name, environ=None):
 
 
 def get_exchange_bundles_folder(exchange_name, environ=None):
+    """
+    The temp folder for bundle downloads by algo name.
+
+    Parameters
+    ----------
+    exchange_name: str
+    environ:
+
+    Returns
+    -------
+    str
+
+    """
     exchange_folder = get_exchange_folder(exchange_name, environ)
 
     temp_bundles = os.path.join(exchange_folder, 'temp_bundles')
@@ -184,8 +346,140 @@ def get_exchange_bundles_folder(exchange_name, environ=None):
 
 
 def perf_serial(obj):
-    """JSON serializer for objects not serializable by default json code"""
+    """
+    JSON serializer for objects not serializable by default json code
 
+    Parameters
+    ----------
+    obj: Object
+
+    Returns
+    -------
+    str
+
+    """
     if isinstance(obj, (datetime, date)):
         return obj.isoformat()
+
     raise TypeError("Type %s not serializable" % type(obj))
+
+
+def get_common_assets(exchanges):
+    """
+    The assets available in all specified exchanges.
+
+    Parameters
+    ----------
+    exchanges: list[Exchange]
+
+    Returns
+    -------
+    list[TradingPair]
+
+    """
+    symbols = []
+    for exchange_name in exchanges:
+        s = [asset.symbol for asset in exchanges[exchange_name].get_assets()]
+        symbols.append(s)
+
+    inter_symbols = set.intersection(*map(set, symbols))
+
+    assets = []
+    for symbol in inter_symbols:
+        for exchange_name in exchanges:
+            asset = exchanges[exchange_name].get_asset(symbol)
+            assets.append(asset)
+
+    return assets
+
+
+def get_frequency(freq, data_frequency):
+    """
+    Get the frequency parameters.
+
+    Notes
+    -----
+    We're trying to use Pandas convention for frequency aliases.
+
+    Parameters
+    ----------
+    freq: str
+    data_frequency: str
+
+    Returns
+    -------
+    str, int, str, str
+
+    """
+    if freq == 'minute':
+        unit = 'T'
+        candle_size = 1
+
+    elif freq == 'daily':
+        unit = 'D'
+        candle_size = 1
+
+    else:
+        freq_match = re.match(r'([0-9].*)?(m|M|d|D|h|H|T)', freq, re.M | re.I)
+        if freq_match:
+            candle_size = int(freq_match.group(1)) if freq_match.group(1) \
+                else 1
+            unit = freq_match.group(2)
+
+        else:
+            raise InvalidHistoryFrequencyError(frequency=freq)
+
+    if unit.lower() == 'd':
+        alias = '{}D'.format(candle_size)
+
+        if data_frequency == 'minute':
+            data_frequency = 'daily'
+
+    elif unit.lower() == 'm' or unit == 'T':
+        alias = '{}T'.format(candle_size)
+
+        if data_frequency == 'daily':
+            data_frequency = 'minute'
+
+    # elif unit.lower() == 'h':
+    #     candle_size = candle_size * 60
+    #
+    #     alias = '{}T'.format(candle_size)
+    #     if data_frequency == 'daily':
+    #         data_frequency = 'minute'
+
+    else:
+        raise InvalidHistoryFrequencyAlias(freq=freq)
+
+    return alias, candle_size, unit, data_frequency
+
+
+def resample_history_df(df, freq, field):
+    """
+    Resample the OHCLV DataFrame using the specified frequency.
+
+    Parameters
+    ----------
+    df: DataFrame
+    freq: str
+    field: str
+
+    Returns
+    -------
+    DataFrame
+
+    """
+    if field == 'open':
+        agg = 'first'
+    elif field == 'high':
+        agg = 'max'
+    elif field == 'low':
+        agg = 'min'
+    elif field == 'close':
+        agg = 'last'
+    elif field == 'volume':
+        agg = 'sum'
+    else:
+        raise ValueError('Invalid field.')
+
+    return df.resample(freq).agg(agg)

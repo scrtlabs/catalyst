@@ -1,3 +1,4 @@
+import calendar
 import json
 import json
 import time
@@ -171,12 +172,12 @@ class Poloniex(Exchange):
         # TODO: fetch account data and keep in cache
         return None
 
-    def get_candles(self, data_frequency, assets, bar_count=None,
+    def get_candles(self, freq, assets, bar_count=None,
                     start_dt=None, end_dt=None):
         """
         Retrieve OHLVC candles from Poloniex
 
-        :param data_frequency:
+        :param freq:
         :param assets:
         :param bar_count:
         :return:
@@ -193,31 +194,33 @@ class Poloniex(Exchange):
             'retrieving {bars} {freq} candles on {exchange} from '
             '{end_dt} for markets {symbols}, '.format(
                 bars=bar_count,
-                freq=data_frequency,
+                freq=freq,
                 exchange=self.name,
                 end_dt=end_dt,
                 symbols=get_symbols_string(assets)
             )
         )
 
-        if data_frequency == '5m':
+        if freq == '1T' and (bar_count == 1 or bar_count is None):
+            # TODO: use the order book instead
+            # We use the 5m to fetch the last bar
             frequency = 300
-        elif data_frequency == '15m':
+        elif freq == '5T':
+            frequency = 300
+        elif freq == '15T':
             frequency = 900
-        elif data_frequency == '30m':
+        elif freq == '30T':
             frequency = 1800
-        elif data_frequency == '2h':
+        elif freq == '120T':
             frequency = 7200
-        elif data_frequency == '4h':
+        elif freq == '240T':
             frequency = 14400
-        elif data_frequency == '1D' or data_frequency == 'daily':
+        elif freq == '1D':
             frequency = 86400
         else:
             # Poloniex does not offer 1m data candles
             # It is likely to error out there frequently
-            raise InvalidHistoryFrequencyError(
-                frequency=data_frequency
-            )
+            raise InvalidHistoryFrequencyError(frequency=freq)
 
         # Making sure that assets are iterable
         asset_list = [assets] if isinstance(assets, TradingPair) else assets
@@ -225,15 +228,18 @@ class Poloniex(Exchange):
 
         for asset in asset_list:
 
-            end = int(time.mktime(end_dt.timetuple()))
+            # TODO: what's wrong with this?
+            # end = int(time.mktime(end_dt.timetuple()))
+            end = int(time.time())
             if bar_count is None:
                 start = end - 2 * frequency
             else:
                 start = end - bar_count * frequency
 
             try:
-                response = self.api.returnchartdata(self.get_symbol(asset),
-                                                    frequency, start, end)
+                response = self.api.returnchartdata(
+                    self.get_symbol(asset), frequency, start, end
+                )
             except Exception as e:
                 raise ExchangeRequestError(error=e)
 

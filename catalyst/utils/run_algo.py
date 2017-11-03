@@ -31,7 +31,7 @@ import catalyst.utils.paths as pth
 
 from catalyst.exchange.exchange_algorithm import ExchangeTradingAlgorithmLive, \
     ExchangeTradingAlgorithmBacktest
-from catalyst.exchange.data_portal_exchange import DataPortalExchangeLive, \
+from catalyst.exchange.exchange_data_portal import DataPortalExchangeLive, \
     DataPortalExchangeBacktest
 from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
 from catalyst.exchange.exchange_portfolio import ExchangePortfolio
