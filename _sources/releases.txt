@@ -4,20 +4,34 @@ Release Notes
 
 Version 0.3.4
 ^^^^^^^^^^^^^
-**Release Date**: 2017-10-31
+**Release Date**: 2017-11-2
 
 Bug Fixes
 ~~~~~~~~~
 
-- Fixed issue with auto-ingestion of minute data
+- Fixed issue with auto-ingestion of minute data (:issue:`47`)
 - Fixed issue with sell orders in backtesting
 - Fixed data frequency issues with data.history() in backtesting
-
+- Fixed an issue with can_trade()
+- Reduced the commission and slippage values to account for lower volume transactions
 
 Build
 ~~~~~
 
 - Added more unit tests
+
+Documentation
+~~~~~~~~~~~~~
+
+- Improved installation notes for Windows C++ compiler and Conda
+- Addition of `Jupyter Notebook guide <https://enigmampc.github.io/catalyst/jupyter.html>`_
+- Addition of `Live Trading page <https://enigmampc.github.io/catalyst/live-trading.html>`_
+- Addition of `Videos page <https://enigmampc.github.io/catalyst/videos.html>`_
+- Addition of `Resources page <https://enigmampc.github.io/catalyst/resources.html>`_
+- Addition of `Development Guidelines <https://enigmampc.github.io/catalyst/development-guidelines.html>`_
+- Addition of `Release Notes <https://enigmampc.github.io/catalyst/releases.html>`_
+- Updated code docstrings
+
 
 Version 0.3.3
 ^^^^^^^^^^^^^
