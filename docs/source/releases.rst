@@ -2,6 +2,15 @@
 Release Notes
 =============
 
+Version 0.3.5
+^^^^^^^^^^^^^
+**Release Date**: 2017-11-2
+
+Bug Fixes
+~~~~~~~~~
+
+- Added workaround for: KeyError: Timestamp error (:issue:`53`)
+
 Version 0.3.4
 ^^^^^^^^^^^^^
 **Release Date**: 2017-11-2

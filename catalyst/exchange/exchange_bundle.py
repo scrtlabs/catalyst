@@ -437,7 +437,7 @@ class ExchangeBundle:
 
         if end is None or start is None or start >= end:
             raise NoDataAvailableOnExchange(
-                exchange=[asset.exchange.name for asset in assets],
+                exchange=[asset.exchange for asset in assets],
                 symbol=[asset.symbol for asset in assets],
                 data_frequency=data_frequency,
             )

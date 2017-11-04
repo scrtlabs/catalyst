@@ -442,7 +442,7 @@ class TestExchangeBundle:
         data_frequency = 'minute'
 
         exchange = get_exchange(exchange_name)
-        asset = exchange.get_asset('eth_btc')
+        asset = exchange.get_asset('neo_usd')
 
         self._bundle_to_csv(
             asset=asset,
@@ -456,8 +456,8 @@ class TestExchangeBundle:
     def bundle_to_csv(self):
         exchange_name = 'bitfinex'
         data_frequency = 'minute'
-        period = '2017-06'
-        symbol = 'etc_btc'
+        period = '2017-10'
+        symbol = 'neo_btc'
 
         exchange = get_exchange(exchange_name)
         asset = exchange.get_asset(symbol)
@@ -475,6 +475,7 @@ class TestExchangeBundle:
             path=path,
             filename=period
         )
+        pass
 
     def _bundle_to_csv(self, asset, exchange, data_frequency, filename,
                        path=None):
