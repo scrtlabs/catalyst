@@ -19,11 +19,11 @@ def handle_data(context, data):
     try:
         prices = data.history(
             context.asset,
-            fields='price',
+            fields='close',
             bar_count=1,
             frequency='1D'
         )
-        print('got {} price entries'.format(len(prices)))
+        print('got {} price entries\n'.format(len(prices), prices))
     except Exception as e:
         print(e)
 
