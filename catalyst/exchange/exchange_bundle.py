@@ -435,7 +435,7 @@ class ExchangeBundle:
         if end is None or (last_entry is not None and end > last_entry):
             end = last_entry
 
-        if end is None or start is None or start >= end:
+        if end is None or start is None or start > end:
             raise NoDataAvailableOnExchange(
                 exchange=[asset.exchange for asset in assets],
                 symbol=[asset.symbol for asset in assets],
