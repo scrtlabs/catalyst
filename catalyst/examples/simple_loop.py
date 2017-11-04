@@ -31,8 +31,8 @@ def handle_data(context, data):
 
 run_algorithm(
     capital_base=250,
-    start=pd.to_datetime('2017-1-1', utc=True),
-    end=pd.to_datetime('2017-10-22', utc=True),
+    start=pd.to_datetime('2016-1-1', utc=True),
+    end=pd.to_datetime('2016-12-31', utc=True),
     data_frequency='daily',
     initialize=initialize,
     handle_data=handle_data,

@@ -300,24 +300,17 @@ def range_in_bundle(asset, start_dt, end_dt, reader):
 
     """
     has_data = True
-    if has_data and reader is not None:
+    dates = [start_dt, end_dt]
+
+    while dates and has_data:
         try:
-            start_close = \
-                reader.get_value(asset.sid, start_dt, 'close')
+            dt = dates.pop(0)
+            close = reader.get_value(asset.sid, dt, 'close')
 
-            if np.isnan(start_close):
+            if np.isnan(close):
                 has_data = False
-
-            else:
-                end_close = reader.get_value(asset.sid, end_dt, 'close')
-
-                if np.isnan(end_close):
-                    has_data = False
 
         except Exception as e:
             has_data = False
-
-    else:
-        has_data = False
 
     return has_data

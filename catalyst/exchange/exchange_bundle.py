@@ -339,6 +339,14 @@ class ExchangeBundle:
 
         reader = self.get_reader(data_frequency, path=path)
         if reader is None:
+            try:
+                log.warn('the reader is unable to use bundle: {}, '
+                         'deleting it.'.format(path))
+                shutil.rmtree(path)
+
+            except Exception as e:
+                log.warn('unable to remove temp bundle: {}'.format(e))
+
             raise TempBundleNotFoundError(path=path)
 
         start_dt = reader.first_trading_day
@@ -429,8 +437,8 @@ class ExchangeBundle:
 
         if end is None or start is None or start >= end:
             raise NoDataAvailableOnExchange(
-                exchange=asset.exchange.title(),
-                symbol=[asset.symbol],
+                exchange=[asset.exchange.name for asset in assets],
+                symbol=[asset.symbol for asset in assets],
                 data_frequency=data_frequency,
             )
 
@@ -623,7 +631,7 @@ class ExchangeBundle:
 
         for frequency in data_frequency.split(','):
             self.ingest_assets(assets, frequency, start, end,
-                               show_progress)
+                               show_progress, True)
 
     def get_history_window_series_and_load(self,
                                            assets,
@@ -689,13 +697,12 @@ class ExchangeBundle:
             return series
 
     def get_spot_values(self,
-                        assets,  # type: List[TradingPair]
-                        field,  # type: str
-                        dt,  # type: Timestamp
-                        data_frequency,  # type: str
-                        reset_reader=False  # type: bool
+                        assets,
+                        field,
+                        dt,
+                        data_frequency,
+                        reset_reader=False
                         ):
-        # type: (...) -> List[float]
         """
         The spot values for the gives assets, field and date. Reads from
         the exchange data bundle.
@@ -814,6 +821,14 @@ class ExchangeBundle:
         return series
 
     def clean(self, data_frequency):
+        """
+        Removing the bundle data from the catalyst folder.
+
+        Parameters
+        ----------
+        data_frequency: str
+
+        """
         log.debug('cleaning exchange {}, frequency {}'.format(
             self.exchange.name, data_frequency
         ))
