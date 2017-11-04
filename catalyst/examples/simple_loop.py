@@ -50,4 +50,3 @@ run_algorithm(
 #     algo_namespace='simple_loop',
 #     base_currency='eth',
 #     live_graph=False
-# )

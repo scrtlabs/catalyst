@@ -1,4 +1,30 @@
 import os
+import shutil
+from itertools import chain
+
+import pandas as pd
+from catalyst.assets._assets import TradingPair
+from logbook import Logger
+from pandas.tslib import Timestamp
+from pytz import UTC
+from six import itervalues
+
+from catalyst import get_calendar
+from catalyst.constants import LOG_LEVEL
+from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
+    BcolzMinuteBarMetadata
+from catalyst.exchange.bundle_utils import range_in_bundle, \
+    get_bcolz_chunk, get_delta, get_month_start_end, \
+    get_year_start_end, get_df_from_arrays, get_start_dt, get_period_label
+from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
+    BcolzExchangeBarWriter
+from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
+    TempBundleNotFoundError, \
+    NoDataAvailableOnExchange, \
+    PricingDataNotLoadedError
+from catalyst.exchange.exchange_utils import get_exchange_folder
+from catalyst.utils.cli import maybe_show_progress
+from catalyst.utils.paths import ensure_directory
 import os
 import shutil
 from itertools import chain
@@ -303,7 +329,7 @@ class ExchangeBundle:
 
         :return:
         """
-
+        # Download and extract the bundle
         path = get_bcolz_chunk(
             exchange_name=self.exchange.name,
             symbol=asset.symbol,
@@ -313,6 +339,14 @@ class ExchangeBundle:
 
         reader = self.get_reader(data_frequency, path=path)
         if reader is None:
+            try:
+                log.warn('the reader is unable to use bundle: {}, '
+                         'deleting it.'.format(path))
+                shutil.rmtree(path)
+
+            except Exception as e:
+                log.warn('unable to remove temp bundle: {}'.format(e))
+
             raise TempBundleNotFoundError(path=path)
 
         start_dt = reader.first_trading_day
@@ -335,7 +369,7 @@ class ExchangeBundle:
             ))
 
         if not arrays:
-            return path
+            return reader._rootdir
 
         periods = self.get_calendar_periods_range(
             start_dt, end_dt, data_frequency
@@ -351,11 +385,12 @@ class ExchangeBundle:
 
         if cleanup:
             log.debug(
-                'removing bundle folder following ingestion: {}'.format(path)
+                'removing bundle folder following ingestion: {}'.format(
+                    reader._rootdir)
             )
-            shutil.rmtree(path)
+            shutil.rmtree(reader._rootdir)
 
-        return path
+        return reader._rootdir
 
     def get_adj_dates(self, start, end, assets, data_frequency):
         """
@@ -402,8 +437,8 @@ class ExchangeBundle:
 
         if end is None or start is None or start >= end:
             raise NoDataAvailableOnExchange(
-                exchange=asset.exchange.title(),
-                symbol=[asset.symbol],
+                exchange=[asset.exchange for asset in assets],
+                symbol=[asset.symbol for asset in assets],
                 data_frequency=data_frequency,
             )
 
@@ -429,9 +464,7 @@ class ExchangeBundle:
         get_start_end = get_month_start_end \
             if data_frequency == 'minute' else get_year_start_end
 
-        start_dt, _ = get_start_end(start_dt)
-        _, end_dt = get_start_end(end_dt)
-
+        # Get a reader for the main bundle to verify if data exists
         reader = self.get_reader(data_frequency)
 
         chunks = dict()
@@ -462,7 +495,6 @@ class ExchangeBundle:
 
             chunks[asset] = []
             for index, dt in enumerate(dates):
-
                 period_start, period_end = get_start_end(
                     dt=dt,
                     first_day=dt if index == 0 else None,
@@ -481,17 +513,17 @@ class ExchangeBundle:
                     asset, range_start, period_end, reader
                 )
                 if not has_data:
-                    chunks[asset].append(
-                        dict(
-                            asset=asset,
-                            period_start=period_start,
-                            period_end=period_end,
-                            period=get_period_label(dt, data_frequency)
-                        )
+                    period = get_period_label(dt, data_frequency)
+                    chunk = dict(
+                        asset=asset,
+                        period=period,
                     )
+                    chunks[asset].append(chunk)
 
             # We sort the chunks by end date to ingest most recent data first
-            chunks[asset].sort(key=lambda chunk: chunk['period_end'])
+            chunks[asset].sort(
+                key=lambda chunk: pd.to_datetime(chunk['period'])
+            )
 
         return chunks
 
@@ -503,20 +535,26 @@ class ExchangeBundle:
         Parameters
         ----------
         assets: list[TradingPair]
+        data_frequency: str
         start_dt: datetime
         end_dt: datetime
+        show_progress: bool
+        asset_chunks: bool
 
         """
-
         if start_dt is None:
             start_dt = self.calendar.first_session
 
         if end_dt is None:
             end_dt = pd.Timestamp.utcnow()
 
-        start_dt, end_dt = self.get_adj_dates(
-            start_dt, end_dt, assets, data_frequency
-        )
+        get_start_end = get_month_start_end \
+            if data_frequency == 'minute' else get_year_start_end
+
+        # Assign the first and last day of the period
+        start_dt, _ = get_start_end(start_dt)
+        _, end_dt = get_start_end(end_dt)
+
         chunks = self.prepare_chunks(
             assets=assets,
             data_frequency=data_frequency,
@@ -524,19 +562,9 @@ class ExchangeBundle:
             end_dt=end_dt
         )
 
-        # Since chunks are either monthly or yearly, it is possible that
-        # our ingestion data range is greater than specified. We adjust
-        # the boundaries to ensure that the writer can write all data.
-        all_chunks = list(chain.from_iterable(itervalues(chunks)))
-        for chunk in all_chunks:
-            if chunk['period_start'] < start_dt:
-                start_dt = chunk['period_start']
-
-            if chunk['period_end'] > end_dt:
-                end_dt = chunk['period_end']
-
+        # This is the common writer for the entire exchange bundle
+        # we want to give an end_date far in time
         writer = self.get_writer(start_dt, end_dt, data_frequency)
-
         if asset_chunks:
             for asset in chunks:
                 with maybe_show_progress(
@@ -558,6 +586,12 @@ class ExchangeBundle:
                             cleanup=True
                         )
         else:
+            all_chunks = list(chain.from_iterable(itervalues(chunks)))
+
+            # We sort the chunks by end date to ingest most recent data first
+            all_chunks.sort(
+                key=lambda chunk: pd.to_datetime(chunk['period'])
+            )
             with maybe_show_progress(
                     all_chunks,
                     show_progress,
@@ -597,15 +631,15 @@ class ExchangeBundle:
 
         for frequency in data_frequency.split(','):
             self.ingest_assets(assets, frequency, start, end,
-                               show_progress)
+                               show_progress, True)
 
     def get_history_window_series_and_load(self,
-                                           assets,  # type: List[TradingPair]
-                                           end_dt,  # type: Timestamp
-                                           bar_count,  # type: int
-                                           field,  # type: str
-                                           data_frequency,  # type: str
-                                           algo_end_dt=None  # type: Timestamp
+                                           assets,
+                                           end_dt,
+                                           bar_count,
+                                           field,
+                                           data_frequency,
+                                           algo_end_dt=None
                                            ):
         """
         Retrieve price data history, ingest missing data.
@@ -663,13 +697,12 @@ class ExchangeBundle:
             return series
 
     def get_spot_values(self,
-                        assets,  # type: List[TradingPair]
-                        field,  # type: str
-                        dt,  # type: Timestamp
-                        data_frequency,  # type: str
-                        reset_reader=False  # type: bool
+                        assets,
+                        field,
+                        dt,
+                        data_frequency,
+                        reset_reader=False
                         ):
-        # type: (...) -> List[float]
         """
         The spot values for the gives assets, field and date. Reads from
         the exchange data bundle.
@@ -788,6 +821,14 @@ class ExchangeBundle:
         return series
 
     def clean(self, data_frequency):
+        """
+        Removing the bundle data from the catalyst folder.
+
+        Parameters
+        ----------
+        data_frequency: str
+
+        """
         log.debug('cleaning exchange {}, frequency {}'.format(
             self.exchange.name, data_frequency
         ))

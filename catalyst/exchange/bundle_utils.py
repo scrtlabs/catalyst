@@ -223,6 +223,9 @@ def get_month_start_end(dt, first_day=None, last_day=None):
             dt.year, dt.month, month_range[1], 23, 59, 0, 0
         ), utc=True)
 
+        if month_end > pd.Timestamp.utcnow():
+            month_end = pd.Timestamp.utcnow().floor('1D')
+
     return month_start, month_end
 
 
@@ -246,6 +249,9 @@ def get_year_start_end(dt, first_day=None, last_day=None):
         else pd.to_datetime(date(dt.year, 1, 1), utc=True)
     year_end = last_day if last_day \
         else pd.to_datetime(date(dt.year, 12, 31), utc=True)
+
+    if year_end > pd.Timestamp.utcnow():
+        year_end = pd.Timestamp.utcnow().floor('1D')
 
     return year_start, year_end
 
@@ -294,24 +300,17 @@ def range_in_bundle(asset, start_dt, end_dt, reader):
 
     """
     has_data = True
-    if has_data and reader is not None:
+    dates = [start_dt, end_dt]
+
+    while dates and has_data:
         try:
-            start_close = \
-                reader.get_value(asset.sid, start_dt, 'close')
+            dt = dates.pop(0)
+            close = reader.get_value(asset.sid, dt, 'close')
 
-            if np.isnan(start_close):
+            if np.isnan(close):
                 has_data = False
-
-            else:
-                end_close = reader.get_value(asset.sid, end_dt, 'close')
-
-                if np.isnan(end_close):
-                    has_data = False
 
         except Exception as e:
             has_data = False
-
-    else:
-        has_data = False
 
     return has_data

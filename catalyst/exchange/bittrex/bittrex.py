@@ -1,7 +1,7 @@
 import json
+import time
 
 import pandas as pd
-import time
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
 from six.moves import urllib
