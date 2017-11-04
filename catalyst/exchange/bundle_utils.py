@@ -223,6 +223,9 @@ def get_month_start_end(dt, first_day=None, last_day=None):
             dt.year, dt.month, month_range[1], 23, 59, 0, 0
         ), utc=True)
 
+        if month_end > pd.Timestamp.utcnow():
+            month_end = pd.Timestamp.utcnow().floor('1D')
+
     return month_start, month_end
 
 
@@ -246,6 +249,9 @@ def get_year_start_end(dt, first_day=None, last_day=None):
         else pd.to_datetime(date(dt.year, 1, 1), utc=True)
     year_end = last_day if last_day \
         else pd.to_datetime(date(dt.year, 12, 31), utc=True)
+
+    if year_end > pd.Timestamp.utcnow():
+        year_end = pd.Timestamp.utcnow().floor('1D')
 
     return year_start, year_end
 

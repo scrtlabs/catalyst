@@ -122,18 +122,20 @@ class TestExchangeBundle:
         pass
 
     def test_ingest_daily(self):
-        # exchange_name = 'bitfinex'
-        # data_frequency = 'daily'
-        # include_symbols = 'neo_btc,bch_btc,eth_btc'
-
-        exchange_name = 'poloniex'
+        exchange_name = 'bitfinex'
         data_frequency = 'daily'
-        include_symbols = 'eth_btc'
+        include_symbols = 'btc_usd'
 
-        start = pd.to_datetime('2017-1-1', utc=True)
-        end = pd.to_datetime('2017-10-16', utc=True)
-        periods = get_periods_range(start, end, data_frequency)
+        # exchange_name = 'poloniex'
+        # data_frequency = 'daily'
+        # include_symbols = 'eth_btc'
 
+        # start = pd.to_datetime('2017-1-1', utc=True)
+        # end = pd.to_datetime('2017-10-16', utc=True)
+        # periods = get_periods_range(start, end, data_frequency)
+
+        start = None
+        end = None
         exchange = get_exchange(exchange_name)
         exchange_bundle = ExchangeBundle(exchange)
 
@@ -153,12 +155,18 @@ class TestExchangeBundle:
             assets.append(exchange.get_asset(pair_symbol))
 
         reader = exchange_bundle.get_reader(data_frequency)
+        start_dt = reader.first_trading_day
+        end_dt = reader.last_available_dt
+
+        if data_frequency == 'daily':
+            end_dt = end_dt - pd.Timedelta(hours=23, minutes=59)
+
         for asset in assets:
             arrays = reader.load_raw_arrays(
                 sids=[asset.sid],
                 fields=['close'],
-                start_dt=start,
-                end_dt=end
+                start_dt=start_dt,
+                end_dt=end_dt
             )
             print('found {} rows for {} ingestion\n{}'.format(
                 len(arrays[0]), asset.symbol, arrays[0])
@@ -430,14 +438,30 @@ class TestExchangeBundle:
         print('\n' + df_to_string(df))
         pass
 
-    def bundle_to_csv(self):
+    def main_bundle_to_csv(self):
         exchange_name = 'bitfinex'
-        data_frequency = 'daily'
-        period = '2016'
+        data_frequency = 'minute'
 
         exchange = get_exchange(exchange_name)
-        bundle = ExchangeBundle(exchange)
         asset = exchange.get_asset('eth_btc')
+
+        self._bundle_to_csv(
+            asset=asset,
+            exchange=exchange,
+            data_frequency=data_frequency,
+            filename='{}_{}_{}'.format(
+                exchange_name, data_frequency, asset.symbol
+            )
+        )
+
+    def bundle_to_csv(self):
+        exchange_name = 'bitfinex'
+        data_frequency = 'minute'
+        period = '2017-06'
+        symbol = 'etc_btc'
+
+        exchange = get_exchange(exchange_name)
+        asset = exchange.get_asset(symbol)
 
         path = get_bcolz_chunk(
             exchange_name=exchange.name,
@@ -445,7 +469,19 @@ class TestExchangeBundle:
             data_frequency=data_frequency,
             period=period
         )
+        self._bundle_to_csv(
+            asset=asset,
+            exchange=exchange,
+            data_frequency=data_frequency,
+            path=path,
+            filename=period
+        )
+
+    def _bundle_to_csv(self, asset, exchange, data_frequency, filename,
+                       path=None):
+        bundle = ExchangeBundle(exchange)
         reader = bundle.get_reader(data_frequency, path=path)
+
         start_dt = reader.first_trading_day
         end_dt = reader.last_available_dt
 
@@ -475,7 +511,7 @@ class TestExchangeBundle:
         )
         ensure_directory(folder)
 
-        path = os.path.join(folder, period + '.csv')
+        path = os.path.join(folder, filename + '.csv')
 
         log.info('creating csv file: {}'.format(path))
         print('HEAD\n{}'.format(df.head(10)))

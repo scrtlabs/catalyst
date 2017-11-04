@@ -284,13 +284,12 @@ def save_algo_df(algo_name, key, df, environ=None, rel_path=None):
     ----------
     algo_name: str
     key: str
-    df: DataFrame
+    df: pd.DataFrame
     environ:
     rel_path: str
 
     """
     folder = get_algo_folder(algo_name, environ)
-
     if rel_path is not None:
         folder = os.path.join(folder, rel_path)
         ensure_directory(folder)
