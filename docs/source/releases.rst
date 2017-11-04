@@ -2,9 +2,18 @@
 Release Notes
 =============
 
+Version 0.3.6
+^^^^^^^^^^^^^
+**Release Date**: 2017-11-4
+
+Bug Fixes
+~~~~~~~~~
+
+- Fixed an issue with single bar data.history() (:issue:`55`)
+
 Version 0.3.5
 ^^^^^^^^^^^^^
-**Release Date**: 2017-11-2
+**Release Date**: 2017-11-4
 
 Bug Fixes
 ~~~~~~~~~
