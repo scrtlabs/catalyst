@@ -136,24 +136,32 @@
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Release Notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-3-4">Version 0.3.4</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-3-6">Version 0.3.6</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#bug-fixes">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-3-5">Version 0.3.5</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-3-4">Version 0.3.4</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#build">Build</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#documentation">Documentation</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#version-0-3-3">Version 0.3.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id2">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id3">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-3-2">Version 0.3.2</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id4">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id5">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-3-1">Version 0.3.1</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-3-2">Version 0.3.2</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id6">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id7">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-3-1">Version 0.3.1</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id8">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#version-0-3">Version 0.3</a></li>
@@ -207,17 +215,38 @@
             
   <div class="section" id="release-notes">
 <h1>Release Notes<a class="headerlink" href="#release-notes" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="version-0-3-6">
+<h2>Version 0.3.6<a class="headerlink" href="#version-0-3-6" title="Permalink to this headline">¶</a></h2>
+<p><strong>Release Date</strong>: 2017-11-4</p>
+<div class="section" id="bug-fixes">
+<h3>Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Fixed an issue with single bar data.history() (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/55">#55</a>)</li>
+</ul>
+</div>
+</div>
+<div class="section" id="version-0-3-5">
+<h2>Version 0.3.5<a class="headerlink" href="#version-0-3-5" title="Permalink to this headline">¶</a></h2>
+<p><strong>Release Date</strong>: 2017-11-4</p>
+<div class="section" id="id1">
+<h3>Bug Fixes<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Added workaround for: KeyError: Timestamp error (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/53">#53</a>)</li>
+</ul>
+</div>
+</div>
 <div class="section" id="version-0-3-4">
 <h2>Version 0.3.4<a class="headerlink" href="#version-0-3-4" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2017-11-2</p>
-<div class="section" id="bug-fixes">
-<h3>Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id2">
+<h3>Bug Fixes<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fixed issue with auto-ingestion of minute data (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/47">#47</a>)</li>
 <li>Fixed issue with sell orders in backtesting</li>
 <li>Fixed data frequency issues with data.history() in backtesting</li>
 <li>Fixed an issue with can_trade()</li>
-<li>Reduced the commission and slippage values to account for lower volume transactions</li>
+<li>Reduced the commission and slippage values to account for lower volume
+transactions</li>
 </ul>
 </div>
 <div class="section" id="build">
@@ -230,12 +259,17 @@
 <h3>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Improved installation notes for Windows C++ compiler and Conda</li>
-<li>Addition of <a class="reference external" href="https://enigmampc.github.io/catalyst/jupyter.html">Jupyter Notebook guide</a></li>
-<li>Addition of <a class="reference external" href="https://enigmampc.github.io/catalyst/live-trading.html">Live Trading page</a></li>
-<li>Addition of <a class="reference external" href="https://enigmampc.github.io/catalyst/videos.html">Videos page</a></li>
-<li>Addition of <a class="reference external" href="https://enigmampc.github.io/catalyst/resources.html">Resources page</a></li>
+<li>Addition of
+<a class="reference external" href="https://enigmampc.github.io/catalyst/jupyter.html">Jupyter Notebook guide</a></li>
+<li>Addition of
+<a class="reference external" href="https://enigmampc.github.io/catalyst/live-trading.html">Live Trading page</a></li>
+<li>Addition of
+<a class="reference external" href="https://enigmampc.github.io/catalyst/videos.html">Videos page</a></li>
+<li>Addition of
+<a class="reference external" href="https://enigmampc.github.io/catalyst/resources.html">Resources page</a></li>
 <li>Addition of <a class="reference external" href="https://enigmampc.github.io/catalyst/development-guidelines.html">Development Guidelines</a></li>
-<li>Addition of <a class="reference external" href="https://enigmampc.github.io/catalyst/releases.html">Release Notes</a></li>
+<li>Addition of
+<a class="reference external" href="https://enigmampc.github.io/catalyst/releases.html">Release Notes</a></li>
 <li>Updated code docstrings</li>
 </ul>
 </div>
@@ -243,16 +277,16 @@
 <div class="section" id="version-0-3-3">
 <h2>Version 0.3.3<a class="headerlink" href="#version-0-3-3" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2017-10-26</p>
-<div class="section" id="id2">
-<h3>Bug Fixes<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id4">
+<h3>Bug Fixes<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fix missing -x in ingest-exchange</li>
 <li>Fix issue with daily chunks end date (data bundles)</li>
 <li>Fix issue in the prepare_chunk logic (data bundles)</li>
 </ul>
 </div>
-<div class="section" id="id3">
-<h3>Build<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id5">
+<h3>Build<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Added data validation unit tests</li>
 </ul>
@@ -261,8 +295,8 @@
 <div class="section" id="version-0-3-2">
 <h2>Version 0.3.2<a class="headerlink" href="#version-0-3-2" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2017-10-25</p>
-<div class="section" id="id4">
-<h3>Bug Fixes<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id6">
+<h3>Bug Fixes<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fix to work with empty data bundles</li>
 <li>Fix Windows path of <code class="docutils literal"><span class="pre">$HOME/.catalyst</span></code> folder</li>
@@ -271,8 +305,8 @@
 <li>Fix an issue with asset date in chunks</li>
 </ul>
 </div>
-<div class="section" id="id5">
-<h3>Build<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id7">
+<h3>Build<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Python3 adjustments</li>
 <li>Added method to clean bundle folders, and remove symbols.json</li>
@@ -283,13 +317,15 @@
 <div class="section" id="version-0-3-1">
 <h2>Version 0.3.1<a class="headerlink" href="#version-0-3-1" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2017-10-22</p>
-<div class="section" id="id6">
-<h3>Bug Fixes<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id8">
+<h3>Bug Fixes<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fixed OS-dependent path issue in data bundle</li>
-<li>Changed handling of empty <code class="docutils literal"><span class="pre">auth.json</span></code>, instead of throwing an error for missing file</li>
+<li>Changed handling of empty <code class="docutils literal"><span class="pre">auth.json</span></code>, instead of throwing an error for
+missing file</li>
 <li>Updated <code class="docutils literal"><span class="pre">etc/python2.7-environment.yml</span></code> to work with Catalyst version 0.3</li>
-<li>Updated <code class="docutils literal"><span class="pre">catalyst/examples/buy_and_hodl.py</span></code>  and <code class="docutils literal"><span class="pre">catalyst/examples/buy_low_sell_high.py</span></code> to work with Catalyst version 0.3</li>
+<li>Updated <code class="docutils literal"><span class="pre">catalyst/examples/buy_and_hodl.py</span></code>  and
+<code class="docutils literal"><span class="pre">catalyst/examples/buy_low_sell_high.py</span></code> to work with Catalyst version 0.3</li>
 </ul>
 </div>
 </div>
@@ -309,15 +345,19 @@
 <h2>Version 0.2.dev5<a class="headerlink" href="#version-0-2-dev5" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2017-10-03</p>
 <ul class="simple">
-<li>Fixes bug in data.history function that was formatting &#8216;volume&#8217; data as integers, now they are returned as floats with up to 9 decimals of precision. Data bundles redone.</li>
+<li>Fixes bug in data.history function that was formatting &#8216;volume&#8217; data as
+integers, now they are returned as floats with up to 9 decimals of precision.
+Data bundles redone.</li>
 </ul>
 </div>
 <div class="section" id="version-0-2-dev4">
 <h2>Version 0.2.dev4<a class="headerlink" href="#version-0-2-dev4" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2017-09-20</p>
 <ul class="simple">
-<li>Fixes bug in the pricing resolution of 1-minute data, now set to 8 decimal places. Pricing resolution of daily data remains set to 9 decimal places.</li>
-<li>The current data bundle takes 340MB compressed for download, and 460MB uncompressed on disk for Catalyst to use.</li>
+<li>Fixes bug in the pricing resolution of 1-minute data, now set to 8 decimal
+places. Pricing resolution of daily data remains set to 9 decimal places.</li>
+<li>The current data bundle takes 340MB compressed for download, and 460MB
+uncompressed on disk for Catalyst to use.</li>
 </ul>
 </div>
 <div class="section" id="version-0-2-dev3">
@@ -326,9 +366,12 @@
 <ul class="simple">
 <li>1-minute resolution OHLCV data bundle for backtesting from Poloniex exchange</li>
 <li>Implementation of trading of fractional crypto assets (i.e. 0.01 BTC)</li>
-<li>Minimum trade size of a coin can be configured on a per-coin basis, defaults to 0.00000001 in backtesting (most exchanges set the minimum trade to larger amounts, which will impact live trading)</li>
+<li>Minimum trade size of a coin can be configured on a per-coin basis, defaults
+to 0.00000001 in backtesting (most exchanges set the minimum trade to larger
+amounts, which will impact live trading)</li>
 <li>Increased pricing resolution from 3 to 9 decimal places</li>
-<li>The current data bundle takes 40MB compressed for download, and 99MB uncompressed on disk for Catalyst to use.</li>
+<li>The current data bundle takes 40MB compressed for download, and 99MB
+uncompressed on disk for Catalyst to use.</li>
 </ul>
 </div>
 <div class="section" id="version-0-2-dev2">
@@ -345,12 +388,16 @@
 <li>Implementation of live trading:<ul>
 <li>Comprehensive trading functionality against exchanges Bitfinex and Bittrex.</li>
 <li>Support for all trading pairs available on each exchange.</li>
-<li>Multiple algorithms can trade simultaneously against a single exchange using the same account.</li>
-<li>Each algorithm has a persisted state (i.e. algorithm can be stopped and restarted preserving the state without data loss) that tracks all open orders, executed transactions and portfolio positions.</li>
+<li>Multiple algorithms can trade simultaneously against a single exchange
+using the same account.</li>
+<li>Each algorithm has a persisted state (i.e. algorithm can be stopped and
+restarted preserving the state without data loss) that tracks all open
+orders, executed transactions and portfolio positions.</li>
 </ul>
 </li>
 <li>Minute by minute portfolio performance metrics.<ul>
-<li>Daily summary performance statistics compatible with pyfolio, a Python library for performance and risk analysis of financial portfolios</li>
+<li>Daily summary performance statistics compatible with pyfolio, a Python
+library for performance and risk analysis of financial portfolios</li>
 </ul>
 </li>
 </ul>
@@ -359,7 +406,8 @@
 <h2>Version 0.1.dev9<a class="headerlink" href="#version-0-1-dev9" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2017-08-28</p>
 <ul class="simple">
-<li>Retrieval of crypto benchmark from bundle, instead of hitting Poloniex exchange directly</li>
+<li>Retrieval of crypto benchmark from bundle, instead of hitting Poloniex
+exchange directly</li>
 <li>Change of bundle storage provider from Dropbox to AWS</li>
 <li>Fix issue with 1/1000 scaling issue of prices in bundle</li>
 </ul>
