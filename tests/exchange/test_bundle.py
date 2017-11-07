@@ -442,15 +442,19 @@ class TestExchangeBundle:
         data_frequency = 'minute'
 
         exchange = get_exchange(exchange_name)
-        asset = exchange.get_asset('neo_usd')
+        asset = exchange.get_asset('eth_btc')
 
+        start_dt = pd.to_datetime('2016-5-31', utc=True)
+        end_dt = pd.to_datetime('2016-6-1', utc=True)
         self._bundle_to_csv(
             asset=asset,
             exchange=exchange,
             data_frequency=data_frequency,
             filename='{}_{}_{}'.format(
                 exchange_name, data_frequency, asset.symbol
-            )
+            ),
+            start_dt=start_dt,
+            end_dt=end_dt
         )
 
     def bundle_to_csv(self):
@@ -478,12 +482,15 @@ class TestExchangeBundle:
         pass
 
     def _bundle_to_csv(self, asset, exchange, data_frequency, filename,
-                       path=None):
+                       path=None, start_dt=None, end_dt=None):
         bundle = ExchangeBundle(exchange)
         reader = bundle.get_reader(data_frequency, path=path)
 
-        start_dt = reader.first_trading_day
-        end_dt = reader.last_available_dt
+        if start_dt is None:
+            start_dt = reader.first_trading_day
+
+        if end_dt is None:
+            end_dt = reader.last_available_dt
 
         if data_frequency == 'daily':
             end_dt = end_dt - pd.Timedelta(hours=23, minutes=59)

@@ -21,7 +21,7 @@ def handle_data(context, data):
             context.asset,
             fields='price',
             bar_count=16,
-            frequency='5T'
+            frequency='60T'
         )
         rsi = talib.RSI(prices.values, timeperiod=14)[-1]
         print('got rsi: {}'.format(rsi))
@@ -32,7 +32,7 @@ def handle_data(context, data):
 run_algorithm(
     capital_base=250,
     start=pd.to_datetime('2016-6-1', utc=True),
-    end=pd.to_datetime('2016-12-31', utc=True),
+    end=pd.to_datetime('2017-11-1', utc=True),
     data_frequency='daily',
     initialize=initialize,
     handle_data=handle_data,
