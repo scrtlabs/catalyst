@@ -7,8 +7,8 @@ from catalyst.exchange.exchange_utils import get_exchange_symbols_filename
 
 DT_START        = int(time.mktime(datetime(2010, 1, 1, 0, 0).timetuple()))
 DT_END          = pd.to_datetime('today').value // 10 ** 9
-CSV_OUT_FOLDER  = '/var/tmp/catalyst/data/poloniex/'
 CSV_OUT_FOLDER  = '/Volumes/enigma/data/poloniex/'
+CSV_OUT_FOLDER  = '/efs/exchanges/poloniex/'
 CONN_RETRIES    = 2
 
 logbook.StderrHandler().push_application()
@@ -50,7 +50,7 @@ class PoloniexCurator(object):
             self.currency_pairs.append(ticker)
         self.currency_pairs.sort()
 
-        log.debug('Currency pairs retrieved successfully: %d'.format(
+        log.debug('Currency pairs retrieved successfully: {}'.format(
                     len(self.currency_pairs)
                     ))
 
@@ -358,6 +358,5 @@ if __name__ == '__main__':
     for currencyPair in pc.currency_pairs:
         pc.retrieve_trade_history(currencyPair)
         log.debug('{} up to date.'.format(currencyPair))
-        #pc.write_ohlcv_file(currencyPair)
+        pc.write_ohlcv_file(currencyPair)
 
-    
