@@ -490,8 +490,13 @@ def live(ctx,
     default=True,
     help='Print progress information to the terminal.'
 )
+@click.option(
+    '--verbose/--no-verbose`',
+    default=False,
+    help='Show a progress indicator for every currency pair.'
+)
 def ingest_exchange(exchange_name, data_frequency, start, end,
-                    include_symbols, exclude_symbols, show_progress):
+                    include_symbols, exclude_symbols, show_progress, verbose):
     """
     Ingest data for the given exchange.
     """
@@ -509,7 +514,8 @@ def ingest_exchange(exchange_name, data_frequency, start, end,
         exclude_symbols=exclude_symbols,
         start=start,
         end=end,
-        show_progress=show_progress
+        show_progress=show_progress,
+        show_breakdown=verbose
     )
 
 

@@ -528,7 +528,7 @@ class ExchangeBundle:
         return chunks
 
     def ingest_assets(self, assets, data_frequency, start_dt=None, end_dt=None,
-                      show_progress=False, asset_chunks=False):
+                      show_progress=False, show_breakdown=False):
         """
         Determine if data is missing from the bundle and attempt to ingest it.
 
@@ -539,7 +539,7 @@ class ExchangeBundle:
         start_dt: datetime
         end_dt: datetime
         show_progress: bool
-        asset_chunks: bool
+        show_breakdown: bool
 
         """
         if start_dt is None:
@@ -565,7 +565,7 @@ class ExchangeBundle:
         # This is the common writer for the entire exchange bundle
         # we want to give an end_date far in time
         writer = self.get_writer(start_dt, end_dt, data_frequency)
-        if asset_chunks:
+        if show_breakdown:
             for asset in chunks:
                 with maybe_show_progress(
                         chunks[asset],
@@ -612,7 +612,7 @@ class ExchangeBundle:
 
     def ingest(self, data_frequency, include_symbols=None,
                exclude_symbols=None, start=None, end=None,
-               show_progress=True, environ=os.environ):
+               show_progress=True, show_breakdown=True, environ=os.environ):
         """
         Inject data based on specified parameters.
 
@@ -631,7 +631,7 @@ class ExchangeBundle:
 
         for frequency in data_frequency.split(','):
             self.ingest_assets(assets, frequency, start, end,
-                               show_progress, True)
+                               show_progress, show_breakdown)
 
     def get_history_window_series_and_load(self,
                                            assets,
@@ -684,7 +684,7 @@ class ExchangeBundle:
                 end_dt=algo_end_dt,
                 data_frequency=data_frequency,
                 show_progress=True,
-                asset_chunks=True
+                show_breakdown=True
             )
             series = self.get_history_window_series(
                 assets=assets,
@@ -692,7 +692,7 @@ class ExchangeBundle:
                 bar_count=bar_count,
                 field=field,
                 data_frequency=data_frequency,
-                reset_reader=False
+                reset_reader=True
             )
             return series
 
