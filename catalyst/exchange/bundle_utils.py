@@ -149,7 +149,7 @@ def get_periods(start_dt, end_dt, freq):
     return len(get_periods_range(start_dt, end_dt, freq))
 
 
-def get_start_dt(end_dt, bar_count, data_frequency):
+def get_start_dt(end_dt, bar_count, data_frequency, include_first=True):
     """
     The start date based on specified end date and data frequency.
 
@@ -168,6 +168,9 @@ def get_start_dt(end_dt, bar_count, data_frequency):
     if periods > 1:
         delta = get_delta(periods, data_frequency)
         start_dt = end_dt - delta
+
+        if not include_first:
+            start_dt += get_delta(1, data_frequency)
     else:
         start_dt = end_dt
 

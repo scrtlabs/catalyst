@@ -77,6 +77,7 @@ class LimitOrder(ExecutionStyle):
     Execution style representing an order to be executed at a price equal to or
     better than a specified limit price.
     """
+
     def __init__(self, limit_price, exchange=None):
         """
         Store the given price.
@@ -99,6 +100,7 @@ class StopOrder(ExecutionStyle):
     Execution style representing an order to be placed once the market price
     reaches a specified stop price.
     """
+
     def __init__(self, stop_price, exchange=None):
         """
         Store the given price.
@@ -121,6 +123,7 @@ class StopLimitOrder(ExecutionStyle):
     Execution style representing a limit order to be placed with a specified
     limit price once the market reaches a specified stop price.
     """
+
     def __init__(self, limit_price, stop_price, exchange=None):
         """
         Store the given prices
@@ -144,31 +147,20 @@ class StopLimitOrder(ExecutionStyle):
 def asymmetric_round_price_to_penny(price, prefer_round_down,
                                     diff=(0.0095 - .005)):
     """
-    Asymmetric rounding function for adjusting prices to two places in a way
-    that "improves" the price.  For limit prices, this means preferring to
-    round down on buys and preferring to round up on sells.  For stop prices,
-    it means the reverse.
+    Modified the original function because we do not want to round
+    prices on crypto exchange.
 
-    If prefer_round_down == True:
-        When .05 below to .95 above a penny, use that penny.
-    If prefer_round_down == False:
-        When .95 below to .05 above a penny, use that penny.
+    Parameters
+    ----------
+    price: float
 
-    In math-speak:
-    If prefer_round_down: [<X-1>.0095, X.0195) -> round to X.01.
-    If not prefer_round_down: (<X-1>.0005, X.0105] -> round to X.01.
+    Returns
+    -------
+    float
+
     """
-    # Subtracting an epsilon from diff to enforce the open-ness of the upper
-    # bound on buys and the lower bound on sells.  Using the actual system
-    # epsilon doesn't quite get there, so use a slightly less epsilon-ey value.
-    epsilon = float_info.epsilon * 10
-    diff = diff - epsilon
-
-    # relies on rounding half away from zero, unlike numpy's bankers' rounding
-    rounded = round(price - (diff if prefer_round_down else -diff), 2)
-    if zp_math.tolerant_equals(rounded, 0.0):
-        return 0.0
-    return rounded
+    # TODO: consider overriding outside of the original function
+    return price
 
 
 def check_stoplimit_prices(price, label):

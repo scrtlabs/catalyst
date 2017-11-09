@@ -54,6 +54,38 @@ def crossunder(source, target):
         return False
 
 
+def vwap(df):
+    """
+    Volume-weighted average price (VWAP) is a ratio generally used by
+    institutional investors and mutual funds to make buys and sells so as not
+    to disturb the market prices with large orders. It is the average share
+    price of a stock weighted against its trading volume within a particular
+    time frame, generally one day.
+
+    Read more: Volume Weighted Average Price - VWAP
+    https://www.investopedia.com/terms/v/vwap.asp#ixzz4xt922daE
+
+    Parameters
+    ----------
+    df: pd.DataFrame
+
+    Returns
+    -------
+
+    """
+    if 'close' not in df.columns or 'volume' not in df.columns:
+        raise ValueError('price data must include `volume` and `close`')
+
+    vol_sum = np.nansum(df['volume'].values)
+
+    try:
+        ret = np.nansum(df['close'].values * df['volume'].values) / vol_sum
+    except ZeroDivisionError:
+        ret = np.nan
+
+    return ret
+
+
 def get_pretty_stats(stats_df, recorded_cols=None, num_rows=10):
     """
     Format and print the last few rows of a statistics DataFrame.
