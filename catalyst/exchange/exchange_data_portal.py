@@ -6,7 +6,7 @@ import pandas as pd
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
-from catalyst.constants import LOG_LEVEL
+from catalyst.constants import LOG_LEVEL, AUTO_INGEST
 from catalyst.data.data_portal import DataPortal
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import (
@@ -378,24 +378,28 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
         else:
             dt = dt.floor('1 min')
 
-        try:
-            return bundle.get_spot_values(assets, field, dt, data_frequency)
-
-        except PricingDataNotLoadedError:
-            log.info(
-                'pricing data for {symbol} not found on {dt}'
-                ', updating the bundles.'.format(
-                    symbol=[asset.symbol for asset in assets],
-                    dt=dt
+        if AUTO_INGEST:
+            try:
+                return bundle.get_spot_values(
+                    assets, field, dt, data_frequency
                 )
-            )
-            bundle.ingest_assets(
-                assets=assets,
-                start_dt=self._first_trading_day,
-                end_dt=self._last_available_session,
-                data_frequency=data_frequency,
-                show_progress=True
-            )
-            return bundle.get_spot_values(
-                assets, field, dt, data_frequency, True
-            )
+            except PricingDataNotLoadedError:
+                log.info(
+                    'pricing data for {symbol} not found on {dt}'
+                    ', updating the bundles.'.format(
+                        symbol=[asset.symbol for asset in assets],
+                        dt=dt
+                    )
+                )
+                bundle.ingest_assets(
+                    assets=assets,
+                    start_dt=self._first_trading_day,
+                    end_dt=self._last_available_session,
+                    data_frequency=data_frequency,
+                    show_progress=True
+                )
+                return bundle.get_spot_values(
+                    assets, field, dt, data_frequency, True
+                )
+        else:
+            return bundle.get_spot_values(assets, field, dt, data_frequency)

@@ -13,7 +13,7 @@ from pytz import UTC
 from six import itervalues
 
 from catalyst import get_calendar
-from catalyst.constants import DATE_TIME_FORMAT
+from catalyst.constants import DATE_TIME_FORMAT, AUTO_INGEST
 from catalyst.constants import LOG_LEVEL
 from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
     BcolzMinuteBarMetadata
@@ -701,7 +701,46 @@ class ExchangeBundle:
         Series
 
         """
-        try:
+        if AUTO_INGEST:
+            try:
+                series = self.get_history_window_series(
+                    assets=assets,
+                    end_dt=end_dt,
+                    bar_count=bar_count,
+                    field=field,
+                    data_frequency=data_frequency
+                )
+                return pd.DataFrame(series)
+
+            except PricingDataNotLoadedError:
+                start_dt = get_start_dt(end_dt, bar_count, data_frequency)
+                log.info(
+                    'pricing data for {symbol} not found in range '
+                    '{start} to {end}, updating the bundles.'.format(
+                        symbol=[asset.symbol for asset in assets],
+                        start=start_dt,
+                        end=end_dt
+                    )
+                )
+                self.ingest_assets(
+                    assets=assets,
+                    start_dt=start_dt,
+                    end_dt=algo_end_dt,
+                    data_frequency=data_frequency,
+                    show_progress=True,
+                    show_breakdown=True
+                )
+                series = self.get_history_window_series(
+                    assets=assets,
+                    end_dt=end_dt,
+                    bar_count=bar_count,
+                    field=field,
+                    data_frequency=data_frequency,
+                    reset_reader=True
+                )
+                return series
+
+        else:
             series = self.get_history_window_series(
                 assets=assets,
                 end_dt=end_dt,
@@ -710,34 +749,6 @@ class ExchangeBundle:
                 data_frequency=data_frequency
             )
             return pd.DataFrame(series)
-
-        except PricingDataNotLoadedError:
-            start_dt = get_start_dt(end_dt, bar_count, data_frequency)
-            log.info(
-                'pricing data for {symbol} not found in range '
-                '{start} to {end}, updating the bundles.'.format(
-                    symbol=[asset.symbol for asset in assets],
-                    start=start_dt,
-                    end=end_dt
-                )
-            )
-            self.ingest_assets(
-                assets=assets,
-                start_dt=start_dt,
-                end_dt=algo_end_dt,
-                data_frequency=data_frequency,
-                show_progress=True,
-                show_breakdown=True
-            )
-            series = self.get_history_window_series(
-                assets=assets,
-                end_dt=end_dt,
-                bar_count=bar_count,
-                field=field,
-                data_frequency=data_frequency,
-                reset_reader=True
-            )
-            return series
 
     def get_spot_values(self,
                         assets,
@@ -782,7 +793,9 @@ class ExchangeBundle:
                 exchange=self.exchange.name,
                 symbols=symbols,
                 symbol_list=','.join(symbols),
-                data_frequency=data_frequency
+                data_frequency=data_frequency,
+                start_dt=dt,
+                end_dt=dt
             )
 
     def get_history_window_series(self,
@@ -810,7 +823,9 @@ class ExchangeBundle:
                 exchange=self.exchange.name,
                 symbols=symbols,
                 symbol_list=','.join(symbols),
-                data_frequency=data_frequency
+                data_frequency=data_frequency,
+                start_dt=start_dt,
+                end_dt=end_dt
             )
 
         for asset in assets:
@@ -828,7 +843,9 @@ class ExchangeBundle:
                     exchange=self.exchange.name,
                     symbols=asset.symbol,
                     symbol_list=asset.symbol,
-                    data_frequency=data_frequency
+                    data_frequency=data_frequency,
+                    start_dt=asset_start_dt,
+                    end_dt=asset_end_dt
                 )
 
         series = dict()
@@ -848,7 +865,9 @@ class ExchangeBundle:
                 exchange=self.exchange.name,
                 symbols=symbols,
                 symbol_list=','.join(symbols),
-                data_frequency=data_frequency
+                data_frequency=data_frequency,
+                start_dt=start_dt,
+                end_dt=end_dt
             )
 
         periods = self.get_calendar_periods_range(

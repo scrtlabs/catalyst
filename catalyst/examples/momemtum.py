@@ -3,6 +3,7 @@
 # going to sell.  Hopefully we'll ride the waves.
 
 import pandas as pd
+import talib
 # To run an algorithm in Catalyst, you need two functions: initialize and 
 # handle_data.
 from logbook import Logger
@@ -31,9 +32,16 @@ def initialize(context):
     context.eth_btc = symbol('eth_usdt')
     context.max_amount = 0.01
     context.base_price = None
+    context.current_day = None
+    context.yesterdy = None
 
 
 def handle_data(context, data):
+    today = data.current_dt.floor('1D')
+    if today != context.current_day:
+        context.traded_today = False
+        context.current_day = today
+
     # This handle_data function is where the real work is done.  Our data is
     # minute-level tick data, and each minute is called a frame.  This function
     # runs on each frame of the data.
@@ -44,16 +52,21 @@ def handle_data(context, data):
     bars = data.history(
         context.eth_btc,
         fields=['close', 'volume'],
-        bar_count=3,
-        frequency='1D'
+        bar_count=100,
+        frequency='30T'
     )
-    vwap = stats_utils.vwap(bars)
+    # Use TA-Lib to calculate MACD data using calibrated settings
+    macd_raw, signal, macd_hist = talib.MACD(
+        bars['close'].values, fastperiod=30, slowperiod=40, signalperiod=45
+    )
 
     # We need a variable for the current price of the security to compare to
     # the average.
     current = data.current(context.eth_btc, fields=['close', 'volume'])
     price = current['close']
-    log.info('{}: price: {}, vwap: {}'.format(data.current_dt, price, vwap))
+    log.info(
+        '{}: price: {}, macd: {}'.format(data.current_dt, price, macd_raw[-1])
+    )
 
     # If base_price is not set, we use the current value. This is the
     # price at the first bar which we reference to calculate price_change.
@@ -64,7 +77,8 @@ def handle_data(context, data):
     record(
         price=price,
         volume=current['volume'],
-        vwap=vwap,
+        macd=macd_raw[-1],
+        signal=signal[-1],
         price_change=price_change,
     )
 
@@ -77,23 +91,17 @@ def handle_data(context, data):
     # portfolio object.  The portfolio object tracks your positions, cash,
     # cost basis of specific holdings, and more.  In this line, we calculate
     # how long or short our position is at this minute.   
-    position_amount = context.portfolio.positions[context.eth_btc].amount
+    pos_amount = context.portfolio.positions[context.eth_btc].amount
 
-    # This is the meat of the algorithm, placed in this if statement.  If the
-    # price of the security is .5% less than the 3-day volume weighted average
-    # price AND we haven't reached our maximum short, then we call the order
-    # command and sell 100 shares.  Similarly, if the stock is .5% higher than
-    # the 3-day average AND we haven't reached our maximum long, then we call
-    # the order command and buy 100 shares.
-    if price > vwap * 1.01 and position_amount < context.max_amount:
-        order_target_percent(
-            context.eth_btc, 1, style=LimitOrder(price * 1.02)
-        )
+    if macd_hist[-1] > 0 and data.can_trade(context.eth_btc) \
+            and pos_amount == 0 and not context.traded_today:
+        order_target_percent(context.eth_btc, 0.75)
+        context.traded_today = True
 
-    elif price < vwap * 0.995 and position_amount > 0:
-        order_target_percent(
-            context.eth_btc, 0, style=LimitOrder(price * 0.98)
-        )
+    elif macd_hist[-1] < 0 and data.can_trade(context.eth_btc) \
+            and pos_amount > 0 and context.traded_today:
+        order_target_percent(context.eth_btc, 0)
+        context.traded_today = True
 
 
 def analyze(context=None, results=None):
@@ -153,19 +161,19 @@ def analyze(context=None, results=None):
     ax5.set_ylabel('Percent Change')
 
     ax6 = plt.subplot(615, sharex=ax1)
-    results.loc[:, 'vwap'].plot(ax=ax6)
-    ax6.set_ylabel('VWAP')
+    results.loc[:, 'macd'].plot(ax=ax6)
+    ax6.set_ylabel('MACD')
 
     ax6.plot(
         buys.index,
-        results.loc[buys.index, 'vwap'],
+        results.loc[buys.index, 'macd'],
         '^',
         markersize=10,
         color='g',
     )
     ax6.plot(
         sells.index,
-        results.loc[sells.index, 'vwap'],
+        results.loc[sells.index, 'macd'],
         'v',
         markersize=10,
         color='r',
@@ -182,13 +190,13 @@ def analyze(context=None, results=None):
 # Backtest
 run_algorithm(
     capital_base=1,
-    data_frequency='minute',
+    data_frequency='daily',
     initialize=initialize,
     handle_data=handle_data,
     analyze=analyze,
     exchange_name='poloniex',
     algo_namespace=algo_namespace,
     base_currency='usdt',
-    start=pd.to_datetime('2017-5-15', utc=True),
-    end=pd.to_datetime('2017-5-20', utc=True),
+    start=pd.to_datetime('2016-10-1', utc=True),
+    end=pd.to_datetime('2017-10-31', utc=True),
 )
