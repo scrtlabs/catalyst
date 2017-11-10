@@ -1,18 +1,17 @@
 # For this example, we're going to write a simple momentum script.  When the 
 # stock goes up quickly, we're going to buy; when it goes down quickly, we're
 # going to sell.  Hopefully we'll ride the waves.
+from collections import OrderedDict
 
 import pandas as pd
 import talib
-# To run an algorithm in Catalyst, you need two functions: initialize and 
+# To run an algorithm in Catalyst, you need two functions: initialize and
 # handle_data.
 from logbook import Logger
 
 from catalyst import run_algorithm
 from catalyst.api import symbol, record, order_target_percent, \
     get_open_orders
-from catalyst.exchange import stats_utils
-from catalyst.finance.execution import LimitOrder
 
 # We give a name to the algorithm which Catalyst will use to persist its state.
 # In this example, Catalyst will create the `.catalyst/data/live_algos`
@@ -37,27 +36,30 @@ def initialize(context):
 
 
 def handle_data(context, data):
+    # This handle_data function is where the real work is done.  Our data is
+    # minute-level tick data, and each minute is called a frame.  This function
+    # runs on each frame of the data.
+
+    # We flag the first period of each day.
+    # Since cryptocurrencies trade 24/7 the `before_trading_starts` handle
+    # would only execute once.
     today = data.current_dt.floor('1D')
     if today != context.current_day:
         context.traded_today = False
         context.current_day = today
 
-    # This handle_data function is where the real work is done.  Our data is
-    # minute-level tick data, and each minute is called a frame.  This function
-    # runs on each frame of the data.
-
-    # We're computing the volume-weighted-average-price of the security 
+    # We're computing the volume-weighted-average-price of the security
     # defined above, in the context.eth_btc variable.  For this example, we're 
     # using three bars on the daily chart.
-    bars = data.history(
+    prices = data.history(
         context.eth_btc,
-        fields=['close', 'volume'],
+        fields='close',
         bar_count=100,
         frequency='30T'
     )
     # Use TA-Lib to calculate MACD data using calibrated settings
     macd_raw, signal, macd_hist = talib.MACD(
-        bars['close'].values, fastperiod=30, slowperiod=40, signalperiod=45
+        prices.values, fastperiod=30, slowperiod=40, signalperiod=45
     )
 
     # We need a variable for the current price of the security to compare to
@@ -99,7 +101,7 @@ def handle_data(context, data):
         context.traded_today = True
 
     elif macd_hist[-1] < 0 and data.can_trade(context.eth_btc) \
-            and pos_amount > 0 and context.traded_today:
+            and pos_amount > 0 and not context.traded_today:
         order_target_percent(context.eth_btc, 0)
         context.traded_today = True
 
@@ -129,8 +131,8 @@ def analyze(context=None, results=None):
 
     # Transaction have an exact timestamp while stVats are daily.
     # We adjust the time to the end of each period to place them on the graph.
-    for t in all_trans:
-        t['dt'] = t['dt'].replace(hour=23, minute=59)
+    # for t in all_trans:
+    #     t['dt'] = t['dt'].replace(hour=23, minute=59)
 
     buys = results.loc[[t['dt'] for t in all_trans if t['amount'] > 0], :]
     sells = results.loc[[t['dt'] for t in all_trans if t['amount'] < 0], :]
@@ -161,23 +163,24 @@ def analyze(context=None, results=None):
     ax5.set_ylabel('Percent Change')
 
     ax6 = plt.subplot(615, sharex=ax1)
-    results.loc[:, 'macd'].plot(ax=ax6)
-    ax6.set_ylabel('MACD')
+    results.loc[:, 'macd'].plot(ax=ax6, label='macd')
 
-    ax6.plot(
-        buys.index,
-        results.loc[buys.index, 'macd'],
-        '^',
-        markersize=10,
-        color='g',
-    )
-    ax6.plot(
-        sells.index,
-        results.loc[sells.index, 'macd'],
-        'v',
-        markersize=10,
-        color='r',
-    )
+    # ax6.plot(
+    #     buys.index,
+    #     results.loc[buys.index, 'macd'],
+    #     '^',
+    #     markersize=10,
+    #     color='g',
+    #     label='buys'
+    # )
+    # ax6.plot(
+    #     sells.index,
+    #     results.loc[sells.index, 'macd'],
+    #     'v',
+    #     markersize=10,
+    #     color='r',
+    #     label='sells'
+    # )
 
     plt.legend(loc=3)
 
@@ -197,6 +200,6 @@ run_algorithm(
     exchange_name='poloniex',
     algo_namespace=algo_namespace,
     base_currency='usdt',
-    start=pd.to_datetime('2016-10-1', utc=True),
-    end=pd.to_datetime('2017-10-31', utc=True),
+    start=pd.to_datetime('2017-6-1', utc=True),
+    end=pd.to_datetime('2017-8-1', utc=True),
 )
