@@ -2,6 +2,23 @@
 Release Notes
 =============
 
+Version 0.3.7
+^^^^^^^^^^^^^
+**Release Date**: 2017-11-13
+
+Bug Fixes
+~~~~~~~~~
+
+- Disabled auto-ingestion because of unresolved caching issues (:issue:`47`)
+- Standardized live-trading stats (:issue:`61`)
+
+Build
+~~~~~
+
+- Added a momentum sample algo
+- Added minutely stats in the analyze() function (:issue:`62`)
+- Added specificity to some error messages
+
 Version 0.3.6
 ^^^^^^^^^^^^^
 **Release Date**: 2017-11-4
