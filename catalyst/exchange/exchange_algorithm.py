@@ -259,7 +259,7 @@ class ExchangeTradingAlgorithmBacktest(ExchangeTradingAlgorithmBase):
         stats = pd.DataFrame(self.frame_stats)
         stats.set_index('period_close', inplace=True, drop=False)
 
-        super(ExchangeTradingAlgorithmBacktest, self).analyze(perf)
+        super(ExchangeTradingAlgorithmBacktest, self).analyze(stats)
 
 
 class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):

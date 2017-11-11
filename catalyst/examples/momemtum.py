@@ -129,27 +129,22 @@ def analyze(context=None, results=None):
     all_trans = [t for sublist in trans_list for t in sublist]
     all_trans.sort(key=lambda t: t['dt'])
 
-    # Transaction have an exact timestamp while stVats are daily.
-    # We adjust the time to the end of each period to place them on the graph.
-    # for t in all_trans:
-    #     t['dt'] = t['dt'].replace(hour=23, minute=59)
-
     buys = results.loc[[t['dt'] for t in all_trans if t['amount'] > 0], :]
     sells = results.loc[[t['dt'] for t in all_trans if t['amount'] < 0], :]
 
-    ax2.plot(
+    ax2.scatter(
         buys.index,
         results.loc[buys.index, 'price'],
-        '^',
-        markersize=10,
-        color='g',
+        marker='^',
+        s=100,
+        c='green',
     )
-    ax2.plot(
+    ax2.scatter(
         sells.index,
         results.loc[sells.index, 'price'],
-        'v',
-        markersize=10,
-        color='r',
+        marker='v',
+        s=100,
+        c='red',
     )
 
     ax4 = plt.subplot(613, sharex=ax1)
@@ -165,22 +160,30 @@ def analyze(context=None, results=None):
     ax6 = plt.subplot(615, sharex=ax1)
     results.loc[:, 'macd'].plot(ax=ax6, label='macd')
 
-    # ax6.plot(
-    #     buys.index,
-    #     results.loc[buys.index, 'macd'],
-    #     '^',
-    #     markersize=10,
-    #     color='g',
-    #     label='buys'
-    # )
-    # ax6.plot(
-    #     sells.index,
-    #     results.loc[sells.index, 'macd'],
-    #     'v',
-    #     markersize=10,
-    #     color='r',
-    #     label='sells'
-    # )
+    ax6.scatter(
+        buys.index,
+        results.loc[buys.index, 'macd'],
+        marker='^',
+        s=100,
+        c='green',
+        label=''
+    )
+    ax6.scatter(
+        sells.index,
+        results.loc[sells.index, 'macd'],
+        marker='v',
+        s=100,
+        c='red',
+        label=''
+    )
+    # handles, labels = plt.gca().get_legend_handles_labels()
+    # i = 1
+    # while i < len(labels):
+    #     if labels[i] in labels[:i]:
+    #         del (labels[i])
+    #         del (handles[i])
+    #     else:
+    #         i += 1
 
     plt.legend(loc=3)
 
@@ -193,7 +196,7 @@ def analyze(context=None, results=None):
 # Backtest
 run_algorithm(
     capital_base=1,
-    data_frequency='daily',
+    data_frequency='minute',
     initialize=initialize,
     handle_data=handle_data,
     analyze=analyze,
@@ -201,5 +204,5 @@ run_algorithm(
     algo_namespace=algo_namespace,
     base_currency='usdt',
     start=pd.to_datetime('2017-6-1', utc=True),
-    end=pd.to_datetime('2017-8-1', utc=True),
+    end=pd.to_datetime('2017-6-7', utc=True),
 )
