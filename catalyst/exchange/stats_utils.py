@@ -1,3 +1,5 @@
+import numbers
+
 import numpy as np
 import pandas as pd
 
@@ -44,14 +46,24 @@ def crossunder(source, target):
     bool
 
     """
-    if source[-1] is np.nan or source[-2] is np.nan \
-            or target[-1] is np.nan or target[-2] is np.nan:
-        return False
+    if isinstance(target, numbers.Number):
+        if source[-1] is np.nan or source[-2] is np.nan \
+                or target is np.nan:
+            return False
 
-    if source[-1] < target[-1] and source[-2] > target[-2]:
-        return True
+        if source[-1] < target <= source[-2]:
+            return True
+        else:
+            return False
     else:
-        return False
+        if source[-1] is np.nan or source[-2] is np.nan \
+                or target[-1] is np.nan or target[-2] is np.nan:
+            return False
+
+        if source[-1] < target[-1] and source[-2] >= target[-2]:
+            return True
+        else:
+            return False
 
 
 def vwap(df):
@@ -161,3 +173,29 @@ def df_to_string(df):
     pd.set_option('display.max_colwidth', 1000)
 
     return df.to_string()
+
+
+def extract_transactions(perf):
+    """
+    Compute indexes for buy and sell transactions
+
+    Parameters
+    ----------
+    perf: DataFrame
+        The algo performance DataFrame.
+
+    Returns
+    -------
+    DataFrame
+        A DataFrame of transactions.
+
+    """
+    trans_list = perf.transactions.values
+    all_trans = [t for sublist in trans_list for t in sublist]
+    all_trans.sort(key=lambda t: t['dt'])
+
+    # transactions = perf.loc[[t['dt'] for t in all_trans], :]
+
+    transactions = pd.DataFrame(all_trans)
+    transactions.set_index('dt', inplace=True, drop=True)
+    return transactions

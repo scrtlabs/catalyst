@@ -761,12 +761,18 @@ class ExchangeBundle:
         The spot values for the gives assets, field and date. Reads from
         the exchange data bundle.
 
-        :param assets:
-        :param field:
-        :param dt:
-        :param data_frequency:
-        :param reset_reader:
-        :return:
+        Parameters
+        ----------
+        assets: list[TradingPair]
+        field: str
+        dt: pd.Timestamp
+        data_frequency: str
+        reset_reader:
+
+        Returns
+        -------
+        float
+
         """
         values = []
         try:
