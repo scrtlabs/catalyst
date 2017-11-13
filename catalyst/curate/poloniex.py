@@ -7,8 +7,7 @@ from catalyst.exchange.exchange_utils import get_exchange_symbols_filename
 
 DT_START        = int(time.mktime(datetime(2010, 1, 1, 0, 0).timetuple()))
 DT_END          = pd.to_datetime('today').value // 10 ** 9
-CSV_OUT_FOLDER  = '/Volumes/enigma/data/poloniex/'
-CSV_OUT_FOLDER  = '/efs/exchanges/poloniex/'
+CSV_OUT_FOLDER  = os.environ.get('CSV_OUT_FOLDER', '/efs/exchanges/poloniex/')
 CONN_RETRIES    = 2
 
 logbook.StderrHandler().push_application()
@@ -27,7 +26,8 @@ class PoloniexCurator(object):
             try:
                 os.makedirs(CSV_OUT_FOLDER)
             except Exception as e:
-                log.error('Failed to create data folder: %s' % CSV_OUT_FOLDER)
+                log.error('Failed to create data folder: {}'.format(
+                            CSV_OUT_FOLDER))
                 log.exception(e)
 
 
@@ -88,12 +88,12 @@ class PoloniexCurator(object):
         try:
             with open(csv_fn, 'ab+') as f: 
                 f.seek(0, os.SEEK_END)
-                if(f.tell() > 2):                           # First check file is not zero size
-                    f.seek(0)                               # Go to the beginning to read first line
-                    last_tradeID, end_file    = self._retrieve_tradeID_date(f.readline())
-                    f.seek(-2, os.SEEK_END)                 # Jump to the second last byte.
-                    while f.read(1) != b"\n":               # Until EOL is found...
-                        f.seek(-2, os.SEEK_CUR)             # ...jump back the read byte plus one more.
+                if(f.tell() > 2):                   # Check file size is not 0
+                    f.seek(0)                       # Go to start to read 
+                    last_tradeID, end_file = self._retrieve_tradeID_date(f.readline())
+                    f.seek(-2, os.SEEK_END)         # Jump to the 2nd last byte
+                    while f.read(1) != b"\n":       # Until EOL is found...
+                        f.seek(-2, os.SEEK_CUR)     # ...jump back the read byte plus one more.
                     first_tradeID, start_file = self._retrieve_tradeID_date(f.readline())
 
                     if( end_file + 3600 * 6 > DT_END and ( first_tradeID == 1
@@ -105,7 +105,7 @@ class PoloniexCurator(object):
                         return
 
         except Exception as e:
-            log.error('Error opening file: %s' % csv_fn)
+            log.error('Error opening file: {}'.format(csv_fn))
             log.exception(e)
 
         '''
@@ -217,7 +217,7 @@ class PoloniexCurator(object):
                             infer_datetime_format=True).value // 10 ** 9
 
         except Exception as e:
-            log.error('Error opening %s' % csv_fn)
+            log.error('Error opening {}'.format(csv_fn))
             log.exception(e)
 
         '''
@@ -234,14 +234,14 @@ class PoloniexCurator(object):
         by resampling with 1-minute period
         '''
         df.set_index('date', inplace=True)               # Index by date
-        vol = df['total'].to_frame('volume')             # Will deal with vol separately, as ohlc() messes it up
-        df.drop('total', axis=1, inplace=True)           # Drop volume data from dataframe
-        ohlc = df.resample('T').ohlc()                   # Resample OHLC in 1min bins
+        vol = df['total'].to_frame('volume')             # set Vol aside
+        df.drop('total', axis=1, inplace=True)           # Drop volume data 
+        ohlc = df.resample('T').ohlc()                   # Resample OHLC 1min
         ohlc.columns = ohlc.columns.map(lambda t: t[1])  # Raname columns by dropping 'rate'
-        closes = ohlc['close'].fillna(method='pad')      # Pad forward missing 'close'
+        closes = ohlc['close'].fillna(method='pad')      # Pad fwd missing 'close'
         ohlc = ohlc.apply(lambda x: x.fillna(closes))    # Fill N/A with last close
         vol = vol.resample('T').sum().fillna(0)          # Add volumes by bin
-        ohlcv = pd.concat([ohlc,vol], axis=1)            # Concatenate OHLC + Volume
+        ohlcv = pd.concat([ohlc,vol], axis=1)            # Concatenate OHLC + Vol
         return ohlcv
 
 
@@ -291,9 +291,9 @@ class PoloniexCurator(object):
                         item.volume,
                     ])
         except Exception as e:
-            log.error('Error opening %s' % csv_fn)
+            log.error('Error opening {}'.format(csv_fn))
             log.exception(e)
-        log.debug(currencyPair+': Generated 1min OHLCV data.')
+        log.debug('{}: Generated 1min OHLCV data.'.format(currencyPair))
 
 
 
@@ -331,8 +331,8 @@ class PoloniexCurator(object):
                                 CSV_OUT_FOLDER, currencyPair)
                 with open(csv_fn, 'r') as f: 
                     f.seek(0, os.SEEK_END)
-                    if(f.tell() > 2):               # First check file is not zero size
-                        f.seek(-2, os.SEEK_END)     # Jump to the second last byte.
+                    if(f.tell() > 2):               # Check file size is not 0
+                        f.seek(-2, os.SEEK_END)     # Jump to 2nd last byte
                         while f.read(1) != b"\n":   # Until EOL is found...
                             f.seek(-2, os.SEEK_CUR) # ...jump back the read byte plus one more.
                         start = pd.to_datetime( f.readline().split(',')[1], 
