@@ -131,22 +131,36 @@ class PoloniexCurator(object):
                 )
         print url
 
-        try:
-            response = requests.get(url)
-        except Exception as e:
-            log.error('Failed to retrieve trade history data for {}'.format(
-                        currencyPair
-                        ))
-            log.exception(e)
+        attempts = 0
+        success = 0
+        while attempts < CONN_RETRIES:
+            try:
+                response = requests.get(url)
+            except Exception as e:
+                log.error('Failed to retrieve trade history data for {}'.format(
+                            currencyPair
+                            ))
+                log.exception(e)
+                attempts += 1
+            else:
+                try:
+                    if isinstance(response.json(), dict) and response.json()['error']:
+                        log.error('Failed to to retrieve trade history data '
+                                  'for {}: {}'.format(
+                                    currencyPair,
+                                    response.json()['error']
+                                    ))
+                        attempts += 1
+                except Exception as e:
+                    log.exception(e)
+                    attempts += 1
+                else:
+                    success = 1
+                    break
+
+        if not success:
             return None
-        else:
-            if isinstance(response.json(), dict) and response.json()['error']:
-                log.error('Failed to to retrieve trade history data '
-                          'for {}: {}'.format(
-                                currencyPair,
-                                response.json()['error']
-                                ))
-                exit(1)
+
 
         '''
         If we get to transactionId == 1, and we already have that on 
@@ -252,48 +266,48 @@ class PoloniexCurator(object):
         '''       
         csv_trades = CSV_OUT_FOLDER + 'crypto_trades-' + currencyPair + '.csv'
         csv_1min   = CSV_OUT_FOLDER + 'crypto_1min-' + currencyPair + '.csv'
-        #if( os.path.isfile(csv_1min) ):
-        #    log.debug(currencyPair+': 1min data already present. '
-        #              'Delete the file if you want to rebuild it.')
-        #else:
-        df = pd.read_csv(csv_trades, 
-                            names=['tradeID',
-                                   'date',
-                                   'type',
-                                   'rate',
-                                   'amount',
-                                   'total',
-                                   'globalTradeID'], 
-                            dtype = {'tradeID': int, 
-                                     'date': str, 
-                                     'type': str, 
-                                     'rate': float, 
-                                     'amount': float, 
-                                     'total': float, 
-                                     'globalTradeID': int } 
-                            )
-        df.drop(['tradeID','type','amount','globalTradeID'], 
-                axis=1, inplace=True)
-        df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True) 
-        ohlcv = self.generate_ohlcv(df)
-        try: 
-            with open(csv_1min, 'w') as csvfile:
-                csvwriter = csv.writer(csvfile)
-                for item in ohlcv.itertuples():
-                    if item.Index == 0:
-                        continue
-                    csvwriter.writerow([
-                        item.Index.value // 10 ** 9,
-                        item.open,
-                        item.high,
-                        item.low,
-                        item.close,
-                        item.volume,
-                    ])
-        except Exception as e:
-            log.error('Error opening {}'.format(csv_fn))
-            log.exception(e)
-        log.debug('{}: Generated 1min OHLCV data.'.format(currencyPair))
+        if( os.path.getmtime(csv_1min) > time.time() - 7200 ):
+            log.debug(currencyPair+': 1min data file already up to date. '
+                      'Delete the file if you want to rebuild it.')
+        else:
+            df = pd.read_csv(csv_trades, 
+                                names=['tradeID',
+                                       'date',
+                                       'type',
+                                       'rate',
+                                       'amount',
+                                       'total',
+                                       'globalTradeID'], 
+                                dtype = {'tradeID': int, 
+                                         'date': str, 
+                                         'type': str, 
+                                         'rate': float, 
+                                         'amount': float, 
+                                         'total': float, 
+                                         'globalTradeID': int } 
+                                )
+            df.drop(['tradeID','type','amount','globalTradeID'], 
+                    axis=1, inplace=True)
+            df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True) 
+            ohlcv = self.generate_ohlcv(df)
+            try: 
+                with open(csv_1min, 'w') as csvfile:
+                    csvwriter = csv.writer(csvfile)
+                    for item in ohlcv.itertuples():
+                        if item.Index == 0:
+                            continue
+                        csvwriter.writerow([
+                            item.Index.value // 10 ** 9,
+                            item.open,
+                            item.high,
+                            item.low,
+                            item.close,
+                            item.volume,
+                        ])
+            except Exception as e:
+                log.error('Error opening {}'.format(csv_fn))
+                log.exception(e)
+            log.debug('{}: Generated 1min OHLCV data.'.format(currencyPair))
 
 
 
