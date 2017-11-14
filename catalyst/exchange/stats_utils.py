@@ -4,6 +4,16 @@ import numpy as np
 import pandas as pd
 
 
+def trend_direction(series):
+    if series[-1] is np.nan or series[-1] is np.nan:
+        return None
+
+    if series[-1] > series[-2]:
+        return 'up'
+    else:
+        return 'down'
+
+
 def crossover(source, target):
     """
     The `x`-series is defined as having crossed over `y`-series if the value

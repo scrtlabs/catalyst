@@ -8,6 +8,7 @@ import talib
 # To run an algorithm in Catalyst, you need two functions: initialize and
 # handle_data.
 from logbook import Logger
+from talib.common import MA_Type
 
 from catalyst import run_algorithm
 from catalyst.api import symbol, record, order_target_percent, \
@@ -18,7 +19,7 @@ from catalyst.api import symbol, record, order_target_percent, \
 # directory. If we stop and start the algorithm, Catalyst will resume its
 # state using the files included in the folder.
 from catalyst.exchange.stats_utils import crossunder, get_pretty_stats, \
-    extract_transactions
+    extract_transactions, crossover, trend_direction
 
 algo_namespace = 'momentum'
 log = Logger(algo_namespace)
@@ -36,6 +37,7 @@ def initialize(context):
     context.base_price = None
     context.current_day = None
     context.yesterdy = None
+    context.trigger = None
 
 
 def handle_data(context, data):
@@ -62,7 +64,7 @@ def handle_data(context, data):
     prices = data.history(
         context.eth_btc,
         fields='close',
-        bar_count=220,
+        bar_count=50,
         frequency='15T'
     )
 
@@ -71,7 +73,13 @@ def handle_data(context, data):
 
     # In this example, we are comp
     rsi = talib.RSI(prices.values, timeperiod=14)
-    sma200 = talib.SMA(prices.values, timeperiod=200)
+    upper, middle, lower = talib.BBANDS(
+        prices.values,
+        timeperiod=20,
+        nbdevup=2,
+        nbdevdn=2,
+        matype=MA_Type.EMA
+    )
 
     # We need a variable for the current price of the security to compare to
     # the average. Since we are requesting two fields, data.current()
@@ -93,7 +101,8 @@ def handle_data(context, data):
     record(
         price=price,
         volume=current['volume'],
-        sma200=sma200[-1],
+        upper_band=upper[-1],
+        lower_band=lower[-1],
         price_change=price_change,
         rsi=rsi[-1],
         cash=cash
@@ -110,6 +119,10 @@ def handle_data(context, data):
     if len(orders) > 0:
         return
 
+    # Exit if we cannot trade
+    if not data.can_trade(context.eth_btc):
+        return
+
     # Another powerful built-in feature of the Catalyst backtester is the
     # portfolio object.  The portfolio object tracks your positions, cash,
     # cost basis of specific holdings, and more.  In this line, we calculate
@@ -117,20 +130,20 @@ def handle_data(context, data):
     pos_amount = context.portfolio.positions[context.eth_btc].amount
 
     # Determining the entry and exit signals based on RSI and SMA
-    if (rsi[-1] <= 30 and price > sma200[-1]) \
-            and data.can_trade(context.eth_btc) and pos_amount == 0:
+    if rsi[-1] <= 30 and trend_direction(rsi) == 'up' and pos_amount == 0:
         log.info(
-            '{}: buying - price: {}, rsi: {}, sma: {}'.format(
-                data.current_dt, price, rsi[-1], sma200[-1]
+            '{}: buying - price: {}, rsi: {}, bband: {}'.format(
+                data.current_dt, price, rsi[-1], lower[-1]
             )
         )
         order_target_percent(context.eth_btc, 1)
         context.traded_today = True
 
-    elif rsi[-1] >= 80 and data.can_trade(context.eth_btc) and pos_amount > 0:
+    elif rsi[-1] >= 80 and trend_direction(rsi) == 'down' and pos_amount > 0 \
+            and price > upper[-1]:
         log.info(
-            '{}: selling - price: {}, rsi: {}, sma: {}'.format(
-                data.current_dt, price, rsi[-1], sma200[-1]
+            '{}: selling - price: {}, rsi: {}, bband: {}'.format(
+                data.current_dt, price, rsi[-1], upper[-1]
             )
         )
         order_target_percent(context.eth_btc, 0)
@@ -151,7 +164,8 @@ def analyze(context=None, perf=None):
     # Plot the price increase or decrease over time.
     ax2 = plt.subplot(612, sharex=ax1)
     perf.loc[:, 'price'].plot(ax=ax2, label='Price')
-    perf.loc[:, 'sma200'].plot(ax=ax2, label='SMA200')
+    perf.loc[:, 'upper_band'].plot(ax=ax2, label='Upper')
+    perf.loc[:, 'lower_band'].plot(ax=ax2, label='Lower')
 
     ax2.set_ylabel('{asset} ({base})'.format(
         asset=context.eth_btc.symbol, base=base_currency
@@ -235,8 +249,8 @@ if __name__ == '__main__':
             algo_namespace=algo_namespace,
             base_currency='usdt',
             start=pd.to_datetime('2017-7-1', utc=True),
-            end=pd.to_datetime('2017-10-31', utc=True),
-            # end=pd.to_datetime('2017-7-5', utc=True),
+            end=pd.to_datetime('2017-9-30', utc=True),
+            # end=pd.to_datetime('2017-7-31', utc=True),
         )
 
     elif MODE == 'live':
