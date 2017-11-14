@@ -211,12 +211,11 @@ class PricingDataBeforeTradingError(ZiplineError):
 
 
 class PricingDataNotLoadedError(ZiplineError):
-    msg = ('Pricing data {field} for trading pairs {symbols} trading on '
-           'exchange {exchange} since {first_trading_day} is unavailable. '
-           'The bundle data is either out-of-date or has not been loaded yet. '
-           'Please ingest data using the command '
-           '`catalyst ingest-exchange -x {exchange} -f {data_frequency} -i {symbol_list}`. '
-           'See catalyst documentation for details.').strip()
+    msg = ('Missing data for {exchange} {symbols} in date range '
+           '[{start_dt} - {end_dt}]'
+           '\nPlease run: `catalyst ingest-exchange -x {exchange} -f '
+           '{data_frequency} -i {symbol_list}`. See catalyst documentation '
+           'for details.').strip()
 
 
 class ApiCandlesError(ZiplineError):

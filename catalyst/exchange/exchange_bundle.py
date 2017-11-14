@@ -1,47 +1,24 @@
 import os
 import shutil
+from functools import partial
 from itertools import chain
+from operator import is_not
 
+import numpy as np
 import pandas as pd
 from catalyst.assets._assets import TradingPair
+from datetime import datetime, timedelta
 from logbook import Logger
-from pandas.tslib import Timestamp
 from pytz import UTC
 from six import itervalues
 
 from catalyst import get_calendar
+from catalyst.constants import DATE_TIME_FORMAT, AUTO_INGEST
 from catalyst.constants import LOG_LEVEL
 from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
     BcolzMinuteBarMetadata
 from catalyst.exchange.bundle_utils import range_in_bundle, \
-    get_bcolz_chunk, get_delta, get_month_start_end, \
-    get_year_start_end, get_df_from_arrays, get_start_dt, get_period_label
-from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
-    BcolzExchangeBarWriter
-from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
-    TempBundleNotFoundError, \
-    NoDataAvailableOnExchange, \
-    PricingDataNotLoadedError
-from catalyst.exchange.exchange_utils import get_exchange_folder
-from catalyst.utils.cli import maybe_show_progress
-from catalyst.utils.paths import ensure_directory
-import os
-import shutil
-from itertools import chain
-
-import pandas as pd
-from catalyst.assets._assets import TradingPair
-from logbook import Logger
-from pandas.tslib import Timestamp
-from pytz import UTC
-from six import itervalues
-
-from catalyst import get_calendar
-from catalyst.constants import LOG_LEVEL
-from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
-    BcolzMinuteBarMetadata
-from catalyst.exchange.bundle_utils import range_in_bundle, \
-    get_bcolz_chunk, get_delta, get_month_start_end, \
+    get_bcolz_chunk, get_month_start_end, \
     get_year_start_end, get_df_from_arrays, get_start_dt, get_period_label
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
@@ -244,8 +221,91 @@ class ExchangeBundle:
             if data_frequency == 'minute' \
             else self.calendar.sessions_in_range(start_dt, end_dt)
 
+    def _spot_empty_periods(self, ohlcv_df, asset, data_frequency,
+                            empty_rows_behavior):
+        problems = []
+
+        nan_rows = ohlcv_df[ohlcv_df.isnull().T.any().T].index
+        if len(nan_rows) > 0:
+            dates = []
+            for row_date in nan_rows.values:
+                row_date = pd.to_datetime(row_date, utc=True)
+                if row_date > asset.start_date:
+                    dates.append(row_date)
+
+            if len(dates) > 0:
+                end_dt = asset.end_minute if data_frequency == 'minute' \
+                    else asset.end_daily
+
+                problem = '{name} ({start_dt} to {end_dt}) has empty ' \
+                          'periods: {dates}'.format(
+                    name=asset.symbol,
+                    start_dt=asset.start_date.strftime(DATE_TIME_FORMAT),
+                    end_dt=end_dt.strftime(DATE_TIME_FORMAT),
+                    dates=[date.strftime(DATE_TIME_FORMAT) for date in dates]
+                )
+                if empty_rows_behavior == 'warn':
+                    log.warn(problem)
+
+                elif empty_rows_behavior == 'raise':
+                    raise EmptyValuesInBundleError(
+                        name=asset.symbol,
+                        end_minute=end_dt,
+                        dates=dates
+                    )
+
+                else:
+                    ohlcv_df.dropna(inplace=True)
+
+            else:
+                problem = None
+
+            problems.append(problem)
+
+        return problems
+
+    def _spot_duplicates(self, ohlcv_df, asset, data_frequency, threshold):
+        # TODO: work in progress
+        series = ohlcv_df.reset_index().groupby('close')['index'].apply(
+            np.array
+        )
+
+        ref_delta = timedelta(minutes=1) if data_frequency == 'minute' \
+            else timedelta(days=1)
+
+        dups = series.loc[lambda values: [len(x) > 10 for x in values]]
+
+        for index, dates in dups.iteritems():
+            prev_date = None
+            for date in dates:
+                if prev_date is not None:
+                    delta = (date - prev_date) / 1e9
+                    if delta == ref_delta.seconds:
+                        log.info('pex')
+
+                prev_date = date
+
+        problems = []
+        for index, dates in dups.iteritems():
+            end_dt = asset.end_minute if data_frequency == 'minute' \
+                else asset.end_daily
+
+            problem = '{name} ({start_dt} to {end_dt}) has {threshold} ' \
+                      'identical close values on: {dates}'.format(
+                name=asset.symbol,
+                start_dt=asset.start_date.strftime(DATE_TIME_FORMAT),
+                end_dt=end_dt.strftime(DATE_TIME_FORMAT),
+                threshold=threshold,
+                dates=[pd.to_datetime(date).strftime(DATE_TIME_FORMAT)
+                       for date in dates]
+            )
+
+            problems.append(problem)
+
+        return problems
+
     def ingest_df(self, ohlcv_df, data_frequency, asset, writer,
-                  empty_rows_behavior='strip'):
+                  empty_rows_behavior='warn', duplicates_threshold=None):
         """
         Ingest a DataFrame of OHLCV data for a given market.
 
@@ -258,50 +318,16 @@ class ExchangeBundle:
         empty_rows_behavior: str
 
         """
+        problems = []
         if empty_rows_behavior is not 'ignore':
-            nan_rows = ohlcv_df[ohlcv_df.isnull().T.any().T].index
+            problems += self._spot_empty_periods(
+                ohlcv_df, asset, data_frequency, empty_rows_behavior
+            )
 
-            if len(nan_rows) > 0:
-                dates = []
-                previous_date = None
-                for row_date in nan_rows.values:
-                    row_date = pd.to_datetime(row_date)
-
-                    if previous_date is None:
-                        dates.append(row_date)
-
-                    else:
-                        seq_date = previous_date + get_delta(1, data_frequency)
-
-                        if row_date > seq_date:
-                            dates.append(previous_date)
-                            dates.append(row_date)
-
-                    previous_date = row_date
-
-                dates.append(pd.to_datetime(nan_rows.values[-1]))
-
-                name = '{} from {} to {}'.format(
-                    asset.symbol, ohlcv_df.index[0], ohlcv_df.index[-1]
-                )
-                if empty_rows_behavior == 'warn':
-                    log.warn(
-                        '\n{name} with end minute {end_minute} has empty rows '
-                        'in ranges: {dates}'.format(
-                            name=name,
-                            end_minute=asset.end_minute,
-                            dates=dates
-                        )
-                    )
-
-                elif empty_rows_behavior == 'raise':
-                    raise EmptyValuesInBundleError(
-                        name=name,
-                        end_minute=asset.end_minute,
-                        dates=dates
-                    )
-                else:
-                    ohlcv_df.dropna(inplace=True)
+        # if duplicates_threshold is not None:
+        #     problems += self._spot_duplicates(
+        #         ohlcv_df, asset, data_frequency, duplicates_threshold
+        #     )
 
         data = []
         if not ohlcv_df.empty:
@@ -310,8 +336,11 @@ class ExchangeBundle:
 
         self._write(data, writer, data_frequency)
 
+        return problems
+
     def ingest_ctable(self, asset, data_frequency, period,
-                      writer, empty_rows_behavior='strip', cleanup=False):
+                      writer, empty_rows_behavior='strip',
+                      duplicates_threshold=100, cleanup=False):
         """
         Merge a ctable bundle chunk into the main bundle for the exchange.
 
@@ -327,8 +356,14 @@ class ExchangeBundle:
         cleanup: bool
             Remove the temp bundle directory after ingestion.
 
-        :return:
+        Returns
+        -------
+        list[str]
+            A list of problems which occurred during ingestion.
+
         """
+        problems = []
+
         # Download and extract the bundle
         path = get_bcolz_chunk(
             exchange_name=self.exchange.name,
@@ -375,12 +410,13 @@ class ExchangeBundle:
             start_dt, end_dt, data_frequency
         )
         df = get_df_from_arrays(arrays, periods)
-        self.ingest_df(
+        problems += self.ingest_df(
             ohlcv_df=df,
             data_frequency=data_frequency,
             asset=asset,
             writer=writer,
-            empty_rows_behavior=empty_rows_behavior
+            empty_rows_behavior=empty_rows_behavior,
+            duplicates_threshold=duplicates_threshold
         )
 
         if cleanup:
@@ -390,7 +426,7 @@ class ExchangeBundle:
             )
             shutil.rmtree(reader._rootdir)
 
-        return reader._rootdir
+        return filter(partial(is_not, None), problems)
 
     def get_adj_dates(self, start, end, assets, data_frequency):
         """
@@ -528,7 +564,8 @@ class ExchangeBundle:
         return chunks
 
     def ingest_assets(self, assets, data_frequency, start_dt=None, end_dt=None,
-                      show_progress=False, asset_chunks=False):
+                      show_progress=False, show_breakdown=False,
+                      show_report=False):
         """
         Determine if data is missing from the bundle and attempt to ingest it.
 
@@ -539,7 +576,7 @@ class ExchangeBundle:
         start_dt: datetime
         end_dt: datetime
         show_progress: bool
-        asset_chunks: bool
+        show_breakdown: bool
 
         """
         if start_dt is None:
@@ -562,10 +599,11 @@ class ExchangeBundle:
             end_dt=end_dt
         )
 
+        problems = []
         # This is the common writer for the entire exchange bundle
         # we want to give an end_date far in time
         writer = self.get_writer(start_dt, end_dt, data_frequency)
-        if asset_chunks:
+        if show_breakdown:
             for asset in chunks:
                 with maybe_show_progress(
                         chunks[asset],
@@ -577,7 +615,7 @@ class ExchangeBundle:
                             symbol=asset.symbol
                         )) as it:
                     for chunk in it:
-                        self.ingest_ctable(
+                        problems += self.ingest_ctable(
                             asset=chunk['asset'],
                             data_frequency=data_frequency,
                             period=chunk['period'],
@@ -601,7 +639,7 @@ class ExchangeBundle:
                         frequency=data_frequency,
                     )) as it:
                 for chunk in it:
-                    self.ingest_ctable(
+                    problems += self.ingest_ctable(
                         asset=chunk['asset'],
                         data_frequency=data_frequency,
                         period=chunk['period'],
@@ -610,9 +648,14 @@ class ExchangeBundle:
                         cleanup=True
                     )
 
+        if show_report and len(problems) > 0:
+            log.info('problems during ingestion:{}\n'.format(
+                '\n'.join(problems)
+            ))
+
     def ingest(self, data_frequency, include_symbols=None,
                exclude_symbols=None, start=None, end=None,
-               show_progress=True, environ=os.environ):
+               show_progress=True, show_breakdown=True, show_report=True):
         """
         Inject data based on specified parameters.
 
@@ -631,7 +674,7 @@ class ExchangeBundle:
 
         for frequency in data_frequency.split(','):
             self.ingest_assets(assets, frequency, start, end,
-                               show_progress, True)
+                               show_progress, show_breakdown, show_report)
 
     def get_history_window_series_and_load(self,
                                            assets,
@@ -658,7 +701,46 @@ class ExchangeBundle:
         Series
 
         """
-        try:
+        if AUTO_INGEST:
+            try:
+                series = self.get_history_window_series(
+                    assets=assets,
+                    end_dt=end_dt,
+                    bar_count=bar_count,
+                    field=field,
+                    data_frequency=data_frequency
+                )
+                return pd.DataFrame(series)
+
+            except PricingDataNotLoadedError:
+                start_dt = get_start_dt(end_dt, bar_count, data_frequency)
+                log.info(
+                    'pricing data for {symbol} not found in range '
+                    '{start} to {end}, updating the bundles.'.format(
+                        symbol=[asset.symbol for asset in assets],
+                        start=start_dt,
+                        end=end_dt
+                    )
+                )
+                self.ingest_assets(
+                    assets=assets,
+                    start_dt=start_dt,
+                    end_dt=algo_end_dt,
+                    data_frequency=data_frequency,
+                    show_progress=True,
+                    show_breakdown=True
+                )
+                series = self.get_history_window_series(
+                    assets=assets,
+                    end_dt=end_dt,
+                    bar_count=bar_count,
+                    field=field,
+                    data_frequency=data_frequency,
+                    reset_reader=True
+                )
+                return series
+
+        else:
             series = self.get_history_window_series(
                 assets=assets,
                 end_dt=end_dt,
@@ -667,34 +749,6 @@ class ExchangeBundle:
                 data_frequency=data_frequency
             )
             return pd.DataFrame(series)
-
-        except PricingDataNotLoadedError:
-            start_dt = get_start_dt(end_dt, bar_count, data_frequency)
-            log.info(
-                'pricing data for {symbol} not found in range '
-                '{start} to {end}, updating the bundles.'.format(
-                    symbol=[asset.symbol for asset in assets],
-                    start=start_dt,
-                    end=end_dt
-                )
-            )
-            self.ingest_assets(
-                assets=assets,
-                start_dt=start_dt,
-                end_dt=algo_end_dt,
-                data_frequency=data_frequency,
-                show_progress=True,
-                asset_chunks=True
-            )
-            series = self.get_history_window_series(
-                assets=assets,
-                end_dt=end_dt,
-                bar_count=bar_count,
-                field=field,
-                data_frequency=data_frequency,
-                reset_reader=False
-            )
-            return series
 
     def get_spot_values(self,
                         assets,
@@ -707,12 +761,18 @@ class ExchangeBundle:
         The spot values for the gives assets, field and date. Reads from
         the exchange data bundle.
 
-        :param assets:
-        :param field:
-        :param dt:
-        :param data_frequency:
-        :param reset_reader:
-        :return:
+        Parameters
+        ----------
+        assets: list[TradingPair]
+        field: str
+        dt: pd.Timestamp
+        data_frequency: str
+        reset_reader:
+
+        Returns
+        -------
+        float
+
         """
         values = []
         try:
@@ -739,7 +799,9 @@ class ExchangeBundle:
                 exchange=self.exchange.name,
                 symbols=symbols,
                 symbol_list=','.join(symbols),
-                data_frequency=data_frequency
+                data_frequency=data_frequency,
+                start_dt=dt,
+                end_dt=dt
             )
 
     def get_history_window_series(self,
@@ -749,7 +811,7 @@ class ExchangeBundle:
                                   field,
                                   data_frequency,
                                   reset_reader=False):
-        start_dt = get_start_dt(end_dt, bar_count, data_frequency)
+        start_dt = get_start_dt(end_dt, bar_count, data_frequency, False)
         start_dt, end_dt = self.get_adj_dates(
             start_dt, end_dt, assets, data_frequency
         )
@@ -767,7 +829,9 @@ class ExchangeBundle:
                 exchange=self.exchange.name,
                 symbols=symbols,
                 symbol_list=','.join(symbols),
-                data_frequency=data_frequency
+                data_frequency=data_frequency,
+                start_dt=start_dt,
+                end_dt=end_dt
             )
 
         for asset in assets:
@@ -785,7 +849,9 @@ class ExchangeBundle:
                     exchange=self.exchange.name,
                     symbols=asset.symbol,
                     symbol_list=asset.symbol,
-                    data_frequency=data_frequency
+                    data_frequency=data_frequency,
+                    start_dt=asset_start_dt,
+                    end_dt=asset_end_dt
                 )
 
         series = dict()
@@ -805,7 +871,9 @@ class ExchangeBundle:
                 exchange=self.exchange.name,
                 symbols=symbols,
                 symbol_list=','.join(symbols),
-                data_frequency=data_frequency
+                data_frequency=data_frequency,
+                start_dt=start_dt,
+                end_dt=end_dt
             )
 
         periods = self.get_calendar_periods_range(

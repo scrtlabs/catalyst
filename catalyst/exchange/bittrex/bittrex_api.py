@@ -3,11 +3,12 @@ import json
 import time
 import hmac
 import hashlib
-
+import ssl
 
 # Workaround for backwards compatibility
 # https://stackoverflow.com/questions/3745771/urllib-request-in-python-2-7
 from six.moves import urllib
+
 urlopen = urllib.request.urlopen
 
 
@@ -48,7 +49,8 @@ class Bittrex_api(object):
             headers = {}
 
         req = urllib.request.Request(url, headers=headers)
-        response = json.loads(urlopen(req).read())
+        response = json.loads(urlopen(
+            req, context=ssl._create_unverified_context()).read())
 
         if response["result"]:
             return response["result"]

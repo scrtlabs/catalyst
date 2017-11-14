@@ -10,7 +10,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
 import pickle
 import signal
 import sys
@@ -27,8 +26,6 @@ from catalyst.assets._assets import TradingPair
 import catalyst.protocol as zp
 from catalyst.algorithm import TradingAlgorithm
 from catalyst.constants import LOG_LEVEL
-from catalyst.data.minute_bars import BcolzMinuteBarWriter, \
-    BcolzMinuteBarReader
 from catalyst.errors import OrderInBeforeTradingStart
 from catalyst.exchange.exchange_blotter import ExchangeBlotter
 from catalyst.exchange.exchange_errors import (
@@ -38,8 +35,8 @@ from catalyst.exchange.exchange_errors import (
     OrphanOrderError)
 from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
     ExchangeLimitOrder, ExchangeStopOrder
-from catalyst.exchange.exchange_utils import get_exchange_minute_writer_root, \
-    save_algo_object, get_algo_object, get_algo_folder, get_algo_df, \
+from catalyst.exchange.exchange_utils import save_algo_object, get_algo_object, \
+    get_algo_folder, get_algo_df, \
     save_algo_df
 from catalyst.exchange.live_graph_clock import LiveGraphClock
 from catalyst.exchange.simple_clock import SimpleClock
@@ -182,17 +179,19 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
 
         # we want the key to be absent, not just empty
         # Only include transactions for given dt
-        stats['transactions'] = dict()
+        stats['transactions'] = []
         for date in period.processed_transactions:
             if start_dt <= date < end_dt:
-                stats['transactions'][date] = \
-                    period.processed_transactions[date]
+                transactions = period.processed_transactions[date]
+                for t in transactions:
+                    stats['transactions'].append(t.to_dict())
 
-        stats['orders'] = dict()
+        stats['orders'] = []
         for date in period.orders_by_modified:
             if start_dt <= date < end_dt:
-                stats['orders'][date] = \
-                    period.orders_by_modified[date]
+                orders = period.orders_by_modified[date]
+                for order in orders:
+                    stats['orders'].append(orders[order].to_dict())
 
         return stats
 
@@ -201,6 +200,7 @@ class ExchangeTradingAlgorithmBacktest(ExchangeTradingAlgorithmBase):
     def __init__(self, *args, **kwargs):
         super(ExchangeTradingAlgorithmBacktest, self).__init__(*args, **kwargs)
 
+        self.frame_stats = list()
         self.blotter = ExchangeBlotter(
             data_frequency=self.data_frequency,
             # Default to NeverCancel in catalyst
@@ -245,6 +245,19 @@ class ExchangeTradingAlgorithmBacktest(ExchangeTradingAlgorithmBase):
         else:
             return MarketOrder()
 
+    def handle_data(self, data):
+        super(ExchangeTradingAlgorithmBacktest, self).handle_data(data)
+
+        minute_stats = self.prepare_period_stats(
+            data.current_dt, data.current_dt + timedelta(minutes=1))
+        self.frame_stats.append(minute_stats)
+
+    def analyze(self, perf):
+        stats = pd.DataFrame(self.frame_stats)
+        stats.set_index('period_close', inplace=True, drop=False)
+
+        super(ExchangeTradingAlgorithmBacktest, self).analyze(stats)
+
 
 class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
     def __init__(self, *args, **kwargs):
@@ -273,33 +286,10 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         self.stats_minutes = 5
 
         super(ExchangeTradingAlgorithmLive, self).__init__(*args, **kwargs)
-        # TODO: fix precision before re-enabling
-        # self._create_minute_writer()
 
         signal.signal(signal.SIGINT, self.signal_handler)
 
         log.info('initialized trading algorithm in live mode')
-
-    def _create_minute_writer(self):
-        root = get_exchange_minute_writer_root(self.exchange.name)
-        filename = os.path.join(root, 'metadata.json')
-
-        if os.path.isfile(filename):
-            writer = BcolzMinuteBarWriter.open(
-                root, self.sim_params.end_session)
-        else:
-            # TODO: need to be able to write more precise numbers
-            writer = BcolzMinuteBarWriter(
-                rootdir=root,
-                calendar=self.trading_calendar,
-                minutes_per_day=1440,
-                start_session=self.sim_params.start_session,
-                end_session=self.sim_params.end_session,
-                write_metadata=True
-            )
-
-        self.exchange.minute_writer = writer
-        self.exchange.minute_reader = BcolzMinuteBarReader(root)
 
     def signal_handler(self, signal, frame):
         """

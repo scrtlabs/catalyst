@@ -1,5 +1,17 @@
+import numbers
+
 import numpy as np
 import pandas as pd
+
+
+def trend_direction(series):
+    if series[-1] is np.nan or series[-1] is np.nan:
+        return None
+
+    if series[-1] > series[-2]:
+        return 'up'
+    else:
+        return 'down'
 
 
 def crossover(source, target):
@@ -44,14 +56,56 @@ def crossunder(source, target):
     bool
 
     """
-    if source[-1] is np.nan or source[-2] is np.nan \
-            or target[-1] is np.nan or target[-2] is np.nan:
-        return False
+    if isinstance(target, numbers.Number):
+        if source[-1] is np.nan or source[-2] is np.nan \
+                or target is np.nan:
+            return False
 
-    if source[-1] < target[-1] and source[-2] > target[-2]:
-        return True
+        if source[-1] < target <= source[-2]:
+            return True
+        else:
+            return False
     else:
-        return False
+        if source[-1] is np.nan or source[-2] is np.nan \
+                or target[-1] is np.nan or target[-2] is np.nan:
+            return False
+
+        if source[-1] < target[-1] and source[-2] >= target[-2]:
+            return True
+        else:
+            return False
+
+
+def vwap(df):
+    """
+    Volume-weighted average price (VWAP) is a ratio generally used by
+    institutional investors and mutual funds to make buys and sells so as not
+    to disturb the market prices with large orders. It is the average share
+    price of a stock weighted against its trading volume within a particular
+    time frame, generally one day.
+
+    Read more: Volume Weighted Average Price - VWAP
+    https://www.investopedia.com/terms/v/vwap.asp#ixzz4xt922daE
+
+    Parameters
+    ----------
+    df: pd.DataFrame
+
+    Returns
+    -------
+
+    """
+    if 'close' not in df.columns or 'volume' not in df.columns:
+        raise ValueError('price data must include `volume` and `close`')
+
+    vol_sum = np.nansum(df['volume'].values)
+
+    try:
+        ret = np.nansum(df['close'].values * df['volume'].values) / vol_sum
+    except ZeroDivisionError:
+        ret = np.nan
+
+    return ret
 
 
 def get_pretty_stats(stats_df, recorded_cols=None, num_rows=10):
@@ -129,3 +183,28 @@ def df_to_string(df):
     pd.set_option('display.max_colwidth', 1000)
 
     return df.to_string()
+
+
+def extract_transactions(perf):
+    """
+    Compute indexes for buy and sell transactions
+
+    Parameters
+    ----------
+    perf: DataFrame
+        The algo performance DataFrame.
+
+    Returns
+    -------
+    DataFrame
+        A DataFrame of transactions.
+
+    """
+    trans_list = perf.transactions.values
+    all_trans = [t for sublist in trans_list for t in sublist]
+    all_trans.sort(key=lambda t: t['dt'])
+
+    transactions = pd.DataFrame(all_trans)
+    if not transactions.empty:
+        transactions.set_index('dt', inplace=True, drop=True)
+    return transactions

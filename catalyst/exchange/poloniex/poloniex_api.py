@@ -3,6 +3,7 @@ import json
 import time
 import hmac
 import hashlib
+import ssl
 
 from six.moves import urllib
 
@@ -104,9 +105,10 @@ class Poloniex_api(object):
         req = urllib.request.Request(
             url,
             data=post_data,
-            headers=headers
+            headers=headers,
         )
-        return json.loads(urlopen(req).read())
+        return json.loads(
+            urlopen(req, context=ssl._create_unverified_context()).read())
 
     def returnticker(self):
         return self.query('returnTicker', {})

@@ -2,6 +2,7 @@ import json
 import os
 import pickle
 import re
+import shutil
 from datetime import date, datetime
 
 import pandas as pd
@@ -156,6 +157,24 @@ def get_exchange_auth(exchange_name, environ=None):
             json.dump(data, f, sort_keys=False, indent=2,
                       separators=(',', ':'))
             return data
+
+
+def delete_algo_folder(algo_name, environ=None):
+    """
+    Delete the folder containing the algo state.
+
+    Parameters
+    ----------
+    algo_name: str
+    environ:
+
+    Returns
+    -------
+    str
+
+    """
+    folder = get_algo_folder(algo_name, environ)
+    shutil.rmtree(folder)
 
 
 def get_algo_folder(algo_name, environ=None):

@@ -9,6 +9,7 @@ from six import text_type
 
 from catalyst.data import bundles as bundles_module
 from catalyst.exchange.exchange_bundle import ExchangeBundle
+from catalyst.exchange.exchange_utils import delete_algo_folder
 from catalyst.exchange.factory import get_exchange
 from catalyst.utils.cli import Date, Timestamp
 from catalyst.utils.run_algo import _run, load_extensions
@@ -490,8 +491,19 @@ def live(ctx,
     default=True,
     help='Print progress information to the terminal.'
 )
+@click.option(
+    '--verbose/--no-verbose`',
+    default=False,
+    help='Show a progress indicator for every currency pair.'
+)
+@click.option(
+    '--validate/--no-validate`',
+    default=False,
+    help='Report potential anomalies found in data bundles.'
+)
 def ingest_exchange(exchange_name, data_frequency, start, end,
-                    include_symbols, exclude_symbols, show_progress):
+                    include_symbols, exclude_symbols, show_progress, verbose,
+                    validate):
     """
     Ingest data for the given exchange.
     """
@@ -509,8 +521,24 @@ def ingest_exchange(exchange_name, data_frequency, start, end,
         exclude_symbols=exclude_symbols,
         start=start,
         end=end,
-        show_progress=show_progress
+        show_progress=show_progress,
+        show_breakdown=verbose,
+        show_report=validate
     )
+
+
+@main.command(name='clean-algo')
+@click.option(
+    '-n',
+    '--algo-namespace',
+    help='The label of the algorithm to for which to clean the state.'
+)
+@click.pass_context
+def clean_algo(ctx, algo_namespace):
+    click.echo(
+        'Deleting the state folder of algo: {}...'.format(algo_namespace)
+    )
+    delete_algo_folder(algo_namespace)
 
 
 @main.command(name='clean-exchange')
