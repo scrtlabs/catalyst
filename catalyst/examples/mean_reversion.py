@@ -19,7 +19,7 @@ from catalyst.api import symbol, record, order_target_percent, \
 # state using the files included in the folder.
 from catalyst.exchange.stats_utils import extract_transactions, trend_direction
 
-algo_namespace = 'momentum'
+algo_namespace = 'mean_reversion'
 log = Logger(algo_namespace)
 
 
@@ -30,7 +30,7 @@ def initialize(context):
     # parameters or values you're going to use.
 
     # In our example, we're looking at Ether in USD Tether.
-    context.eth_btc = symbol('etc_usdt')
+    context.eth_btc = symbol('neo_usd')
     context.base_price = None
     context.current_day = None
     context.trigger = None
@@ -256,18 +256,18 @@ if __name__ == '__main__':
     MODE = 'backtest'
 
     if MODE == 'backtest':
+        # catalyst run -f catalyst/examples/mean_reversion_simple.py -x poloniex -s 2017-7-1 -e 2017-7-31 -c usdt -n mean-reversion --data-frequency minute --capital-base 10000
         run_algorithm(
             capital_base=1,
             data_frequency='minute',
             initialize=initialize,
             handle_data=handle_data,
             analyze=analyze,
-            exchange_name='poloniex',
+            exchange_name='bitfinex',
             algo_namespace=algo_namespace,
-            base_currency='usdt',
-            start=pd.to_datetime('2017-7-1', utc=True),
-            # end=pd.to_datetime('2017-9-30', utc=True),
-            end=pd.to_datetime('2017-10-31', utc=True),
+            base_currency='usd',
+            start=pd.to_datetime('2017-10-1', utc=True),
+            end=pd.to_datetime('2017-11-13', utc=True),
         )
 
     elif MODE == 'live':
@@ -275,9 +275,9 @@ if __name__ == '__main__':
             initialize=initialize,
             handle_data=handle_data,
             analyze=analyze,
-            exchange_name='poloniex',
+            exchange_name='bitfinex',
             live=True,
             algo_namespace=algo_namespace,
-            base_currency='usdt',
+            base_currency='usd',
             live_graph=True
         )
