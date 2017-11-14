@@ -39,4 +39,8 @@ run_algorithm(
     exchange_name='bittrex',
     algo_namespace='issue_57',
     base_currency='btc'
+<<<<<<< HEAD
 )
+=======
+)
+>>>>>>> develop

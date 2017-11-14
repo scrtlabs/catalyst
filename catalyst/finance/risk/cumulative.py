@@ -45,8 +45,6 @@ log = logbook.Logger('Risk Cumulative', level=LOG_LEVEL)
 choose_treasury = functools.partial(choose_treasury, lambda *args: '10year',
                                     compound=False)
 
-warnings.filterwarnings('error')
-
 
 class RiskMetricsCumulative(object):
     """
@@ -146,6 +144,8 @@ class RiskMetricsCumulative(object):
         self.num_trading_days = 0
 
     def update(self, dt, algorithm_returns, benchmark_returns, leverage):
+        warnings.filterwarnings('error')
+
         # Keep track of latest dt for use in to_dict and other methods
         # that report current state.
         self.latest_dt = dt
@@ -291,6 +291,8 @@ algorithm_returns ({algo_count}) in range {start} : {end} on {dt}"
         self.max_drawdowns[dt_loc] = self.max_drawdown
         self.max_leverage = self.calculate_max_leverage()
         self.max_leverages[dt_loc] = self.max_leverage
+
+        warnings.resetwarnings()
 
     def to_dict(self):
         """
