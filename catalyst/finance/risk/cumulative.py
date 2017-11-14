@@ -22,7 +22,7 @@ from pandas.tseries.tools import normalize_date
 
 from six import iteritems
 
-from . risk import (
+from .risk import (
     check_entry,
     choose_treasury
 )
@@ -37,14 +37,15 @@ from empyrical import (
     sharpe_ratio,
     sortino_ratio,
 )
-
+import warnings
 from catalyst.constants import LOG_LEVEL
 
 log = logbook.Logger('Risk Cumulative', level=LOG_LEVEL)
 
-
 choose_treasury = functools.partial(choose_treasury, lambda *args: '10year',
                                     compound=False)
+
+warnings.filterwarnings('error')
 
 
 class RiskMetricsCumulative(object):
@@ -191,9 +192,12 @@ class RiskMetricsCumulative(object):
             if len(self.benchmark_returns) == 1:
                 self.benchmark_returns = np.append(0.0, self.benchmark_returns)
 
-        self.benchmark_cumulative_returns[dt_loc] = cum_returns(
-            self.benchmark_returns
-        )[-1]
+        try:
+            self.benchmark_cumulative_returns[dt_loc] = cum_returns(
+                self.benchmark_returns
+            )[-1]
+        except Exception as e:
+            log.debug('cumulative returns error: {}'.format(e))
 
         benchmark_cumulative_returns_to_date = \
             self.benchmark_cumulative_returns[:dt_loc + 1]
@@ -268,10 +272,15 @@ algorithm_returns ({algo_count}) in range {start} : {end} on {dt}"
         self.downside_risk[dt_loc] = downside_risk(
             self.algorithm_returns
         )
-        self.sortino[dt_loc] = sortino_ratio(
-            self.algorithm_returns,
-            _downside_risk=self.downside_risk[dt_loc]
-        )
+
+        try:
+            self.sortino[dt_loc] = sortino_ratio(
+                self.algorithm_returns,
+                _downside_risk=self.downside_risk[dt_loc]
+            )
+        except Exception as e:
+            log.debug('sortino ratio error: {}'.format(e))
+
         self.information[dt_loc] = information_ratio(
             self.algorithm_returns,
             self.benchmark_returns,
@@ -294,18 +303,18 @@ algorithm_returns ({algo_count}) in range {start} : {end} on {dt}"
         rval = {
             'trading_days': self.num_trading_days,
             'benchmark_volatility':
-            self.benchmark_volatility[dt_loc],
+                self.benchmark_volatility[dt_loc],
             'algo_volatility':
-            self.algorithm_volatility[dt_loc],
+                self.algorithm_volatility[dt_loc],
             'treasury_period_return': self.treasury_period_return,
             # Though the two following keys say period return,
             # they would be more accurately called the cumulative return.
             # However, the keys need to stay the same, for now, for backwards
             # compatibility with existing consumers.
             'algorithm_period_return':
-            self.algorithm_cumulative_returns[dt_loc],
+                self.algorithm_cumulative_returns[dt_loc],
             'benchmark_period_return':
-            self.benchmark_cumulative_returns[dt_loc],
+                self.benchmark_cumulative_returns[dt_loc],
             'beta': self.beta[dt_loc],
             'alpha': self.alpha[dt_loc],
             'sharpe': self.sharpe[dt_loc],
