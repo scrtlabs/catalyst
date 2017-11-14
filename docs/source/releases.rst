@@ -2,6 +2,15 @@
 Release Notes
 =============
 
+Version 0.3.8
+^^^^^^^^^^^^^
+**Release Date**: 2017-11-14
+
+Bug Fixes
+~~~~~~~~~
+
+- Fixed a warning filter issue introduced with the latest release
+
 Version 0.3.7
 ^^^^^^^^^^^^^
 **Release Date**: 2017-11-14
