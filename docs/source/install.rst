@@ -136,14 +136,17 @@ about matplotlib backends, please refer to the
 Windows
 ~~~~~~~
 
-In Windows, you will need the `Microsoft Visual C++ Compiler for Python 2.7 
+In Windows, you will first need to install the `Microsoft Visual C++ Compiler 
+for Python 2.7 
 <https://www.microsoft.com/en-us/download/details.aspx?id=44266>`_. This 
 package contains the compiler and the set of system headers necessary for 
 producing binary wheels for Python 2.7 packages. If it's not already in your 
 system, download it and install it before proceeding to the next step.
 
-For windows, the easiest and best supported way to install Catalyst is to use
-:ref:`Conda <conda>`.
+Once you have the above compiler installed, the easiest and best supported way 
+to install Catalyst in Windows is to use :ref:`Conda <conda>`. If you didn't 
+any problems installing the compiler, jump to the :ref:`Conda <conda>` section, 
+otherwise keep on reading to troubleshoot the C++ compiler installtion.
 
 Some problems we have encountered installing the **Visual C++ Compiler** 
 mentioned above are as follows:
@@ -158,6 +161,8 @@ mentioned above are as follows:
     ``Registry Editor``
   - Navigate to the following folder:
     ``HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Installer``
+  - If the last folder does not exist, create it by right-clicking on the 
+    parent folder and choosing -> ``New`` -> ``Key`` and typing ``Installer``
   - If there is an entry for ``DisableMSI``, set the Value data to 0.
   - If there is no such entry, click on the ``Edit`` menu -> ``New`` -> 
     ``DWORD (32-bit) Value`` and enter ``DisableMSI`` as the Name (and by 
@@ -302,9 +307,9 @@ understands the complex binary dependencies of packages like ``numpy`` and
 dependencies without requiring the use of a second tool to acquire Catalyst's 
 non-Python dependencies.
 
-  For Windows, you will need the *Microsoft Visual C++ Compiler for Python 
-  2.7*. Follow the instructions on the :ref:`Windows` section and come back 
-  here.
+  For Windows, you will first need to install the *Microsoft Visual C++ 
+  Compiler for Python 2.7*. Follow the instructions on the :ref:`Windows` 
+  section and come back here.
 
 For instructions on how to install ``conda``, see the `Conda Installation
 Documentation <http://conda.pydata.org/docs/download.html>`_. Alternatively, 
@@ -319,10 +324,23 @@ main packages needed. To install MiniConda, you can follow these steps:
 3. Ensure the correct installation by running ``conda list`` in a Terminal 
    window, which should print the list of packages installed with Conda.
 
+  For Windows, if you accepted the default installation options, you didn't 
+  check an option to add Conda to the PATH, so trying to run ``conda`` from
+  a regular ``Command Prompt`` will result in the following error: ``'conda' 
+  is no recognized as an internal or external command, operatble program or 
+  batch file``. That's to be expected. You will nee to launch an ``Anaconda 
+  Prompt`` that was added at installation time to your list of programs 
+  available from the Start menu. 
+
 Once either Conda or MiniConda has been set up you can install Catalyst:
 
 1. Download the file `python2.7-environment.yml 
    <https://github.com/enigmampc/catalyst/blob/master/etc/python2.7-environment.yml>`_.
+
+     To download, simply click on the 'Raw' button and save the file locally to 
+     a folder you can remember. Make sure that the file gets saved with the ``.yml`` 
+     extension, and nothing like a ``.txt`` file or anything else.
+
 2. Open a Terminal window and enter [``cd/dir``] into the directory where you 
    saved the above ``python2.7-environment.yml`` file.
 3. Install using this file. This step can take about 5-10 minutes to install.
@@ -346,6 +364,14 @@ Once either Conda or MiniConda has been set up you can install Catalyst:
 
       activate catalyst
 
+5. Verify that Catalyst is install correctly:
+
+   .. code-block:: bash
+
+     catalyst --version
+
+   which should display the current version.
+
 Congratulations! You now have Catalyst installed.
 
 Troubleshooting ``conda`` Install
@@ -355,13 +381,21 @@ If the command  ``conda env create -f python2.7-environment.yml`` in step 3
 above failed for any reason, you can try setting up the environment manually 
 with the following steps:
 
-1. Create the environment:
+1. If the above installation failed, and you have a partially set up catalyst
+   environment, remove it first. If you are starting from scratch, proceed to 
+   step #2:
+
+   .. code-block:: bash
+
+      conda env remove --name catalyst
+
+2. Create the environment:
 
    .. code-block:: bash
 
       conda create --name catalyst python=2.7 scipy zlib
 
-2. Activate the environment:
+3. Activate the environment:
 
    **Linux or OSX:**
 
@@ -375,11 +409,21 @@ with the following steps:
 
       activate catalyst
 
-3. Install the Catalyst inside the environment:
+4. Install the Catalyst inside the environment:
 
    .. code-block:: bash
 
       pip install enigma-catalyst matplotlib
+
+5. Verify that Catalyst is installed correctly:
+
+   .. code-block:: bash
+
+     catalyst --version
+
+   which should display the current version.
+
+Congratulations! You now have Catalyst properly installed.
 
 Getting Help
 ------------
