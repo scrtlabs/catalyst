@@ -194,8 +194,7 @@ def extract_transactions(perf):
     all_trans = [t for sublist in trans_list for t in sublist]
     all_trans.sort(key=lambda t: t['dt'])
 
-    # transactions = perf.loc[[t['dt'] for t in all_trans], :]
-
     transactions = pd.DataFrame(all_trans)
-    transactions.set_index('dt', inplace=True, drop=True)
+    if not transactions.empty:
+        transactions.set_index('dt', inplace=True, drop=True)
     return transactions

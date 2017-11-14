@@ -10,13 +10,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
 import pickle
 import signal
 import sys
 from collections import deque
 from datetime import timedelta
-from itertools import chain
 from os import listdir
 from os.path import isfile, join
 from time import sleep
@@ -24,7 +22,6 @@ from time import sleep
 import logbook
 import pandas as pd
 from catalyst.assets._assets import TradingPair
-from six import itervalues
 
 import catalyst.protocol as zp
 from catalyst.algorithm import TradingAlgorithm
@@ -38,8 +35,8 @@ from catalyst.exchange.exchange_errors import (
     OrphanOrderError)
 from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
     ExchangeLimitOrder, ExchangeStopOrder
-from catalyst.exchange.exchange_utils import get_exchange_minute_writer_root, \
-    save_algo_object, get_algo_object, get_algo_folder, get_algo_df, \
+from catalyst.exchange.exchange_utils import save_algo_object, get_algo_object, \
+    get_algo_folder, get_algo_df, \
     save_algo_df
 from catalyst.exchange.live_graph_clock import LiveGraphClock
 from catalyst.exchange.simple_clock import SimpleClock

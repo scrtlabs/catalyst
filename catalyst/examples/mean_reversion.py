@@ -70,7 +70,7 @@ def handle_data(context, data):
     # volume arrays.
 
     # In this example, we are comp
-    rsi = talib.RSI(prices.values, timeperiod=4)
+    rsi = talib.RSI(prices.values, timeperiod=14)
     sma200 = talib.SMA(prices.values, timeperiod=200)
 
     # We need a variable for the current price of the security to compare to
@@ -78,11 +78,6 @@ def handle_data(context, data):
     # returns a DataFrame with
     current = data.current(context.eth_btc, fields=['close', 'volume'])
     price = current['close']
-    log.info(
-        '{}: price: {}, rsi: {}, sma: {}'.format(
-            data.current_dt, price, rsi[-1], sma200[-1]
-        )
-    )
 
     # If base_price is not set, we use the current value. This is the
     # price at the first bar which we reference to calculate price_change.
@@ -107,14 +102,12 @@ def handle_data(context, data):
     # We are trying to avoid over-trading by limiting our trades to
     # one per day.
     if context.traded_today:
-        log.info('skipping because we\'ve already trader today')
         return
 
     # Since we are using limit orders, some orders may not execute immediately
     # we wait until all orders are executed before considering more trades.
     orders = get_open_orders(context.eth_btc)
     if len(orders) > 0:
-        log.info('skipping until all open orders execute')
         return
 
     # Another powerful built-in feature of the Catalyst backtester is the
@@ -124,14 +117,22 @@ def handle_data(context, data):
     pos_amount = context.portfolio.positions[context.eth_btc].amount
 
     # Determining the entry and exit signals based on RSI and SMA
-    if rsi[-1] <= 30 and data.can_trade(context.eth_btc) \
-            and pos_amount == 0:
-        # and price > sma200[-1] and pos_amount == 0:
+    if (rsi[-1] <= 30 and price > sma200[-1]) \
+            and data.can_trade(context.eth_btc) and pos_amount == 0:
+        log.info(
+            '{}: buying - price: {}, rsi: {}, sma: {}'.format(
+                data.current_dt, price, rsi[-1], sma200[-1]
+            )
+        )
         order_target_percent(context.eth_btc, 1)
         context.traded_today = True
 
-    elif (rsi[-1] >= 90 or crossunder(prices, sma200)) \
-            and data.can_trade(context.eth_btc) and pos_amount > 0:
+    elif rsi[-1] >= 80 and data.can_trade(context.eth_btc) and pos_amount > 0:
+        log.info(
+            '{}: selling - price: {}, rsi: {}, sma: {}'.format(
+                data.current_dt, price, rsi[-1], sma200[-1]
+            )
+        )
         order_target_percent(context.eth_btc, 0)
         context.traded_today = True
 
@@ -157,24 +158,25 @@ def analyze(context=None, perf=None):
     ))
 
     transaction_df = extract_transactions(perf)
-    buy_df = transaction_df[transaction_df['amount'] > 0]
-    sell_df = transaction_df[transaction_df['amount'] < 0]
-    ax2.scatter(
-        buy_df.index,
-        perf.loc[buy_df.index, 'price'],
-        marker='^',
-        s=100,
-        c='green',
-        label=''
-    )
-    ax2.scatter(
-        sell_df.index,
-        perf.loc[sell_df.index, 'price'],
-        marker='v',
-        s=100,
-        c='red',
-        label=''
-    )
+    if not transaction_df.empty:
+        buy_df = transaction_df[transaction_df['amount'] > 0]
+        sell_df = transaction_df[transaction_df['amount'] < 0]
+        ax2.scatter(
+            buy_df.index.to_pydatetime(),
+            perf.loc[buy_df.index, 'price'],
+            marker='^',
+            s=100,
+            c='green',
+            label=''
+        )
+        ax2.scatter(
+            sell_df.index.to_pydatetime(),
+            perf.loc[sell_df.index, 'price'],
+            marker='v',
+            s=100,
+            c='red',
+            label=''
+        )
 
     ax4 = plt.subplot(613, sharex=ax1)
     perf.loc[:, 'cash'].plot(
@@ -192,22 +194,24 @@ def analyze(context=None, perf=None):
     perf.loc[:, 'rsi'].plot(ax=ax6, label='RSI')
     ax6.axhline(70, color='darkgoldenrod')
     ax6.axhline(30, color='darkgoldenrod')
-    ax6.scatter(
-        buy_df.index,
-        perf.loc[buy_df.index, 'rsi'],
-        marker='^',
-        s=100,
-        c='green',
-        label=''
-    )
-    ax6.scatter(
-        sell_df.index,
-        perf.loc[sell_df.index, 'rsi'],
-        marker='v',
-        s=100,
-        c='red',
-        label=''
-    )
+
+    if not transaction_df.empty:
+        ax6.scatter(
+            buy_df.index.to_pydatetime(),
+            perf.loc[buy_df.index, 'rsi'],
+            marker='^',
+            s=100,
+            c='green',
+            label=''
+        )
+        ax6.scatter(
+            sell_df.index.to_pydatetime(),
+            perf.loc[sell_df.index, 'rsi'],
+            marker='v',
+            s=100,
+            c='red',
+            label=''
+        )
     plt.legend(loc=3)
 
     # Show the plot.
@@ -231,8 +235,8 @@ if __name__ == '__main__':
             algo_namespace=algo_namespace,
             base_currency='usdt',
             start=pd.to_datetime('2017-7-1', utc=True),
-            end=pd.to_datetime('2017-9-30', utc=True),
-            # end=pd.to_datetime('2017-7-7', utc=True),
+            end=pd.to_datetime('2017-10-31', utc=True),
+            # end=pd.to_datetime('2017-7-5', utc=True),
         )
 
     elif MODE == 'live':
