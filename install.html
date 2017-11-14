@@ -137,32 +137,37 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="releases.html">Release Notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-6">Version 0.3.6</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-7">Version 0.3.7</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#bug-fixes">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#build">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-5">Version 0.3.5</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-6">Version 0.3.6</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id1">Bug Fixes</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-4">Version 0.3.4</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-5">Version 0.3.5</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id2">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#build">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-4">Version 0.3.4</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id3">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id4">Build</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#documentation">Documentation</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-3">Version 0.3.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id4">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id5">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-2">Version 0.3.2</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id6">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id7">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-1">Version 0.3.1</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-2">Version 0.3.2</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id8">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id9">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-1">Version 0.3.1</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id10">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3">Version 0.3</a></li>
@@ -310,12 +315,15 @@ about matplotlib backends, please refer to the
 </div>
 <div class="section" id="windows">
 <span id="id1"></span><h3>Windows<a class="headerlink" href="#windows" title="Permalink to this headline">¶</a></h3>
-<p>In Windows, you will need the <a class="reference external" href="https://www.microsoft.com/en-us/download/details.aspx?id=44266">Microsoft Visual C++ Compiler for Python 2.7</a>. This
+<p>In Windows, you will first need to install the <a class="reference external" href="https://www.microsoft.com/en-us/download/details.aspx?id=44266">Microsoft Visual C++ Compiler
+for Python 2.7</a>. This
 package contains the compiler and the set of system headers necessary for
 producing binary wheels for Python 2.7 packages. If it&#8217;s not already in your
 system, download it and install it before proceeding to the next step.</p>
-<p>For windows, the easiest and best supported way to install Catalyst is to use
-<a class="reference internal" href="#conda"><span>Conda</span></a>.</p>
+<p>Once you have the above compiler installed, the easiest and best supported way
+to install Catalyst in Windows is to use <a class="reference internal" href="#conda"><span>Conda</span></a>. If you didn&#8217;t
+any problems installing the compiler, jump to the <a class="reference internal" href="#conda"><span>Conda</span></a> section,
+otherwise keep on reading to troubleshoot the C++ compiler installtion.</p>
 <p>Some problems we have encountered installing the <strong>Visual C++ Compiler</strong>
 mentioned above are as follows:</p>
 <ul>
@@ -328,6 +336,8 @@ You&#8217;ll have to change the Registry to circumvent this:</p>
 <code class="docutils literal"><span class="pre">Registry</span> <span class="pre">Editor</span></code></li>
 <li>Navigate to the following folder:
 <code class="docutils literal"><span class="pre">HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Installer</span></code></li>
+<li>If the last folder does not exist, create it by right-clicking on the
+parent folder and choosing -&gt; <code class="docutils literal"><span class="pre">New</span></code> -&gt; <code class="docutils literal"><span class="pre">Key</span></code> and typing <code class="docutils literal"><span class="pre">Installer</span></code></li>
 <li>If there is an entry for <code class="docutils literal"><span class="pre">DisableMSI</span></code>, set the Value data to 0.</li>
 <li>If there is no such entry, click on the <code class="docutils literal"><span class="pre">Edit</span></code> menu -&gt; <code class="docutils literal"><span class="pre">New</span></code> -&gt;
 <code class="docutils literal"><span class="pre">DWORD</span> <span class="pre">(32-bit)</span> <span class="pre">Value</span></code> and enter <code class="docutils literal"><span class="pre">DisableMSI</span></code> as the Name (and by
@@ -460,9 +470,9 @@ understands the complex binary dependencies of packages like <code class="docuti
 dependencies without requiring the use of a second tool to acquire Catalyst&#8217;s
 non-Python dependencies.</p>
 <blockquote>
-<div>For Windows, you will need the <em>Microsoft Visual C++ Compiler for Python
-2.7</em>. Follow the instructions on the <a class="reference internal" href="#windows"><span>Windows</span></a> section and come back
-here.</div></blockquote>
+<div>For Windows, you will first need to install the <em>Microsoft Visual C++
+Compiler for Python 2.7</em>. Follow the instructions on the <a class="reference internal" href="#windows"><span>Windows</span></a>
+section and come back here.</div></blockquote>
 <p>For instructions on how to install <code class="docutils literal"><span class="pre">conda</span></code>, see the <a class="reference external" href="http://conda.pydata.org/docs/download.html">Conda Installation
 Documentation</a>. Alternatively,
 you can install MiniConda, which is a smaller footprint (fewer packages and
@@ -475,9 +485,22 @@ for your Operating System.</li>
 <li>Ensure the correct installation by running <code class="docutils literal"><span class="pre">conda</span> <span class="pre">list</span></code> in a Terminal
 window, which should print the list of packages installed with Conda.</li>
 </ol>
+<blockquote>
+<div>For Windows, if you accepted the default installation options, you didn&#8217;t
+check an option to add Conda to the PATH, so trying to run <code class="docutils literal"><span class="pre">conda</span></code> from
+a regular <code class="docutils literal"><span class="pre">Command</span> <span class="pre">Prompt</span></code> will result in the following error: <code class="docutils literal"><span class="pre">'conda'</span>
+<span class="pre">is</span> <span class="pre">no</span> <span class="pre">recognized</span> <span class="pre">as</span> <span class="pre">an</span> <span class="pre">internal</span> <span class="pre">or</span> <span class="pre">external</span> <span class="pre">command,</span> <span class="pre">operatble</span> <span class="pre">program</span> <span class="pre">or</span>
+<span class="pre">batch</span> <span class="pre">file</span></code>. That&#8217;s to be expected. You will nee to launch an <code class="docutils literal"><span class="pre">Anaconda</span>
+<span class="pre">Prompt</span></code> that was added at installation time to your list of programs
+available from the Start menu.</div></blockquote>
 <p>Once either Conda or MiniConda has been set up you can install Catalyst:</p>
 <ol class="arabic">
 <li><p class="first">Download the file <a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/etc/python2.7-environment.yml">python2.7-environment.yml</a>.</p>
+<blockquote>
+<div><p>To download, simply click on the &#8216;Raw&#8217; button and save the file locally to
+a folder you can remember. Make sure that the file gets saved with the <code class="docutils literal"><span class="pre">.yml</span></code>
+extension, and nothing like a <code class="docutils literal"><span class="pre">.txt</span></code> file or anything else.</p>
+</div></blockquote>
 </li>
 <li><p class="first">Open a Terminal window and enter [<code class="docutils literal"><span class="pre">cd/dir</span></code>] into the directory where you
 saved the above <code class="docutils literal"><span class="pre">python2.7-environment.yml</span></code> file.</p>
@@ -498,6 +521,12 @@ session to run Catalyst):</p>
 </pre></div>
 </div>
 </li>
+<li><p class="first">Verify that Catalyst is install correctly:</p>
+<div class="highlight-bash"><div class="highlight"><pre>catalyst --version
+</pre></div>
+</div>
+<p>which should display the current version.</p>
+</li>
 </ol>
 <p>Congratulations! You now have Catalyst installed.</p>
 <div class="section" id="troubleshooting-conda-install">
@@ -506,6 +535,13 @@ session to run Catalyst):</p>
 above failed for any reason, you can try setting up the environment manually
 with the following steps:</p>
 <ol class="arabic">
+<li><p class="first">If the above installation failed, and you have a partially set up catalyst
+environment, remove it first. If you are starting from scratch, proceed to
+step #2:</p>
+<div class="highlight-bash"><div class="highlight"><pre>conda env remove --name catalyst
+</pre></div>
+</div>
+</li>
 <li><p class="first">Create the environment:</p>
 <div class="highlight-bash"><div class="highlight"><pre>conda create --name catalyst <span class="nv">python</span><span class="o">=</span>2.7 scipy zlib
 </pre></div>
@@ -526,7 +562,14 @@ with the following steps:</p>
 </pre></div>
 </div>
 </li>
+<li><p class="first">Verify that Catalyst is installed correctly:</p>
+<div class="highlight-bash"><div class="highlight"><pre>catalyst --version
+</pre></div>
+</div>
+<p>which should display the current version.</p>
+</li>
 </ol>
+<p>Congratulations! You now have Catalyst properly installed.</p>
 </div>
 </div>
 <div class="section" id="getting-help">

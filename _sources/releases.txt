@@ -2,6 +2,25 @@
 Release Notes
 =============
 
+Version 0.3.7
+^^^^^^^^^^^^^
+**Release Date**: 2017-11-14
+
+Bug Fixes
+~~~~~~~~~
+
+- Fixed an SSL cert issue (:issue:`64`)
+- Fixed cumulative stats warnings (:issue:`63`)
+- Disabled auto-ingestion because of unresolved caching issues (:issue:`47`)
+- Standardized live-trading stats (:issue:`61`)
+
+Build
+~~~~~
+
+- Added a mean-reversion sample algo
+- Added minutely stats in the analyze() function (:issue:`62`)
+- Added specificity to some error messages
+
 Version 0.3.6
 ^^^^^^^^^^^^^
 **Release Date**: 2017-11-4
