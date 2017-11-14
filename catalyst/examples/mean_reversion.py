@@ -1,7 +1,7 @@
 # For this example, we're going to write a simple momentum script.  When the 
 # stock goes up quickly, we're going to buy; when it goes down quickly, we're
 # going to sell.  Hopefully we'll ride the waves.
-from collections import OrderedDict
+from datetime import timedelta
 
 import pandas as pd
 import talib
@@ -13,13 +13,11 @@ from talib.common import MA_Type
 from catalyst import run_algorithm
 from catalyst.api import symbol, record, order_target_percent, \
     get_open_orders
-
 # We give a name to the algorithm which Catalyst will use to persist its state.
 # In this example, Catalyst will create the `.catalyst/data/live_algos`
 # directory. If we stop and start the algorithm, Catalyst will resume its
 # state using the files included in the folder.
-from catalyst.exchange.stats_utils import crossunder, get_pretty_stats, \
-    extract_transactions, crossover, trend_direction
+from catalyst.exchange.stats_utils import extract_transactions, trend_direction
 
 algo_namespace = 'momentum'
 log = Logger(algo_namespace)
@@ -32,11 +30,9 @@ def initialize(context):
     # parameters or values you're going to use.
 
     # In our example, we're looking at Ether in USD Tether.
-    context.eth_btc = symbol('eth_usdt')
-    context.max_amount = 0.01
+    context.eth_btc = symbol('etc_usdt')
     context.base_price = None
     context.current_day = None
-    context.yesterdy = None
     context.trigger = None
 
 
@@ -129,25 +125,46 @@ def handle_data(context, data):
     # how long or short our position is at this minute.   
     pos_amount = context.portfolio.positions[context.eth_btc].amount
 
-    # Determining the entry and exit signals based on RSI and SMA
-    if rsi[-1] <= 30 and trend_direction(rsi) == 'up' and pos_amount == 0:
-        log.info(
-            '{}: buying - price: {}, rsi: {}, bband: {}'.format(
-                data.current_dt, price, rsi[-1], lower[-1]
+    # In this example, we're using a trigger instead of buying directly after
+    # a signal. Since this is mean reversion, our signals go against the
+    # momentum. Using a trigger allow us to spot the opportunity but trade
+    # only when a trade reversal begins.
+    if context.trigger is not None:
+        # The tread_direction() method determines the trend based on the last
+        # two bars of the series.
+        direction = trend_direction(rsi)
+        if context.trigger[1] == 'buy' and direction == 'up':
+            log.info(
+                '{}: buying - price: {}, rsi: {}, bband: {}'.format(
+                    data.current_dt, price, rsi[-1], lower[-1]
+                )
             )
-        )
-        order_target_percent(context.eth_btc, 1)
-        context.traded_today = True
+            order_target_percent(context.eth_btc, 1)
+            context.traded_today = True
+            context.trigger = None
 
-    elif rsi[-1] >= 80 and trend_direction(rsi) == 'down' and pos_amount > 0 \
-            and price > upper[-1]:
-        log.info(
-            '{}: selling - price: {}, rsi: {}, bband: {}'.format(
-                data.current_dt, price, rsi[-1], upper[-1]
+        elif context.trigger[1] == 'sell' and direction == 'down':
+            log.info(
+                '{}: selling - price: {}, rsi: {}, bband: {}'.format(
+                    data.current_dt, price, rsi[-1], upper[-1]
+                )
             )
-        )
-        order_target_percent(context.eth_btc, 0)
-        context.traded_today = True
+            order_target_percent(context.eth_btc, 0)
+            context.traded_today = True
+            context.trigger = None
+
+        # If we found a signal but no trade reversal within two hours, we
+        # reset the trigger.
+        elif context.trigger[0] + timedelta(hours=2) < data.current_dt:
+            context.trigger = None
+
+    else:
+        # Determining the entry and exit signals based on RSI and SMA
+        if rsi[-1] <= 30 and pos_amount == 0:
+            context.trigger = (data.current_dt, 'buy')
+
+        elif rsi[-1] >= 80 and pos_amount > 0:
+            context.trigger = (data.current_dt, 'sell')
 
 
 def analyze(context=None, perf=None):
@@ -249,8 +266,8 @@ if __name__ == '__main__':
             algo_namespace=algo_namespace,
             base_currency='usdt',
             start=pd.to_datetime('2017-7-1', utc=True),
-            end=pd.to_datetime('2017-9-30', utc=True),
-            # end=pd.to_datetime('2017-7-31', utc=True),
+            # end=pd.to_datetime('2017-9-30', utc=True),
+            end=pd.to_datetime('2017-10-31', utc=True),
         )
 
     elif MODE == 'live':
