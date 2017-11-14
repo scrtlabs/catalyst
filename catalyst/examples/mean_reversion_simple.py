@@ -221,6 +221,7 @@ if __name__ == '__main__':
     MODE = 'backtest'
 
     if MODE == 'backtest':
+        # catalyst run -f catalyst/examples/mean_reversion_simple.py -x poloniex -s 2017-7-1 -e 2017-7-31 -c usdt -n mean-reversion --data-frequency minute --capital-base 10000
         run_algorithm(
             capital_base=10000,
             data_frequency='minute',
