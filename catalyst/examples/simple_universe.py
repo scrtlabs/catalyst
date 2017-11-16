@@ -26,27 +26,29 @@ from catalyst.api import (
 
 def initialize(context):
     context.i = -1  # counts the minutes
-    context.exchange = 'poloniex'  # must match the exchange specified in run_algorithm
-    context.base_currency = 'btc'  # must match the base currency specified in run_algorithm
+    context.exchange = context.exchanges.values()[0].name.lower()  # exchange name
+    context.base_currency = context.exchanges.values()[0].base_currency.lower()  # market base currency
 
 
 def handle_data(context, data):
-    lookback = 60 * 24 * 7  # (minutes, hours, days) of how far to lookback in the data history
     context.i += 1
+    lookback_days = 7  # 7 days
 
     # current date formatted into a string
-    today = context.blotter.current_dt
+    today = data.current_dt
     date, time = today.strftime('%Y-%m-%d %H:%M:%S').split(' ')
-    lookback_date = today - timedelta(days=(lookback / (60 * 24)))  # subtract the amount of days specified in lookback
+    lookback_date = today - timedelta(days=lookback_days)  # subtract the amount of days specified in lookback
     lookback_date = lookback_date.strftime('%Y-%m-%d %H:%M:%S').split(' ')[0]  # get only the date as a string
 
     # update universe everyday
-    new_day = 60 * 24
+    new_day = 60 * 24  # assuming data_frequency='minute'
     if not context.i % new_day:
         context.universe = universe(context, lookback_date, date)
 
     # get data every 30 minutes
     minutes = 30
+    one_day_in_minutes = 1440  # 1440 assumes data_frequency='minute'
+    lookback = one_day_in_minutes / minutes * lookback_days  # get N lookback_days of history data
     if not context.i % minutes and context.universe:
         # we iterate for every pair in the current universe
         for coin in context.coins:
@@ -54,15 +56,15 @@ def handle_data(context, data):
 
             # 30 minute interval ohlcv data (the standard data required for candlestick or indicators/signals)
             # 30T means 30 minutes re-sampling of one minute data. change to your desire time interval.
-            open = fill(data.history(coin, 'open', bar_count=lookback, frequency='1m')).resample('30T').first()
-            high = fill(data.history(coin, 'high', bar_count=lookback, frequency='1m')).resample('30T').max()
-            low = fill(data.history(coin, 'low', bar_count=lookback, frequency='1m')).resample('30T').min()
-            close = fill(data.history(coin, 'price', bar_count=lookback, frequency='1m')).resample('30T').last()
-            volume = fill(data.history(coin, 'volume', bar_count=lookback, frequency='1m')).resample('30T').sum()
+            opened = fill(data.history(coin, 'open', bar_count=lookback, frequency='30T')).values
+            high = fill(data.history(coin, 'high', bar_count=lookback, frequency='30T')).values
+            low = fill(data.history(coin, 'low', bar_count=lookback, frequency='30T')).values
+            close = fill(data.history(coin, 'price', bar_count=lookback, frequency='30T')).values
+            volume = fill(data.history(coin, 'volume', bar_count=lookback, frequency='30T')).values
 
             # close[-1] is the equivalent to current price
             # displays the minute price for each pair every 30 minutes
-            print(today, pair, open[-1], high[-1], low[-1], close[-1], volume[-1])
+            print(today, pair, opened[-1], high[-1], low[-1], close[-1], volume[-1])
 
             # ----------------------------------------------------------------------------------------------------------
             # -------------------------------------- Insert Your Strategy Here -----------------------------------------
@@ -82,6 +84,7 @@ def universe(context, lookback_date, current_date):
                                                                        axis=1)
     universe_df['market_currency'] = universe_df.apply(lambda row: row.symbol.split('_')[0],
                                                                          axis=1)
+
     # Filter all the exchange pairs to only the ones for a give base currency
     universe_df = universe_df[universe_df['base_currency'] == context.base_currency]
 
@@ -89,6 +92,8 @@ def universe(context, lookback_date, current_date):
     universe_df = universe_df[universe_df.start_date < lookback_date]
     universe_df = universe_df[universe_df.end_daily >= current_date]
     context.coins = symbols(*universe_df.symbol)  # convert all the pairs to symbols
+
+    # print(universe_df.symbol.tolist())
     return universe_df.symbol.tolist()
 
 
@@ -104,10 +109,10 @@ def fill(series):
 
 if __name__ == '__main__':
     start_date = pd.to_datetime('2017-01-01', utc=True)
-    end_date = pd.to_datetime('2017-10-15', utc=True)
+    end_date = pd.to_datetime('2017-11-13', utc=True)
 
     performance = run_algorithm(start=start_date, end=end_date,
-                                capital_base=10000.0,
+                                capital_base=100.0,  # amount of base_currency, not always in dollars unless usd
                                 initialize=initialize,
                                 handle_data=handle_data,
                                 analyze=analyze,
