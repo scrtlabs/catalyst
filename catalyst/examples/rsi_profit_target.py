@@ -250,27 +250,27 @@ def analyze(context=None, results=None):
     pass
 
 
-run_algorithm(
-    initialize=initialize,
-    handle_data=handle_data,
-    analyze=analyze,
-    exchange_name='bittrex',
-    live=True,
-    algo_namespace=algo_namespace,
-    base_currency='btc',
-    live_graph=False
-)
-
-# Backtest
 # run_algorithm(
-#     capital_base=0.5,
-#     data_frequency='minute',
 #     initialize=initialize,
 #     handle_data=handle_data,
 #     analyze=analyze,
-#     exchange_name='poloniex',
+#     exchange_name='bittrex',
+#     live=True,
 #     algo_namespace=algo_namespace,
 #     base_currency='btc',
-#     start=pd.to_datetime('2017-9-1', utc=True),
-#     end=pd.to_datetime('2017-10-1', utc=True),
+#     live_graph=False
 # )
+
+# Backtest
+run_algorithm(
+    capital_base=0.5,
+    data_frequency='minute',
+    initialize=initialize,
+    handle_data=handle_data,
+    analyze=analyze,
+    exchange_name='poloniex',
+    algo_namespace=algo_namespace,
+    base_currency='btc',
+    start=pd.to_datetime('2017-9-1', utc=True),
+    end=pd.to_datetime('2017-10-1', utc=True),
+)

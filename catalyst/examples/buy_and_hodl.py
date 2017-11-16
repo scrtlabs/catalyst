@@ -14,7 +14,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import pandas as pd
 
+from catalyst import run_algorithm
 from catalyst.api import (
     order_target_value,
     symbol,
@@ -22,6 +24,7 @@ from catalyst.api import (
     cancel_order,
     get_open_orders,
 )
+
 
 def initialize(context):
     context.ASSET_NAME = 'BTC_USDT'
@@ -37,6 +40,7 @@ def initialize(context):
     context.asset = symbol(context.ASSET_NAME)
 
     context.i = 0
+
 
 def handle_data(context, data):
     context.i += 1
@@ -64,8 +68,8 @@ def handle_data(context, data):
         order_target_value(
             context.asset,
             target_hodl_value,
-            limit_price=price*1.1,
-            stop_price=price*0.9,
+            limit_price=price * 1.1,
+            stop_price=price * 0.9,
         )
 
     record(
@@ -75,6 +79,7 @@ def handle_data(context, data):
         starting_cash=context.portfolio.starting_cash,
         leverage=context.account.leverage,
     )
+
 
 def analyze(context=None, results=None):
     import matplotlib.pyplot as plt
@@ -135,3 +140,16 @@ def analyze(context=None, results=None):
     # Show the plot.
     plt.gcf().set_size_inches(18, 8)
     plt.show()
+
+
+run_algorithm(
+    capital_base=10000,
+    data_frequency='minute',
+    initialize=initialize,
+    handle_data=handle_data,
+    analyze=analyze,
+    exchange_name='poloniex',
+    base_currency='usd',
+    start=pd.to_datetime('2017-10-1', utc=True),
+    end=pd.to_datetime('2017-11-10', utc=True),
+)

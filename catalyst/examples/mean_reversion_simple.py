@@ -1,14 +1,12 @@
 # For this example, we're going to write a simple momentum script.  When the 
 # stock goes up quickly, we're going to buy; when it goes down quickly, we're
 # going to sell.  Hopefully we'll ride the waves.
-from datetime import timedelta
 
 import pandas as pd
 import talib
 # To run an algorithm in Catalyst, you need two functions: initialize and
 # handle_data.
 from logbook import Logger
-from talib.common import MA_Type
 
 from catalyst import run_algorithm
 from catalyst.api import symbol, record, order_target_percent, \
@@ -17,10 +15,10 @@ from catalyst.api import symbol, record, order_target_percent, \
 # In this example, Catalyst will create the `.catalyst/data/live_algos`
 # directory. If we stop and start the algorithm, Catalyst will resume its
 # state using the files included in the folder.
-from catalyst.exchange.stats_utils import extract_transactions, trend_direction
+from catalyst.exchange.stats_utils import extract_transactions
 
-algo_namespace = 'mean_reversion_simple'
-log = Logger(algo_namespace)
+NAMESPACE = 'mean_reversion_simple'
+log = Logger(NAMESPACE)
 
 
 def initialize(context):
@@ -30,7 +28,7 @@ def initialize(context):
     # parameters or values you're going to use.
 
     # In our example, we're looking at Ether in USD Tether.
-    context.eth_btc = symbol('neo_usd')
+    context.neo_usd = symbol('neo_usd')
     context.base_price = None
     context.current_day = None
 
@@ -50,14 +48,14 @@ def handle_data(context, data):
         context.current_day = today
 
     # We're computing the volume-weighted-average-price of the security
-    # defined above, in the context.eth_btc variable.  For this example, we're 
+    # defined above, in the context.neo_usd variable.  For this example, we're 
     # using three bars on the 15 min bars.
 
     # The frequency attribute determine the bar size. We use this convention
     # for the frequency alias:
     # http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
     prices = data.history(
-        context.eth_btc,
+        context.neo_usd,
         fields='close',
         bar_count=50,
         frequency='15T'
@@ -72,7 +70,7 @@ def handle_data(context, data):
     # We need a variable for the current price of the security to compare to
     # the average. Since we are requesting two fields, data.current()
     # returns a DataFrame with
-    current = data.current(context.eth_btc, fields=['close', 'volume'])
+    current = data.current(context.neo_usd, fields=['close', 'volume'])
     price = current['close']
 
     # If base_price is not set, we use the current value. This is the
@@ -101,19 +99,19 @@ def handle_data(context, data):
 
     # Since we are using limit orders, some orders may not execute immediately
     # we wait until all orders are executed before considering more trades.
-    orders = get_open_orders(context.eth_btc)
+    orders = get_open_orders(context.neo_usd)
     if len(orders) > 0:
         return
 
     # Exit if we cannot trade
-    if not data.can_trade(context.eth_btc):
+    if not data.can_trade(context.neo_usd):
         return
 
     # Another powerful built-in feature of the Catalyst backtester is the
     # portfolio object.  The portfolio object tracks your positions, cash,
     # cost basis of specific holdings, and more.  In this line, we calculate
     # how long or short our position is at this minute.   
-    pos_amount = context.portfolio.positions[context.eth_btc].amount
+    pos_amount = context.portfolio.positions[context.neo_usd].amount
 
     if rsi[-1] <= 30 and pos_amount == 0:
         log.info(
@@ -121,7 +119,7 @@ def handle_data(context, data):
                 data.current_dt, price, rsi[-1]
             )
         )
-        order_target_percent(context.eth_btc, 1)
+        order_target_percent(context.neo_usd, 1)
         context.traded_today = True
 
     elif rsi[-1] >= 80 and pos_amount > 0:
@@ -130,7 +128,7 @@ def handle_data(context, data):
                 data.current_dt, price, rsi[-1]
             )
         )
-        order_target_percent(context.eth_btc, 0)
+        order_target_percent(context.neo_usd, 0)
         context.traded_today = True
 
 
@@ -150,7 +148,7 @@ def analyze(context=None, perf=None):
     perf.loc[:, 'price'].plot(ax=ax2, label='Price')
 
     ax2.set_ylabel('{asset} ({base})'.format(
-        asset=context.eth_btc.symbol, base=base_currency
+        asset=context.neo_usd.symbol, base=base_currency
     ))
 
     transaction_df = extract_transactions(perf)
@@ -218,10 +216,10 @@ def analyze(context=None, perf=None):
 
 if __name__ == '__main__':
     # The execution mode: backtest or live
-    MODE = 'backtest'
+    MODE = 'live'
 
     if MODE == 'backtest':
-        # catalyst run -f catalyst/examples/mean_reversion_simple.py -x poloniex -s 2017-7-1 -e 2017-7-31 -c usdt -n mean-reversion --data-frequency minute --capital-base 10000
+        # catalyst run -f catalyst/examples/mean_reversion_simple.py -x poloniex -s 2017-10-1 -e 2017-11-10 -c usdt -n mean-reversion --data-frequency minute --capital-base 10000
         run_algorithm(
             capital_base=10000,
             data_frequency='minute',
@@ -229,7 +227,7 @@ if __name__ == '__main__':
             handle_data=handle_data,
             analyze=analyze,
             exchange_name='bitfinex',
-            algo_namespace=algo_namespace,
+            algo_namespace=NAMESPACE,
             base_currency='usd',
             start=pd.to_datetime('2017-10-1', utc=True),
             end=pd.to_datetime('2017-11-10', utc=True),
@@ -242,7 +240,7 @@ if __name__ == '__main__':
             analyze=analyze,
             exchange_name='bitfinex',
             live=True,
-            algo_namespace=algo_namespace,
+            algo_namespace=NAMESPACE,
             base_currency='usd',
             live_graph=True
         )

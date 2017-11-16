@@ -1,6 +1,6 @@
 """
 Requires Catalyst version 0.3.0 or above
-Tested on Catalyst version 0.3.2
+Tested on Catalyst version 0.3.3
 
 These example aims to provide and easy way for users to learn how to collect data from the different exchanges.
 You simply need to specify the exchange and the market that you want to focus on.
@@ -27,7 +27,7 @@ from catalyst.api import (
 def initialize(context):
     context.i = -1  # counts the minutes
     context.exchange = 'poloniex'  # must match the exchange specified in run_algorithm
-    context.base_currency = 'eth'  # must match the base currency specified in run_algorithm
+    context.base_currency = 'btc'  # must match the base currency specified in run_algorithm
 
 
 def handle_data(context, data):
@@ -56,21 +56,21 @@ def handle_data(context, data):
 
             # 30 minute interval ohlcv data (the standard data required for candlestick or indicators/signals)
             # 30T means 30 minutes re-sampling of one minute data. change to your desire time interval.
-            open = fill(data.history(coin, 'open', bar_count=lookback,
-                                     frequency='1m')).resample('30T').first()
+            opened = fill(data.history(coin, 'open', bar_count=lookback,
+                                       frequency='30T')).values
             high = fill(data.history(coin, 'high', bar_count=lookback,
-                                     frequency='1m')).resample('30T').max()
+                                     frequency='30T')).values
             low = fill(data.history(coin, 'low', bar_count=lookback,
-                                    frequency='1m')).resample('30T').min()
+                                    frequency='30T')).values
             close = fill(data.history(coin, 'price', bar_count=lookback,
-                                      frequency='1m')).resample('30T').last()
+                                      frequency='30T')).values
             volume = fill(data.history(coin, 'volume', bar_count=lookback,
-                                       frequency='1m')).resample('30T').sum()
+                                       frequency='30T')).values
 
             # close[-1] is the equivalent to current price
             # displays the minute price for each pair every 30 minutes
             print(
-            today, pair, open[-1], high[-1], low[-1], close[-1], volume[-1])
+            today, pair, opened[-1], high[-1], low[-1], close[-1], volume[-1])
 
             # ----------------------------------------------------------------------------------------------------------
             # -------------------------------------- Insert Your Strategy Here -----------------------------------------
@@ -82,7 +82,7 @@ def analyze(context=None, results=None):
 
 
 # Get the universe for a given exchange and a given base_currency market
-# Example: Poloniex BTC Market
+# Example: Poloniex btc Market
 def universe(context, lookback_date, current_date):
     json_symbols = get_exchange_symbols(
         context.exchange)  # get all the pairs for the exchange
@@ -103,7 +103,6 @@ def universe(context, lookback_date, current_date):
     universe_df = universe_df[universe_df.end_daily >= current_date]
     context.coins = symbols(
         *universe_df.symbol)  # convert all the pairs to symbols
-    print(universe_df.head(), len(universe_df))
     return universe_df.symbol.tolist()
 
 
@@ -119,8 +118,8 @@ def fill(series):
 
 
 if __name__ == '__main__':
-    start_date = pd.to_datetime('2017-01-01', utc=True)
-    end_date = pd.to_datetime('2017-10-15', utc=True)
+    start_date = pd.to_datetime('2017-01-08', utc=True)
+    end_date = pd.to_datetime('2017-11-13', utc=True)
 
     performance = run_algorithm(start=start_date, end=end_date,
                                 capital_base=10000.0,
@@ -129,7 +128,7 @@ if __name__ == '__main__':
                                 analyze=analyze,
                                 exchange_name='poloniex',
                                 data_frequency='minute',
-                                base_currency='eth',
+                                base_currency='btc',
                                 live=False,
                                 live_graph=False,
                                 algo_namespace='simple_universe')

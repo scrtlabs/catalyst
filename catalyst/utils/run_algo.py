@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import warnings
 from datetime import timedelta
@@ -8,6 +9,8 @@ from time import sleep
 import click
 import pandas as pd
 
+from catalyst.data.bundles import load
+from catalyst.data.data_portal import DataPortal
 from catalyst.exchange.bittrex.bittrex import Bittrex
 from catalyst.exchange.bitfinex.bitfinex import Bitfinex
 from catalyst.exchange.poloniex.poloniex import Poloniex
@@ -167,10 +170,12 @@ def _run(handle_data,
         # This corresponds to the json file containing api token info
         exchange_auth = get_exchange_auth(exchange_name)
 
-        if live and (exchange_auth['key'] == '' or exchange_auth['secret'] == ''):
+        if live and (
+                exchange_auth['key'] == '' or exchange_auth['secret'] == ''):
             raise ExchangeAuthEmpty(
-                    exchange=exchange_name.title(), 
-                    filename=os.path.join(get_exchange_folder(exchange_name, environ), 'auth.json') )
+                exchange=exchange_name.title(),
+                filename=os.path.join(
+                    get_exchange_folder(exchange_name, environ), 'auth.json'))
 
         if exchange_name == 'bitfinex':
             exchanges[exchange_name] = Bitfinex(
@@ -287,7 +292,7 @@ def _run(handle_data,
             algo_namespace=algo_namespace,
             live_graph=live_graph
         )
-    else:
+    elif exchanges:
         # Removed the existing Poloniex fork to keep things simple
         # We can add back the complexity if required.
 
@@ -315,6 +320,36 @@ def _run(handle_data,
         algorithm_class = partial(
             ExchangeTradingAlgorithmBacktest,
             exchanges=exchanges
+        )
+
+    elif bundle is not None:
+        bundle_data = load(
+            bundle,
+            environ,
+            bundle_timestamp,
+        )
+
+        prefix, connstr = re.split(
+            r'sqlite:///',
+            str(bundle_data.asset_finder.engine.url),
+            maxsplit=1,
+        )
+        if prefix:
+            raise ValueError(
+                "invalid url %r, must begin with 'sqlite:///'" %
+                str(bundle_data.asset_finder.engine.url),
+                )
+
+        env = TradingEnvironment(asset_db_path=connstr, environ=environ)
+        first_trading_day = \
+            bundle_data.equity_minute_bar_reader.first_trading_day
+
+        data = DataPortal(
+            env.asset_finder, open_calendar,
+            first_trading_day=first_trading_day,
+            equity_minute_reader=bundle_data.equity_minute_bar_reader,
+            equity_daily_reader=bundle_data.equity_daily_bar_reader,
+            adjustment_reader=bundle_data.adjustment_reader,
         )
 
     perf = algorithm_class(
@@ -486,7 +521,9 @@ def run_algorithm(initialize,
     --------
     catalyst.data.bundles.bundles : The available data bundles.
     """
-    load_extensions(default_extension, extensions, strict_extensions, environ)
+    load_extensions(
+        default_extension, extensions, strict_extensions, environ
+    )
 
     # I'm not sure that we need this since the modified DataPortal
     # does not require extensions to be explicitly loaded.

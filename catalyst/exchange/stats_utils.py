@@ -30,14 +30,25 @@ def crossover(source, target):
     bool
 
     """
-    if source[-1] is np.nan or source[-2] is np.nan \
-            or target[-1] is np.nan or target[-2] is np.nan:
-        return False
+    if isinstance(target, numbers.Number):
+        if source[-1] is np.nan or source[-2] is np.nan \
+                or target is np.nan:
+            return False
 
-    if source[-1] > target[-1] and source[-2] < target[-2]:
-        return True
+        if source[-1] >= target > source[-2]:
+            return True
+        else:
+            return False
+
     else:
-        return False
+        if source[-1] is np.nan or source[-2] is np.nan \
+                or target[-1] is np.nan or target[-2] is np.nan:
+            return False
+
+        if source[-1] > target[-1] and source[-2] < target[-2]:
+            return True
+        else:
+            return False
 
 
 def crossunder(source, target):

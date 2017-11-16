@@ -460,8 +460,8 @@ class TestExchangeBundle:
     def bundle_to_csv(self):
         exchange_name = 'poloniex'
         data_frequency = 'minute'
-        period = '2017-09'
-        symbol = 'eth_btc'
+        period = '2017-02'
+        symbol = 'lsk_eth'
 
         exchange = get_exchange(exchange_name)
         asset = exchange.get_asset(symbol)
