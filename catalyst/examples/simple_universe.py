@@ -49,7 +49,7 @@ def handle_data(context, data):
     minutes = 30
     one_day_in_minutes = 1440  # 1440 assumes data_frequency='minute'
     lookback = one_day_in_minutes / minutes * lookback_days  # get N lookback_days of history data
-    if not context.i % minutes and context.universe:
+    if not ((context.i % minutes) - minutes + 1) and context.universe:  # fetch data at last minute of the candle
         # we iterate for every pair in the current universe
         for coin in context.coins:
             pair = str(coin.symbol)
