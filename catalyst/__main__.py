@@ -30,16 +30,17 @@ except NameError:
 @click.option(
     '--strict-extensions/--non-strict-extensions',
     is_flag=True,
-    help='If --strict-extensions is passed then catalyst will not run if it'
-         ' cannot load all of the specified extensions. If this is not passed or'
-         ' --non-strict-extensions is passed then the failure will be logged but'
-         ' execution will continue.',
+    help='If --strict-extensions is passed then catalyst will not run '
+         'if it cannot load all of the specified extensions. If this is '
+         'not passed or --non-strict-extensions is passed then the '
+         'failure will be logged but execution will continue.',
 )
 @click.option(
     '--default-extension/--no-default-extension',
     is_flag=True,
     default=True,
-    help="Don't load the default catalyst extension.py file in $CATALYST_HOME.",
+    help="Don't load the default catalyst extension.py file "
+         "in $CATALYST_HOME.",
 )
 @click.version_option()
 def main(extension, strict_extensions, default_extension):
@@ -124,9 +125,9 @@ def ipython_only(option):
     '--define',
     multiple=True,
     help="Define a name to be bound in the namespace before executing"
-         " the algotext. For example '-Dname=value'. The value may be any python"
-         " expression. These are evaluated in order so they may refer to previously"
-         " defined names.",
+         " the algotext. For example '-Dname=value'. The value may be"
+         " any python expression. These are evaluated in order so they"
+         " may refer to previously defined names.",
 )
 @click.option(
     '--data-frequency',
@@ -176,8 +177,8 @@ def ipython_only(option):
     default='-',
     metavar='FILENAME',
     show_default=True,
-    help="The location to write the perf data. If this is '-' the perf will"
-         " be written to stdout.",
+    help="The location to write the perf data. If this is '-' the perf" 
+         " will be written to stdout.",
 )
 @click.option(
     '--print-algo/--no-print-algo',
@@ -195,7 +196,8 @@ def ipython_only(option):
     '-x',
     '--exchange-name',
     type=click.Choice({'bitfinex', 'bittrex', 'poloniex'}),
-    help='The name of the targeted exchange (supported: bitfinex, bittrex, poloniex).',
+    help='The name of the targeted exchange (supported: bitfinex,'
+         ' bittrex, poloniex).',
 )
 @click.option(
     '-n',
@@ -249,6 +251,9 @@ def run(ctx,
 
     if exchange_name is None:
         ctx.fail("must specify an exchange name '-x'")
+
+    if base_currency is None:
+        ctx.fail("must specify a base currency with '-c'")
 
     perf = _run(
         initialize=None,
@@ -364,7 +369,8 @@ def catalyst_magic(line, cell=None):
     '-x',
     '--exchange-name',
     type=click.Choice({'bitfinex', 'bittrex', 'poloniex'}),
-    help='The name of the targeted exchange (supported: bitfinex, bittrex, poloniex).',
+    help='The name of the targeted exchange (supported: bitfinex,'
+         ' bittrex, poloniex).',
 )
 @click.option(
     '-n',
