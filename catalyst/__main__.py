@@ -242,18 +242,25 @@ def run(ctx,
         # does not pass either of these and then passes the first only
         # to be told they need to pass the second argument also
         ctx.fail(
-            "must specify dates with '-s' / '--start' and '-e' / '--end'",
+            "must specify dates with '-s' / '--start' and '-e' / '--end'"
+            " in backtest mode",
         )
     if start is None:
-        ctx.fail("must specify a start date with '-s' / '--start'")
+        ctx.fail("must specify a start date with '-s' / '--start'"
+                 " in backtest mode")
     if end is None:
-        ctx.fail("must specify an end date with '-e' / '--end'")
+        ctx.fail("must specify an end date with '-e' / '--end'"
+                 " in backtest mode")
 
     if exchange_name is None:
         ctx.fail("must specify an exchange name '-x'")
 
     if base_currency is None:
-        ctx.fail("must specify a base currency with '-c'")
+        ctx.fail("must specify a base currency with '-c' in backtest mode")
+
+    if capital_base is None:
+        ctx.fail("must specify a capital base with '--capital-base'"
+                 " in backtest mode")
 
     perf = _run(
         initialize=None,
@@ -340,9 +347,9 @@ def catalyst_magic(line, cell=None):
     '--define',
     multiple=True,
     help="Define a name to be bound in the namespace before executing"
-         " the algotext. For example '-Dname=value'. The value may be any python"
-         " expression. These are evaluated in order so they may refer to previously"
-         " defined names.",
+         " the algotext. For example '-Dname=value'. The value may be"
+         " any python expression. These are evaluated in order so they"
+         " may refer to previously defined names.",
 )
 @click.option(
     '-o',
