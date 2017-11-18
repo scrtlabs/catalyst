@@ -226,10 +226,9 @@ class Poloniex(Exchange):
         ohlc_map = dict()
 
         for asset in asset_list:
+            delta = end_dt - pd.to_datetime('1970-1-1', utc=True)
+            end = int(delta.total_seconds())
 
-            # TODO: what's wrong with this?
-            # end = int(time.mktime(end_dt.timetuple()))
-            end = int(time.time())
             if bar_count is None:
                 start = end - 2 * frequency
             else:

@@ -1,9 +1,10 @@
-from catalyst.exchange.bittrex.bittrex import Bittrex
 from catalyst.exchange.poloniex.poloniex import Poloniex
 from catalyst.finance.order import Order
 from base import BaseExchangeTestCase
 from logbook import Logger
 from catalyst.exchange.exchange_utils import get_exchange_auth
+import pandas as pd
+from test_utils import output_df
 
 log = Logger('test_poloniex')
 
@@ -51,18 +52,19 @@ class TestPoloniex(BaseExchangeTestCase):
 
     def test_get_candles(self):
         log.info('retrieving candles')
-        ohlcv_neo = self.exchange.get_candles(
-            freq='5T',
-            assets=self.exchange.get_asset('eth_btc')
+        assets = self.exchange.get_asset('eth_btc')
+        ohlcv = self.exchange.get_candles(
+            end_dt=pd.to_datetime('2017-11-01', utc=True),
+            freq='30T',
+            assets=assets,
+            bar_count=200
         )
-        ohlcv_neo_ubq = self.exchange.get_candles(
-            freq='5T',
-            assets=[
-                self.exchange.get_asset('neos_btc'),
-                self.exchange.get_asset('via_btc')
-            ],
-            bar_count=14
-        )
+        df = pd.DataFrame(ohlcv)
+        df.set_index('last_traded', drop=True, inplace=True)
+        log.info(df.tail(25))
+
+        path = output_df(df, assets, 'candles')
+        log.info('saved candles: {}'.format(path))
         pass
 
     def test_tickers(self):
