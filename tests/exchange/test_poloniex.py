@@ -54,8 +54,9 @@ class TestPoloniex(BaseExchangeTestCase):
         log.info('retrieving candles')
         assets = self.exchange.get_asset('eth_btc')
         ohlcv = self.exchange.get_candles(
-            end_dt=pd.to_datetime('2017-11-01', utc=True),
-            freq='30T',
+            # end_dt=pd.to_datetime('2017-11-01', utc=True),
+            end_dt=None,
+            freq='5T',
             assets=assets,
             bar_count=200
         )
@@ -63,7 +64,7 @@ class TestPoloniex(BaseExchangeTestCase):
         df.set_index('last_traded', drop=True, inplace=True)
         log.info(df.tail(25))
 
-        path = output_df(df, assets, 'candles')
+        path = output_df(df, assets, '5min_candles')
         log.info('saved candles: {}'.format(path))
         pass
 

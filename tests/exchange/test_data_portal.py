@@ -1,16 +1,13 @@
 import pandas as pd
-from catalyst.exchange.exchange_data_portal import DataPortalExchangeBacktest, \
-    DataPortalExchangeLive
 from logbook import Logger
-from test_utils import rnd_history_date_days, rnd_bar_count
 
 from catalyst import get_calendar
 from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
-from catalyst.exchange.bitfinex.bitfinex import Bitfinex
-from catalyst.exchange.bittrex.bittrex import Bittrex
-from catalyst.exchange.exchange_utils import get_exchange_auth, \
-    get_common_assets
+from catalyst.exchange.exchange_data_portal import DataPortalExchangeBacktest, \
+    DataPortalExchangeLive
+from catalyst.exchange.exchange_utils import get_common_assets
 from catalyst.exchange.factory import get_exchange, get_exchanges
+from test_utils import rnd_history_date_days, rnd_bar_count, output_df
 
 log = Logger('test_bitfinex')
 
@@ -115,38 +112,4 @@ class TestExchangeDataPortal:
         log.info('found history window: {}'.format(data))
 
     def test_validate_resample(self):
-        symbol = ['eth_btc']
-        exchange_name = 'poloniex'
-        exchange = get_exchange(exchange_name, base_currency=symbol)
-
-        assets = exchange.get_assets(symbols=symbol)
-
-        date = rnd_history_date_days(
-            max_days=10,
-            last_dt=pd.to_datetime('2017-11-1', utc=True)
-        )
-        bar_count = rnd_bar_count(max_bars=10)
-        sample_minutes = 15
-        sample_data = self.data_portal_backtest.get_history_window(
-            assets=assets,
-            end_dt=date,
-            bar_count=bar_count,
-            frequency='{}T'.format(sample_minutes),
-            field='close',
-            data_frequency='daily'
-        )
-        minute_data = self.data_portal_backtest.get_history_window(
-            assets=assets,
-            end_dt=date,
-            bar_count=bar_count * sample_minutes,
-            frequency='1T',
-            field='close',
-            data_frequency='daily'
-        )
-        resampled_minute_data = minute_data.resample(
-            '{}T'.format(sample_minutes))
-
-        print(sample_data.tail(10))
-        print(resampled_minute_data.tail(10))
-        print(minute_data.tail(10))
         pass

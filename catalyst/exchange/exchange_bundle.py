@@ -1,5 +1,6 @@
 import os
 import shutil
+from datetime import datetime, timedelta
 from functools import partial
 from itertools import chain
 from operator import is_not
@@ -7,7 +8,6 @@ from operator import is_not
 import numpy as np
 import pandas as pd
 from catalyst.assets._assets import TradingPair
-from datetime import datetime, timedelta
 from logbook import Logger
 from pytz import UTC
 from six import itervalues
@@ -19,7 +19,8 @@ from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
     BcolzMinuteBarMetadata
 from catalyst.exchange.bundle_utils import range_in_bundle, \
     get_bcolz_chunk, get_month_start_end, \
-    get_year_start_end, get_df_from_arrays, get_start_dt, get_period_label
+    get_year_start_end, get_df_from_arrays, get_start_dt, get_period_label, \
+    get_delta
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
 from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
@@ -682,7 +683,8 @@ class ExchangeBundle:
                                            bar_count,
                                            field,
                                            data_frequency,
-                                           algo_end_dt=None
+                                           algo_end_dt=None,
+                                           trailing_bar_count=None
                                            ):
         """
         Retrieve price data history, ingest missing data.
@@ -708,7 +710,8 @@ class ExchangeBundle:
                     end_dt=end_dt,
                     bar_count=bar_count,
                     field=field,
-                    data_frequency=data_frequency
+                    data_frequency=data_frequency,
+                    trailing_bar_count=trailing_bar_count
                 )
                 return pd.DataFrame(series)
 
@@ -725,7 +728,7 @@ class ExchangeBundle:
                 self.ingest_assets(
                     assets=assets,
                     start_dt=start_dt,
-                    end_dt=algo_end_dt,
+                    end_dt=algo_end_dt,  # TODO: apply trailing bars
                     data_frequency=data_frequency,
                     show_progress=True,
                     show_breakdown=True
@@ -736,7 +739,8 @@ class ExchangeBundle:
                     bar_count=bar_count,
                     field=field,
                     data_frequency=data_frequency,
-                    reset_reader=True
+                    reset_reader=True,
+                    trailing_bar_count=trailing_bar_count
                 )
                 return series
 
@@ -746,7 +750,8 @@ class ExchangeBundle:
                 end_dt=end_dt,
                 bar_count=bar_count,
                 field=field,
-                data_frequency=data_frequency
+                data_frequency=data_frequency,
+                trailing_bar_count=trailing_bar_count
             )
             return pd.DataFrame(series)
 
@@ -810,11 +815,16 @@ class ExchangeBundle:
                                   bar_count,
                                   field,
                                   data_frequency,
+                                  trailing_bar_count=None,
                                   reset_reader=False):
         start_dt = get_start_dt(end_dt, bar_count, data_frequency, False)
         start_dt, end_dt = self.get_adj_dates(
             start_dt, end_dt, assets, data_frequency
         )
+
+        if trailing_bar_count:
+            delta = get_delta(trailing_bar_count, data_frequency)
+            end_dt += delta
 
         reader = self.get_reader(data_frequency)
         if reset_reader:

@@ -2,7 +2,7 @@
 
 import logbook
 
-LOG_LEVEL = logbook.INFO
+LOG_LEVEL = logbook.DEBUG
 
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M'
 
