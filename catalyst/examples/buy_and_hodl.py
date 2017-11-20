@@ -16,7 +16,6 @@
 # limitations under the License.
 import pandas as pd
 
-from catalyst import run_algorithm
 from catalyst.api import (
     order_target_value,
     symbol,
@@ -27,14 +26,9 @@ from catalyst.api import (
 
 
 def initialize(context):
-    context.ASSET_NAME = 'BTC_USDT'
+    context.ASSET_NAME = 'btc_usdt'
     context.TARGET_HODL_RATIO = 0.8
     context.RESERVE_RATIO = 1.0 - context.TARGET_HODL_RATIO
-
-    # For all trading pairs in the poloniex bundle, the default denomination
-    # currently supported by Catalyst is 1/1000th of a full coin. Use this
-    # constant to scale the price of up to that of a full coin if desired.
-    context.TICK_SIZE = 1000.0
 
     context.is_buying = True
     context.asset = symbol(context.ASSET_NAME)
@@ -91,7 +85,7 @@ def analyze(context=None, results=None):
 
     ax2 = plt.subplot(612, sharex=ax1)
     ax2.set_ylabel('{asset} (USD)'.format(asset=context.ASSET_NAME))
-    (context.TICK_SIZE * results[['price']]).plot(ax=ax2)
+    results[['price']].plot(ax=ax2)
 
     trans = results.ix[[t != [] for t in results.transactions]]
     buys = trans.ix[
@@ -99,7 +93,7 @@ def analyze(context=None, results=None):
     ]
     ax2.plot(
         buys.index,
-        context.TICK_SIZE * results.price[buys.index],
+        results.price[buys.index],
         '^',
         markersize=10,
         color='g',
@@ -141,15 +135,3 @@ def analyze(context=None, results=None):
     plt.gcf().set_size_inches(18, 8)
     plt.show()
 
-
-run_algorithm(
-    capital_base=10000,
-    data_frequency='minute',
-    initialize=initialize,
-    handle_data=handle_data,
-    analyze=analyze,
-    exchange_name='poloniex',
-    base_currency='usd',
-    start=pd.to_datetime('2017-10-1', utc=True),
-    end=pd.to_datetime('2017-11-10', utc=True),
-)
