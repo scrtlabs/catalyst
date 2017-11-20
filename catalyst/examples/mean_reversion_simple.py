@@ -4,22 +4,21 @@
 
 import pandas as pd
 import talib
-# To run an algorithm in Catalyst, you need two functions: initialize and
-# handle_data.
 from logbook import Logger
 
 from catalyst import run_algorithm
-from catalyst.api import symbol, record, order_target_percent, \
-    get_open_orders
+from catalyst.api import symbol, record, order_target_percent, get_open_orders
+from catalyst.exchange.stats_utils import extract_transactions
+
 # We give a name to the algorithm which Catalyst will use to persist its state.
 # In this example, Catalyst will create the `.catalyst/data/live_algos`
 # directory. If we stop and start the algorithm, Catalyst will resume its
 # state using the files included in the folder.
-from catalyst.exchange.stats_utils import extract_transactions
-
 NAMESPACE = 'mean_reversion_simple'
 log = Logger(NAMESPACE)
 
+# To run an algorithm in Catalyst, you need two functions: initialize and
+# handle_data.
 
 def initialize(context):
     # This initialize function sets any data or variables that you'll use in
@@ -216,7 +215,7 @@ def analyze(context=None, perf=None):
 
 if __name__ == '__main__':
     # The execution mode: backtest or live
-    MODE = 'live'
+    MODE = 'backtest'
 
     if MODE == 'backtest':
         # catalyst run -f catalyst/examples/mean_reversion_simple.py -x poloniex -s 2017-10-1 -e 2017-11-10 -c usdt -n mean-reversion --data-frequency minute --capital-base 10000
