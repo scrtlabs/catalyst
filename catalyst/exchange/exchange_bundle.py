@@ -826,6 +826,9 @@ class ExchangeBundle:
             delta = get_delta(trailing_bar_count, data_frequency)
             end_dt += delta
 
+        # This is an attempt to resolve some caching with the reader
+        # when auto-ingesting data.
+        # TODO: needs more work
         reader = self.get_reader(data_frequency)
         if reset_reader:
             del self._readers[reader._rootdir]
@@ -844,11 +847,11 @@ class ExchangeBundle:
                 end_dt=end_dt
             )
 
+        series = dict()
         for asset in assets:
             asset_start_dt, asset_end_dt = self.get_adj_dates(
                 start_dt, end_dt, assets, data_frequency
             )
-
             in_bundle = range_in_bundle(
                 asset, asset_start_dt, asset_end_dt, reader
             )
@@ -864,75 +867,63 @@ class ExchangeBundle:
                     end_dt=asset_end_dt
                 )
 
-        series = dict()
-        try:
+            periods = self.get_calendar_periods_range(
+                asset_start_dt, asset_end_dt, data_frequency
+            )
+            # This does not behave well when requesting multiple assets
+            # when the start or end date of one asset is outside of the range
+            # looking at the logic in load_raw_arrays(), we are not achieving
+            # any performance gain by requesting multiple sids at once. It's
+            # looping through the sids and making separate requests anyway.
             arrays = reader.load_raw_arrays(
-                sids=[asset.sid for asset in assets],
+                sids=[asset.sid],
                 fields=[field],
                 start_dt=start_dt,
                 end_dt=end_dt
             )
+            field_values = arrays[0][:, 0]
 
-        except Exception:
-            symbols = [asset.symbol.encode('utf-8') for asset in assets]
-            raise PricingDataNotLoadedError(
-                field=field,
-                first_trading_day=min([asset.start_date for asset in assets]),
-                exchange=self.exchange.name,
-                symbols=symbols,
-                symbol_list=','.join(symbols),
-                data_frequency=data_frequency,
-                start_dt=start_dt,
-                end_dt=end_dt
-            )
-
-        periods = self.get_calendar_periods_range(
-            start_dt, end_dt, data_frequency
-        )
-
-        for asset_index, asset in enumerate(assets):
-            asset_values = arrays[asset_index]
-
-            value_series = pd.Series(asset_values.flatten(), index=periods)
+            value_series = pd.Series(field_values, index=periods)
             series[asset] = value_series
 
         return series
 
-    def clean(self, data_frequency):
-        """
-        Removing the bundle data from the catalyst folder.
 
-        Parameters
-        ----------
-        data_frequency: str
+def clean(self, data_frequency):
+    """
+    Removing the bundle data from the catalyst folder.
 
-        """
-        log.debug('cleaning exchange {}, frequency {}'.format(
-            self.exchange.name, data_frequency
-        ))
-        root = get_exchange_folder(self.exchange.name)
+    Parameters
+    ----------
+    data_frequency: str
 
-        symbols = os.path.join(root, 'symbols.json')
-        if os.path.isfile(symbols):
-            os.remove(symbols)
+    """
+    log.debug('cleaning exchange {}, frequency {}'.format(
+        self.exchange.name, data_frequency
+    ))
+    root = get_exchange_folder(self.exchange.name)
 
-        temp_bundles = os.path.join(root, 'temp_bundles')
+    symbols = os.path.join(root, 'symbols.json')
+    if os.path.isfile(symbols):
+        os.remove(symbols)
 
-        if os.path.isdir(temp_bundles):
-            log.debug('removing folder and content: {}'.format(temp_bundles))
-            shutil.rmtree(temp_bundles)
-            log.debug('{} removed'.format(temp_bundles))
+    temp_bundles = os.path.join(root, 'temp_bundles')
 
-        frequencies = ['daily', 'minute'] if data_frequency is None \
-            else [data_frequency]
+    if os.path.isdir(temp_bundles):
+        log.debug('removing folder and content: {}'.format(temp_bundles))
+        shutil.rmtree(temp_bundles)
+        log.debug('{} removed'.format(temp_bundles))
 
-        for frequency in frequencies:
-            label = '{}_bundle'.format(frequency)
-            frequency_bundle = os.path.join(root, label)
+    frequencies = ['daily', 'minute'] if data_frequency is None \
+        else [data_frequency]
 
-            if os.path.isdir(frequency_bundle):
-                log.debug(
-                    'removing folder and content: {}'.format(frequency_bundle)
-                )
-                shutil.rmtree(frequency_bundle)
-                log.debug('{} removed'.format(frequency_bundle))
+    for frequency in frequencies:
+        label = '{}_bundle'.format(frequency)
+        frequency_bundle = os.path.join(root, label)
+
+        if os.path.isdir(frequency_bundle):
+            log.debug(
+                'removing folder and content: {}'.format(frequency_bundle)
+            )
+            shutil.rmtree(frequency_bundle)
+            log.debug('{} removed'.format(frequency_bundle))
