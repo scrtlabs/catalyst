@@ -245,18 +245,41 @@ class ExchangeTradingAlgorithmBacktest(ExchangeTradingAlgorithmBase):
         else:
             return MarketOrder()
 
+    def is_last_frame_of_day(self, data):
+        # TODO: adjust here to support more intervals
+        next_frame_dt = data.current_dt + timedelta(minutes=1)
+        if next_frame_dt.date() > data.current_dt.date():
+            return True
+        else:
+            return False
+
     def handle_data(self, data):
         super(ExchangeTradingAlgorithmBacktest, self).handle_data(data)
 
-        minute_stats = self.prepare_period_stats(
-            data.current_dt, data.current_dt + timedelta(minutes=1))
-        self.frame_stats.append(minute_stats)
+        if self.data_frequency == 'minute':
+            frame_stats = self.prepare_period_stats(
+                data.current_dt, data.current_dt + timedelta(minutes=1)
+            )
+            self.frame_stats.append(frame_stats)
 
-    def analyze(self, perf):
+    def _create_stats_df(self):
         stats = pd.DataFrame(self.frame_stats)
         stats.set_index('period_close', inplace=True, drop=False)
+        return stats
 
+    def analyze(self, perf):
+        stats = self._create_stats_df() if self.data_frequency == 'minute' \
+            else perf
         super(ExchangeTradingAlgorithmBacktest, self).analyze(stats)
+
+    def run(self, data=None, overwrite_sim_params=True):
+        perf = super(ExchangeTradingAlgorithmBacktest, self).run(
+            data, overwrite_sim_params
+        )
+        # Rebuilding the stats to support minute data
+        stats = self._create_stats_df() if self.data_frequency == 'minute' \
+            else perf
+        return stats
 
 
 class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):

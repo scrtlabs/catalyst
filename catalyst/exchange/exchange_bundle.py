@@ -26,7 +26,7 @@ from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
 from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
     TempBundleNotFoundError, \
     NoDataAvailableOnExchange, \
-    PricingDataNotLoadedError
+    PricingDataNotLoadedError, DataCorruptionError
 from catalyst.exchange.exchange_utils import get_exchange_folder
 from catalyst.utils.cli import maybe_show_progress
 from catalyst.utils.paths import ensure_directory
@@ -881,6 +881,14 @@ class ExchangeBundle:
                 start_dt=start_dt,
                 end_dt=end_dt
             )
+            if len(arrays) == 0:
+                raise DataCorruptionError(
+                    exchange=self.exchange.name,
+                    symbols=asset.symbol,
+                    start_dt=asset_start_dt,
+                    end_dt=asset_end_dt
+                )
+
             field_values = arrays[0][:, 0]
 
             value_series = pd.Series(field_values, index=periods)
