@@ -468,15 +468,14 @@ class Exchange:
 
         return series
 
-    @deprecated
-    def get_history_window_direct(self,
-                                  assets,
-                                  end_dt,
-                                  bar_count,
-                                  frequency,
-                                  field,
-                                  data_frequency=None,
-                                  ffill=True):
+    def get_history_window(self,
+                           assets,
+                           end_dt,
+                           bar_count,
+                           frequency,
+                           field,
+                           data_frequency=None,
+                           ffill=True):
 
         """
         Public API method that returns a dataframe containing the requested
@@ -514,35 +513,46 @@ class Exchange:
             A dataframe containing the requested data.
 
         """
-        start_dt = get_start_dt(end_dt, bar_count, data_frequency)
+        freq, candle_size, unit, data_frequency = get_frequency(
+            frequency, data_frequency
+        )
+        adj_bar_count = candle_size * bar_count
+        start_dt = get_start_dt(end_dt, adj_bar_count, data_frequency)
 
         # The get_history method supports multiple asset
         candles = self.get_candles(
-            data_frequency=frequency,
+            freq=freq,
             assets=assets,
             bar_count=bar_count,
             start_dt=start_dt,
             end_dt=end_dt
         )
-        candle_series = self.get_series_from_candles(
-            candles=candles,
-            start_dt=start_dt,
-            end_dt=end_dt,
-            data_frequency=frequency,
-            field=field,
-        )
 
-        df = pd.DataFrame(candle_series)
+        series = dict()
+        for asset in candles:
+            asset_series = self.get_series_from_candles(
+                candles=candles[asset],
+                start_dt=start_dt,
+                end_dt=end_dt,
+                data_frequency=frequency,
+                field=field,
+            )
+            series[asset] = asset_series
+
+        df = pd.DataFrame(series)
+        df.dropna(inplace=True)
+
         return df
 
-    def get_history_window(self,
-                           assets,
-                           end_dt,
-                           bar_count,
-                           frequency,
-                           field,
-                           data_frequency=None,
-                           ffill=True):
+    def get_history_window_with_bundle(self,
+                                       assets,
+                                       end_dt,
+                                       bar_count,
+                                       frequency,
+                                       field,
+                                       data_frequency=None,
+                                       ffill=True,
+                                       force_auto_ingest=False):
 
         """
         Public API method that returns a dataframe containing the requested
@@ -590,7 +600,8 @@ class Exchange:
                 end_dt=end_dt,
                 bar_count=adj_bar_count,
                 field=field,
-                data_frequency=data_frequency
+                data_frequency=data_frequency,
+                force_auto_ingest=force_auto_ingest
             )
         except (PricingDataNotLoadedError, NoDataAvailableOnExchange):
             series = dict()

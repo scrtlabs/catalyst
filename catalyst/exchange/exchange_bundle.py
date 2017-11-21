@@ -684,7 +684,8 @@ class ExchangeBundle:
                                            field,
                                            data_frequency,
                                            algo_end_dt=None,
-                                           trailing_bar_count=None
+                                           trailing_bar_count=None,
+                                           force_auto_ingest=False
                                            ):
         """
         Retrieve price data history, ingest missing data.
@@ -703,7 +704,7 @@ class ExchangeBundle:
         Series
 
         """
-        if AUTO_INGEST:
+        if AUTO_INGEST or force_auto_ingest:
             try:
                 series = self.get_history_window_series(
                     assets=assets,
@@ -711,7 +712,7 @@ class ExchangeBundle:
                     bar_count=bar_count,
                     field=field,
                     data_frequency=data_frequency,
-                    trailing_bar_count=trailing_bar_count
+                    trailing_bar_count=trailing_bar_count,
                 )
                 return pd.DataFrame(series)
 
@@ -740,7 +741,7 @@ class ExchangeBundle:
                     field=field,
                     data_frequency=data_frequency,
                     reset_reader=True,
-                    trailing_bar_count=trailing_bar_count
+                    trailing_bar_count=trailing_bar_count,
                 )
                 return series
 
@@ -751,7 +752,7 @@ class ExchangeBundle:
                 bar_count=bar_count,
                 field=field,
                 data_frequency=data_frequency,
-                trailing_bar_count=trailing_bar_count
+                trailing_bar_count=trailing_bar_count,
             )
             return pd.DataFrame(series)
 

@@ -487,7 +487,6 @@ def resample_history_df(df, freq, field):
     DataFrame
 
     """
-    print(df.tail(30))
     if field == 'open':
         agg = 'first'
     elif field == 'high':

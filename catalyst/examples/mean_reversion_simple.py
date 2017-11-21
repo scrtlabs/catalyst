@@ -27,7 +27,7 @@ def initialize(context):
     # parameters or values you're going to use.
 
     # In our example, we're looking at Ether in USD Tether.
-    context.neo_usd = symbol('neo_usd')
+    context.neo_usd = symbol('neo_btc')
     context.base_price = None
     context.current_day = None
 
@@ -57,7 +57,7 @@ def handle_data(context, data):
         context.neo_usd,
         fields='close',
         bar_count=50,
-        frequency='15T'
+        frequency='30T'
     )
 
     # Ta-lib calculates various technical indicator based on price and
@@ -215,7 +215,7 @@ def analyze(context=None, perf=None):
 
 if __name__ == '__main__':
     # The execution mode: backtest or live
-    MODE = 'backtest'
+    MODE = 'live'
 
     if MODE == 'backtest':
         # catalyst run -f catalyst/examples/mean_reversion_simple.py -x poloniex -s 2017-10-1 -e 2017-11-10 -c usdt -n mean-reversion --data-frequency minute --capital-base 10000
@@ -237,9 +237,9 @@ if __name__ == '__main__':
             initialize=initialize,
             handle_data=handle_data,
             analyze=analyze,
-            exchange_name='bitfinex',
+            exchange_name='bittrex',
             live=True,
             algo_namespace=NAMESPACE,
-            base_currency='usd',
-            live_graph=True
+            base_currency='btc',
+            live_graph=False
         )
