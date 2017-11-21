@@ -451,7 +451,8 @@ def run_algorithm(initialize,
                   exchange_name=None,
                   base_currency=None,
                   algo_namespace=None,
-                  live_graph=False):
+                  live_graph=False,
+                  output=os.devnull):
     """Run a trading algorithm.
 
     Parameters
@@ -564,7 +565,7 @@ def run_algorithm(initialize,
         bundle_timestamp=bundle_timestamp,
         start=start,
         end=end,
-        output=os.devnull,
+        output=output,
         print_algo=False,
         local_namespace=False,
         environ=environ,

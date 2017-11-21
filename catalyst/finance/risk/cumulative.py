@@ -274,12 +274,14 @@ algorithm_returns ({algo_count}) in range {start} : {end} on {dt}"
         )
 
         try:
+            risk = self.downside_risk[dt_loc]
             self.sortino[dt_loc] = sortino_ratio(
                 self.algorithm_returns,
-                _downside_risk=self.downside_risk[dt_loc]
+                _downside_risk=risk
             )
-        except Exception as e:
-            log.debug('sortino ratio error: {}'.format(e))
+        except Exception:
+            # TODO: what causes it to error out?
+            self.sortino[dt_loc] = 0
 
         self.information[dt_loc] = information_ratio(
             self.algorithm_returns,

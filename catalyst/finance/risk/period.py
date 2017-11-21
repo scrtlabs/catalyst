@@ -23,7 +23,7 @@ import numpy as np
 import pandas as pd
 
 from . import risk
-from . risk import check_entry
+from .risk import check_entry
 
 from empyrical import (
     alpha_beta_aligned,
@@ -85,7 +85,7 @@ class RiskMetricsPeriod(object):
             cum_returns(self.algorithm_returns).iloc[-1]
 
         if not self.algorithm_returns.index.equals(
-            self.benchmark_returns.index
+                self.benchmark_returns.index
         ):
             message = "Mismatch between benchmark_returns ({bm_count}) and \
             algorithm_returns ({algo_count}) in range {start} : {end}"
@@ -128,10 +128,17 @@ class RiskMetricsPeriod(object):
         self.downside_risk = downside_risk(
             self.algorithm_returns.values
         )
-        self.sortino = sortino_ratio(
-            self.algorithm_returns.values,
-            _downside_risk=self.downside_risk,
-        )
+
+        try:
+            risk = self.downside_risk
+            self.sortino = sortino_ratio(
+                self.algorithm_returns.values,
+                _downside_risk=risk,
+            )
+        except Exception:
+            # TODO: what causes it to error out?
+            self.sortino = 0
+
         self.information = information_ratio(
             self.algorithm_returns.values,
             self.benchmark_returns.values,
@@ -141,7 +148,7 @@ class RiskMetricsPeriod(object):
             self.benchmark_returns.values,
         )
         self.excess_return = self.algorithm_period_returns - \
-            self.treasury_period_return
+                             self.treasury_period_return
         self.max_drawdown = max_drawdown(self.algorithm_returns.values)
         self.max_leverage = self.calculate_max_leverage()
 
