@@ -196,8 +196,8 @@ class RiskMetricsCumulative(object):
             self.benchmark_cumulative_returns[dt_loc] = cum_returns(
                 self.benchmark_returns
             )[-1]
-        except Exception as e:
-            log.debug('cumulative returns error: {}'.format(e))
+        except Exception:
+            self.benchmark_cumulative_returns[dt_loc] = 0
 
         benchmark_cumulative_returns_to_date = \
             self.benchmark_cumulative_returns[:dt_loc + 1]

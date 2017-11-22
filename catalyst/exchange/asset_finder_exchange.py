@@ -41,11 +41,11 @@ class AssetFinderExchange(object):
         SidsNotFound
             When a requested sid is not found and default_none=False.
         """
-        for sid in sids:
-            if sid in self._asset_cache:
-                log.debug('got asset from cache: {}'.format(sid))
-            else:
-                log.debug('fetching asset: {}'.format(sid))
+        # for sid in sids:
+        #     if sid in self._asset_cache:
+        #         log.debug('got asset from cache: {}'.format(sid))
+        #     else:
+        #         log.debug('fetching asset: {}'.format(sid))
         return list()
 
     def lookup_symbol(self, symbol, exchange, as_of_date=None, fuzzy=False):

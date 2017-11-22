@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import functools
+import warnings
 
 import logbook
 
@@ -78,8 +79,14 @@ class RiskMetricsPeriod(object):
         self.calculate_metrics()
 
     def calculate_metrics(self):
-        self.benchmark_period_returns = \
-            cum_returns(self.benchmark_returns).iloc[-1]
+        warnings.filterwarnings('error')
+
+        try:
+            self.benchmark_period_returns = \
+                cum_returns(self.benchmark_returns).iloc[-1]
+        except Exception:
+            # TODO: why is there an error
+            self.benchmark_period_returns = 0
 
         self.algorithm_period_returns = \
             cum_returns(self.algorithm_returns).iloc[-1]
@@ -151,6 +158,8 @@ class RiskMetricsPeriod(object):
                              self.treasury_period_return
         self.max_drawdown = max_drawdown(self.algorithm_returns.values)
         self.max_leverage = self.calculate_max_leverage()
+
+        warnings.resetwarnings()
 
     def to_dict(self):
         """
