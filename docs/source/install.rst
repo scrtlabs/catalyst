@@ -80,7 +80,7 @@ Once either Conda or MiniConda has been set up you can install Catalyst:
 4. Activate the environment (which you need to do every time you start a new 
    session to run Catalyst):
 
-   **Linux or OSX:**
+   **Linux or MacOS:**
 
    .. code-block:: bash
 
@@ -125,7 +125,7 @@ with the following steps:
 
 3. Activate the environment:
 
-   **Linux or OSX:**
+   **Linux or MacOS:**
 
    .. code-block:: bash
 
@@ -358,11 +358,11 @@ beginning of this page.
 MacOS Requirements
 ------------------
 
-The version of Python shipped with OSX by default is generally out of date, 
+The version of Python shipped with MacOS by default is generally out of date, 
 and has a number of quirks because it's used directly by the operating system.
 For these reasons, many developers choose to install and use a separate Python
 installation. The `Hitchhiker's Guide to Python`_ provides an excellent guide
-to `Installing Python on OSX <http://docs.python-guide.org/en/latest/>`_, 
+to `Installing Python on MacOS <http://docs.python-guide.org/en/latest/>`_, 
 which explains how to install Python with the `Homebrew`_ manager.
 
 Assuming you've installed Python with Homebrew, you'll also likely need the
@@ -372,17 +372,17 @@ following brew packages:
 
    $ brew install freetype pkg-config gcc openssl
 
-OSX + virtualenv + matplotlib
+MacOS + virtualenv + matplotlib
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A note about using matplotlib in virtual enviroments on OSX: it may be 
+A note about using matplotlib in virtual enviroments on MacOS: it may be 
 necessary to run
 
 .. code-block:: bash
 
    echo "backend: TkAgg" > ~/.matplotlib/matplotlibrc
 
-in order to override the default ``macosx`` backend for your system, which 
+in order to override the default ``MacOS`` backend for your system, which 
 may not be accessible from inside the virtual environment. This will allow 
 Catalyst to open matplotlib charts from within a virtual environment, which 
 is useful for displaying the performance of your backtests.  To learn more 
