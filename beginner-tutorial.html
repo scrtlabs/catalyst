@@ -86,7 +86,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#macos-requirements">MacOS Requirements</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="install.html#osx-virtualenv-matplotlib">OSX + virtualenv + matplotlib</a></li>
+<li class="toctree-l3"><a class="reference internal" href="install.html#macos-virtualenv-matplotlib">MacOS + virtualenv + matplotlib</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#windows-requirements">Windows Requirements</a></li>
@@ -96,8 +96,8 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="">Catalyst Beginner Tutorial</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#basics">Basics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#my-first-algorithm">My first algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ingesting-data">Ingesting data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-the-algorithm">Running the algorithm</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#ingesting-data">Ingesting data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#command-line-interface">Command line interface</a></li>
 </ul>
 </li>
@@ -134,7 +134,7 @@
 <li class="toctree-l1"><a class="reference internal" href="videos.html">Videos</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="videos.html#installation-macos">Installation: MacOS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="videos.html#installation-windows">Installation: Windows</a></li>
-<li class="toctree-l2"><a class="reference internal" href="videos.html#backtesting-an-algorithm">Backtesting an algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="videos.html#backtesting-a-strategy">Backtesting a Strategy</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="resources.html">Resources</a><ul>
@@ -241,8 +241,8 @@
 <div class="section" id="basics">
 <h2>Basics<a class="headerlink" href="#basics" title="Permalink to this headline">¶</a></h2>
 <p>Catalyst is an open-source algorithmic trading simulator for crypto
-assets written in Python.</p>
-<p>The source can be found at: <a class="reference external" href="https://github.com/enigmampc/catalyst">https://github.com/enigmampc/catalyst</a></p>
+assets written in Python. The source code can be found at:
+<a class="reference external" href="https://github.com/enigmampc/catalyst">https://github.com/enigmampc/catalyst</a></p>
 <p>Some benefits include:</p>
 <ul class="simple">
 <li>Support for several of the top crypto-exchanges by trading volume.</li>
@@ -259,8 +259,7 @@ marketplace, Catalyst empowers users to share and curate data and
 build profitable, data-driven investment strategies.</li>
 </ul>
 <p>This tutorial assumes that you have Catalyst correctly installed, see the
-<a class="reference internal" href="install.html"><em>installation instructions</em></a> if you haven&#8217;t set up
-Catalyst yet.</p>
+<a class="reference internal" href="install.html"><em>Install</em></a> section if you haven&#8217;t set up Catalyst yet.</p>
 <p>Every <code class="docutils literal"><span class="pre">catalyst</span></code> algorithm consists of at least two functions you have to
 define:</p>
 <ul class="simple">
@@ -272,15 +271,17 @@ define:</p>
 <code class="docutils literal"><span class="pre">context</span></code> is a persistent namespace for you to store variables you
 need to access from one algorithm iteration to the next.</p>
 <p>After the algorithm has been initialized, <code class="docutils literal"><span class="pre">catalyst</span></code> calls the
-<code class="docutils literal"><span class="pre">handle_data()</span></code> function once for each event. At every call, it passes
-the same <code class="docutils literal"><span class="pre">context</span></code> variable and an event-frame called <code class="docutils literal"><span class="pre">data</span></code>
-containing the current trading bar with open, high, low, and close
-(OHLC) prices as well as volume for each crypto asset in your universe.</p>
+<code class="docutils literal"><span class="pre">handle_data()</span></code> function on each iteration, that&#8217;s one per day (daily) or
+once every minute (minute), depending on the frequency we choose to run our
+simulation. On every iteration, <code class="docutils literal"><span class="pre">handle_data()</span></code> passes the same <code class="docutils literal"><span class="pre">context</span></code>
+variable and an event-frame called <code class="docutils literal"><span class="pre">data</span></code> containing the current trading bar
+with open, high, low, and close (OHLC) prices as well as volume for each
+crypto asset in your universe.</p>
 </div>
 <div class="section" id="my-first-algorithm">
 <h2>My first algorithm<a class="headerlink" href="#my-first-algorithm" title="Permalink to this headline">¶</a></h2>
-<p>Lets take a look at a very simple algorithm from the <code class="docutils literal"><span class="pre">examples</span></code>
-directory: <a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/buy_btc_simple.py">buy_btc_simple.py</a>:</p>
+<p>Lets take a look at a very simple algorithm from the <code class="docutils literal"><span class="pre">examples</span></code> directory:
+<a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/buy_btc_simple.py">buy_btc_simple.py</a>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">catalyst.api</span> <span class="kn">import</span> <span class="n">order</span><span class="p">,</span> <span class="n">record</span><span class="p">,</span> <span class="n">symbol</span>
 
 
@@ -295,9 +296,9 @@ directory: <a class="reference external" href="https://github.com/enigmampc/cata
 </div>
 <p>As you can see, we first have to import some functions we would like to
 use. All functions commonly used in your algorithm can be found in
-<code class="docutils literal"><span class="pre">catalyst.api</span></code>. Here we are using <code class="xref py py-func docutils literal"><span class="pre">order()</span></code> which takes two
-arguments: a cryptoasset object, and a number specifying how many assets you would
-like to order (if negative, <code class="xref py py-func docutils literal"><span class="pre">order()</span></code> will sell/short
+<code class="docutils literal"><span class="pre">catalyst.api</span></code>. Here we are using <code class="xref py py-func docutils literal"><span class="pre">order()</span></code> which takes
+twoarguments: a cryptoasset object, and a number specifying how many assets you
+wouldlike to order (if negative, <code class="xref py py-func docutils literal"><span class="pre">order()</span></code> will sell/short
 assets). In this case we want to order 1 bitcoin at each iteration.</p>
 <p>Finally, the <code class="xref py py-func docutils literal"><span class="pre">record()</span></code> function allows you to save the value
 of a variable at each iteration. You provide it with a name for the variable
@@ -307,51 +308,80 @@ with <code class="xref py py-func docutils literal"><span class="pre">record()</
 further below). You also see how we can access the current price data of
 a bitcoin in the <code class="docutils literal"><span class="pre">data</span></code> event frame.</p>
 </div>
-<div class="section" id="running-the-algorithm">
-<h2>Running the algorithm<a class="headerlink" href="#running-the-algorithm" title="Permalink to this headline">¶</a></h2>
-<p>To can now test this algorithm on crypto data, <code class="docutils literal"><span class="pre">catalyst</span></code> provides three
-interfaces:</p>
-<ul class="simple">
-<li>A command-line interface,</li>
-<li><code class="docutils literal"><span class="pre">IPython</span> <span class="pre">Notebook</span></code> magic,</li>
-<li>and <code class="xref py py-func docutils literal"><span class="pre">run_algorithm()</span></code>.</li>
-</ul>
 <div class="section" id="ingesting-data">
-<h3>Ingesting data<a class="headerlink" href="#ingesting-data" title="Permalink to this headline">¶</a></h3>
-<p>In previous versions of Catalyst you needed to manually ingest data before running
-your algorithm to make it available at runtime. Starting with version 0.3, the
-algorithm will automagically ingest the data it needs the first time that encounters
-a data request for data that it doesn&#8217;t have.</p>
-<p>Still, we believe it is important for you to have a high-level understanding
-of how data is managed:</p>
+<h2>Ingesting data<a class="headerlink" href="#ingesting-data" title="Permalink to this headline">¶</a></h2>
+<p>Before you can backtest your algorithm, you first need to load the historical
+pricing data that Catalyst needs to run your simulation through a process called
+<code class="docutils literal"><span class="pre">ingestion</span></code>. When you ingest data, Catalyst downloads that data in compressed
+form from the Enigma servers (which eventually will migrate to the Enigma Data
+Marketplace), and stores it locally to make it available at runtime.</p>
+<p>In order to ingest data, you need to run a command like the following:</p>
+<div class="highlight-bash"><div class="highlight"><pre>catalyst ingest-exchange -x bitfinex -i btc_usd
+</pre></div>
+</div>
+<p>This instructs Catalyst to download pricing data from the <code class="docutils literal"><span class="pre">Bitfinex</span></code> exchange
+for the <code class="docutils literal"><span class="pre">btc_usd</span></code> currency pair (this follows from the simple algorithm
+presented above where we want to trade <code class="docutils literal"><span class="pre">btc_usd</span></code>), and we&#8217;re choosing to test
+our algorithm using historical pricing data from the Bitfinex exchange. By
+default, Catalyst assumes that you want data with <code class="docutils literal"><span class="pre">daily</span></code> frequency (one candle
+bar per day). If you want instead <code class="docutils literal"><span class="pre">minute</span></code> frequency (one candle bar for every
+minute), you would need to specify it as follows:</p>
+<div class="highlight-bash"><div class="highlight"><pre>catalyst ingest-exchange -x bitfinex -i btc_usd -f minute
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>Ingesting exchange bundle bitfinex...
+  [====================================]  Ingesting daily price data on bitfinex:  100%
+</pre></div>
+</div>
+<p>We believe it is important for you to have a high-level understanding of how
+data is managed, hence the following overview:</p>
 <ul class="simple">
 <li>Pricing data is split and packaged into <code class="docutils literal"><span class="pre">bundles</span></code>: chunks of data organized
 as time series that are kept up to date daily on Enigma&#8217;s servers. Catalyst
-downloads the bundles that needs at any given time, and reconstructs the whole
-dataset in your hard drive.</li>
-<li>Pricing data is provided in <code class="docutils literal"><span class="pre">daily</span></code> and <code class="docutils literal"><span class="pre">minute</span></code> resolution. Those are different
-bundle datasets, and are managed separately.</li>
-<li>Bundles are exchange-specific, as the pricing data is specific to the trades that
-happen in each exchange. You can optionally specify which exchange you want pricing
-data from.</li>
-<li>Catalyst keeps track of all the downloaded bundles, so that it only has to download
-them once, and will do incremental updates as needed.</li>
-<li>When running in <code class="docutils literal"><span class="pre">live</span> <span class="pre">trading</span></code> mode, Catalyst will first look for historical
-pricing data in the locally stored bundles. If there is anything missing, Catalyst will
-hit the exchange for the most recent data, and merge it with the local bundle to make
-it available for future iterations.</li>
+downloads the requested bundles and reconstructs the full dataset in your
+hard drive.</li>
+<li>Pricing data is provided in <code class="docutils literal"><span class="pre">daily</span></code> and <code class="docutils literal"><span class="pre">minute</span></code> resolution. Those are
+different bundle datasets, and are managed separately.</li>
+<li>Bundles are exchange-specific, as the pricing data is specific to the trades
+that happen in each exchange. As a result, you can must specify which
+exchange you want pricing data from when ingesting data</li>
+<li>Catalyst keeps track of all the downloaded bundles, so that it only has to
+download them once, and will do incremental updates as needed.</li>
+<li>When running in <code class="docutils literal"><span class="pre">live</span> <span class="pre">trading</span></code> mode, Catalyst will first look for
+historical pricing data in the locally stored bundles. If there is anything
+missing, Catalyst will hit the exchange for the most recent data, and merge
+it with the local bundle to optimize the number of requests it needs to make
+to the exchange.</li>
 </ul>
-<p>If you want to learn more, check out the <a class="reference internal" href="bundles.html#ingesting-data"><span>ingesting data</span></a> section
-for more detail.</p>
+<p>The <code class="docutils literal"><span class="pre">ingest-exchange</span></code> command in catalyst offers additional parameters to
+further tweak the data ingestion process. You can learn more by running the
+following from the command line:</p>
+<div class="highlight-bash"><div class="highlight"><pre>catalyst ingest-exchange --help
+</pre></div>
 </div>
+</div>
+<div class="section" id="running-the-algorithm">
+<h2>Running the algorithm<a class="headerlink" href="#running-the-algorithm" title="Permalink to this headline">¶</a></h2>
+<p>You can now test your algorithm using cryptoassets&#8217; historical pricing data,
+<code class="docutils literal"><span class="pre">catalyst</span></code> provides three interfaces:</p>
+<ul class="simple">
+<li>A command-line interface (CLI),</li>
+<li>the <code class="docutils literal"><span class="pre">IPython</span> <span class="pre">Notebook</span></code> magic,</li>
+<li>and a <code class="xref py py-func docutils literal"><span class="pre">run_algorithm()</span></code> that you can call from other
+Python scripts.</li>
+</ul>
+<p>We&#8217;ll start with the CLI, and introduce the <code class="docutils literal"><span class="pre">IPython</span> <span class="pre">Notebook</span></code> below. Some of
+the <a class="reference internal" href="example-algos.html"><em>example algorithms</em></a> provide instructions on how to run
+them both from the CLI, and using the <code class="xref py py-func docutils literal"><span class="pre">run_algorithm()</span></code> function.</p>
 <div class="section" id="command-line-interface">
 <h3>Command line interface<a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h3>
-<p>After you installed Catalyst you should be able to execute the following
-from your command line (e.g. <code class="docutils literal"><span class="pre">cmd.exe</span></code> on Windows, or the Terminal app
-on OSX). Displaying here a simplified output for eductional purposes:</p>
+<p>After you installed Catalyst, you should be able to execute the following
+from your command line (e.g. <code class="docutils literal"><span class="pre">cmd.exe</span></code> or the <code class="docutils literal"><span class="pre">Anaconda</span> <span class="pre">Prompt</span></code> on Windows,
+or the Terminal application on MacOS).</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>catalyst --help
 </pre></div>
 </div>
+<p>This is the resulting output, simplified for eductional purposes:</p>
 <div class="highlight-python"><div class="highlight"><pre>Usage: catalyst [OPTIONS] COMMAND [ARGS]...
 
   Top level catalyst entry point.
@@ -366,10 +396,11 @@ Commands:
   run              Run a backtest for the given algorithm.
 </pre></div>
 </div>
-<p>There are three main modes you can run on Catalyst. The first being <code class="docutils literal"><span class="pre">ingest-exchange</span></code>
-for data ingestion, which we have summarized in the previous section. The second
-is <code class="docutils literal"><span class="pre">live</span></code> to use your algorithm to trade live against a given exchange, and the
-third mode <code class="docutils literal"><span class="pre">run</span></code> is to backtest your algorithm before trading live with it.</p>
+<p>There are three main modes you can run on Catalyst. The first being
+<code class="docutils literal"><span class="pre">ingest-exchange</span></code> for data ingestion, which we have covered in the previous
+section. The second is <code class="docutils literal"><span class="pre">live</span></code> to use your algorithm to trade live against a
+given exchange, and the third mode <code class="docutils literal"><span class="pre">run</span></code> is to backtest your algorithm before
+trading live with it.</p>
 <p>Let&#8217;s start with backtesting, so run this other command to learn more about
 the available options:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>catalyst run --help
@@ -413,18 +444,20 @@ Options:
 </pre></div>
 </div>
 <p>As you can see there are a couple of flags that specify where to find your
-algorithm (<code class="docutils literal"><span class="pre">-f</span></code>) as well as a parameter to specify which exchange to use.
-There are also arguments for the date range to run the algorithm over
-(<code class="docutils literal"><span class="pre">--start</span></code> and <code class="docutils literal"><span class="pre">--end</span></code>). Finally, you&#8217;ll want to save the performance
-metrics of your algorithm so that you can analyze how it performed. This is
-done via the <code class="docutils literal"><span class="pre">--output</span></code> flag and will cause it to write the performance
-<code class="docutils literal"><span class="pre">DataFrame</span></code> in the pickle Python file format. Note that you can also define
-a configuration file with these parameters that you can then conveniently pass
-to the <code class="docutils literal"><span class="pre">-c</span></code> option so that you don&#8217;t have to supply the command line args
-all the time (see the .conf files in the examples directory).</p>
+algorithm (<code class="docutils literal"><span class="pre">-f</span></code>) as well as a the <code class="docutils literal"><span class="pre">-x</span></code> flag to specify which exchange to
+use. There are also arguments for the date range to run the algorithm over
+(<code class="docutils literal"><span class="pre">--start</span></code> and <code class="docutils literal"><span class="pre">--end</span></code>). You also need to set the base currency for your
+algorithm through the <code class="docutils literal"><span class="pre">-c</span></code> flag, and the <code class="docutils literal"><span class="pre">--capital_base</span></code>. All the
+aforementioned parameters are required. Optionally, you will want to save the
+performance metrics of your algorithm so that you can analyze how it performed.
+This is done via the <code class="docutils literal"><span class="pre">--output</span></code> flag and will cause it to write the
+performance <code class="docutils literal"><span class="pre">DataFrame</span></code> in the pickle Python file format. Note that you can
+also define a configuration file with these parameters that you can then
+conveniently pass to the <code class="docutils literal"><span class="pre">-c</span></code> option so that you don&#8217;t have to supply the
+command line args all the time.</p>
 <p>Thus, to execute our algorithm from above and save the results to
 <code class="docutils literal"><span class="pre">buy_btc_simple_out.pickle</span></code> we would call <code class="docutils literal"><span class="pre">catalyst</span> <span class="pre">run</span></code> as follows:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">catalyst</span> <span class="n">run</span> <span class="o">-</span><span class="n">f</span> <span class="n">buy_btc_simple</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">x</span> <span class="n">bitfinex</span> <span class="o">--</span><span class="n">start</span> <span class="mi">2016</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span> <span class="o">--</span><span class="n">end</span> <span class="mi">2017</span><span class="o">-</span><span class="mi">9</span><span class="o">-</span><span class="mi">30</span> <span class="o">-</span><span class="n">o</span> <span class="n">buy_btc_simple_out</span><span class="o">.</span><span class="n">pickle</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">catalyst</span> <span class="n">run</span> <span class="o">-</span><span class="n">f</span> <span class="n">buy_btc_simple</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">x</span> <span class="n">bitfinex</span> <span class="o">--</span><span class="n">start</span> <span class="mi">2016</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span> <span class="o">--</span><span class="n">end</span> <span class="mi">2017</span><span class="o">-</span><span class="mi">9</span><span class="o">-</span><span class="mi">30</span> <span class="o">-</span><span class="n">c</span> <span class="n">usd</span> <span class="o">--</span><span class="n">capital</span><span class="o">-</span><span class="n">base</span> <span class="mi">100000</span> <span class="o">-</span><span class="n">o</span> <span class="n">buy_btc_simple_out</span><span class="o">.</span><span class="n">pickle</span>
 </pre></div>
 </div>
 <div class="highlight-python"><div class="highlight"><pre>INFO: run_algo: running algo in backtest mode
@@ -446,14 +479,19 @@ applying the slippage model which models the influence of your order on
 the stock price, so your algorithm will be charged more than just the
 asset price. (Note, that you can also change the commission and
 slippage model that <code class="docutils literal"><span class="pre">catalyst</span></code> uses).</p>
-<p>Let&#8217;s take a quick look at the performance <code class="docutils literal"><span class="pre">DataFrame</span></code>. For this, we
-use <code class="docutils literal"><span class="pre">pandas</span></code> from inside the IPython Notebook and print the first ten
-rows. Note that <code class="docutils literal"><span class="pre">catalyst</span></code> makes heavy usage of
-<a class="reference external" href="http://pandas.pydata.org/">pandas</a>, especially for data input and
-outputting so it&#8217;s worth spending some time to learn it.</p>
+<p>Let&#8217;s take a quick look at the performance <code class="docutils literal"><span class="pre">DataFrame</span></code>. For this, we write
+different Python script&#8211;let&#8217;s call it <code class="docutils literal"><span class="pre">print_results.py</span></code>&#8211;and we make use of
+the fantastic <code class="docutils literal"><span class="pre">pandas</span></code> library to print the first ten rows. Note that
+<code class="docutils literal"><span class="pre">catalyst</span></code> makes heavy usage of <a class="reference external" href="http://pandas.pydata.org/">pandas</a>,
+especially for data analysis and outputting so it&#8217;s worth spending some time to
+learn it.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
 <span class="n">perf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="s">&#39;buy_btc_simple_out.pickle&#39;</span><span class="p">)</span> <span class="c"># read in perf DataFrame</span>
-<span class="n">perf</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">perf</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Which we execute by running:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>python print_results.py
 </pre></div>
 </div>
 <div style="max-height:1000px;max-width:1500px;overflow:auto;">
@@ -617,31 +655,61 @@ information about the state of your algorithm. The column
 and allows us to plot the price of bitcoin. For example, we could easily
 examine now how our portfolio value changed over time compared to the
 bitcoin price.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="o">%</span><span class="n">load_ext</span> <span class="n">catalyst</span>
-</pre></div>
-</div>
-<div class="highlight-python"><div class="highlight"><pre><span class="o">%</span><span class="n">pylab</span> <span class="n">inline</span>
-<span class="n">figsize</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<p>Now we will run the simulation again, but this time we extend our original
+algorithm with the addition of the <code class="docutils literal"><span class="pre">analyze()</span></code> function. Somewhat analogously
+as how <code class="docutils literal"><span class="pre">initialize()</span></code> gets called once before the start of the algorith,
+<code class="docutils literal"><span class="pre">analyze()</span></code> gets called once at the end of the algorithm, and receives two
+variables: <code class="docutils literal"><span class="pre">context</span></code>, which we discussed at the very beginning, and <code class="docutils literal"><span class="pre">perf</span></code>,
+which is the pandas dataframe containing the performance data for our algorithm
+that we reviewed above. Inside the <code class="docutils literal"><span class="pre">analyze()</span></code> function is where we can
+analyze and visualize the results of our strategy. Here&#8217;s the revised simple
+algorithm (note the addition of Line 1, and Lines 11-18)</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">catalyst.api</span> <span class="kn">import</span> <span class="n">order</span><span class="p">,</span> <span class="n">record</span><span class="p">,</span> <span class="n">symbol</span>
 
-<span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">211</span><span class="p">)</span>
-<span class="n">perf</span><span class="o">.</span><span class="n">portfolio_value</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
-<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;portfolio value&#39;</span><span class="p">)</span>
-<span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">212</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
-<span class="n">perf</span><span class="o">.</span><span class="n">btc</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">)</span>
-<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;bitcoin price&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">asset</span> <span class="o">=</span> <span class="n">symbol</span><span class="p">(</span><span class="s">&#39;btc_usd&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">handle_data</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="n">order</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">record</span><span class="p">(</span><span class="n">btc</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s">&#39;price&#39;</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">analyze</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">perf</span><span class="p">):</span>
+    <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">211</span><span class="p">)</span>
+    <span class="n">perf</span><span class="o">.</span><span class="n">portfolio_value</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;portfolio value&#39;</span><span class="p">)</span>
+    <span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">212</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
+    <span class="n">perf</span><span class="o">.</span><span class="n">btc</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;bitcoin price&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>Populating the interactive namespace from numpy and matplotlib
+<p>Here we make use of the external visualization library called
+<a class="reference external" href="https://matplotlib.org/">matplotlib</a>, which you might recall we installed
+alongside enigma-catalyst (with the exception of the <code class="docutils literal"><span class="pre">Conda</span></code> install, where it
+was included by default inside the conda environment we created). If for any
+reason you don&#8217;t have it installed, you can add it by running:</p>
+<div class="highlight-python"><div class="highlight"><pre>(catalyst)$ pip install matplotlib
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>&lt;matplotlib.text.Text at 0x10eaeadd0&gt;
-</pre></div>
-</div>
+<p>If everything works well, you&#8217;ll see the following chart:</p>
 <img alt="https://s3.amazonaws.com/enigmaco-docs/github.io/buy_btc_simple_graph.png" src="https://s3.amazonaws.com/enigmaco-docs/github.io/buy_btc_simple_graph.png" />
 <p>Our algorithm performance as assessed by the <code class="docutils literal"><span class="pre">portfolio_value</span></code> closely
 matches that of the bitcoin price. This is not surprising as our algorithm
 only bought bitcoin every chance it got.</p>
+<blockquote>
+<div><p>If you get an error when invoking matplotlib to visualize the performance
+results refer to <a class="reference external" href="install.html#macos-virtualenv-matplotlib">MacOS + Matplotlib</a>.
+Alternatively, some users have reported the following error when running an algo
+in a Linux environment:</p>
+<div class="highlight-python"><div class="highlight"><pre>ImportError: No module named _tkinter, please install the python-tk package
+</pre></div>
+</div>
+<p>Which can easily solved by running (in Ubuntu/Debian-based systems):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">tk</span>
+</pre></div>
+</div>
+</div></blockquote>
 </div>
 </div>
 <div class="section" id="access-to-previous-prices-using-history">

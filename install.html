@@ -86,7 +86,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#macos-requirements">MacOS Requirements</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#osx-virtualenv-matplotlib">OSX + virtualenv + matplotlib</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#macos-virtualenv-matplotlib">MacOS + virtualenv + matplotlib</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#windows-requirements">Windows Requirements</a></li>
@@ -96,8 +96,8 @@
 <li class="toctree-l1"><a class="reference internal" href="beginner-tutorial.html">Catalyst Beginner Tutorial</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#basics">Basics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#my-first-algorithm">My first algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#ingesting-data">Ingesting data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#running-the-algorithm">Running the algorithm</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="beginner-tutorial.html#ingesting-data">Ingesting data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="beginner-tutorial.html#command-line-interface">Command line interface</a></li>
 </ul>
 </li>
@@ -134,7 +134,7 @@
 <li class="toctree-l1"><a class="reference internal" href="videos.html">Videos</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="videos.html#installation-macos">Installation: MacOS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="videos.html#installation-windows">Installation: Windows</a></li>
-<li class="toctree-l2"><a class="reference internal" href="videos.html#backtesting-an-algorithm">Backtesting an algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="videos.html#backtesting-a-strategy">Backtesting a Strategy</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="resources.html">Resources</a><ul>
@@ -304,7 +304,7 @@ saved the above <code class="docutils literal"><span class="pre">python2.7-envir
 </li>
 <li><p class="first">Activate the environment (which you need to do every time you start a new
 session to run Catalyst):</p>
-<p><strong>Linux or OSX:</strong></p>
+<p><strong>Linux or MacOS:</strong></p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nb">source </span>activate catalyst
 </pre></div>
 </div>
@@ -340,7 +340,7 @@ step #2:</p>
 </div>
 </li>
 <li><p class="first">Activate the environment:</p>
-<p><strong>Linux or OSX:</strong></p>
+<p><strong>Linux or MacOS:</strong></p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nb">source </span>activate catalyst
 </pre></div>
 </div>
@@ -519,25 +519,25 @@ beginning of this page.</p>
 </div>
 <div class="section" id="macos-requirements">
 <span id="macos"></span><h2>MacOS Requirements<a class="headerlink" href="#macos-requirements" title="Permalink to this headline">¶</a></h2>
-<p>The version of Python shipped with OSX by default is generally out of date,
+<p>The version of Python shipped with MacOS by default is generally out of date,
 and has a number of quirks because it&#8217;s used directly by the operating system.
 For these reasons, many developers choose to install and use a separate Python
 installation. The <a class="reference external" href="http://docs.python-guide.org/en/latest/">Hitchhiker&#8217;s Guide to Python</a> provides an excellent guide
-to <a class="reference external" href="http://docs.python-guide.org/en/latest/">Installing Python on OSX</a>,
+to <a class="reference external" href="http://docs.python-guide.org/en/latest/">Installing Python on MacOS</a>,
 which explains how to install Python with the <a class="reference external" href="http://brew.sh">Homebrew</a> manager.</p>
 <p>Assuming you&#8217;ve installed Python with Homebrew, you&#8217;ll also likely need the
 following brew packages:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>brew install freetype pkg-config gcc openssl
 </pre></div>
 </div>
-<div class="section" id="osx-virtualenv-matplotlib">
-<h3>OSX + virtualenv + matplotlib<a class="headerlink" href="#osx-virtualenv-matplotlib" title="Permalink to this headline">¶</a></h3>
-<p>A note about using matplotlib in virtual enviroments on OSX: it may be
+<div class="section" id="macos-virtualenv-matplotlib">
+<h3>MacOS + virtualenv + matplotlib<a class="headerlink" href="#macos-virtualenv-matplotlib" title="Permalink to this headline">¶</a></h3>
+<p>A note about using matplotlib in virtual enviroments on MacOS: it may be
 necessary to run</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nb">echo</span> <span class="s2">&quot;backend: TkAgg&quot;</span> &gt; ~/.matplotlib/matplotlibrc
 </pre></div>
 </div>
-<p>in order to override the default <code class="docutils literal"><span class="pre">macosx</span></code> backend for your system, which
+<p>in order to override the default <code class="docutils literal"><span class="pre">MacOS</span></code> backend for your system, which
 may not be accessible from inside the virtual environment. This will allow
 Catalyst to open matplotlib charts from within a virtual environment, which
 is useful for displaying the performance of your backtests.  To learn more
