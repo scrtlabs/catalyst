@@ -170,8 +170,8 @@ def _run(handle_data,
         # This corresponds to the json file containing api token info
         exchange_auth = get_exchange_auth(exchange_name)
 
-        if live and (
-                exchange_auth['key'] == '' or exchange_auth['secret'] == ''):
+        if live and (exchange_auth['key'] == '' \
+                             or exchange_auth['secret'] == ''):
             raise ExchangeAuthEmpty(
                 exchange=exchange_name.title(),
                 filename=os.path.join(
@@ -263,17 +263,35 @@ def _run(handle_data,
                     )
 
             if base_currency in balances:
-                return balances[base_currency]
+                base_currency_available = balances[base_currency]
+                log.info(
+                    'base currency available in the account: {} {}'.format(
+                        base_currency_available, base_currency
+                    )
+                )
+
+                if capital_base is not None \
+                        and capital_base < base_currency_available:
+                    log.info(
+                        'using capital base limit: {} {}'.format(
+                            capital_base, base_currency
+                        )
+                    )
+                    amount = capital_base
+                else:
+                    amount = base_currency_available
+
+                return amount
             else:
                 raise BaseCurrencyNotFoundError(
                     base_currency=base_currency,
                     exchange=exchange_name
                 )
 
-        capital_base = 0
+        combined_capital_base = 0
         for exchange_name in exchanges:
             exchange = exchanges[exchange_name]
-            capital_base += fetch_capital_base(exchange)
+            combined_capital_base += fetch_capital_base(exchange)
 
         sim_params = create_simulation_parameters(
             start=start,
@@ -338,7 +356,7 @@ def _run(handle_data,
             raise ValueError(
                 "invalid url %r, must begin with 'sqlite:///'" %
                 str(bundle_data.asset_finder.engine.url),
-                )
+            )
 
         env = TradingEnvironment(asset_db_path=connstr, environ=environ)
         first_trading_day = \

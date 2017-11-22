@@ -177,7 +177,7 @@ def ipython_only(option):
     default='-',
     metavar='FILENAME',
     show_default=True,
-    help="The location to write the perf data. If this is '-' the perf" 
+    help="The location to write the perf data. If this is '-' the perf"
          " will be written to stdout.",
 )
 @click.option(
@@ -549,9 +549,10 @@ def ingest_exchange(exchange_name, data_frequency, start, end,
 @click.pass_context
 def clean_algo(ctx, algo_namespace):
     click.echo(
-        'Deleting the state folder of algo: {}...'.format(algo_namespace)
+        'Cleaning algo state: {}'.format(algo_namespace)
     )
     delete_algo_folder(algo_namespace)
+    click.echo('Done')
 
 
 @main.command(name='clean-exchange')
