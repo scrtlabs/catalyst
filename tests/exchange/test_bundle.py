@@ -525,3 +525,13 @@ class TestExchangeBundle:
         print('TAIL\n{}'.format(df.tail(10)))
         df.to_csv(path)
         pass
+
+    def test_ingest_csv(self):
+        data_frequency = 'minute'
+        exchange_name = 'bittrex'
+        path = '/Users/fredfortier/Dropbox/Enigma/Data/bat_eth.csv'
+
+        exchange_bundle = ExchangeBundle(exchange_name)
+        exchange_bundle.ingest_csv(path, data_frequency)
+
+        pass

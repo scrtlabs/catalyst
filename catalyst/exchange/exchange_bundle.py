@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 from datetime import datetime, timedelta
@@ -26,8 +27,9 @@ from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
 from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
     TempBundleNotFoundError, \
     NoDataAvailableOnExchange, \
-    PricingDataNotLoadedError, DataCorruptionError
-from catalyst.exchange.exchange_utils import get_exchange_folder
+    PricingDataNotLoadedError, DataCorruptionError, ExchangeSymbolsNotFound
+from catalyst.exchange.exchange_utils import get_exchange_folder, \
+    get_exchange_symbols, perf_serial, symbols_serial
 from catalyst.utils.cli import maybe_show_progress
 from catalyst.utils.paths import ensure_directory
 
@@ -661,13 +663,73 @@ class ExchangeBundle:
 
         """
         log.info('ingesting csv file: {}'.format(path))
-        problems = []
+        try:
+            symbols_def = get_exchange_symbols(
+                self.exchange_name, is_local=True
+            )
+        except ExchangeSymbolsNotFound:
+            symbols_def = dict()
 
+        problems = []
         df = pd.read_csv(
             path,
-            names=['symbol', 'last_traded', 'open', 'high', 'close', 'volume'],
-            parse_dates=[1]
+            header=0,
+            sep=',',
+            dtype=dict(
+                symbol=np.object_,
+                last_traded=np.object_,
+                open=np.float64,
+                high=np.float64,
+                close=np.float64,
+                volume=np.float64
+            ),
+            parse_dates=['last_traded'],
+            index_col=None
         )
+
+        symbols = df['symbol'].unique()
+        trading_pairs = dict()
+        for symbol in symbols:
+            start_dt = df['last_traded'].min()
+            end_dt = df['last_traded'].max()
+            end_dt_key = 'end_{}'.format(data_frequency)
+
+            if symbol is symbols_def:
+                symbol_def = symbols_def[symbol]
+
+                start_dt = symbol_def['start_date'] \
+                    if symbol_def['start_date'] < start_dt else start_dt
+
+                end_dt = symbol_def[end_dt_key] \
+                    if symbol_def[end_dt_key] > end_dt else end_dt
+
+                end_daily = end_dt \
+                    if data_frequency == 'daily' else symbol_def['end_daily']
+
+                end_minute = end_dt \
+                    if data_frequency == 'minute' else symbol_def['end_minute']
+
+            else:
+                end_daily = end_dt if data_frequency == 'daily' else None
+                end_minute = end_dt if data_frequency == 'minute' else None
+
+            trading_pair = TradingPair(
+                symbol=symbol,
+                exchange=self.exchange_name,
+                start_date=start_dt,
+                end_date=end_dt,
+                leverage=0,  # TODO: add as an optional column
+                asset_name=symbol,
+                min_trade_size=0,  # TODO: add as an optional column
+                end_daily=end_daily,
+                end_minute=end_minute,
+                exchange_symbol=symbol
+            )
+            trading_pairs[symbol] = trading_pair.to_dict()
+
+        symbols_def_json = json.dumps(trading_pairs, default=symbols_serial)
+        df.set_index(['symbol', 'last_traded'], drop=True, inplace=True)
+        df.tz_localize('UTC', level=1)
         # problems += self.ingest_df(
         #     ohlcv_df=df,
         #     data_frequency=data_frequency,
