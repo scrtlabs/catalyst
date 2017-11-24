@@ -46,7 +46,7 @@ class Bittrex(Exchange):
         self.assets = dict()
         self.load_assets()
 
-        self.bundle = ExchangeBundle(self)
+        self.bundle = ExchangeBundle(self.name)
 
     @property
     def account(self):

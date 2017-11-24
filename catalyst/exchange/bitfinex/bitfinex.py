@@ -61,7 +61,7 @@ class Bitfinex(Exchange):
         self.max_requests_per_minute = 80
         self.request_cpt = dict()
 
-        self.bundle = ExchangeBundle(self)
+        self.bundle = ExchangeBundle(self.name)
 
     def _request(self, operation, data, version='v1'):
         payload_object = {

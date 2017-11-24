@@ -1,6 +1,9 @@
 # For this example, we're going to write a simple momentum script.  When the 
 # stock goes up quickly, we're going to buy; when it goes down quickly, we're
 # going to sell.  Hopefully we'll ride the waves.
+import os
+import tempfile
+import time
 
 import pandas as pd
 import talib
@@ -9,13 +12,15 @@ from logbook import Logger
 from catalyst import run_algorithm
 from catalyst.api import symbol, record, order_target_percent, get_open_orders
 from catalyst.exchange.stats_utils import extract_transactions
-
 # We give a name to the algorithm which Catalyst will use to persist its state.
 # In this example, Catalyst will create the `.catalyst/data/live_algos`
 # directory. If we stop and start the algorithm, Catalyst will resume its
 # state using the files included in the folder.
+from catalyst.utils.paths import ensure_directory
+
 NAMESPACE = 'mean_reversion_simple'
 log = Logger(NAMESPACE)
+
 
 # To run an algorithm in Catalyst, you need two functions: initialize and
 # handle_data.
@@ -27,9 +32,15 @@ def initialize(context):
     # parameters or values you're going to use.
 
     # In our example, we're looking at Ether in USD Tether.
-    context.neo_usd = symbol('neo_btc')
+    context.neo_eth = symbol('neo_eth')
     context.base_price = None
     context.current_day = None
+
+    context.RSI_OVERSOLD = 50
+    context.RSI_OVERBOUGHT = 80
+    context.CANDLE_SIZE = '5T'
+
+    context.start_time = time.time()
 
 
 def handle_data(context, data):
@@ -47,17 +58,17 @@ def handle_data(context, data):
         context.current_day = today
 
     # We're computing the volume-weighted-average-price of the security
-    # defined above, in the context.neo_usd variable.  For this example, we're 
+    # defined above, in the context.neo_eth variable.  For this example, we're 
     # using three bars on the 15 min bars.
 
     # The frequency attribute determine the bar size. We use this convention
     # for the frequency alias:
     # http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
     prices = data.history(
-        context.neo_usd,
+        context.neo_eth,
         fields='close',
         bar_count=50,
-        frequency='30T'
+        frequency=context.CANDLE_SIZE
     )
 
     # Ta-lib calculates various technical indicator based on price and
@@ -69,7 +80,7 @@ def handle_data(context, data):
     # We need a variable for the current price of the security to compare to
     # the average. Since we are requesting two fields, data.current()
     # returns a DataFrame with
-    current = data.current(context.neo_usd, fields=['close', 'volume'])
+    current = data.current(context.neo_eth, fields=['close', 'volume'])
     price = current['close']
 
     # If base_price is not set, we use the current value. This is the
@@ -98,42 +109,51 @@ def handle_data(context, data):
 
     # Since we are using limit orders, some orders may not execute immediately
     # we wait until all orders are executed before considering more trades.
-    orders = get_open_orders(context.neo_usd)
+    orders = get_open_orders(context.neo_eth)
     if len(orders) > 0:
         return
 
     # Exit if we cannot trade
-    if not data.can_trade(context.neo_usd):
+    if not data.can_trade(context.neo_eth):
         return
 
     # Another powerful built-in feature of the Catalyst backtester is the
     # portfolio object.  The portfolio object tracks your positions, cash,
     # cost basis of specific holdings, and more.  In this line, we calculate
     # how long or short our position is at this minute.   
-    pos_amount = context.portfolio.positions[context.neo_usd].amount
+    pos_amount = context.portfolio.positions[context.neo_eth].amount
 
-    if rsi[-1] <= 30 and pos_amount == 0:
+    if rsi[-1] <= context.RSI_OVERSOLD and pos_amount == 0:
         log.info(
             '{}: buying - price: {}, rsi: {}'.format(
                 data.current_dt, price, rsi[-1]
             )
         )
-        order_target_percent(context.neo_usd, 1)
+        # Set a style for limit orders,
+        limit_price = price * 1.005
+        order_target_percent(
+            context.neo_eth, 1, limit_price=limit_price
+        )
         context.traded_today = True
 
-    elif rsi[-1] >= 80 and pos_amount > 0:
+    elif rsi[-1] >= context.RSI_OVERBOUGHT and pos_amount > 0:
         log.info(
             '{}: selling - price: {}, rsi: {}'.format(
                 data.current_dt, price, rsi[-1]
             )
         )
-        order_target_percent(context.neo_usd, 0)
+        limit_price = price * 0.995
+        order_target_percent(
+            context.neo_eth, 0, limit_price=limit_price
+        )
         context.traded_today = True
 
 
 def analyze(context=None, perf=None):
-    import matplotlib.pyplot as plt
+    end = time.time()
+    log.info('elapsed time: {}'.format(end - context.start_time))
 
+    import matplotlib.pyplot as plt
     # The base currency of the algo exchange
     base_currency = context.exchanges.values()[0].base_currency.upper()
 
@@ -147,7 +167,7 @@ def analyze(context=None, perf=None):
     perf.loc[:, 'price'].plot(ax=ax2, label='Price')
 
     ax2.set_ylabel('{asset} ({base})'.format(
-        asset=context.neo_usd.symbol, base=base_currency
+        asset=context.neo_eth.symbol, base=base_currency
     ))
 
     transaction_df = extract_transactions(perf)
@@ -156,7 +176,7 @@ def analyze(context=None, perf=None):
         sell_df = transaction_df[transaction_df['amount'] < 0]
         ax2.scatter(
             buy_df.index.to_pydatetime(),
-            perf.loc[buy_df.index, 'price'],
+            perf.loc[buy_df.index.floor('1 min'), 'price'],
             marker='^',
             s=100,
             c='green',
@@ -164,7 +184,7 @@ def analyze(context=None, perf=None):
         )
         ax2.scatter(
             sell_df.index.to_pydatetime(),
-            perf.loc[sell_df.index, 'price'],
+            perf.loc[sell_df.index.floor('1 min'), 'price'],
             marker='v',
             s=100,
             c='red',
@@ -191,7 +211,7 @@ def analyze(context=None, perf=None):
     if not transaction_df.empty:
         ax6.scatter(
             buy_df.index.to_pydatetime(),
-            perf.loc[buy_df.index, 'rsi'],
+            perf.loc[buy_df.index.floor('1 min'), 'rsi'],
             marker='^',
             s=100,
             c='green',
@@ -199,7 +219,7 @@ def analyze(context=None, perf=None):
         )
         ax6.scatter(
             sell_df.index.to_pydatetime(),
-            perf.loc[sell_df.index, 'rsi'],
+            perf.loc[sell_df.index.floor('1 min'), 'rsi'],
             marker='v',
             s=100,
             c='red',
@@ -218,6 +238,13 @@ if __name__ == '__main__':
     MODE = 'live'
 
     if MODE == 'backtest':
+        folder = os.path.join(
+            tempfile.gettempdir(), 'catalyst', NAMESPACE
+        )
+        ensure_directory(folder)
+
+        timestr = time.strftime('%Y%m%d-%H%M%S')
+        out = os.path.join(folder, '{}.p'.format(timestr))
         # catalyst run -f catalyst/examples/mean_reversion_simple.py -x poloniex -s 2017-10-1 -e 2017-11-10 -c usdt -n mean-reversion --data-frequency minute --capital-base 10000
         run_algorithm(
             capital_base=10000,
@@ -228,18 +255,21 @@ if __name__ == '__main__':
             exchange_name='bitfinex',
             algo_namespace=NAMESPACE,
             base_currency='usd',
-            start=pd.to_datetime('2017-10-1', utc=True),
+            start=pd.to_datetime('2017-10-01', utc=True),
             end=pd.to_datetime('2017-11-10', utc=True),
+            output=out
         )
+        log.info('saved perf stats: {}'.format(out))
 
     elif MODE == 'live':
         run_algorithm(
+            capital_base=0.5,
             initialize=initialize,
             handle_data=handle_data,
             analyze=analyze,
             exchange_name='bittrex',
             live=True,
             algo_namespace=NAMESPACE,
-            base_currency='btc',
+            base_currency='eth',
             live_graph=False
         )

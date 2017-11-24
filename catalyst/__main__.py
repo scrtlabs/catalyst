@@ -500,6 +500,13 @@ def live(ctx,
          '(optional comma separated list)',
 )
 @click.option(
+    '--csv',
+    default=None,
+    help='The path of a CSV file containing the data. If specified, start, '
+         'end, include-symbols and exclude-symbols will be ignored. Instead,'
+         'all data in the file will be ingested.',
+)
+@click.option(
     '--show-progress/--no-show-progress',
     default=True,
     help='Print progress information to the terminal.'
@@ -515,8 +522,8 @@ def live(ctx,
     help='Report potential anomalies found in data bundles.'
 )
 def ingest_exchange(exchange_name, data_frequency, start, end,
-                    include_symbols, exclude_symbols, show_progress, verbose,
-                    validate):
+                    include_symbols, exclude_symbols, csv, show_progress,
+                    verbose, validate):
     """
     Ingest data for the given exchange.
     """
@@ -524,8 +531,7 @@ def ingest_exchange(exchange_name, data_frequency, start, end,
     if exchange_name is None:
         ctx.fail("must specify an exchange name '-x'")
 
-    exchange = get_exchange(exchange_name)
-    exchange_bundle = ExchangeBundle(exchange)
+    exchange_bundle = ExchangeBundle(exchange_name)
 
     click.echo('Ingesting exchange bundle {}...'.format(exchange_name))
     exchange_bundle.ingest(
@@ -536,7 +542,8 @@ def ingest_exchange(exchange_name, data_frequency, start, end,
         end=end,
         show_progress=show_progress,
         show_breakdown=verbose,
-        show_report=validate
+        show_report=validate,
+        csv=csv
     )
 
 
@@ -579,8 +586,7 @@ def clean_exchange(ctx, exchange_name, data_frequency):
     if exchange_name is None:
         ctx.fail("must specify an exchange name '-x'")
 
-    exchange = get_exchange(exchange_name)
-    exchange_bundle = ExchangeBundle(exchange)
+    exchange_bundle = ExchangeBundle(exchange_name)
 
     click.echo('Cleaning exchange bundle {}...'.format(exchange_name))
     exchange_bundle.clean(

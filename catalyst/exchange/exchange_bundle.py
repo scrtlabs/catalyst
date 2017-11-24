@@ -20,7 +20,7 @@ from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
 from catalyst.exchange.bundle_utils import range_in_bundle, \
     get_bcolz_chunk, get_month_start_end, \
     get_year_start_end, get_df_from_arrays, get_start_dt, get_period_label, \
-    get_delta
+    get_delta, get_assets
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
 from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
@@ -41,23 +41,14 @@ def _cachpath(symbol, type_):
 
 
 class ExchangeBundle:
-    def __init__(self, exchange):
-        self.exchange = exchange
+    def __init__(self, exchange_name):
+        self.exchange_name = exchange_name
         self.minutes_per_day = 1440
         self.default_ohlc_ratio = 1000000
         self._writers = dict()
         self._readers = dict()
         self.calendar = get_calendar('OPEN')
-
-    def get_assets(self, include_symbols, exclude_symbols):
-        # TODO: filter exclude symbols assets
-        if include_symbols is not None:
-            include_symbols_list = include_symbols.split(',')
-
-            return self.exchange.get_assets(include_symbols_list)
-
-        else:
-            return self.exchange.get_assets()
+        self.exchange = None
 
     def get_reader(self, data_frequency, path=None):
         """
@@ -69,7 +60,7 @@ class ExchangeBundle:
 
         """
         if path is None:
-            root = get_exchange_folder(self.exchange.name)
+            root = get_exchange_folder(self.exchange_name)
             path = BUNDLE_NAME_TEMPLATE.format(
                 root=root,
                 frequency=data_frequency
@@ -100,7 +91,7 @@ class ExchangeBundle:
         BcolzMinuteBarWriter | BcolzDailyBarWriter
 
         """
-        root = get_exchange_folder(self.exchange.name)
+        root = get_exchange_folder(self.exchange_name)
         path = BUNDLE_NAME_TEMPLATE.format(
             root=root,
             frequency=data_frequency
@@ -158,9 +149,9 @@ class ExchangeBundle:
         ----------
         assets: list[TradingPair]
             The assets is scope.
-        start_dt: datetime
+        start_dt: pd.Timestamp
             The chunk start date.
-        end_dt: datetime
+        end_dt: pd.Timestamp
             The chunk end date.
         data_frequency: str
 
@@ -209,8 +200,8 @@ class ExchangeBundle:
 
         Parameters
         ----------
-        start_dt: datetime
-        end_dt: datetime
+        start_dt: pd.Timestamp
+        end_dt: pd.Timestamp
         data_frequency: str
 
         Returns
@@ -367,7 +358,7 @@ class ExchangeBundle:
 
         # Download and extract the bundle
         path = get_bcolz_chunk(
-            exchange_name=self.exchange.name,
+            exchange_name=self.exchange_name,
             symbol=asset.symbol,
             data_frequency=data_frequency,
             period=period
@@ -436,14 +427,14 @@ class ExchangeBundle:
 
         Parameters
         ----------
-        start: datetime
-        end: datetime
+        start: pd.Timestamp
+        end: pd.Timestamp
         assets: list[TradingPair]
         data_frequency: str
 
         Returns
         -------
-        datetime, datetime
+        pd.Timestamp, pd.Timestamp
         """
         earliest_trade = None
         last_entry = None
@@ -490,8 +481,8 @@ class ExchangeBundle:
         ----------
         assets: list[TradingPair]
         data_frequency: str
-        start_dt: datetime
-        end_dt: datetime
+        start_dt: pd.Timestamp
+        end_dt: pd.Timestamp
 
         Returns
         -------
@@ -574,8 +565,8 @@ class ExchangeBundle:
         ----------
         assets: list[TradingPair]
         data_frequency: str
-        start_dt: datetime
-        end_dt: datetime
+        start_dt: pd.Timestamp
+        end_dt: pd.Timestamp
         show_progress: bool
         show_breakdown: bool
 
@@ -611,7 +602,7 @@ class ExchangeBundle:
                         show_progress,
                         label='Ingesting {frequency} price data for '
                               '{symbol} on {exchange}'.format(
-                            exchange=self.exchange.name,
+                            exchange=self.exchange_name,
                             frequency=data_frequency,
                             symbol=asset.symbol
                         )) as it:
@@ -636,7 +627,7 @@ class ExchangeBundle:
                     show_progress,
                     label='Ingesting {frequency} price data on '
                           '{exchange}'.format(
-                        exchange=self.exchange.name,
+                        exchange=self.exchange_name,
                         frequency=data_frequency,
                     )) as it:
                 for chunk in it:
@@ -654,8 +645,41 @@ class ExchangeBundle:
                 '\n'.join(problems)
             ))
 
+    def ingest_csv(self, path, data_frequency):
+        """
+        Ingest price data from a CSV file.
+
+        Parameters
+        ----------
+        path: str
+        data_frequency: str
+
+        Returns
+        -------
+        list[str]
+            A list of potential problems detected during ingestion.
+
+        """
+        log.info('ingesting csv file: {}'.format(path))
+        problems = []
+
+        df = pd.read_csv(
+            path,
+            names=['symbol', 'last_traded', 'open', 'high', 'close', 'volume'],
+            parse_dates=[1]
+        )
+        # problems += self.ingest_df(
+        #     ohlcv_df=df,
+        #     data_frequency=data_frequency,
+        #     asset=asset,
+        #     writer=writer,
+        #     empty_rows_behavior=empty_rows_behavior,
+        #     duplicates_threshold=duplicates_threshold
+        # )
+        return filter(partial(is_not, None), problems)
+
     def ingest(self, data_frequency, include_symbols=None,
-               exclude_symbols=None, start=None, end=None,
+               exclude_symbols=None, start=None, end=None, csv=None,
                show_progress=True, show_breakdown=True, show_report=True):
         """
         Inject data based on specified parameters.
@@ -665,17 +689,34 @@ class ExchangeBundle:
         data_frequency: str
         include_symbols: str
         exclude_symbols: str
-        start: datetime
-        end: datetime
+        start: pd.Timestamp
+        end: pd.Timestamp
         show_progress: bool
         environ:
 
         """
-        assets = self.get_assets(include_symbols, exclude_symbols)
+        if csv is not None:
+            self.ingest_csv(csv, data_frequency)
 
-        for frequency in data_frequency.split(','):
-            self.ingest_assets(assets, frequency, start, end,
-                               show_progress, show_breakdown, show_report)
+        else:
+            if self.exchange is None:
+                # Avoid circular dependencies
+                from catalyst.exchange.factory import get_exchange
+                self.exchange = get_exchange(self.exchange_name)
+
+            assets = get_assets(
+                self.exchange, include_symbols, exclude_symbols
+            )
+            for frequency in data_frequency.split(','):
+                self.ingest_assets(
+                    assets=assets,
+                    data_frequency=frequency,
+                    start_dt=start,
+                    end_dt=end,
+                    show_progress=show_progress,
+                    show_breakdown=show_breakdown,
+                    show_report=show_report
+                )
 
     def get_history_window_series_and_load(self,
                                            assets,
@@ -693,11 +734,11 @@ class ExchangeBundle:
         Parameters
         ----------
         assets: list[TradingPair]
-        end_dt: datetime
+        end_dt: pd.Timestamp
         bar_count: int
         field: str
         data_frequency: str
-        algo_end_dt: datetime
+        algo_end_dt: pd.Timestamp
 
         Returns
         -------
@@ -802,7 +843,7 @@ class ExchangeBundle:
             raise PricingDataNotLoadedError(
                 field=field,
                 first_trading_day=min([asset.start_date for asset in assets]),
-                exchange=self.exchange.name,
+                exchange=self.exchange_name,
                 symbols=symbols,
                 symbol_list=','.join(symbols),
                 data_frequency=data_frequency,
@@ -840,7 +881,7 @@ class ExchangeBundle:
             raise PricingDataNotLoadedError(
                 field=field,
                 first_trading_day=min([asset.start_date for asset in assets]),
-                exchange=self.exchange.name,
+                exchange=self.exchange_name,
                 symbols=symbols,
                 symbol_list=','.join(symbols),
                 data_frequency=data_frequency,
@@ -860,7 +901,7 @@ class ExchangeBundle:
                 raise PricingDataNotLoadedError(
                     field=field,
                     first_trading_day=asset.start_date,
-                    exchange=self.exchange.name,
+                    exchange=self.exchange_name,
                     symbols=asset.symbol,
                     symbol_list=asset.symbol,
                     data_frequency=data_frequency,
@@ -884,7 +925,7 @@ class ExchangeBundle:
             )
             if len(arrays) == 0:
                 raise DataCorruptionError(
-                    exchange=self.exchange.name,
+                    exchange=self.exchange_name,
                     symbols=asset.symbol,
                     start_dt=asset_start_dt,
                     end_dt=asset_end_dt
@@ -897,42 +938,41 @@ class ExchangeBundle:
 
         return series
 
+    def clean(self, data_frequency):
+        """
+        Removing the bundle data from the catalyst folder.
 
-def clean(self, data_frequency):
-    """
-    Removing the bundle data from the catalyst folder.
+        Parameters
+        ----------
+        data_frequency: str
 
-    Parameters
-    ----------
-    data_frequency: str
+        """
+        log.debug('cleaning exchange {}, frequency {}'.format(
+            self.exchange_name, data_frequency
+        ))
+        root = get_exchange_folder(self.exchange_name)
 
-    """
-    log.debug('cleaning exchange {}, frequency {}'.format(
-        self.exchange.name, data_frequency
-    ))
-    root = get_exchange_folder(self.exchange.name)
+        symbols = os.path.join(root, 'symbols.json')
+        if os.path.isfile(symbols):
+            os.remove(symbols)
 
-    symbols = os.path.join(root, 'symbols.json')
-    if os.path.isfile(symbols):
-        os.remove(symbols)
+        temp_bundles = os.path.join(root, 'temp_bundles')
 
-    temp_bundles = os.path.join(root, 'temp_bundles')
+        if os.path.isdir(temp_bundles):
+            log.debug('removing folder and content: {}'.format(temp_bundles))
+            shutil.rmtree(temp_bundles)
+            log.debug('{} removed'.format(temp_bundles))
 
-    if os.path.isdir(temp_bundles):
-        log.debug('removing folder and content: {}'.format(temp_bundles))
-        shutil.rmtree(temp_bundles)
-        log.debug('{} removed'.format(temp_bundles))
+        frequencies = ['daily', 'minute'] if data_frequency is None \
+            else [data_frequency]
 
-    frequencies = ['daily', 'minute'] if data_frequency is None \
-        else [data_frequency]
+        for frequency in frequencies:
+            label = '{}_bundle'.format(frequency)
+            frequency_bundle = os.path.join(root, label)
 
-    for frequency in frequencies:
-        label = '{}_bundle'.format(frequency)
-        frequency_bundle = os.path.join(root, label)
-
-        if os.path.isdir(frequency_bundle):
-            log.debug(
-                'removing folder and content: {}'.format(frequency_bundle)
-            )
-            shutil.rmtree(frequency_bundle)
-            log.debug('{} removed'.format(frequency_bundle))
+            if os.path.isdir(frequency_bundle):
+                log.debug(
+                    'removing folder and content: {}'.format(frequency_bundle)
+                )
+                shutil.rmtree(frequency_bundle)
+                log.debug('{} removed'.format(frequency_bundle))

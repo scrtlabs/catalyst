@@ -6,13 +6,13 @@ from datetime import timedelta, datetime, date
 import numpy as np
 import pandas as pd
 import pytz
+from catalyst.assets._assets import TradingPair
 
 from catalyst.data.bundles.core import download_without_progress
 from catalyst.exchange.exchange_utils import get_exchange_bundles_folder
 
 EXCHANGE_NAMES = ['bitfinex', 'bittrex', 'poloniex']
 API_URL = 'http://data.enigma.co/api/v1'
-
 
 def get_date_from_ms(ms):
     """
@@ -317,3 +317,41 @@ def range_in_bundle(asset, start_dt, end_dt, reader):
             has_data = False
 
     return has_data
+
+
+def get_assets(exchange, include_symbols, exclude_symbols):
+    """
+    Get assets from an exchange, including or excluding the specified
+    symbols.
+
+    Parameters
+    ----------
+    exchange: Exchange
+    include_symbols: str
+    exclude_symbols: str
+
+    Returns
+    -------
+    list[TradingPair]
+
+    """
+    if include_symbols is not None:
+        include_symbols_list = include_symbols.split(',')
+
+        return exchange.get_assets(include_symbols_list)
+
+    else:
+        all_assets = exchange.get_assets()
+
+        if exclude_symbols is not None:
+            exclude_symbols_list = exclude_symbols.split(',')
+
+            assets = []
+            for asset in all_assets:
+                if asset.symbol not in exclude_symbols_list:
+                    assets.append(asset)
+
+            return assets
+
+        else:
+            return all_assets

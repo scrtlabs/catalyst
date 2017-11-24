@@ -47,7 +47,7 @@ class Poloniex(Exchange):
         self.max_requests_per_minute = 60
         self.request_cpt = dict()
 
-        self.bundle = ExchangeBundle(self)
+        self.bundle = ExchangeBundle(self.name)
 
     def sanitize_curency_symbol(self, exchange_symbol):
         """

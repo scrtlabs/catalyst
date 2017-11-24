@@ -1,20 +1,17 @@
 import os
 import tempfile
 
+import pandas as pd
 import six
 from catalyst.assets._assets import TradingPair, get_calendar
 from logbook import Logger
-
-import pandas as pd
 from pandas.util.testing import assert_frame_equal
 
 from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
-from catalyst.exchange.bundle_utils import get_start_dt
 from catalyst.exchange.exchange_data_portal import DataPortalExchangeBacktest
-from catalyst.exchange.factory import get_exchange, get_exchanges
+from catalyst.exchange.factory import get_exchanges
 from catalyst.utils.paths import ensure_directory
-from catalyst.exchange.exchange import Exchange
 
 log = Logger('Validator', level=LOG_LEVEL)
 

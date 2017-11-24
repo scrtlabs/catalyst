@@ -24,7 +24,6 @@ from catalyst.exchange.exchange_utils import get_exchange_symbols, \
     get_frequency, resample_history_df
 from catalyst.finance.order import ORDER_STATUS
 from catalyst.finance.transaction import Transaction
-from catalyst.utils.deprecate import deprecated
 
 log = Logger('Exchange', level=LOG_LEVEL)
 
@@ -43,7 +42,7 @@ class Exchange:
         self.num_candles_limit = None
         self.max_requests_per_minute = None
         self.request_cpt = None
-        self.bundle = ExchangeBundle(self)
+        self.bundle = ExchangeBundle(self.name)
 
     @property
     def positions(self):
