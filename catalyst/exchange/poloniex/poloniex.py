@@ -35,8 +35,13 @@ class Poloniex(Exchange):
     def __init__(self, key, secret, base_currency, portfolio=None):
         self.api = Poloniex_api(key=key, secret=secret)
         self.name = 'poloniex'
-        self.assets = {}
+
+        self.assets = dict()
         self.load_assets()
+
+        self.local_assets = dict()
+        self.load_assets(is_local=True)
+
         self.base_currency = base_currency
         self._portfolio = portfolio
         self.minute_writer = None

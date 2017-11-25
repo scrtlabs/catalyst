@@ -16,7 +16,7 @@ from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     InvalidOrderStyle, BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
     PricingDataNotLoadedError, \
-    NoDataAvailableOnExchange
+    NoDataAvailableOnExchange, ExchangeSymbolsNotFound
 from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
     ExchangeLimitOrder, ExchangeStopOrder
 from catalyst.exchange.exchange_portfolio import ExchangePortfolio
@@ -33,7 +33,8 @@ class Exchange:
 
     def __init__(self):
         self.name = None
-        self.assets = {}
+        self.assets = dict()
+        self.local_assets = dict()
         self._portfolio = None
         self.minute_writer = None
         self.minute_reader = None
@@ -173,7 +174,7 @@ class Exchange:
 
         return symbols
 
-    def get_assets(self, symbols=None):
+    def get_assets(self, symbols=None, data_frequency=None):
         """
         The list of markets for the specified symbols.
 
@@ -190,7 +191,7 @@ class Exchange:
 
         if symbols is not None:
             for symbol in symbols:
-                asset = self.get_asset(symbol)
+                asset = self.get_asset(symbol, data_frequency)
                 assets.append(asset)
         else:
             for key in self.assets:
@@ -198,7 +199,19 @@ class Exchange:
 
         return assets
 
-    def get_asset(self, symbol):
+    def _find_asset(self, asset, symbol, data_frequency, is_local=False):
+        assets = self.assets if not is_local else self.local_assets
+
+        for key in assets:
+            if not asset and assets[key].symbol.lower() == symbol.lower() and (
+                        not data_frequency or (
+                                    data_frequency == 'minute' and assets[
+                                key].end_minute is not None)):
+                asset = assets[key]
+
+        return asset
+
+    def get_asset(self, symbol, data_frequency=None):
         """
         The market for the specified symbol.
 
@@ -213,13 +226,17 @@ class Exchange:
         """
         asset = None
 
-        for key in self.assets:
-            if not asset and self.assets[key].symbol.lower() == symbol.lower():
-                asset = self.assets[key]
+        log.debug('searching asset {} on the server')
+        asset = self._find_asset(asset, symbol, data_frequency, False)
+
+        log.debug('asset {} not found on the server, searching local assets')
+        asset = self._find_asset(asset, symbol, data_frequency, True)
 
         if not asset:
+            all_values = list(self.assets.values()) + \
+                         list(self.local_assets.values())
             supported_symbols = [
-                pair.symbol for pair in list(self.assets.values())
+                asset.symbol for asset in all_values
             ]
 
             raise SymbolNotFoundOnExchange(
@@ -230,10 +247,10 @@ class Exchange:
 
         return asset
 
-    def fetch_symbol_map(self):
-        return get_exchange_symbols(self.name)
+    def fetch_symbol_map(self, is_local=False):
+        return get_exchange_symbols(self.name, is_local)
 
-    def load_assets(self):
+    def load_assets(self, is_local=False):
         """
         Populate the 'assets' attribute with a dictionary of Assets.
         The key of the resulting dictionary is the exchange specific
@@ -246,11 +263,15 @@ class Exchange:
         universal symbol. This simple approach avoids maintaining a mapping
         of sids.
 
-        This method can be overridden if an exchange offers equivalent data
+        This method can be omerridden if an exchange offers equivalent data
         via its api.
 
         """
-        symbol_map = self.fetch_symbol_map()
+        try:
+            symbol_map = self.fetch_symbol_map(is_local)
+        except ExchangeSymbolsNotFound:
+            return None
+
         for exchange_symbol in symbol_map:
             asset = symbol_map[exchange_symbol]
 
@@ -302,7 +323,10 @@ class Exchange:
                 exchange_symbol=exchange_symbol
             )
 
-            self.assets[exchange_symbol] = trading_pair
+            if is_local:
+                self.local_assets[exchange_symbol] = trading_pair
+            else:
+                self.assets[exchange_symbol] = trading_pair
 
     def check_open_orders(self):
         """

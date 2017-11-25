@@ -46,8 +46,13 @@ class Bitfinex(Exchange):
         self.secret = secret.encode('UTF-8')
         self.name = 'bitfinex'
         self.color = 'green'
-        self.assets = {}
+
+        self.assets = dict()
         self.load_assets()
+
+        self.local_assets = dict()
+        self.load_assets(is_local=True)
+
         self.base_currency = base_currency
         self._portfolio = portfolio
         self.minute_writer = None

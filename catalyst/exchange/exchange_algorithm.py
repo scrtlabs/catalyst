@@ -117,6 +117,7 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
         return self.asset_finder.lookup_symbol(
             symbol=symbol_str,
             exchange=exchange,
+            data_frequency=self.data_frequency,
             as_of_date=_lookup_date
         )
 

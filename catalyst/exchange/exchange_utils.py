@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 import pickle
@@ -9,14 +10,31 @@ import pandas as pd
 from catalyst.assets._assets import TradingPair
 from six.moves.urllib import request
 
-from catalyst.constants import DATE_TIME_FORMAT, DATE_FORMAT
+from catalyst.constants import DATE_FORMAT, SYMBOLS_URL
 from catalyst.exchange.exchange_errors import ExchangeSymbolsNotFound, \
     InvalidHistoryFrequencyError, InvalidHistoryFrequencyAlias
 from catalyst.utils.paths import data_root, ensure_directory, \
     last_modified_time
 
-SYMBOLS_URL = 'https://s3.amazonaws.com/enigmaco/catalyst-exchanges/' \
-              '{exchange}/symbols.json'
+
+def get_sid(symbol):
+    """
+    Create a sid by hashing the symbol of a currency pair.
+
+    Parameters
+    ----------
+    symbol: str
+
+    Returns
+    -------
+    int
+        The resulting sid.
+
+    """
+    sid = int(
+        hashlib.sha256(symbol.encode('utf-8')).hexdigest(), 16
+    ) % 10 ** 6
+    return sid
 
 
 def get_exchange_folder(exchange_name, environ=None):
@@ -106,13 +124,43 @@ def get_exchange_symbols(exchange_name, is_local=False, environ=None):
 
     if os.path.isfile(filename):
         with open(filename) as data_file:
-            data = json.load(data_file)
-            return data
+            try:
+                data = json.load(data_file)
+                return data
+
+            except ValueError:
+                return dict()
     else:
         raise ExchangeSymbolsNotFound(
             exchange=exchange_name,
             filename=filename
         )
+
+
+def save_exchange_symbols(exchange_name, assets, is_local=False, environ=None):
+    """
+    Save assets into an exchange_symbols file.
+
+    Parameters
+    ----------
+    exchange_name: str
+    assets: list[dict[str, object]]
+    is_local: bool
+    environ
+
+    Returns
+    -------
+
+    """
+    asset_dicts = dict()
+    for symbol in assets:
+        asset_dicts[symbol] = assets[symbol].to_dict()
+
+    filename = get_exchange_symbols_filename(
+        exchange_name, is_local, environ
+    )
+    with open(filename, 'wt') as handle:
+        json.dump(asset_dicts, handle, indent=4, default=symbols_serial)
 
 
 def get_symbols_string(assets):

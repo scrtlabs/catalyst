@@ -9,10 +9,12 @@ import pytz
 from catalyst.assets._assets import TradingPair
 
 from catalyst.data.bundles.core import download_without_progress
-from catalyst.exchange.exchange_utils import get_exchange_bundles_folder
+from catalyst.exchange.exchange_utils import get_exchange_bundles_folder, \
+    get_exchange_symbols
 
 EXCHANGE_NAMES = ['bitfinex', 'bittrex', 'poloniex']
 API_URL = 'http://data.enigma.co/api/v1'
+
 
 def get_date_from_ms(ms):
     """

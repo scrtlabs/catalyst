@@ -48,7 +48,8 @@ class AssetFinderExchange(object):
         #         log.debug('fetching asset: {}'.format(sid))
         return list()
 
-    def lookup_symbol(self, symbol, exchange, as_of_date=None, fuzzy=False):
+    def lookup_symbol(self, symbol, exchange, data_frequency=None,
+                      as_of_date=None, fuzzy=False):
         """Lookup an asset by symbol.
 
         Parameters
@@ -84,10 +85,15 @@ class AssetFinderExchange(object):
         """
         log.debug('looking up symbol: {} {}'.format(symbol, exchange.name))
 
-        key = ','.join([exchange.name, symbol])
+        if data_frequency is not None:
+            key = ','.join([exchange.name, symbol, data_frequency])
+
+        else:
+            key = ','.join([exchange.name, symbol])
+
         if key in self._asset_cache:
             return self._asset_cache[key]
         else:
-            asset = exchange.get_asset(symbol)
+            asset = exchange.get_asset(symbol, data_frequency)
             self._asset_cache[key] = asset
             return asset

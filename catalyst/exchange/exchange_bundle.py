@@ -1,4 +1,4 @@
-import json
+import os
 import os
 import shutil
 from datetime import datetime, timedelta
@@ -8,6 +8,7 @@ from operator import is_not
 
 import numpy as np
 import pandas as pd
+import pytz
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
 from pytz import UTC
@@ -29,7 +30,7 @@ from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
     NoDataAvailableOnExchange, \
     PricingDataNotLoadedError, DataCorruptionError, ExchangeSymbolsNotFound
 from catalyst.exchange.exchange_utils import get_exchange_folder, \
-    get_exchange_symbols, perf_serial, symbols_serial
+    get_exchange_symbols, save_exchange_symbols
 from catalyst.utils.cli import maybe_show_progress
 from catalyst.utils.paths import ensure_directory
 
@@ -647,7 +648,8 @@ class ExchangeBundle:
                 '\n'.join(problems)
             ))
 
-    def ingest_csv(self, path, data_frequency):
+    def ingest_csv(self, path, data_frequency, empty_rows_behavior='strip',
+                   duplicates_threshold=100):
         """
         Ingest price data from a CSV file.
 
@@ -686,12 +688,19 @@ class ExchangeBundle:
             parse_dates=['last_traded'],
             index_col=None
         )
+        min_start_dt = None
+        max_end_dt = None
 
         symbols = df['symbol'].unique()
-        trading_pairs = dict()
+
+        # Apply the timezone before creating an index for simplicity
+        df['last_traded'] = df['last_traded'].dt.tz_localize(pytz.UTC)
+        df.set_index(['symbol', 'last_traded'], drop=True, inplace=True)
+
+        assets = dict()
         for symbol in symbols:
-            start_dt = df['last_traded'].min()
-            end_dt = df['last_traded'].max()
+            start_dt = df.index.get_level_values(1).min()
+            end_dt = df.index.get_level_values(1).max()
             end_dt_key = 'end_{}'.format(data_frequency)
 
             if symbol is symbols_def:
@@ -710,10 +719,16 @@ class ExchangeBundle:
                     if data_frequency == 'minute' else symbol_def['end_minute']
 
             else:
-                end_daily = end_dt if data_frequency == 'daily' else None
-                end_minute = end_dt if data_frequency == 'minute' else None
+                end_daily = end_dt if data_frequency == 'daily' else 'N/A'
+                end_minute = end_dt if data_frequency == 'minute' else 'N/A'
 
-            trading_pair = TradingPair(
+            if min_start_dt is None or start_dt < min_start_dt:
+                min_start_dt = start_dt
+
+            if max_end_dt is None or end_dt > max_end_dt:
+                max_end_dt = end_dt
+
+            asset = TradingPair(
                 symbol=symbol,
                 exchange=self.exchange_name,
                 start_date=start_dt,
@@ -725,19 +740,42 @@ class ExchangeBundle:
                 end_minute=end_minute,
                 exchange_symbol=symbol
             )
-            trading_pairs[symbol] = trading_pair.to_dict()
+            assets[symbol] = asset
 
-        symbols_def_json = json.dumps(trading_pairs, default=symbols_serial)
-        df.set_index(['symbol', 'last_traded'], drop=True, inplace=True)
-        df.tz_localize('UTC', level=1)
-        # problems += self.ingest_df(
-        #     ohlcv_df=df,
-        #     data_frequency=data_frequency,
-        #     asset=asset,
-        #     writer=writer,
-        #     empty_rows_behavior=empty_rows_behavior,
-        #     duplicates_threshold=duplicates_threshold
-        # )
+        save_exchange_symbols(self.exchange_name, assets, True)
+
+        writer = self.get_writer(
+            start_dt=min_start_dt.replace(hour=00, minute=00),
+            end_dt=max_end_dt.replace(hour=23, minute=59),
+            data_frequency=data_frequency
+        )
+
+        for symbol in assets:
+            asset = assets[symbol]
+            ohlcv_df = df.loc[
+                (df.index.get_level_values(0) == symbol)
+            ]  # type: pd.DataFrame
+            ohlcv_df.index = ohlcv_df.index.droplevel(0)
+
+            period_start = start_dt.replace(hour=00, minute=00)
+            period_end = end_dt.replace(hour=23, minute=59)
+            periods = self.get_calendar_periods_range(
+                period_start, period_end, data_frequency
+            )
+
+            # We're not really resampling but ensuring that each frame
+            # contains data
+            ohlcv_df = ohlcv_df.reindex(periods, method='ffill')
+            ohlcv_df['volume'] = ohlcv_df['volume'].fillna(0)
+
+            problems += self.ingest_df(
+                ohlcv_df=ohlcv_df,
+                data_frequency=data_frequency,
+                asset=asset,
+                writer=writer,
+                empty_rows_behavior=empty_rows_behavior,
+                duplicates_threshold=duplicates_threshold
+            )
         return filter(partial(is_not, None), problems)
 
     def ingest(self, data_frequency, include_symbols=None,
@@ -1017,6 +1055,10 @@ class ExchangeBundle:
         symbols = os.path.join(root, 'symbols.json')
         if os.path.isfile(symbols):
             os.remove(symbols)
+
+        local_symbols = os.path.join(root, 'symbols_local.json')
+        if os.path.isfile(local_symbols):
+            os.remove(local_symbols)
 
         temp_bundles = os.path.join(root, 'temp_bundles')
 
