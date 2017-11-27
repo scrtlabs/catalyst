@@ -107,8 +107,9 @@ class Poloniex_api(object):
             data=post_data,
             headers=headers,
         )
-        return json.loads(
-            urlopen(req, context=ssl._create_unverified_context()).read())
+        resource = urlopen(req, context=ssl._create_unverified_context())
+        content =  resource.read().decode('utf-8')
+        return json.loads(content)
 
     def returnticker(self):
         return self.query('returnTicker', {})
