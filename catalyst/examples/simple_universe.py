@@ -108,7 +108,7 @@ def fill(series):
 
 
 if __name__ == '__main__':
-    start_date = pd.to_datetime('2017-01-01', utc=True)
+    start_date = pd.to_datetime('2017-11-10', utc=True)
     end_date = pd.to_datetime('2017-11-13', utc=True)
 
     performance = run_algorithm(start=start_date, end=end_date,
@@ -116,7 +116,7 @@ if __name__ == '__main__':
                                 initialize=initialize,
                                 handle_data=handle_data,
                                 analyze=analyze,
-                                exchange_name='poloniex',
+                                exchange_name='bitfinex',
                                 data_frequency='minute',
                                 base_currency='btc',
                                 live=False,
