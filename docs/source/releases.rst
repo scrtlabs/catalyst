@@ -2,6 +2,20 @@
 Release Notes
 =============
 
+Version 0.3.9
+^^^^^^^^^^^^^
+**Release Date**: 2017-11-14
+
+Bug Fixes
+~~~~~~~~~
+
+- Improved cash display in running stats (:issue:`80`)
+- Added capital_base parameter to live mode to limit cash (:issue:`79`)
+- Fixed sortino warning issues (:issue:`77`)
+- Adjusted computation of last candle of data.history (:issue:`71`)
+- Added support for csv ingestion (:issue:`65`)
+
+
 Version 0.3.8
 ^^^^^^^^^^^^^
 **Release Date**: 2017-11-14
