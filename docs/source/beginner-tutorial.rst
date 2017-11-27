@@ -5,9 +5,8 @@ Basics
 ~~~~~~
 
 Catalyst is an open-source algorithmic trading simulator for crypto
-assets written in Python.
-
-The source can be found at: https://github.com/enigmampc/catalyst
+assets written in Python. The source code can be found at: 
+https://github.com/enigmampc/catalyst
 
 Some benefits include:
 
@@ -25,8 +24,7 @@ Some benefits include:
    build profitable, data-driven investment strategies.
 
 This tutorial assumes that you have Catalyst correctly installed, see the
-:doc:`installation instructions <install>` if you haven't set up 
-Catalyst yet.
+:doc:`Install<install>` section if you haven't set up Catalyst yet.
 
 Every ``catalyst`` algorithm consists of at least two functions you have to
 define:
@@ -40,10 +38,12 @@ Before the start of the algorithm, ``catalyst`` calls the
 need to access from one algorithm iteration to the next.
 
 After the algorithm has been initialized, ``catalyst`` calls the
-``handle_data()`` function once for each event. At every call, it passes
-the same ``context`` variable and an event-frame called ``data``
-containing the current trading bar with open, high, low, and close
-(OHLC) prices as well as volume for each crypto asset in your universe. 
+``handle_data()`` function on each iteration, that's one per day (daily) or 
+once every minute (minute), depending on the frequency we choose to run our 
+simulation. On every iteration, ``handle_data()`` passes the same ``context`` 
+variable and an event-frame called ``data`` containing the current trading bar 
+with open, high, low, and close (OHLC) prices as well as volume for each 
+crypto asset in your universe. 
 
 .. For more information on these functions, see the `relevant part of the
 .. Quantopian docs <https://www.quantopian.com/help#api-toplevel>`.
@@ -51,8 +51,8 @@ containing the current trading bar with open, high, low, and close
 My first algorithm
 ~~~~~~~~~~~~~~~~~~
 
-Lets take a look at a very simple algorithm from the ``examples``
-directory: `buy_btc_simple.py <https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/buy_btc_simple.py>`_:
+Lets take a look at a very simple algorithm from the ``examples`` directory: 
+`buy_btc_simple.py <https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/buy_btc_simple.py>`_:
 
 .. code-block:: python
 
@@ -70,9 +70,9 @@ directory: `buy_btc_simple.py <https://github.com/enigmampc/catalyst/blob/master
 
 As you can see, we first have to import some functions we would like to
 use. All functions commonly used in your algorithm can be found in
-``catalyst.api``. Here we are using :func:`~catalyst.api.order()` which takes two
-arguments: a cryptoasset object, and a number specifying how many assets you would
-like to order (if negative, :func:`~catalyst.api.order()` will sell/short
+``catalyst.api``. Here we are using :func:`~catalyst.api.order()` which takes 
+twoarguments: a cryptoasset object, and a number specifying how many assets you 
+wouldlike to order (if negative, :func:`~catalyst.api.order()` will sell/short
 assets). In this case we want to order 1 bitcoin at each iteration. 
 
 .. For more documentation on ``order()``, see the `Quantopian docs
@@ -88,60 +88,97 @@ a bitcoin in the ``data`` event frame.
 
 .. (for more information see `here <https://www.quantopian.com/help#api-event-properties>`__.
 
-Running the algorithm
-~~~~~~~~~~~~~~~~~~~~~
-
-To can now test this algorithm on crypto data, ``catalyst`` provides three
-interfaces: 
-
--  A command-line interface,
--  ``IPython Notebook`` magic, 
--  and :func:`~catalyst.run_algorithm`.
-
 Ingesting data
-^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~
 
-In previous versions of Catalyst you needed to manually ingest data before running
-your algorithm to make it available at runtime. Starting with version 0.3, the
-algorithm will automagically ingest the data it needs the first time that encounters 
-a data request for data that it doesn't have.
+Before you can backtest your algorithm, you first need to load the historical 
+pricing data that Catalyst needs to run your simulation through a process called
+``ingestion``. When you ingest data, Catalyst downloads that data in compressed 
+form from the Enigma servers (which eventually will migrate to the Enigma Data 
+Marketplace), and stores it locally to make it available at runtime. 
 
-Still, we believe it is important for you to have a high-level understanding
-of how data is managed:
+In order to ingest data, you need to run a command like the following:
+
+.. code-block:: bash
+
+  catalyst ingest-exchange -x bitfinex -i btc_usd
+
+This instructs Catalyst to download pricing data from the ``Bitfinex`` exchange 
+for the ``btc_usd`` currency pair (this follows from the simple algorithm 
+presented above where we want to trade ``btc_usd``), and we're choosing to test
+our algorithm using historical pricing data from the Bitfinex exchange. By 
+default, Catalyst assumes that you want data with ``daily`` frequency (one candle
+bar per day). If you want instead ``minute`` frequency (one candle bar for every
+minute), you would need to specify it as follows:
+
+.. code-block:: bash
+
+  catalyst ingest-exchange -x bitfinex -i btc_usd -f minute
+
+.. parsed-literal::
+
+  Ingesting exchange bundle bitfinex...
+    [====================================]  Ingesting daily price data on bitfinex:  100%
+
+We believe it is important for you to have a high-level understanding of how 
+data is managed, hence the following overview:
 
 -  Pricing data is split and packaged into ``bundles``: chunks of data organized 
    as time series that are kept up to date daily on Enigma's servers. Catalyst 
-   downloads the bundles that needs at any given time, and reconstructs the whole
-   dataset in your hard drive.
+   downloads the requested bundles and reconstructs the full dataset in your 
+   hard drive.
 
--  Pricing data is provided in ``daily`` and ``minute`` resolution. Those are different
-   bundle datasets, and are managed separately.
+-  Pricing data is provided in ``daily`` and ``minute`` resolution. Those are 
+   different bundle datasets, and are managed separately.
 
--  Bundles are exchange-specific, as the pricing data is specific to the trades that
-   happen in each exchange. You can optionally specify which exchange you want pricing
-   data from.
+-  Bundles are exchange-specific, as the pricing data is specific to the trades 
+   that happen in each exchange. As a result, you can must specify which 
+   exchange you want pricing data from when ingesting data
 
--  Catalyst keeps track of all the downloaded bundles, so that it only has to download
-   them once, and will do incremental updates as needed.
+-  Catalyst keeps track of all the downloaded bundles, so that it only has to 
+   download them once, and will do incremental updates as needed.
 
--  When running in ``live trading`` mode, Catalyst will first look for historical 
-   pricing data in the locally stored bundles. If there is anything missing, Catalyst will
-   hit the exchange for the most recent data, and merge it with the local bundle to make
-   it available for future iterations.
+-  When running in ``live trading`` mode, Catalyst will first look for 
+   historical pricing data in the locally stored bundles. If there is anything 
+   missing, Catalyst will hit the exchange for the most recent data, and merge 
+   it with the local bundle to optimize the number of requests it needs to make 
+   to the exchange.
 
-If you want to learn more, check out the :ref:`ingesting data <ingesting-data>` section
-for more detail.
+The ``ingest-exchange`` command in catalyst offers additional parameters to 
+further tweak the data ingestion process. You can learn more by running the
+following from the command line:
+
+.. code-block:: bash
+
+  catalyst ingest-exchange --help
+
+Running the algorithm
+~~~~~~~~~~~~~~~~~~~~~
+
+You can now test your algorithm using cryptoassets' historical pricing data, 
+``catalyst`` provides three interfaces: 
+
+-  A command-line interface (CLI),
+-  the ``IPython Notebook`` magic,
+-  and a :func:`~catalyst.run_algorithm` that you can call from other 
+   Python scripts.
+
+We'll start with the CLI, and introduce the ``IPython Notebook`` below. Some of 
+the :doc:`example algorithms <example-algos>` provide instructions on how to run
+them both from the CLI, and using the :func:`~catalyst.run_algorithm` function.
 
 Command line interface
 ^^^^^^^^^^^^^^^^^^^^^^
 
-After you installed Catalyst you should be able to execute the following
-from your command line (e.g. ``cmd.exe`` on Windows, or the Terminal app
-on OSX). Displaying here a simplified output for eductional purposes:
+After you installed Catalyst, you should be able to execute the following
+from your command line (e.g. ``cmd.exe`` or the ``Anaconda Prompt`` on Windows, 
+or the Terminal application on MacOS). 
 
 .. code-block:: bash
 
    $ catalyst --help
+
+This is the resulting output, simplified for eductional purposes:
 
 .. parsed-literal::
 
@@ -158,10 +195,11 @@ on OSX). Displaying here a simplified output for eductional purposes:
        live             Trade live with the given algorithm.
        run              Run a backtest for the given algorithm.
 
-There are three main modes you can run on Catalyst. The first being ``ingest-exchange`` 
-for data ingestion, which we have summarized in the previous section. The second 
-is ``live`` to use your algorithm to trade live against a given exchange, and the 
-third mode ``run`` is to backtest your algorithm before trading live with it.
+There are three main modes you can run on Catalyst. The first being 
+``ingest-exchange`` for data ingestion, which we have covered in the previous 
+section. The second is ``live`` to use your algorithm to trade live against a 
+given exchange, and the third mode ``run`` is to backtest your algorithm before 
+trading live with it.
 
 Let's start with backtesting, so run this other command to learn more about 
 the available options:
@@ -210,22 +248,24 @@ the available options:
 
 
 As you can see there are a couple of flags that specify where to find your
-algorithm (``-f``) as well as a parameter to specify which exchange to use. 
-There are also arguments for the date range to run the algorithm over 
-(``--start`` and ``--end``). Finally, you'll want to save the performance 
-metrics of your algorithm so that you can analyze how it performed. This is 
-done via the ``--output`` flag and will cause it to write the performance 
-``DataFrame`` in the pickle Python file format. Note that you can also define 
-a configuration file with these parameters that you can then conveniently pass 
-to the ``-c`` option so that you don't have to supply the command line args 
-all the time (see the .conf files in the examples directory).
+algorithm (``-f``) as well as a the ``-x`` flag to specify which exchange to 
+use. There are also arguments for the date range to run the algorithm over 
+(``--start`` and ``--end``). You also need to set the base currency for your 
+algorithm through the ``-c`` flag, and the ``--capital_base``. All the 
+aforementioned parameters are required. Optionally, you will want to save the 
+performance metrics of your algorithm so that you can analyze how it performed. 
+This is done via the ``--output`` flag and will cause it to write the 
+performance ``DataFrame`` in the pickle Python file format. Note that you can 
+also define a configuration file with these parameters that you can then 
+conveniently pass to the ``-c`` option so that you don't have to supply the 
+command line args all the time.
 
 Thus, to execute our algorithm from above and save the results to
 ``buy_btc_simple_out.pickle`` we would call ``catalyst run`` as follows:
 
 .. code-block:: python
 
-    catalyst run -f buy_btc_simple.py -x bitfinex --start 2016-1-1 --end 2017-9-30 -o buy_btc_simple_out.pickle
+    catalyst run -f buy_btc_simple.py -x bitfinex --start 2016-1-1 --end 2017-9-30 -c usd --capital-base 100000 -o buy_btc_simple_out.pickle
 
 
 .. parsed-literal:: 
@@ -253,17 +293,25 @@ slippage model that ``catalyst`` uses).
 .. see the `Quantopian docs <https://www.quantopian.com/help#ide-slippage>`__
 .. for more information).
 
-Let's take a quick look at the performance ``DataFrame``. For this, we
-use ``pandas`` from inside the IPython Notebook and print the first ten
-rows. Note that ``catalyst`` makes heavy usage of 
-`pandas <http://pandas.pydata.org/>`_, especially for data input and 
-outputting so it's worth spending some time to learn it.
+
+Let's take a quick look at the performance ``DataFrame``. For this, we write 
+different Python script--let's call it ``print_results.py``--and we make use of 
+the fantastic ``pandas`` library to print the first ten rows. Note that 
+``catalyst`` makes heavy usage of `pandas <http://pandas.pydata.org/>`_, 
+especially for data analysis and outputting so it's worth spending some time to 
+learn it.
 
 .. code-block:: python
 
     import pandas as pd
     perf = pd.read_pickle('buy_btc_simple_out.pickle') # read in perf DataFrame
-    perf.head()
+    print(perf.head())
+
+Which we execute by running:
+
+.. code-block:: bash
+
+   $ python print_results.py
 
 .. raw:: html
 
@@ -429,36 +477,70 @@ and allows us to plot the price of bitcoin. For example, we could easily
 examine now how our portfolio value changed over time compared to the
 bitcoin price.
 
+Now we will run the simulation again, but this time we extend our original 
+algorithm with the addition of the ``analyze()`` function. Somewhat analogously 
+as how ``initialize()`` gets called once before the start of the algorith, 
+``analyze()`` gets called once at the end of the algorithm, and receives two 
+variables: ``context``, which we discussed at the very beginning, and ``perf``, 
+which is the pandas dataframe containing the performance data for our algorithm 
+that we reviewed above. Inside the ``analyze()`` function is where we can 
+analyze and visualize the results of our strategy. Here's the revised simple 
+algorithm (note the addition of Line 1, and Lines 11-18)
+
 .. code-block:: python
 
-    %load_ext catalyst
-
-.. code-block:: python
-
-    %pylab inline
-    figsize(12, 12)
     import matplotlib.pyplot as plt
+    from catalyst.api import order, record, symbol
 
-    ax1 = plt.subplot(211)
-    perf.portfolio_value.plot(ax=ax1)
-    ax1.set_ylabel('portfolio value')
-    ax2 = plt.subplot(212, sharex=ax1)
-    perf.btc.plot(ax=ax2)
-    ax2.set_ylabel('bitcoin price')
+    def initialize(context):
+        context.asset = symbol('btc_usd')
 
-.. parsed-literal::
+    def handle_data(context, data):
+        order(context.asset, 1)
+        record(btc = data.current(context.asset, 'price'))
 
-    Populating the interactive namespace from numpy and matplotlib
+    def analyze(context, perf):
+        ax1 = plt.subplot(211)
+        perf.portfolio_value.plot(ax=ax1)
+        ax1.set_ylabel('portfolio value')
+        ax2 = plt.subplot(212, sharex=ax1)
+        perf.btc.plot(ax=ax2)
+        ax2.set_ylabel('bitcoin price')
+        plt.show()
 
-.. parsed-literal::
+Here we make use of the external visualization library called 
+`matplotlib <https://matplotlib.org/>`_, which you might recall we installed 
+alongside enigma-catalyst (with the exception of the ``Conda`` install, where it
+was included by default inside the conda environment we created). If for any 
+reason you don't have it installed, you can add it by running:
 
-    <matplotlib.text.Text at 0x10eaeadd0>
+.. code-block:: python
+
+  (catalyst)$ pip install matplotlib
+
+If everything works well, you'll see the following chart:
 
 .. image:: https://s3.amazonaws.com/enigmaco-docs/github.io/buy_btc_simple_graph.png
 
 Our algorithm performance as assessed by the ``portfolio_value`` closely 
 matches that of the bitcoin price. This is not surprising as our algorithm 
 only bought bitcoin every chance it got.
+
+  If you get an error when invoking matplotlib to visualize the performance 
+  results refer to `MacOS + Matplotlib <install.html#macos-virtualenv-matplotlib>`_. 
+  Alternatively, some users have reported the following error when running an algo 
+  in a Linux environment:
+
+  .. parsed-literal::
+
+      ImportError: No module named _tkinter, please install the python-tk package
+
+  Which can easily solved by running (in Ubuntu/Debian-based systems):
+
+  .. code-block:: python
+
+      sudo apt install python-tk
+
 
 
 Access to previous prices using ``history``

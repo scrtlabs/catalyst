@@ -12,6 +12,8 @@ Table of Contents
    jupyter
    live-trading
    naming-convention
+   example-algos
+   utilities
    videos
    resources
    development-guidelines

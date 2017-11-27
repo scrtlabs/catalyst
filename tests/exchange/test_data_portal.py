@@ -1,16 +1,13 @@
 import pandas as pd
-from catalyst.exchange.exchange_data_portal import DataPortalExchangeBacktest, \
-    DataPortalExchangeLive
 from logbook import Logger
-from test_utils import rnd_history_date_days, rnd_bar_count
 
 from catalyst import get_calendar
 from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
-from catalyst.exchange.bitfinex.bitfinex import Bitfinex
-from catalyst.exchange.bittrex.bittrex import Bittrex
-from catalyst.exchange.exchange_utils import get_exchange_auth, \
-    get_common_assets
+from catalyst.exchange.exchange_data_portal import DataPortalExchangeBacktest, \
+    DataPortalExchangeLive
+from catalyst.exchange.exchange_utils import get_common_assets
 from catalyst.exchange.factory import get_exchange, get_exchanges
+from test_utils import rnd_history_date_days, rnd_bar_count, output_df
 
 log = Logger('test_bitfinex')
 
@@ -113,3 +110,6 @@ class TestExchangeDataPortal:
         )
 
         log.info('found history window: {}'.format(data))
+
+    def test_validate_resample(self):
+        pass

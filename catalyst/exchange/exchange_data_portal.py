@@ -21,7 +21,6 @@ log = Logger('DataPortalExchange', level=LOG_LEVEL)
 class DataPortalExchangeBase(DataPortal):
     def __init__(self, *args, **kwargs):
 
-        self.exchanges = kwargs.pop('exchanges', None)
         # TODO: put somewhere accessible by each algo
         self.retry_get_history_window = 5
         self.retry_get_spot_value = 5
@@ -49,11 +48,10 @@ class DataPortalExchangeBase(DataPortal):
             if len(exchange_assets) > 1:
                 df_list = []
                 for exchange_name in exchange_assets:
-                    exchange = self.exchanges[exchange_name]
                     assets = exchange_assets[exchange_name]
 
                     df_exchange = self.get_exchange_history_window(
-                        exchange,
+                        exchange_name,
                         assets,
                         end_dt,
                         bar_count,
@@ -68,9 +66,9 @@ class DataPortalExchangeBase(DataPortal):
                 return pd.concat(df_list)
 
             else:
-                exchange = self.exchanges[list(exchange_assets.keys())[0]]
+                exchange_name = list(exchange_assets.keys())[0]
                 return self.get_exchange_history_window(
-                    exchange,
+                    exchange_name,
                     assets,
                     end_dt,
                     bar_count,
@@ -122,7 +120,7 @@ class DataPortalExchangeBase(DataPortal):
 
     @abc.abstractmethod
     def get_exchange_history_window(self,
-                                    exchange,
+                                    exchange_name,
                                     assets,
                                     end_dt,
                                     bar_count,
@@ -136,9 +134,8 @@ class DataPortalExchangeBase(DataPortal):
                         attempt_index=0):
         try:
             if isinstance(assets, TradingPair):
-                exchange = self.exchanges[assets.exchange]
                 spot_values = self.get_exchange_spot_value(
-                    exchange, [assets], field, dt, data_frequency)
+                    assets.exchange, [assets], field, dt, data_frequency)
 
                 if not spot_values:
                     return np.nan
@@ -154,17 +151,16 @@ class DataPortalExchangeBase(DataPortal):
                     exchange_assets[asset.exchange].append(asset)
 
                 if len(list(exchange_assets.keys())) == 1:
-                    exchange = self.exchanges[list(exchange_assets.keys())[0]]
+                    exchange_name = list(exchange_assets.keys())[0]
                     return self.get_exchange_spot_value(
-                        exchange, assets, field, dt, data_frequency)
+                        exchange_name, assets, field, dt, data_frequency)
 
                 else:
                     spot_values = []
                     for exchange_name in exchange_assets:
-                        exchange = self.exchanges[exchange_name]
                         assets = exchange_assets[exchange_name]
                         exchange_spot_values = self.get_exchange_spot_value(
-                            exchange,
+                            exchange_name,
                             assets,
                             field,
                             dt,
@@ -199,7 +195,7 @@ class DataPortalExchangeBase(DataPortal):
         return self._get_spot_value(assets, field, dt, data_frequency)
 
     @abc.abstractmethod
-    def get_exchange_spot_value(self, exchange, assets, field, dt,
+    def get_exchange_spot_value(self, exchange_name, assets, field, dt,
                                 data_frequency):
         return
 
@@ -214,10 +210,11 @@ class DataPortalExchangeBase(DataPortal):
 
 class DataPortalExchangeLive(DataPortalExchangeBase):
     def __init__(self, *args, **kwargs):
+        self.exchanges = kwargs.pop('exchanges', None)
         super(DataPortalExchangeLive, self).__init__(*args, **kwargs)
 
     def get_exchange_history_window(self,
-                                    exchange,
+                                    exchange_name,
                                     assets,
                                     end_dt,
                                     bar_count,
@@ -230,7 +227,7 @@ class DataPortalExchangeLive(DataPortalExchangeBase):
 
         Parameters
         ----------
-        exchange: Exchange
+        exchange_name: Exchange
         assets: list[TradingPair]
         end_dt: datetime
         bar_count: int
@@ -244,6 +241,7 @@ class DataPortalExchangeLive(DataPortalExchangeBase):
         DataFrame
 
         """
+        exchange = self.exchanges[exchange_name]
         df = exchange.get_history_window(
             assets,
             end_dt,
@@ -254,14 +252,14 @@ class DataPortalExchangeLive(DataPortalExchangeBase):
             ffill)
         return df
 
-    def get_exchange_spot_value(self, exchange, assets, field, dt,
+    def get_exchange_spot_value(self, exchange_name, assets, field, dt,
                                 data_frequency):
         """
         A spot value for the exchange.
 
         Parameters
         ----------
-        exchange: Exchange
+        exchange_name: str
         assets: list[TradingPair]
         field: str
         dt: datetime
@@ -272,6 +270,7 @@ class DataPortalExchangeLive(DataPortalExchangeBase):
         float
 
         """
+        exchange = self.exchanges[exchange_name]
         exchange_spot_values = exchange.get_spot_value(
             assets, field, dt, data_frequency)
 
@@ -280,16 +279,16 @@ class DataPortalExchangeLive(DataPortalExchangeBase):
 
 class DataPortalExchangeBacktest(DataPortalExchangeBase):
     def __init__(self, *args, **kwargs):
+        self.exchange_names = kwargs.pop('exchange_names', None)
+
         super(DataPortalExchangeBacktest, self).__init__(*args, **kwargs)
 
         self.exchange_bundles = dict()
-
         self.history_loaders = dict()
         self.minute_history_loaders = dict()
 
-        for exchange_name in self.exchanges:
-            exchange = self.exchanges[exchange_name]
-            self.exchange_bundles[exchange_name] = ExchangeBundle(exchange)
+        for name in self.exchange_names:
+            self.exchange_bundles[name] = ExchangeBundle(name)
 
     def _get_first_trading_day(self, assets):
         first_date = None
@@ -299,7 +298,7 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
         return first_date
 
     def get_exchange_history_window(self,
-                                    exchange,
+                                    exchange_name,
                                     assets,
                                     end_dt,
                                     bar_count,
@@ -326,12 +325,13 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
         DataFrame
 
         """
-        bundle = self.exchange_bundles[exchange.name]  # type: ExchangeBundle
+        bundle = self.exchange_bundles[exchange_name]  # type: ExchangeBundle
 
         freq, candle_size, unit, adj_data_frequency = get_frequency(
             frequency, data_frequency
         )
         adj_bar_count = candle_size * bar_count
+        trailing_bar_count = candle_size - 1
 
         if data_frequency == 'minute' and adj_data_frequency == 'daily':
             end_dt = end_dt.floor('1D')
@@ -343,13 +343,14 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
             field=field,
             data_frequency=adj_data_frequency,
             algo_end_dt=self._last_available_session,
+            trailing_bar_count=trailing_bar_count
         )
 
         df = resample_history_df(pd.DataFrame(series), freq, field)
         return df
 
     def get_exchange_spot_value(self,
-                                exchange,
+                                exchange_name,
                                 assets,
                                 field,
                                 dt,
@@ -361,7 +362,7 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
 
         Parameters
         ----------
-        exchange: Exchange
+        exchange_name: str
         assets: list[TradingPair]
         field: str
         dt: datetime
@@ -372,7 +373,7 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
         float
 
         """
-        bundle = self.exchange_bundles[exchange.name]
+        bundle = self.exchange_bundles[exchange_name]
         if data_frequency == 'daily':
             dt = dt.floor('1D')
         else:

@@ -438,7 +438,7 @@ class TestExchangeBundle:
         pass
 
     def main_bundle_to_csv(self):
-        exchange_name = 'bitfinex'
+        exchange_name = 'poloniex'
         data_frequency = 'minute'
 
         exchange = get_exchange(exchange_name)
@@ -448,7 +448,7 @@ class TestExchangeBundle:
         end_dt = pd.to_datetime('2016-6-1', utc=True)
         self._bundle_to_csv(
             asset=asset,
-            exchange=exchange,
+            exchange_name=exchange.name,
             data_frequency=data_frequency,
             filename='{}_{}_{}'.format(
                 exchange_name, data_frequency, asset.symbol
@@ -460,7 +460,7 @@ class TestExchangeBundle:
     def bundle_to_csv(self):
         exchange_name = 'poloniex'
         data_frequency = 'minute'
-        period = '2017-09'
+        period = '2017-01'
         symbol = 'eth_btc'
 
         exchange = get_exchange(exchange_name)
@@ -474,16 +474,16 @@ class TestExchangeBundle:
         )
         self._bundle_to_csv(
             asset=asset,
-            exchange=exchange,
+            exchange_name=exchange.name,
             data_frequency=data_frequency,
             path=path,
             filename=period
         )
         pass
 
-    def _bundle_to_csv(self, asset, exchange, data_frequency, filename,
+    def _bundle_to_csv(self, asset, exchange_name, data_frequency, filename,
                        path=None, start_dt=None, end_dt=None):
-        bundle = ExchangeBundle(exchange)
+        bundle = ExchangeBundle(exchange_name)
         reader = bundle.get_reader(data_frequency, path=path)
 
         if start_dt is None:
@@ -514,14 +514,39 @@ class TestExchangeBundle:
         df = get_df_from_arrays(arrays, periods)
 
         folder = os.path.join(
-            tempfile.gettempdir(), 'catalyst', exchange.name, asset.symbol
+            tempfile.gettempdir(), 'catalyst', exchange_name, asset.symbol
         )
         ensure_directory(folder)
 
         path = os.path.join(folder, filename + '.csv')
 
         log.info('creating csv file: {}'.format(path))
-        print('HEAD\n{}'.format(df.head(10)))
-        print('TAIL\n{}'.format(df.tail(10)))
+        print('HEAD\n{}'.format(df.head(100)))
+        print('TAIL\n{}'.format(df.tail(100)))
         df.to_csv(path)
+        pass
+
+    def test_ingest_csv(self):
+        data_frequency = 'minute'
+        exchange_name = 'bittrex'
+        path = '/Users/fredfortier/Dropbox/Enigma/Data/bittrex_bat_eth.csv'
+
+        exchange_bundle = ExchangeBundle(exchange_name)
+        exchange_bundle.ingest_csv(path, data_frequency)
+
+        exchange = get_exchange(exchange_name)
+        asset = exchange.get_asset('bat_eth')
+
+        start_dt = pd.to_datetime('2017-6-3', utc=True)
+        end_dt = pd.to_datetime('2017-8-3 19:24', utc=True)
+        self._bundle_to_csv(
+            asset=asset,
+            exchange_name=exchange.name,
+            data_frequency=data_frequency,
+            filename='{}_{}_{}'.format(
+                exchange_name, data_frequency, asset.symbol
+            ),
+            start_dt=start_dt,
+            end_dt=end_dt
+        )
         pass

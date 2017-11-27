@@ -16,7 +16,7 @@ from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     InvalidOrderStyle, BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
     PricingDataNotLoadedError, \
-    NoDataAvailableOnExchange
+    NoDataAvailableOnExchange, ExchangeSymbolsNotFound
 from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
     ExchangeLimitOrder, ExchangeStopOrder
 from catalyst.exchange.exchange_portfolio import ExchangePortfolio
@@ -24,7 +24,6 @@ from catalyst.exchange.exchange_utils import get_exchange_symbols, \
     get_frequency, resample_history_df
 from catalyst.finance.order import ORDER_STATUS
 from catalyst.finance.transaction import Transaction
-from catalyst.utils.deprecate import deprecated
 
 log = Logger('Exchange', level=LOG_LEVEL)
 
@@ -34,7 +33,8 @@ class Exchange:
 
     def __init__(self):
         self.name = None
-        self.assets = {}
+        self.assets = dict()
+        self.local_assets = dict()
         self._portfolio = None
         self.minute_writer = None
         self.minute_reader = None
@@ -43,7 +43,7 @@ class Exchange:
         self.num_candles_limit = None
         self.max_requests_per_minute = None
         self.request_cpt = None
-        self.bundle = ExchangeBundle(self)
+        self.bundle = ExchangeBundle(self.name)
 
     @property
     def positions(self):
@@ -174,7 +174,7 @@ class Exchange:
 
         return symbols
 
-    def get_assets(self, symbols=None):
+    def get_assets(self, symbols=None, data_frequency=None):
         """
         The list of markets for the specified symbols.
 
@@ -191,7 +191,7 @@ class Exchange:
 
         if symbols is not None:
             for symbol in symbols:
-                asset = self.get_asset(symbol)
+                asset = self.get_asset(symbol, data_frequency)
                 assets.append(asset)
         else:
             for key in self.assets:
@@ -199,7 +199,19 @@ class Exchange:
 
         return assets
 
-    def get_asset(self, symbol):
+    def _find_asset(self, asset, symbol, data_frequency, is_local=False):
+        assets = self.assets if not is_local else self.local_assets
+
+        for key in assets:
+            if not asset and assets[key].symbol.lower() == symbol.lower() and (
+                        not data_frequency or (
+                                    data_frequency == 'minute' and assets[
+                                key].end_minute is not None)):
+                asset = assets[key]
+
+        return asset
+
+    def get_asset(self, symbol, data_frequency=None):
         """
         The market for the specified symbol.
 
@@ -214,13 +226,17 @@ class Exchange:
         """
         asset = None
 
-        for key in self.assets:
-            if not asset and self.assets[key].symbol.lower() == symbol.lower():
-                asset = self.assets[key]
+        log.debug('searching asset {} on the server')
+        asset = self._find_asset(asset, symbol, data_frequency, False)
+
+        log.debug('asset {} not found on the server, searching local assets')
+        asset = self._find_asset(asset, symbol, data_frequency, True)
 
         if not asset:
+            all_values = list(self.assets.values()) + \
+                         list(self.local_assets.values())
             supported_symbols = [
-                pair.symbol for pair in list(self.assets.values())
+                asset.symbol for asset in all_values
             ]
 
             raise SymbolNotFoundOnExchange(
@@ -231,10 +247,10 @@ class Exchange:
 
         return asset
 
-    def fetch_symbol_map(self):
-        return get_exchange_symbols(self.name)
+    def fetch_symbol_map(self, is_local=False):
+        return get_exchange_symbols(self.name, is_local)
 
-    def load_assets(self):
+    def load_assets(self, is_local=False):
         """
         Populate the 'assets' attribute with a dictionary of Assets.
         The key of the resulting dictionary is the exchange specific
@@ -247,11 +263,15 @@ class Exchange:
         universal symbol. This simple approach avoids maintaining a mapping
         of sids.
 
-        This method can be overridden if an exchange offers equivalent data
+        This method can be omerridden if an exchange offers equivalent data
         via its api.
 
         """
-        symbol_map = self.fetch_symbol_map()
+        try:
+            symbol_map = self.fetch_symbol_map(is_local)
+        except ExchangeSymbolsNotFound:
+            return None
+
         for exchange_symbol in symbol_map:
             asset = symbol_map[exchange_symbol]
 
@@ -303,7 +323,10 @@ class Exchange:
                 exchange_symbol=exchange_symbol
             )
 
-            self.assets[exchange_symbol] = trading_pair
+            if is_local:
+                self.local_assets[exchange_symbol] = trading_pair
+            else:
+                self.assets[exchange_symbol] = trading_pair
 
     def check_open_orders(self):
         """
@@ -468,15 +491,14 @@ class Exchange:
 
         return series
 
-    @deprecated
-    def get_history_window_direct(self,
-                                  assets,
-                                  end_dt,
-                                  bar_count,
-                                  frequency,
-                                  field,
-                                  data_frequency=None,
-                                  ffill=True):
+    def get_history_window(self,
+                           assets,
+                           end_dt,
+                           bar_count,
+                           frequency,
+                           field,
+                           data_frequency=None,
+                           ffill=True):
 
         """
         Public API method that returns a dataframe containing the requested
@@ -514,35 +536,46 @@ class Exchange:
             A dataframe containing the requested data.
 
         """
-        start_dt = get_start_dt(end_dt, bar_count, data_frequency)
+        freq, candle_size, unit, data_frequency = get_frequency(
+            frequency, data_frequency
+        )
+        adj_bar_count = candle_size * bar_count
+        start_dt = get_start_dt(end_dt, adj_bar_count, data_frequency)
 
         # The get_history method supports multiple asset
         candles = self.get_candles(
-            data_frequency=frequency,
+            freq=freq,
             assets=assets,
             bar_count=bar_count,
             start_dt=start_dt,
             end_dt=end_dt
         )
-        candle_series = self.get_series_from_candles(
-            candles=candles,
-            start_dt=start_dt,
-            end_dt=end_dt,
-            data_frequency=frequency,
-            field=field,
-        )
 
-        df = pd.DataFrame(candle_series)
+        series = dict()
+        for asset in candles:
+            asset_series = self.get_series_from_candles(
+                candles=candles[asset],
+                start_dt=start_dt,
+                end_dt=end_dt,
+                data_frequency=frequency,
+                field=field,
+            )
+            series[asset] = asset_series
+
+        df = pd.DataFrame(series)
+        df.dropna(inplace=True)
+
         return df
 
-    def get_history_window(self,
-                           assets,
-                           end_dt,
-                           bar_count,
-                           frequency,
-                           field,
-                           data_frequency=None,
-                           ffill=True):
+    def get_history_window_with_bundle(self,
+                                       assets,
+                                       end_dt,
+                                       bar_count,
+                                       frequency,
+                                       field,
+                                       data_frequency=None,
+                                       ffill=True,
+                                       force_auto_ingest=False):
 
         """
         Public API method that returns a dataframe containing the requested
@@ -590,7 +623,8 @@ class Exchange:
                 end_dt=end_dt,
                 bar_count=adj_bar_count,
                 field=field,
-                data_frequency=data_frequency
+                data_frequency=data_frequency,
+                force_auto_ingest=force_auto_ingest
             )
         except (PricingDataNotLoadedError, NoDataAvailableOnExchange):
             series = dict()

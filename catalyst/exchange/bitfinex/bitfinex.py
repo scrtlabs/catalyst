@@ -46,8 +46,13 @@ class Bitfinex(Exchange):
         self.secret = secret.encode('UTF-8')
         self.name = 'bitfinex'
         self.color = 'green'
-        self.assets = {}
+
+        self.assets = dict()
         self.load_assets()
+
+        self.local_assets = dict()
+        self.load_assets(is_local=True)
+
         self.base_currency = base_currency
         self._portfolio = portfolio
         self.minute_writer = None
@@ -61,7 +66,7 @@ class Bitfinex(Exchange):
         self.max_requests_per_minute = 80
         self.request_cpt = dict()
 
-        self.bundle = ExchangeBundle(self)
+        self.bundle = ExchangeBundle(self.name)
 
     def _request(self, operation, data, version='v1'):
         payload_object = {

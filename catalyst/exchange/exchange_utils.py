@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 import pickle
@@ -9,13 +10,31 @@ import pandas as pd
 from catalyst.assets._assets import TradingPair
 from six.moves.urllib import request
 
+from catalyst.constants import DATE_FORMAT, SYMBOLS_URL
 from catalyst.exchange.exchange_errors import ExchangeSymbolsNotFound, \
     InvalidHistoryFrequencyError, InvalidHistoryFrequencyAlias
 from catalyst.utils.paths import data_root, ensure_directory, \
     last_modified_time
 
-SYMBOLS_URL = 'https://s3.amazonaws.com/enigmaco/catalyst-exchanges/' \
-              '{exchange}/symbols.json'
+
+def get_sid(symbol):
+    """
+    Create a sid by hashing the symbol of a currency pair.
+
+    Parameters
+    ----------
+    symbol: str
+
+    Returns
+    -------
+    int
+        The resulting sid.
+
+    """
+    sid = int(
+        hashlib.sha256(symbol.encode('utf-8')).hexdigest(), 16
+    ) % 10 ** 6
+    return sid
 
 
 def get_exchange_folder(exchange_name, environ=None):
@@ -42,7 +61,7 @@ def get_exchange_folder(exchange_name, environ=None):
     return exchange_folder
 
 
-def get_exchange_symbols_filename(exchange_name, environ=None):
+def get_exchange_symbols_filename(exchange_name, is_local=False, environ=None):
     """
     The absolute path of the exchange's symbol.json file.
 
@@ -56,8 +75,9 @@ def get_exchange_symbols_filename(exchange_name, environ=None):
     str
 
     """
+    name = 'symbols.json' if not is_local else 'symbols_local.json'
     exchange_folder = get_exchange_folder(exchange_name, environ)
-    return os.path.join(exchange_folder, 'symbols.json')
+    return os.path.join(exchange_folder, name)
 
 
 def download_exchange_symbols(exchange_name, environ=None):
@@ -80,13 +100,14 @@ def download_exchange_symbols(exchange_name, environ=None):
     return response
 
 
-def get_exchange_symbols(exchange_name, environ=None):
+def get_exchange_symbols(exchange_name, is_local=False, environ=None):
     """
     The de-serialized content of the exchange's symbols.json.
 
     Parameters
     ----------
     exchange_name: str
+    is_local: bool
     environ:
 
     Returns
@@ -94,23 +115,52 @@ def get_exchange_symbols(exchange_name, environ=None):
     Object
 
     """
-    filename = get_exchange_symbols_filename(exchange_name)
+    filename = get_exchange_symbols_filename(exchange_name, is_local)
 
-    if not os.path.isfile(filename) or \
-                    pd.Timedelta(pd.Timestamp('now',
-                                              tz='UTC') - last_modified_time(
-                        filename)).days > 1:
+    if not is_local and (not os.path.isfile(filename) or pd.Timedelta(
+                pd.Timestamp('now', tz='UTC') - last_modified_time(
+                filename)).days > 1):
         download_exchange_symbols(exchange_name, environ)
 
     if os.path.isfile(filename):
         with open(filename) as data_file:
-            data = json.load(data_file)
-            return data
+            try:
+                data = json.load(data_file)
+                return data
+
+            except ValueError:
+                return dict()
     else:
         raise ExchangeSymbolsNotFound(
             exchange=exchange_name,
             filename=filename
         )
+
+
+def save_exchange_symbols(exchange_name, assets, is_local=False, environ=None):
+    """
+    Save assets into an exchange_symbols file.
+
+    Parameters
+    ----------
+    exchange_name: str
+    assets: list[dict[str, object]]
+    is_local: bool
+    environ
+
+    Returns
+    -------
+
+    """
+    asset_dicts = dict()
+    for symbol in assets:
+        asset_dicts[symbol] = assets[symbol].to_dict()
+
+    filename = get_exchange_symbols_filename(
+        exchange_name, is_local, environ
+    )
+    with open(filename, 'wt') as handle:
+        json.dump(asset_dicts, handle, indent=4, default=symbols_serial)
 
 
 def get_symbols_string(assets):
@@ -363,6 +413,25 @@ def get_exchange_bundles_folder(exchange_name, environ=None):
     return temp_bundles
 
 
+def symbols_serial(obj):
+    """
+    JSON serializer for objects not serializable by default json code
+
+    Parameters
+    ----------
+    obj: Object
+
+    Returns
+    -------
+    str
+
+    """
+    if isinstance(obj, (datetime, date)):
+        return obj.floor('1D').strftime(DATE_FORMAT)
+
+    raise TypeError("Type %s not serializable" % type(obj))
+
+
 def perf_serial(obj):
     """
     JSON serializer for objects not serializable by default json code
@@ -500,4 +569,5 @@ def resample_history_df(df, freq, field):
     else:
         raise ValueError('Invalid field.')
 
-    return df.resample(freq).agg(agg)
+    resampled_df = df.resample(freq).agg(agg)
+    return resampled_df

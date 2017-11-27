@@ -14,6 +14,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import pandas as pd
 
 from catalyst.api import (
     order_target_value,
@@ -23,20 +24,17 @@ from catalyst.api import (
     get_open_orders,
 )
 
+
 def initialize(context):
-    context.ASSET_NAME = 'BTC_USDT'
+    context.ASSET_NAME = 'btc_usdt'
     context.TARGET_HODL_RATIO = 0.8
     context.RESERVE_RATIO = 1.0 - context.TARGET_HODL_RATIO
-
-    # For all trading pairs in the poloniex bundle, the default denomination
-    # currently supported by Catalyst is 1/1000th of a full coin. Use this
-    # constant to scale the price of up to that of a full coin if desired.
-    context.TICK_SIZE = 1000.0
 
     context.is_buying = True
     context.asset = symbol(context.ASSET_NAME)
 
     context.i = 0
+
 
 def handle_data(context, data):
     context.i += 1
@@ -64,8 +62,8 @@ def handle_data(context, data):
         order_target_value(
             context.asset,
             target_hodl_value,
-            limit_price=price*1.1,
-            stop_price=price*0.9,
+            limit_price=price * 1.1,
+            stop_price=price * 0.9,
         )
 
     record(
@@ -75,6 +73,7 @@ def handle_data(context, data):
         starting_cash=context.portfolio.starting_cash,
         leverage=context.account.leverage,
     )
+
 
 def analyze(context=None, results=None):
     import matplotlib.pyplot as plt
@@ -86,7 +85,7 @@ def analyze(context=None, results=None):
 
     ax2 = plt.subplot(612, sharex=ax1)
     ax2.set_ylabel('{asset} (USD)'.format(asset=context.ASSET_NAME))
-    (context.TICK_SIZE * results[['price']]).plot(ax=ax2)
+    results[['price']].plot(ax=ax2)
 
     trans = results.ix[[t != [] for t in results.transactions]]
     buys = trans.ix[
@@ -94,7 +93,7 @@ def analyze(context=None, results=None):
     ]
     ax2.plot(
         buys.index,
-        context.TICK_SIZE * results.price[buys.index],
+        results.price[buys.index],
         '^',
         markersize=10,
         color='g',
@@ -135,3 +134,4 @@ def analyze(context=None, results=None):
     # Show the plot.
     plt.gcf().set_size_inches(18, 8)
     plt.show()
+

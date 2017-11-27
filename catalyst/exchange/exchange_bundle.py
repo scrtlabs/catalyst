@@ -1,13 +1,15 @@
 import os
+import os
 import shutil
+from datetime import datetime, timedelta
 from functools import partial
 from itertools import chain
 from operator import is_not
 
 import numpy as np
 import pandas as pd
+import pytz
 from catalyst.assets._assets import TradingPair
-from datetime import datetime, timedelta
 from logbook import Logger
 from pytz import UTC
 from six import itervalues
@@ -19,14 +21,17 @@ from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
     BcolzMinuteBarMetadata
 from catalyst.exchange.bundle_utils import range_in_bundle, \
     get_bcolz_chunk, get_month_start_end, \
-    get_year_start_end, get_df_from_arrays, get_start_dt, get_period_label
+    get_year_start_end, get_df_from_arrays, get_start_dt, get_period_label, \
+    get_delta, get_assets
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
 from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
     TempBundleNotFoundError, \
     NoDataAvailableOnExchange, \
-    PricingDataNotLoadedError
-from catalyst.exchange.exchange_utils import get_exchange_folder
+    PricingDataNotLoadedError, DataCorruptionError, ExchangeSymbolsNotFound, \
+    PricingDataValueError
+from catalyst.exchange.exchange_utils import get_exchange_folder, \
+    get_exchange_symbols, save_exchange_symbols
 from catalyst.utils.cli import maybe_show_progress
 from catalyst.utils.paths import ensure_directory
 
@@ -40,23 +45,14 @@ def _cachpath(symbol, type_):
 
 
 class ExchangeBundle:
-    def __init__(self, exchange):
-        self.exchange = exchange
+    def __init__(self, exchange_name):
+        self.exchange_name = exchange_name
         self.minutes_per_day = 1440
         self.default_ohlc_ratio = 1000000
         self._writers = dict()
         self._readers = dict()
         self.calendar = get_calendar('OPEN')
-
-    def get_assets(self, include_symbols, exclude_symbols):
-        # TODO: filter exclude symbols assets
-        if include_symbols is not None:
-            include_symbols_list = include_symbols.split(',')
-
-            return self.exchange.get_assets(include_symbols_list)
-
-        else:
-            return self.exchange.get_assets()
+        self.exchange = None
 
     def get_reader(self, data_frequency, path=None):
         """
@@ -68,7 +64,7 @@ class ExchangeBundle:
 
         """
         if path is None:
-            root = get_exchange_folder(self.exchange.name)
+            root = get_exchange_folder(self.exchange_name)
             path = BUNDLE_NAME_TEMPLATE.format(
                 root=root,
                 frequency=data_frequency
@@ -99,7 +95,7 @@ class ExchangeBundle:
         BcolzMinuteBarWriter | BcolzDailyBarWriter
 
         """
-        root = get_exchange_folder(self.exchange.name)
+        root = get_exchange_folder(self.exchange_name)
         path = BUNDLE_NAME_TEMPLATE.format(
             root=root,
             frequency=data_frequency
@@ -157,9 +153,9 @@ class ExchangeBundle:
         ----------
         assets: list[TradingPair]
             The assets is scope.
-        start_dt: datetime
+        start_dt: pd.Timestamp
             The chunk start date.
-        end_dt: datetime
+        end_dt: pd.Timestamp
             The chunk end date.
         data_frequency: str
 
@@ -208,8 +204,8 @@ class ExchangeBundle:
 
         Parameters
         ----------
-        start_dt: datetime
-        end_dt: datetime
+        start_dt: pd.Timestamp
+        end_dt: pd.Timestamp
         data_frequency: str
 
         Returns
@@ -366,7 +362,7 @@ class ExchangeBundle:
 
         # Download and extract the bundle
         path = get_bcolz_chunk(
-            exchange_name=self.exchange.name,
+            exchange_name=self.exchange_name,
             symbol=asset.symbol,
             data_frequency=data_frequency,
             period=period
@@ -435,14 +431,14 @@ class ExchangeBundle:
 
         Parameters
         ----------
-        start: datetime
-        end: datetime
+        start: pd.Timestamp
+        end: pd.Timestamp
         assets: list[TradingPair]
         data_frequency: str
 
         Returns
         -------
-        datetime, datetime
+        pd.Timestamp, pd.Timestamp
         """
         earliest_trade = None
         last_entry = None
@@ -469,7 +465,8 @@ class ExchangeBundle:
             start = earliest_trade
 
         if end is None or (last_entry is not None and end > last_entry):
-            end = last_entry
+            end = last_entry.replace(minute=59, hour=23) \
+                if data_frequency == 'minute' else last_entry
 
         if end is None or start is None or start > end:
             raise NoDataAvailableOnExchange(
@@ -489,8 +486,8 @@ class ExchangeBundle:
         ----------
         assets: list[TradingPair]
         data_frequency: str
-        start_dt: datetime
-        end_dt: datetime
+        start_dt: pd.Timestamp
+        end_dt: pd.Timestamp
 
         Returns
         -------
@@ -573,8 +570,8 @@ class ExchangeBundle:
         ----------
         assets: list[TradingPair]
         data_frequency: str
-        start_dt: datetime
-        end_dt: datetime
+        start_dt: pd.Timestamp
+        end_dt: pd.Timestamp
         show_progress: bool
         show_breakdown: bool
 
@@ -610,7 +607,7 @@ class ExchangeBundle:
                         show_progress,
                         label='Ingesting {frequency} price data for '
                               '{symbol} on {exchange}'.format(
-                            exchange=self.exchange.name,
+                            exchange=self.exchange_name,
                             frequency=data_frequency,
                             symbol=asset.symbol
                         )) as it:
@@ -635,7 +632,7 @@ class ExchangeBundle:
                     show_progress,
                     label='Ingesting {frequency} price data on '
                           '{exchange}'.format(
-                        exchange=self.exchange.name,
+                        exchange=self.exchange_name,
                         frequency=data_frequency,
                     )) as it:
                 for chunk in it:
@@ -653,8 +650,138 @@ class ExchangeBundle:
                 '\n'.join(problems)
             ))
 
+    def ingest_csv(self, path, data_frequency, empty_rows_behavior='strip',
+                   duplicates_threshold=100):
+        """
+        Ingest price data from a CSV file.
+
+        Parameters
+        ----------
+        path: str
+        data_frequency: str
+
+        Returns
+        -------
+        list[str]
+            A list of potential problems detected during ingestion.
+
+        """
+        log.info('ingesting csv file: {}'.format(path))
+        try:
+            symbols_def = get_exchange_symbols(
+                self.exchange_name, is_local=True
+            )
+        except ExchangeSymbolsNotFound:
+            symbols_def = dict()
+
+        problems = []
+        df = pd.read_csv(
+            path,
+            header=0,
+            sep=',',
+            dtype=dict(
+                symbol=np.object_,
+                last_traded=np.object_,
+                open=np.float64,
+                high=np.float64,
+                close=np.float64,
+                volume=np.float64
+            ),
+            parse_dates=['last_traded'],
+            index_col=None
+        )
+        min_start_dt = None
+        max_end_dt = None
+
+        symbols = df['symbol'].unique()
+
+        # Apply the timezone before creating an index for simplicity
+        df['last_traded'] = df['last_traded'].dt.tz_localize(pytz.UTC)
+        df.set_index(['symbol', 'last_traded'], drop=True, inplace=True)
+
+        assets = dict()
+        for symbol in symbols:
+            start_dt = df.index.get_level_values(1).min()
+            end_dt = df.index.get_level_values(1).max()
+            end_dt_key = 'end_{}'.format(data_frequency)
+
+            if symbol is symbols_def:
+                symbol_def = symbols_def[symbol]
+
+                start_dt = symbol_def['start_date'] \
+                    if symbol_def['start_date'] < start_dt else start_dt
+
+                end_dt = symbol_def[end_dt_key] \
+                    if symbol_def[end_dt_key] > end_dt else end_dt
+
+                end_daily = end_dt \
+                    if data_frequency == 'daily' else symbol_def['end_daily']
+
+                end_minute = end_dt \
+                    if data_frequency == 'minute' else symbol_def['end_minute']
+
+            else:
+                end_daily = end_dt if data_frequency == 'daily' else 'N/A'
+                end_minute = end_dt if data_frequency == 'minute' else 'N/A'
+
+            if min_start_dt is None or start_dt < min_start_dt:
+                min_start_dt = start_dt
+
+            if max_end_dt is None or end_dt > max_end_dt:
+                max_end_dt = end_dt
+
+            asset = TradingPair(
+                symbol=symbol,
+                exchange=self.exchange_name,
+                start_date=start_dt,
+                end_date=end_dt,
+                leverage=0,  # TODO: add as an optional column
+                asset_name=symbol,
+                min_trade_size=0,  # TODO: add as an optional column
+                end_daily=end_daily,
+                end_minute=end_minute,
+                exchange_symbol=symbol
+            )
+            assets[symbol] = asset
+
+        save_exchange_symbols(self.exchange_name, assets, True)
+
+        writer = self.get_writer(
+            start_dt=min_start_dt.replace(hour=00, minute=00),
+            end_dt=max_end_dt.replace(hour=23, minute=59),
+            data_frequency=data_frequency
+        )
+
+        for symbol in assets:
+            asset = assets[symbol]
+            ohlcv_df = df.loc[
+                (df.index.get_level_values(0) == symbol)
+            ]  # type: pd.DataFrame
+            ohlcv_df.index = ohlcv_df.index.droplevel(0)
+
+            period_start = start_dt.replace(hour=00, minute=00)
+            period_end = end_dt.replace(hour=23, minute=59)
+            periods = self.get_calendar_periods_range(
+                period_start, period_end, data_frequency
+            )
+
+            # We're not really resampling but ensuring that each frame
+            # contains data
+            ohlcv_df = ohlcv_df.reindex(periods, method='ffill')
+            ohlcv_df['volume'] = ohlcv_df['volume'].fillna(0)
+
+            problems += self.ingest_df(
+                ohlcv_df=ohlcv_df,
+                data_frequency=data_frequency,
+                asset=asset,
+                writer=writer,
+                empty_rows_behavior=empty_rows_behavior,
+                duplicates_threshold=duplicates_threshold
+            )
+        return filter(partial(is_not, None), problems)
+
     def ingest(self, data_frequency, include_symbols=None,
-               exclude_symbols=None, start=None, end=None,
+               exclude_symbols=None, start=None, end=None, csv=None,
                show_progress=True, show_breakdown=True, show_report=True):
         """
         Inject data based on specified parameters.
@@ -664,17 +791,34 @@ class ExchangeBundle:
         data_frequency: str
         include_symbols: str
         exclude_symbols: str
-        start: datetime
-        end: datetime
+        start: pd.Timestamp
+        end: pd.Timestamp
         show_progress: bool
         environ:
 
         """
-        assets = self.get_assets(include_symbols, exclude_symbols)
+        if csv is not None:
+            self.ingest_csv(csv, data_frequency)
 
-        for frequency in data_frequency.split(','):
-            self.ingest_assets(assets, frequency, start, end,
-                               show_progress, show_breakdown, show_report)
+        else:
+            if self.exchange is None:
+                # Avoid circular dependencies
+                from catalyst.exchange.factory import get_exchange
+                self.exchange = get_exchange(self.exchange_name)
+
+            assets = get_assets(
+                self.exchange, include_symbols, exclude_symbols
+            )
+            for frequency in data_frequency.split(','):
+                self.ingest_assets(
+                    assets=assets,
+                    data_frequency=frequency,
+                    start_dt=start,
+                    end_dt=end,
+                    show_progress=show_progress,
+                    show_breakdown=show_breakdown,
+                    show_report=show_report
+                )
 
     def get_history_window_series_and_load(self,
                                            assets,
@@ -682,7 +826,9 @@ class ExchangeBundle:
                                            bar_count,
                                            field,
                                            data_frequency,
-                                           algo_end_dt=None
+                                           algo_end_dt=None,
+                                           trailing_bar_count=None,
+                                           force_auto_ingest=False
                                            ):
         """
         Retrieve price data history, ingest missing data.
@@ -690,25 +836,26 @@ class ExchangeBundle:
         Parameters
         ----------
         assets: list[TradingPair]
-        end_dt: datetime
+        end_dt: pd.Timestamp
         bar_count: int
         field: str
         data_frequency: str
-        algo_end_dt: datetime
+        algo_end_dt: pd.Timestamp
 
         Returns
         -------
         Series
 
         """
-        if AUTO_INGEST:
+        if AUTO_INGEST or force_auto_ingest:
             try:
                 series = self.get_history_window_series(
                     assets=assets,
                     end_dt=end_dt,
                     bar_count=bar_count,
                     field=field,
-                    data_frequency=data_frequency
+                    data_frequency=data_frequency,
+                    trailing_bar_count=trailing_bar_count,
                 )
                 return pd.DataFrame(series)
 
@@ -725,7 +872,7 @@ class ExchangeBundle:
                 self.ingest_assets(
                     assets=assets,
                     start_dt=start_dt,
-                    end_dt=algo_end_dt,
+                    end_dt=algo_end_dt,  # TODO: apply trailing bars
                     data_frequency=data_frequency,
                     show_progress=True,
                     show_breakdown=True
@@ -736,7 +883,8 @@ class ExchangeBundle:
                     bar_count=bar_count,
                     field=field,
                     data_frequency=data_frequency,
-                    reset_reader=True
+                    reset_reader=True,
+                    trailing_bar_count=trailing_bar_count,
                 )
                 return series
 
@@ -746,7 +894,8 @@ class ExchangeBundle:
                 end_dt=end_dt,
                 bar_count=bar_count,
                 field=field,
-                data_frequency=data_frequency
+                data_frequency=data_frequency,
+                trailing_bar_count=trailing_bar_count,
             )
             return pd.DataFrame(series)
 
@@ -796,7 +945,7 @@ class ExchangeBundle:
             raise PricingDataNotLoadedError(
                 field=field,
                 first_trading_day=min([asset.start_date for asset in assets]),
-                exchange=self.exchange.name,
+                exchange=self.exchange_name,
                 symbols=symbols,
                 symbol_list=','.join(symbols),
                 data_frequency=data_frequency,
@@ -810,12 +959,20 @@ class ExchangeBundle:
                                   bar_count,
                                   field,
                                   data_frequency,
+                                  trailing_bar_count=None,
                                   reset_reader=False):
         start_dt = get_start_dt(end_dt, bar_count, data_frequency, False)
-        start_dt, end_dt = self.get_adj_dates(
+        start_dt, _ = self.get_adj_dates(
             start_dt, end_dt, assets, data_frequency
         )
 
+        if trailing_bar_count:
+            delta = get_delta(trailing_bar_count, data_frequency)
+            end_dt += delta
+
+        # This is an attempt to resolve some caching with the reader
+        # when auto-ingesting data.
+        # TODO: needs more work
         reader = self.get_reader(data_frequency)
         if reset_reader:
             del self._readers[reader._rootdir]
@@ -826,7 +983,7 @@ class ExchangeBundle:
             raise PricingDataNotLoadedError(
                 field=field,
                 first_trading_day=min([asset.start_date for asset in assets]),
-                exchange=self.exchange.name,
+                exchange=self.exchange_name,
                 symbols=symbols,
                 symbol_list=','.join(symbols),
                 data_frequency=data_frequency,
@@ -834,57 +991,61 @@ class ExchangeBundle:
                 end_dt=end_dt
             )
 
+        series = dict()
         for asset in assets:
-            asset_start_dt, asset_end_dt = self.get_adj_dates(
+            asset_start_dt, _ = self.get_adj_dates(
                 start_dt, end_dt, assets, data_frequency
             )
-
             in_bundle = range_in_bundle(
-                asset, asset_start_dt, asset_end_dt, reader
+                asset, asset_start_dt, end_dt, reader
             )
             if not in_bundle:
                 raise PricingDataNotLoadedError(
                     field=field,
                     first_trading_day=asset.start_date,
-                    exchange=self.exchange.name,
+                    exchange=self.exchange_name,
                     symbols=asset.symbol,
                     symbol_list=asset.symbol,
                     data_frequency=data_frequency,
                     start_dt=asset_start_dt,
-                    end_dt=asset_end_dt
+                    end_dt=end_dt
                 )
 
-        series = dict()
-        try:
+            periods = self.get_calendar_periods_range(
+                asset_start_dt, end_dt, data_frequency
+            )
+            # This does not behave well when requesting multiple assets
+            # when the start or end date of one asset is outside of the range
+            # looking at the logic in load_raw_arrays(), we are not achieving
+            # any performance gain by requesting multiple sids at once. It's
+            # looping through the sids and making separate requests anyway.
             arrays = reader.load_raw_arrays(
-                sids=[asset.sid for asset in assets],
+                sids=[asset.sid],
                 fields=[field],
                 start_dt=start_dt,
                 end_dt=end_dt
             )
+            if len(arrays) == 0:
+                raise DataCorruptionError(
+                    exchange=self.exchange_name,
+                    symbols=asset.symbol,
+                    start_dt=asset_start_dt,
+                    end_dt=end_dt
+                )
 
-        except Exception:
-            symbols = [asset.symbol.encode('utf-8') for asset in assets]
-            raise PricingDataNotLoadedError(
-                field=field,
-                first_trading_day=min([asset.start_date for asset in assets]),
-                exchange=self.exchange.name,
-                symbols=symbols,
-                symbol_list=','.join(symbols),
-                data_frequency=data_frequency,
-                start_dt=start_dt,
-                end_dt=end_dt
-            )
+            field_values = arrays[0][:, 0]
 
-        periods = self.get_calendar_periods_range(
-            start_dt, end_dt, data_frequency
-        )
-
-        for asset_index, asset in enumerate(assets):
-            asset_values = arrays[asset_index]
-
-            value_series = pd.Series(asset_values.flatten(), index=periods)
-            series[asset] = value_series
+            try:
+                value_series = pd.Series(field_values, index=periods)
+                series[asset] = value_series
+            except ValueError as e:
+                raise PricingDataValueError(
+                    exchange=asset.exchange,
+                    symbol=asset.symbol,
+                    start_dt=asset_start_dt,
+                    end_dt=end_dt,
+                    error=e
+                )
 
         return series
 
@@ -898,13 +1059,17 @@ class ExchangeBundle:
 
         """
         log.debug('cleaning exchange {}, frequency {}'.format(
-            self.exchange.name, data_frequency
+            self.exchange_name, data_frequency
         ))
-        root = get_exchange_folder(self.exchange.name)
+        root = get_exchange_folder(self.exchange_name)
 
         symbols = os.path.join(root, 'symbols.json')
         if os.path.isfile(symbols):
             os.remove(symbols)
+
+        local_symbols = os.path.join(root, 'symbols_local.json')
+        if os.path.isfile(local_symbols):
+            os.remove(local_symbols)
 
         temp_bundles = os.path.join(root, 'temp_bundles')
 

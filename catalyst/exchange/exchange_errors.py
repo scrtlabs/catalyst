@@ -217,6 +217,19 @@ class PricingDataNotLoadedError(ZiplineError):
            '{data_frequency} -i {symbol_list}`. See catalyst documentation '
            'for details.').strip()
 
+class PricingDataValueError(ZiplineError):
+    msg = ('Unable to retrieve pricing data for {exchange} {symbol} '
+           '[{start_dt} - {end_dt}]: {error}').strip()
+
+
+class DataCorruptionError(ZiplineError):
+    msg = ('Unable to validate data for {exchange} {symbols} in date range '
+           '[{start_dt} - {end_dt}]. The data is either corrupted or '
+           'unavailable. Please try deleting this bundle:'
+           '\n`catalyst clean-exchange -x {exchange}\n'
+           'Then, ingest the data again. Please contact the Catalyst team if '
+           'the issue persists.').strip()
+
 
 class ApiCandlesError(ZiplineError):
     msg = ('Unable to fetch candles from the remote API: {error}.').strip()

@@ -149,13 +149,14 @@ def load_crypto_market_data(trading_day=None, trading_days=None,
 
     # exchange.get_history_window() already ensures that we have the right data
     # for the right dates
-    br = exchange.get_history_window(
+    br = exchange.get_history_window_with_bundle(
         assets=[benchmark_asset],
         end_dt=last_date,
         bar_count=pd.Timedelta(last_date - start_dt).days,
         frequency='1d',
         field='close',
-        data_frequency='daily')
+        data_frequency='daily',
+        force_auto_ingest=True)
     br.columns = ['close']
     br = br.pct_change(1).iloc[1:]
     br.loc[start_dt] = 0

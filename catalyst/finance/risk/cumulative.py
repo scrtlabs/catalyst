@@ -196,8 +196,8 @@ class RiskMetricsCumulative(object):
             self.benchmark_cumulative_returns[dt_loc] = cum_returns(
                 self.benchmark_returns
             )[-1]
-        except Exception as e:
-            log.debug('cumulative returns error: {}'.format(e))
+        except Exception:
+            self.benchmark_cumulative_returns[dt_loc] = 0
 
         benchmark_cumulative_returns_to_date = \
             self.benchmark_cumulative_returns[:dt_loc + 1]
@@ -274,12 +274,14 @@ algorithm_returns ({algo_count}) in range {start} : {end} on {dt}"
         )
 
         try:
+            risk = self.downside_risk[dt_loc]
             self.sortino[dt_loc] = sortino_ratio(
                 self.algorithm_returns,
-                _downside_risk=self.downside_risk[dt_loc]
+                _downside_risk=risk
             )
-        except Exception as e:
-            log.debug('sortino ratio error: {}'.format(e))
+        except Exception:
+            # TODO: what causes it to error out?
+            self.sortino[dt_loc] = 0
 
         self.information[dt_loc] = information_ratio(
             self.algorithm_returns,

@@ -38,6 +38,7 @@ from numpy cimport int64_t
 import warnings
 cimport numpy as np
 
+from catalyst.exchange.exchange_utils import get_sid
 from catalyst.utils.calendars import get_calendar
 from catalyst.exchange.exchange_errors import InvalidSymbolError, SidHashError
 
@@ -503,11 +504,7 @@ cdef class TradingPair(Asset):
 
         if sid == 0 or sid is None:
             try:
-                # sid = abs(hash(symbol)) % (10 ** 4)
-                # TODO: try to encode the symbol in the main scope
-                sid = int(
-                    hashlib.sha256(symbol.encode('utf-8')).hexdigest(), 16
-                ) % 10 ** 6
+                sid = get_sid(symbol)
             except Exception as e:
                 raise SidHashError(symbol=symbol)
 
@@ -558,6 +555,17 @@ cdef class TradingPair(Asset):
             end_daily=self.end_daily,
             end_minute=self.end_minute
         )
+
+    cpdef to_dict(self):
+        """
+        Convert to a python dict.
+        """
+        super_dict = super(TradingPair, self).to_dict()
+        super_dict['end_daily'] = self.end_daily
+        super_dict['end_minute'] = self.end_minute
+        super_dict['leverage'] = self.leverage
+        super_dict['min_trade_size'] = self.min_trade_size
+        return super_dict
 
     def is_exchange_open(self, dt_minute):
         """

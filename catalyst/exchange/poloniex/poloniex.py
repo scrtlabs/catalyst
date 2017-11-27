@@ -35,8 +35,13 @@ class Poloniex(Exchange):
     def __init__(self, key, secret, base_currency, portfolio=None):
         self.api = Poloniex_api(key=key, secret=secret)
         self.name = 'poloniex'
-        self.assets = {}
+
+        self.assets = dict()
         self.load_assets()
+
+        self.local_assets = dict()
+        self.load_assets(is_local=True)
+
         self.base_currency = base_currency
         self._portfolio = portfolio
         self.minute_writer = None
@@ -47,7 +52,7 @@ class Poloniex(Exchange):
         self.max_requests_per_minute = 60
         self.request_cpt = dict()
 
-        self.bundle = ExchangeBundle(self)
+        self.bundle = ExchangeBundle(self.name)
 
     def sanitize_curency_symbol(self, exchange_symbol):
         """
@@ -226,10 +231,9 @@ class Poloniex(Exchange):
         ohlc_map = dict()
 
         for asset in asset_list:
+            delta = end_dt - pd.to_datetime('1970-1-1', utc=True)
+            end = int(delta.total_seconds())
 
-            # TODO: what's wrong with this?
-            # end = int(time.mktime(end_dt.timetuple()))
-            end = int(time.time())
             if bar_count is None:
                 start = end - 2 * frequency
             else:

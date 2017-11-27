@@ -114,9 +114,12 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
         else:
             exchange = self.exchanges[exchange_name]
 
+        data_frequency = self.data_frequency \
+            if self.sim_params.arena == 'backtest' else None
         return self.asset_finder.lookup_symbol(
             symbol=symbol_str,
             exchange=exchange,
+            data_frequency=data_frequency,
             as_of_date=_lookup_date
         )
 
@@ -245,18 +248,41 @@ class ExchangeTradingAlgorithmBacktest(ExchangeTradingAlgorithmBase):
         else:
             return MarketOrder()
 
+    def is_last_frame_of_day(self, data):
+        # TODO: adjust here to support more intervals
+        next_frame_dt = data.current_dt + timedelta(minutes=1)
+        if next_frame_dt.date() > data.current_dt.date():
+            return True
+        else:
+            return False
+
     def handle_data(self, data):
         super(ExchangeTradingAlgorithmBacktest, self).handle_data(data)
 
-        minute_stats = self.prepare_period_stats(
-            data.current_dt, data.current_dt + timedelta(minutes=1))
-        self.frame_stats.append(minute_stats)
+        if self.data_frequency == 'minute':
+            frame_stats = self.prepare_period_stats(
+                data.current_dt, data.current_dt + timedelta(minutes=1)
+            )
+            self.frame_stats.append(frame_stats)
 
-    def analyze(self, perf):
+    def _create_stats_df(self):
         stats = pd.DataFrame(self.frame_stats)
         stats.set_index('period_close', inplace=True, drop=False)
+        return stats
 
+    def analyze(self, perf):
+        stats = self._create_stats_df() if self.data_frequency == 'minute' \
+            else perf
         super(ExchangeTradingAlgorithmBacktest, self).analyze(stats)
+
+    def run(self, data=None, overwrite_sim_params=True):
+        perf = super(ExchangeTradingAlgorithmBacktest, self).run(
+            data, overwrite_sim_params
+        )
+        # Rebuilding the stats to support minute data
+        stats = self._create_stats_df() if self.data_frequency == 'minute' \
+            else perf
+        return stats
 
 
 class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
@@ -265,7 +291,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         self.live_graph = kwargs.pop('live_graph', None)
 
         self._clock = None
-        self.minute_stats = deque(maxlen=60)
+        self.frame_stats = deque(maxlen=60)
 
         self.pnl_stats = get_algo_df(self.algo_namespace, 'pnl_stats')
 
@@ -534,8 +560,9 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         )
         self.exposure_stats = pd.concat([self.exposure_stats, df])
 
-        save_algo_df(self.algo_namespace, 'exposure_stats',
-                     self.exposure_stats)
+        save_algo_df(
+            self.algo_namespace, 'exposure_stats', self.exposure_stats
+        )
 
     def handle_data(self, data):
         """
@@ -552,8 +579,11 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         self._synchronize_portfolio()
 
         transactions = self._check_open_orders()
-        for transaction in transactions:
-            self.perf_tracker.process_transaction(transaction)
+        if len(transactions) > 0:
+            for transaction in transactions:
+                self.perf_tracker.process_transaction(transaction)
+
+            self.perf_tracker.update_performance()
 
         if self._handle_data:
             self._handle_data(self, data)
@@ -568,22 +598,22 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             # Performance tracker and keep only minute and cumulative
             self.perf_tracker.update_performance()
 
-            minute_stats = self.prepare_period_stats(
+            frame_stats = self.prepare_period_stats(
                 data.current_dt, data.current_dt + timedelta(minutes=1))
 
             # Saving the last hour in memory
-            self.minute_stats.append(minute_stats)
+            self.frame_stats.append(frame_stats)
 
-            self.add_pnl_stats(minute_stats)
+            self.add_pnl_stats(frame_stats)
             if self.recorded_vars:
-                self.add_custom_signals_stats(minute_stats)
+                self.add_custom_signals_stats(frame_stats)
                 recorded_cols = list(self.recorded_vars.keys())
             else:
                 recorded_cols = None
 
-            self.add_exposure_stats(minute_stats)
+            self.add_exposure_stats(frame_stats)
 
-            print_df = pd.DataFrame(list(self.minute_stats))
+            print_df = pd.DataFrame(list(self.frame_stats))
             log.info(
                 'statistics for the last {stats_minutes} minutes:\n{stats}'.format(
                     stats_minutes=self.stats_minutes,

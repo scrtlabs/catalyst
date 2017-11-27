@@ -30,16 +30,17 @@ except NameError:
 @click.option(
     '--strict-extensions/--non-strict-extensions',
     is_flag=True,
-    help='If --strict-extensions is passed then catalyst will not run if it'
-         ' cannot load all of the specified extensions. If this is not passed or'
-         ' --non-strict-extensions is passed then the failure will be logged but'
-         ' execution will continue.',
+    help='If --strict-extensions is passed then catalyst will not run '
+         'if it cannot load all of the specified extensions. If this is '
+         'not passed or --non-strict-extensions is passed then the '
+         'failure will be logged but execution will continue.',
 )
 @click.option(
     '--default-extension/--no-default-extension',
     is_flag=True,
     default=True,
-    help="Don't load the default catalyst extension.py file in $CATALYST_HOME.",
+    help="Don't load the default catalyst extension.py file "
+         "in $CATALYST_HOME.",
 )
 @click.version_option()
 def main(extension, strict_extensions, default_extension):
@@ -124,9 +125,9 @@ def ipython_only(option):
     '--define',
     multiple=True,
     help="Define a name to be bound in the namespace before executing"
-         " the algotext. For example '-Dname=value'. The value may be any python"
-         " expression. These are evaluated in order so they may refer to previously"
-         " defined names.",
+         " the algotext. For example '-Dname=value'. The value may be"
+         " any python expression. These are evaluated in order so they"
+         " may refer to previously defined names.",
 )
 @click.option(
     '--data-frequency',
@@ -138,7 +139,6 @@ def ipython_only(option):
 @click.option(
     '--capital-base',
     type=float,
-    default=10e6,
     show_default=True,
     help='The starting capital for the simulation.',
 )
@@ -176,8 +176,8 @@ def ipython_only(option):
     default='-',
     metavar='FILENAME',
     show_default=True,
-    help="The location to write the perf data. If this is '-' the perf will"
-         " be written to stdout.",
+    help="The location to write the perf data. If this is '-' the perf"
+         " will be written to stdout.",
 )
 @click.option(
     '--print-algo/--no-print-algo',
@@ -195,7 +195,8 @@ def ipython_only(option):
     '-x',
     '--exchange-name',
     type=click.Choice({'bitfinex', 'bittrex', 'poloniex'}),
-    help='The name of the targeted exchange (supported: bitfinex, bittrex, poloniex).',
+    help='The name of the targeted exchange (supported: bitfinex,'
+         ' bittrex, poloniex).',
 )
 @click.option(
     '-n',
@@ -240,15 +241,25 @@ def run(ctx,
         # does not pass either of these and then passes the first only
         # to be told they need to pass the second argument also
         ctx.fail(
-            "must specify dates with '-s' / '--start' and '-e' / '--end'",
+            "must specify dates with '-s' / '--start' and '-e' / '--end'"
+            " in backtest mode",
         )
     if start is None:
-        ctx.fail("must specify a start date with '-s' / '--start'")
+        ctx.fail("must specify a start date with '-s' / '--start'"
+                 " in backtest mode")
     if end is None:
-        ctx.fail("must specify an end date with '-e' / '--end'")
+        ctx.fail("must specify an end date with '-e' / '--end'"
+                 " in backtest mode")
 
     if exchange_name is None:
         ctx.fail("must specify an exchange name '-x'")
+
+    if base_currency is None:
+        ctx.fail("must specify a base currency with '-c' in backtest mode")
+
+    if capital_base is None:
+        ctx.fail("must specify a capital base with '--capital-base'"
+                 " in backtest mode")
 
     perf = _run(
         initialize=None,
@@ -335,9 +346,9 @@ def catalyst_magic(line, cell=None):
     '--define',
     multiple=True,
     help="Define a name to be bound in the namespace before executing"
-         " the algotext. For example '-Dname=value'. The value may be any python"
-         " expression. These are evaluated in order so they may refer to previously"
-         " defined names.",
+         " the algotext. For example '-Dname=value'. The value may be"
+         " any python expression. These are evaluated in order so they"
+         " may refer to previously defined names.",
 )
 @click.option(
     '-o',
@@ -364,7 +375,8 @@ def catalyst_magic(line, cell=None):
     '-x',
     '--exchange-name',
     type=click.Choice({'bitfinex', 'bittrex', 'poloniex'}),
-    help='The name of the targeted exchange (supported: bitfinex, bittrex, poloniex).',
+    help='The name of the targeted exchange (supported: bitfinex,'
+         ' bittrex, poloniex).',
 )
 @click.option(
     '-n',
@@ -487,6 +499,13 @@ def live(ctx,
          '(optional comma separated list)',
 )
 @click.option(
+    '--csv',
+    default=None,
+    help='The path of a CSV file containing the data. If specified, start, '
+         'end, include-symbols and exclude-symbols will be ignored. Instead,'
+         'all data in the file will be ingested.',
+)
+@click.option(
     '--show-progress/--no-show-progress',
     default=True,
     help='Print progress information to the terminal.'
@@ -502,8 +521,8 @@ def live(ctx,
     help='Report potential anomalies found in data bundles.'
 )
 def ingest_exchange(exchange_name, data_frequency, start, end,
-                    include_symbols, exclude_symbols, show_progress, verbose,
-                    validate):
+                    include_symbols, exclude_symbols, csv, show_progress,
+                    verbose, validate):
     """
     Ingest data for the given exchange.
     """
@@ -511,8 +530,7 @@ def ingest_exchange(exchange_name, data_frequency, start, end,
     if exchange_name is None:
         ctx.fail("must specify an exchange name '-x'")
 
-    exchange = get_exchange(exchange_name)
-    exchange_bundle = ExchangeBundle(exchange)
+    exchange_bundle = ExchangeBundle(exchange_name)
 
     click.echo('Ingesting exchange bundle {}...'.format(exchange_name))
     exchange_bundle.ingest(
@@ -523,7 +541,8 @@ def ingest_exchange(exchange_name, data_frequency, start, end,
         end=end,
         show_progress=show_progress,
         show_breakdown=verbose,
-        show_report=validate
+        show_report=validate,
+        csv=csv
     )
 
 
@@ -536,9 +555,10 @@ def ingest_exchange(exchange_name, data_frequency, start, end,
 @click.pass_context
 def clean_algo(ctx, algo_namespace):
     click.echo(
-        'Deleting the state folder of algo: {}...'.format(algo_namespace)
+        'Cleaning algo state: {}'.format(algo_namespace)
     )
     delete_algo_folder(algo_namespace)
+    click.echo('Done')
 
 
 @main.command(name='clean-exchange')
@@ -565,8 +585,7 @@ def clean_exchange(ctx, exchange_name, data_frequency):
     if exchange_name is None:
         ctx.fail("must specify an exchange name '-x'")
 
-    exchange = get_exchange(exchange_name)
-    exchange_bundle = ExchangeBundle(exchange)
+    exchange_bundle = ExchangeBundle(exchange_name)
 
     click.echo('Cleaning exchange bundle {}...'.format(exchange_name))
     exchange_bundle.clean(
