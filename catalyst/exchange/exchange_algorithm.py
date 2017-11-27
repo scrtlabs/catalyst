@@ -114,10 +114,12 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
         else:
             exchange = self.exchanges[exchange_name]
 
+        data_frequency = self.data_frequency \
+            if self.sim_params.arena == 'backtest' else None
         return self.asset_finder.lookup_symbol(
             symbol=symbol_str,
             exchange=exchange,
-            data_frequency=self.data_frequency,
+            data_frequency=data_frequency,
             as_of_date=_lookup_date
         )
 

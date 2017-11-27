@@ -28,7 +28,8 @@ from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
 from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
     TempBundleNotFoundError, \
     NoDataAvailableOnExchange, \
-    PricingDataNotLoadedError, DataCorruptionError, ExchangeSymbolsNotFound
+    PricingDataNotLoadedError, DataCorruptionError, ExchangeSymbolsNotFound, \
+    PricingDataValueError
 from catalyst.exchange.exchange_utils import get_exchange_folder, \
     get_exchange_symbols, save_exchange_symbols
 from catalyst.utils.cli import maybe_show_progress
@@ -464,7 +465,8 @@ class ExchangeBundle:
             start = earliest_trade
 
         if end is None or (last_entry is not None and end > last_entry):
-            end = last_entry
+            end = last_entry.replace(minute=59, hour=23) \
+                if data_frequency == 'minute' else last_entry
 
         if end is None or start is None or start > end:
             raise NoDataAvailableOnExchange(
@@ -960,7 +962,7 @@ class ExchangeBundle:
                                   trailing_bar_count=None,
                                   reset_reader=False):
         start_dt = get_start_dt(end_dt, bar_count, data_frequency, False)
-        start_dt, end_dt = self.get_adj_dates(
+        start_dt, _ = self.get_adj_dates(
             start_dt, end_dt, assets, data_frequency
         )
 
@@ -991,11 +993,11 @@ class ExchangeBundle:
 
         series = dict()
         for asset in assets:
-            asset_start_dt, asset_end_dt = self.get_adj_dates(
+            asset_start_dt, _ = self.get_adj_dates(
                 start_dt, end_dt, assets, data_frequency
             )
             in_bundle = range_in_bundle(
-                asset, asset_start_dt, asset_end_dt, reader
+                asset, asset_start_dt, end_dt, reader
             )
             if not in_bundle:
                 raise PricingDataNotLoadedError(
@@ -1006,11 +1008,11 @@ class ExchangeBundle:
                     symbol_list=asset.symbol,
                     data_frequency=data_frequency,
                     start_dt=asset_start_dt,
-                    end_dt=asset_end_dt
+                    end_dt=end_dt
                 )
 
             periods = self.get_calendar_periods_range(
-                asset_start_dt, asset_end_dt, data_frequency
+                asset_start_dt, end_dt, data_frequency
             )
             # This does not behave well when requesting multiple assets
             # when the start or end date of one asset is outside of the range
@@ -1028,13 +1030,22 @@ class ExchangeBundle:
                     exchange=self.exchange_name,
                     symbols=asset.symbol,
                     start_dt=asset_start_dt,
-                    end_dt=asset_end_dt
+                    end_dt=end_dt
                 )
 
             field_values = arrays[0][:, 0]
 
-            value_series = pd.Series(field_values, index=periods)
-            series[asset] = value_series
+            try:
+                value_series = pd.Series(field_values, index=periods)
+                series[asset] = value_series
+            except ValueError as e:
+                raise PricingDataValueError(
+                    exchange=asset.exchange,
+                    symbol=asset.symbol,
+                    start_dt=asset_start_dt,
+                    end_dt=end_dt,
+                    error=e
+                )
 
         return series
 

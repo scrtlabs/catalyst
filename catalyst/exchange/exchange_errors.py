@@ -217,6 +217,10 @@ class PricingDataNotLoadedError(ZiplineError):
            '{data_frequency} -i {symbol_list}`. See catalyst documentation '
            'for details.').strip()
 
+class PricingDataValueError(ZiplineError):
+    msg = ('Unable to retrieve pricing data for {exchange} {symbol} '
+           '[{start_dt} - {end_dt}]: {error}').strip()
+
 
 class DataCorruptionError(ZiplineError):
     msg = ('Unable to validate data for {exchange} {symbols} in date range '
