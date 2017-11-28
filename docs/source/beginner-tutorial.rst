@@ -546,6 +546,7 @@ only bought bitcoin every chance it got.
       sudo apt install python-tk
 
 
+.. _history:
 
 Access to previous prices using ``history``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
