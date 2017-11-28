@@ -4,7 +4,7 @@ Release Notes
 
 Version 0.3.9
 ^^^^^^^^^^^^^
-**Release Date**: 2017-11-14
+**Release Date**: 2017-11-27
 
 Bug Fixes
 ~~~~~~~~~
