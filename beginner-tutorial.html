@@ -105,7 +105,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#working-example-dual-moving-average-cross-over">Working example: Dual Moving Average Cross-Over</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#conclusions">Conclusions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#next-steps">Next steps</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="jupyter.html">Catalyst &amp; Jupyter Notebook</a><ul>
@@ -150,46 +150,41 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="releases.html">Release Notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-9">Version 0.3.9</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#bug-fixes">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#build">Build</a></li>
-</ul>
-</li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-8">Version 0.3.8</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id1">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#bug-fixes">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-7">Version 0.3.7</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id2">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id3">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id1">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#build">Build</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-6">Version 0.3.6</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id4">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id2">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-5">Version 0.3.5</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id5">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id3">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-4">Version 0.3.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id6">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id7">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id4">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id5">Build</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#documentation">Documentation</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-3">Version 0.3.3</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id7">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id8">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-2">Version 0.3.2</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id9">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id10">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-2">Version 0.3.2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id11">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id12">Build</a></li>
-</ul>
-</li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-1">Version 0.3.1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id13">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id11">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3">Version 0.3</a></li>
@@ -371,13 +366,16 @@ following from the command line:</p>
 <code class="docutils literal"><span class="pre">catalyst</span></code> provides three interfaces:</p>
 <ul class="simple">
 <li>A command-line interface (CLI),</li>
-<li>the <code class="docutils literal"><span class="pre">IPython</span> <span class="pre">Notebook</span></code> magic,</li>
-<li>and a <code class="xref py py-func docutils literal"><span class="pre">run_algorithm()</span></code> that you can call from other
-Python scripts.</li>
+<li>a <code class="xref py py-func docutils literal"><span class="pre">run_algorithm()</span></code> that you can call from other
+Python scripts,</li>
+<li>and the <code class="docutils literal"><span class="pre">Jupyter</span> <span class="pre">Notebook</span></code> magic.</li>
 </ul>
-<p>We&#8217;ll start with the CLI, and introduce the <code class="docutils literal"><span class="pre">IPython</span> <span class="pre">Notebook</span></code> below. Some of
-the <a class="reference internal" href="example-algos.html"><em>example algorithms</em></a> provide instructions on how to run
-them both from the CLI, and using the <code class="xref py py-func docutils literal"><span class="pre">run_algorithm()</span></code> function.</p>
+<p>We&#8217;ll start with the CLI, and introduce the <code class="docutils literal"><span class="pre">run_algorithm()</span></code> in the last
+example of this tutorial. Some of the <a class="reference internal" href="example-algos.html"><em>example algorithms</em></a>
+provide instructions on how to run them both from the CLI, and using the
+<code class="xref py py-func docutils literal"><span class="pre">run_algorithm()</span></code> function. For the third method, refer to the
+corresponding section on <a class="reference internal" href="jupyter.html"><em>Catalyst &amp; Jupyter Notebook</em></a> after you
+have assimilated the contents of this tutorial.</p>
 <div class="section" id="command-line-interface">
 <h3>Command line interface<a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h3>
 <p>After you installed Catalyst, you should be able to execute the following
@@ -462,7 +460,7 @@ conveniently pass to the <code class="docutils literal"><span class="pre">-c</sp
 command line args all the time.</p>
 <p>Thus, to execute our algorithm from above and save the results to
 <code class="docutils literal"><span class="pre">buy_btc_simple_out.pickle</span></code> we would call <code class="docutils literal"><span class="pre">catalyst</span> <span class="pre">run</span></code> as follows:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">catalyst</span> <span class="n">run</span> <span class="o">-</span><span class="n">f</span> <span class="n">buy_btc_simple</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">x</span> <span class="n">bitfinex</span> <span class="o">--</span><span class="n">start</span> <span class="mi">2016</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span> <span class="o">--</span><span class="n">end</span> <span class="mi">2017</span><span class="o">-</span><span class="mi">9</span><span class="o">-</span><span class="mi">30</span> <span class="o">-</span><span class="n">c</span> <span class="n">usd</span> <span class="o">--</span><span class="n">capital</span><span class="o">-</span><span class="n">base</span> <span class="mi">100000</span> <span class="o">-</span><span class="n">o</span> <span class="n">buy_btc_simple_out</span><span class="o">.</span><span class="n">pickle</span>
+<div class="highlight-bash"><div class="highlight"><pre>catalyst run -f buy_btc_simple.py -x bitfinex --start 2016-1-1 --end 2017-9-30 -c usd --capital-base <span class="m">100000</span> -o buy_btc_simple_out.pickle
 </pre></div>
 </div>
 <div class="highlight-python"><div class="highlight"><pre>INFO: run_algo: running algo in backtest mode
@@ -731,74 +729,220 @@ we assume that the stock price has upwards momentum and long the stock.
 If the short-mavg crosses from above we exit the positions as we assume
 the stock to go down further.</p>
 <p>As we need to have access to previous prices to implement this strategy
-we need a new concept: History</p>
-<p><code class="docutils literal"><span class="pre">data.history()</span></code> is a convenience function that keeps a rolling window of
-data for you. The first argument is the number of bars you want to
-collect, the second argument is the unit (either <code class="docutils literal"><span class="pre">'1d'</span></code> for <code class="docutils literal"><span class="pre">'1m'</span></code>
-but note that you need to have minute-level data for using <code class="docutils literal"><span class="pre">1m</span></code>). This is
-a function we use in the <code class="docutils literal"><span class="pre">handle_data()</span></code> section:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="o">%</span><span class="n">load_ext</span> <span class="n">catalyst</span>
-</pre></div>
-</div>
-<div class="highlight-python"><div class="highlight"><pre><span class="o">%%</span><span class="n">catalyst</span> <span class="o">--</span><span class="n">start</span> <span class="mi">2016</span><span class="o">-</span><span class="mi">4</span><span class="o">-</span><span class="mi">1</span> <span class="o">--</span><span class="n">end</span> <span class="mi">2017</span><span class="o">-</span><span class="mi">9</span><span class="o">-</span><span class="mi">30</span> <span class="o">-</span><span class="n">x</span> <span class="n">bitfinex</span>
+we need a new concept: History. <code class="docutils literal"><span class="pre">data.history()</span></code> is a convenience function
+that keeps a rolling window of data for you. The first argument is the number
+of bars you want to collect, the second argument is the unit (either <code class="docutils literal"><span class="pre">'1d'</span></code>
+for daily or <code class="docutils literal"><span class="pre">'1m'</span></code> for minute frequency, but note that you need to have
+minute-level data when using <code class="docutils literal"><span class="pre">1m</span></code>). This is a function we use in the
+<code class="docutils literal"><span class="pre">handle_data()</span></code> section.</p>
+<p>You will note that the code below is substantially longer than the previous
+examples. Don&#8217;t get overwhelmed by it as the logic is fairly simple and easy to
+follow. Most of the added some complexity has been added to beautify the output,
+which you can skim through for now. A copy of this algorithm is available in
+the <code class="docutils literal"><span class="pre">examples</span></code> directory:
+<a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/dual_moving_average.py">dual_moving_average.py</a>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">logbook</span> <span class="kn">import</span> <span class="n">Logger</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 
-<span class="kn">from</span> <span class="nn">catalyst.api</span> <span class="kn">import</span> <span class="n">order</span><span class="p">,</span> <span class="n">record</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">order_target</span>
+<span class="kn">from</span> <span class="nn">catalyst</span> <span class="kn">import</span> <span class="n">run_algorithm</span>
+<span class="kn">from</span> <span class="nn">catalyst.api</span> <span class="kn">import</span> <span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">record</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">order_target_percent</span><span class="p">,</span>
+        <span class="n">get_open_orders</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">catalyst.exchange.stats_utils</span> <span class="kn">import</span> <span class="n">extract_transactions</span>
+
+<span class="n">NAMESPACE</span> <span class="o">=</span> <span class="s">&#39;dual_moving_average&#39;</span>
+<span class="n">log</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(</span><span class="n">NAMESPACE</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
-   <span class="n">context</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
-   <span class="n">context</span><span class="o">.</span><span class="n">asset</span> <span class="o">=</span> <span class="n">symbol</span><span class="p">(</span><span class="s">&#39;btc_usd&#39;</span><span class="p">)</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">asset</span> <span class="o">=</span> <span class="n">symbol</span><span class="p">(</span><span class="s">&#39;ltc_usd&#39;</span><span class="p">)</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">base_price</span> <span class="o">=</span> <span class="bp">None</span>
+
 
 <span class="k">def</span> <span class="nf">handle_data</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-   <span class="c"># Skip first 150 days to get full windows</span>
-   <span class="n">context</span><span class="o">.</span><span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
-   <span class="k">if</span> <span class="n">context</span><span class="o">.</span><span class="n">i</span> <span class="o">&lt;</span> <span class="mi">150</span><span class="p">:</span>
+    <span class="c"># define the windows for the moving averages</span>
+    <span class="n">short_window</span> <span class="o">=</span> <span class="mi">50</span>
+    <span class="n">long_window</span> <span class="o">=</span> <span class="mi">200</span>
+
+    <span class="c"># Skip as many bars as long_window to properly compute the average</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">context</span><span class="o">.</span><span class="n">i</span> <span class="o">&lt;</span> <span class="n">long_window</span><span class="p">:</span>
        <span class="k">return</span>
 
-   <span class="c"># Compute averages</span>
-   <span class="c"># data.history() has to be called with the same params</span>
-   <span class="c"># from above and returns a pandas dataframe.</span>
-   <span class="n">short_mavg</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">history</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s">&#39;price&#39;</span><span class="p">,</span> <span class="n">bar_count</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="s">&quot;1d&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-   <span class="n">long_mavg</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">history</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s">&#39;price&#39;</span><span class="p">,</span> <span class="n">bar_count</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="s">&quot;1d&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="c"># Compute moving averages calling data.history() for each</span>
+    <span class="c"># moving average with the appropriate parameters. We choose to use</span>
+    <span class="c"># minute bars for this simulation -&gt; freq=&quot;1m&quot;</span>
+    <span class="c"># Returns a pandas dataframe.</span>
+    <span class="n">short_mavg</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">history</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s">&#39;price&#39;</span><span class="p">,</span>
+                        <span class="n">bar_count</span><span class="o">=</span><span class="n">short_window</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="s">&quot;1m&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">long_mavg</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">history</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s">&#39;price&#39;</span><span class="p">,</span>
+                        <span class="n">bar_count</span><span class="o">=</span><span class="n">long_window</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="s">&quot;1m&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 
-   <span class="c"># Trading logic</span>
-   <span class="k">if</span> <span class="n">short_mavg</span> <span class="o">&gt;</span> <span class="n">long_mavg</span><span class="p">:</span>
-       <span class="c"># order_target orders as many shares as needed to</span>
-       <span class="c"># achieve the desired number of shares.</span>
-       <span class="n">order_target</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
-   <span class="k">elif</span> <span class="n">short_mavg</span> <span class="o">&lt;</span> <span class="n">long_mavg</span><span class="p">:</span>
-       <span class="n">order_target</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="c"># Let&#39;s keep the price of our asset in a more handy variable</span>
+    <span class="n">price</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s">&#39;price&#39;</span><span class="p">)</span>
 
-   <span class="c"># Save values for later inspection</span>
-   <span class="n">record</span><span class="p">(</span><span class="n">btc</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s">&#39;price&#39;</span><span class="p">),</span>
-          <span class="n">short_mavg</span><span class="o">=</span><span class="n">short_mavg</span><span class="p">,</span>
-          <span class="n">long_mavg</span><span class="o">=</span><span class="n">long_mavg</span><span class="p">)</span>
+    <span class="c"># If base_price is not set, we use the current value. This is the</span>
+    <span class="c"># price at the first bar which we reference to calculate price_change.</span>
+    <span class="k">if</span> <span class="n">context</span><span class="o">.</span><span class="n">base_price</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">base_price</span> <span class="o">=</span> <span class="n">price</span>
+    <span class="n">price_change</span> <span class="o">=</span> <span class="p">(</span><span class="n">price</span> <span class="o">-</span> <span class="n">context</span><span class="o">.</span><span class="n">base_price</span><span class="p">)</span> <span class="o">/</span> <span class="n">context</span><span class="o">.</span><span class="n">base_price</span>
+
+    <span class="c"># Save values for later inspection</span>
+    <span class="n">record</span><span class="p">(</span><span class="n">price</span><span class="o">=</span><span class="n">price</span><span class="p">,</span>
+           <span class="n">cash</span><span class="o">=</span><span class="n">context</span><span class="o">.</span><span class="n">portfolio</span><span class="o">.</span><span class="n">cash</span><span class="p">,</span>
+           <span class="n">price_change</span><span class="o">=</span><span class="n">price_change</span><span class="p">,</span>
+           <span class="n">short_mavg</span><span class="o">=</span><span class="n">short_mavg</span><span class="p">,</span>
+           <span class="n">long_mavg</span><span class="o">=</span><span class="n">long_mavg</span><span class="p">)</span>
+
+    <span class="c"># Since we are using limit orders, some orders may not execute immediately</span>
+    <span class="c"># we wait until all orders are executed before considering more trades.</span>
+    <span class="n">orders</span> <span class="o">=</span> <span class="n">get_open_orders</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">orders</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="c"># Exit if we cannot trade</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="o">.</span><span class="n">can_trade</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">):</span>
+        <span class="k">return</span>
+
+    <span class="c"># We check what&#39;s our position on our portfolio and trade accordingly</span>
+    <span class="n">pos_amount</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">portfolio</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">]</span><span class="o">.</span><span class="n">amount</span>
+
+    <span class="c"># Trading logic</span>
+    <span class="k">if</span> <span class="n">short_mavg</span> <span class="o">&gt;</span> <span class="n">long_mavg</span> <span class="ow">and</span> <span class="n">pos_amount</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+       <span class="c"># we buy 100% of our portfolio for this asset</span>
+       <span class="n">order_target_percent</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">short_mavg</span> <span class="o">&lt;</span> <span class="n">long_mavg</span> <span class="ow">and</span> <span class="n">pos_amount</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+       <span class="c"># we sell all our positions for this asset</span>
+       <span class="n">order_target_percent</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
 
 <span class="k">def</span> <span class="nf">analyze</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">perf</span><span class="p">):</span>
-   <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
-   <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">12</span><span class="p">))</span>
-   <span class="n">ax1</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">211</span><span class="p">)</span>
-   <span class="n">perf</span><span class="o">.</span><span class="n">portfolio_value</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
-   <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;portfolio value in $&#39;</span><span class="p">)</span>
 
-   <span class="n">ax2</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">212</span><span class="p">)</span>
-   <span class="n">perf</span><span class="p">[</span><span class="s">&#39;btc&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">)</span>
-   <span class="n">perf</span><span class="p">[[</span><span class="s">&#39;short_mavg&#39;</span><span class="p">,</span> <span class="s">&#39;long_mavg&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">)</span>
+    <span class="c"># Get the base_currency that was passed as a parameter to the simulation</span>
+    <span class="n">base_currency</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">exchanges</span><span class="o">.</span><span class="n">values</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">base_currency</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
 
-   <span class="n">perf_trans</span> <span class="o">=</span> <span class="n">perf</span><span class="o">.</span><span class="n">ix</span><span class="p">[[</span><span class="n">t</span> <span class="o">!=</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">perf</span><span class="o">.</span><span class="n">transactions</span><span class="p">]]</span>
-   <span class="n">buys</span> <span class="o">=</span> <span class="n">perf_trans</span><span class="o">.</span><span class="n">ix</span><span class="p">[[</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;amount&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">perf_trans</span><span class="o">.</span><span class="n">transactions</span><span class="p">]]</span>
-   <span class="n">sells</span> <span class="o">=</span> <span class="n">perf_trans</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span>
-       <span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;amount&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">perf_trans</span><span class="o">.</span><span class="n">transactions</span><span class="p">]]</span>
-   <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">buys</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">perf</span><span class="o">.</span><span class="n">short_mavg</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="n">buys</span><span class="o">.</span><span class="n">index</span><span class="p">],</span>
-            <span class="s">&#39;^&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;m&#39;</span><span class="p">)</span>
-   <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">sells</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">perf</span><span class="o">.</span><span class="n">short_mavg</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="n">sells</span><span class="o">.</span><span class="n">index</span><span class="p">],</span>
-            <span class="s">&#39;v&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;k&#39;</span><span class="p">)</span>
-   <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;price in $&#39;</span><span class="p">)</span>
-   <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-   <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="c"># First chart: Plot portfolio value using base_currency</span>
+    <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">411</span><span class="p">)</span>
+    <span class="n">perf</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s">&#39;portfolio_value&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">legend_</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Portfolio Value</span><span class="se">\n</span><span class="s">({})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">base_currency</span><span class="p">))</span>
+    <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="p">(</span><span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="p">)</span><span class="o">/</span><span class="mi">5</span><span class="p">))</span>
+
+    <span class="c"># Second chart: Plot asset price, moving averages and buys/sells</span>
+    <span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">412</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
+    <span class="n">perf</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s">&#39;price&#39;</span><span class="p">,</span><span class="s">&#39;short_mavg&#39;</span><span class="p">,</span><span class="s">&#39;long_mavg&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;Price&#39;</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">legend_</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;{asset}</span><span class="se">\n</span><span class="s">({base})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">asset</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="n">base_currency</span>
+        <span class="p">))</span>
+    <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">ax2</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="p">(</span><span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="p">)</span><span class="o">/</span><span class="mi">5</span><span class="p">))</span>
+
+    <span class="n">transaction_df</span> <span class="o">=</span> <span class="n">extract_transactions</span><span class="p">(</span><span class="n">perf</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">transaction_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="n">buy_df</span> <span class="o">=</span> <span class="n">transaction_df</span><span class="p">[</span><span class="n">transaction_df</span><span class="p">[</span><span class="s">&#39;amount&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">sell_df</span> <span class="o">=</span> <span class="n">transaction_df</span><span class="p">[</span><span class="n">transaction_df</span><span class="p">[</span><span class="s">&#39;amount&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+            <span class="n">buy_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_pydatetime</span><span class="p">(),</span>
+            <span class="n">perf</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">buy_df</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="s">&#39;price&#39;</span><span class="p">],</span>
+            <span class="n">marker</span><span class="o">=</span><span class="s">&#39;^&#39;</span><span class="p">,</span>
+            <span class="n">s</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+            <span class="n">c</span><span class="o">=</span><span class="s">&#39;green&#39;</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="s">&#39;&#39;</span>
+        <span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+            <span class="n">sell_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_pydatetime</span><span class="p">(),</span>
+            <span class="n">perf</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">sell_df</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="s">&#39;price&#39;</span><span class="p">],</span>
+            <span class="n">marker</span><span class="o">=</span><span class="s">&#39;v&#39;</span><span class="p">,</span>
+            <span class="n">s</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+            <span class="n">c</span><span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="s">&#39;&#39;</span>
+        <span class="p">)</span>
+
+    <span class="c"># Third chart: Compare percentage change between our portfolio</span>
+    <span class="c"># and the price of the asset</span>
+    <span class="n">ax3</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">413</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
+    <span class="n">perf</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s">&#39;algorithm_period_return&#39;</span><span class="p">,</span> <span class="s">&#39;price_change&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax3</span><span class="p">)</span>
+    <span class="n">ax3</span><span class="o">.</span><span class="n">legend_</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+    <span class="n">ax3</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Percent Change&#39;</span><span class="p">)</span>
+    <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">ax3</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>
+    <span class="n">ax3</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="p">(</span><span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="p">)</span><span class="o">/</span><span class="mi">5</span><span class="p">))</span>
+
+    <span class="c"># Fourth chart: Plot our cash</span>
+    <span class="n">ax4</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">414</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
+    <span class="n">perf</span><span class="o">.</span><span class="n">cash</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax4</span><span class="p">)</span>
+    <span class="n">ax4</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Cash</span><span class="se">\n</span><span class="s">({})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">base_currency</span><span class="p">))</span>
+    <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">ax4</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>
+    <span class="n">ax4</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">end</span><span class="o">/</span><span class="mi">5</span><span class="p">))</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">run_algorithm</span><span class="p">(</span>
+            <span class="n">capital_base</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+            <span class="n">data_frequency</span><span class="o">=</span><span class="s">&#39;minute&#39;</span><span class="p">,</span>
+            <span class="n">initialize</span><span class="o">=</span><span class="n">initialize</span><span class="p">,</span>
+            <span class="n">handle_data</span><span class="o">=</span><span class="n">handle_data</span><span class="p">,</span>
+            <span class="n">analyze</span><span class="o">=</span><span class="n">analyze</span><span class="p">,</span>
+            <span class="n">exchange_name</span><span class="o">=</span><span class="s">&#39;bitfinex&#39;</span><span class="p">,</span>
+            <span class="n">algo_namespace</span><span class="o">=</span><span class="n">NAMESPACE</span><span class="p">,</span>
+            <span class="n">base_currency</span><span class="o">=</span><span class="s">&#39;usd&#39;</span><span class="p">,</span>
+            <span class="n">start</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="s">&#39;2017-9-22&#39;</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">end</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="s">&#39;2017-9-23&#39;</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="p">)</span>
 </pre></div>
 </div>
-<p>Here we are explicitly defining an <code class="docutils literal"><span class="pre">analyze()</span></code> function that gets
-automatically called once the backtest is done.</p>
+<p>In order to run the code above, you have to ingest the needed data first:</p>
+<div class="highlight-bash"><div class="highlight"><pre>catalyst ingest-exchange -x bitfinex -f minute -i ltc_usd
+</pre></div>
+</div>
+<p>And then run the code above with the following command:</p>
+<div class="highlight-bash"><div class="highlight"><pre>catalyst run -f dual_moving_average.py -x bitfinex -s 2017-9-22 -e 2017-9-23 --capital-base <span class="m">1000</span> --base-currency usd --data-frequency minute -o out.pickle
+</pre></div>
+</div>
+<p>Alternatively, we can make use of the <code class="docutils literal"><span class="pre">run_algorithm()</span></code> function included at
+the end of the file, where we can specify all the simulation parameters, and
+execute this file as a Python script:</p>
+<div class="highlight-bash"><div class="highlight"><pre>python dual_moving_average.py
+</pre></div>
+</div>
+<p>Either way, we obtain the following charts:</p>
+<img alt="https://s3.amazonaws.com/enigmaco-docs/github.io/tutorial_dual_moving_average.png" src="https://s3.amazonaws.com/enigmaco-docs/github.io/tutorial_dual_moving_average.png" />
+<p>A few comments on the code above:</p>
+<blockquote>
+<div><p>At the beginning of our code, we import a number of Python libraries that we
+will be using in different parts of our script. It&#8217;s good practice to keep all
+imports at the beginning of the file, as they are available globally
+throughout our script. All the libraries imported in this example are already
+present in your environment since they are prerequisites for the Catalyst
+installation.</p>
+<p>Focus on the code that is inside <code class="docutils literal"><span class="pre">handle_data()</span></code> that is where all the
+trading logic occurs. You can safely dismiss most of the code in the
+<code class="docutils literal"><span class="pre">analyze()</span></code> section, which is mostly to customize the visualization of the
+performance of our algorithm using the matplotlib library. You can copy and
+paste this whole section into other algorithms to obtain a similar display.</p>
+<p>Inside the <code class="docutils literal"><span class="pre">handle_data()</span></code>, we also used the <code class="docutils literal"><span class="pre">order_target_percent()</span></code>
+function above. This and other functions like it can make order management
+and portfolio rebalancing much easier.</p>
+<p>The <code class="docutils literal"><span class="pre">ltc_usd</span></code> asset was arbitrarily chosen. The values of 50 and 200 for the
+<code class="docutils literal"><span class="pre">short_window</span></code> and <code class="docutils literal"><span class="pre">long_window</span></code> parameters are fairly common for a dual
+moving average crossover strategy from the world of traditional stocks (but
+bear in mind that they are usually used with daily bars instead of minute
+bars). The <code class="docutils literal"><span class="pre">start</span></code> and <code class="docutils literal"><span class="pre">end</span></code> dates have been chosen so as to demonstrate
+how our strategy can both perform better (blue line above green line on the
+<code class="docutils literal"><span class="pre">Percent</span> <span class="pre">Change</span></code> chart) and worse (green line above blue line towards the end) than the
+price of the asset we are trading.</p>
+<p>You can change any of these parameters: <code class="docutils literal"><span class="pre">asset</span></code>, <code class="docutils literal"><span class="pre">short_window</span></code>,
+<code class="docutils literal"><span class="pre">long_window</span></code>, <code class="docutils literal"><span class="pre">start_date</span></code> and <code class="docutils literal"><span class="pre">end_date</span></code> and compare the results, and
+you will see that in most cases, the performance is either worse than the
+price of the asset, or you are overfitting to one specific case. As we said
+at the beginning of this section, this strategy is probably not used by any
+serious trader anymore, but its educational purpose.</p>
+</div></blockquote>
 <p>Although it might not be directly apparent, the power of <code class="docutils literal"><span class="pre">history()</span></code>
 (pun intended) can not be under-estimated as most algorithms make use of
 prior market developments in one form or another. You could easily
@@ -808,20 +952,13 @@ predict future market movements based on past prices (note, that most of
 the <code class="docutils literal"><span class="pre">scikit-learn</span></code> functions require <code class="docutils literal"><span class="pre">numpy.ndarray</span></code>s rather than
 <code class="docutils literal"><span class="pre">pandas.DataFrame</span></code>s, so you can simply pass the underlying
 <code class="docutils literal"><span class="pre">ndarray</span></code> of a <code class="docutils literal"><span class="pre">DataFrame</span></code> via <code class="docutils literal"><span class="pre">.values</span></code>).</p>
-<p>We also used the <code class="docutils literal"><span class="pre">order_target()</span></code> function above. This and other
-functions like it can make order management and portfolio rebalancing
-much easier.</p>
 </div>
 </div>
-<div class="section" id="conclusions">
-<h2>Conclusions<a class="headerlink" href="#conclusions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="next-steps">
+<h2>Next steps<a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h2>
 <p>We hope that this tutorial gave you a little insight into the
-architecture, API, and features of <code class="docutils literal"><span class="pre">catalyst</span></code>. For next steps, check
-out some of the
-<a class="reference external" href="https://github.com/enigmampc/catalyst/tree/master/catalyst/examples">examples</a>.
-The natural next step would be too look into the
-<a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/buy_and_hodl.py">buy_and_hodl</a>
-example, which is a more elaborated and realistic version of the <code class="docutils literal"><span class="pre">buy_btc_simple</span></code> example presented in this tutorial.</p>
+architecture, API, and features of Catalyst. For next steps, check
+out some of the other <a class="reference internal" href="example-algos.html"><em>example algorithms</em></a>.</p>
 <p>Feel free to ask questions on the <code class="docutils literal"><span class="pre">#catalyst_dev</span></code> channel of our
 <a class="reference external" href="https://discord.gg/SJK32GY">Discord group</a> and report
 problems on our <a class="reference external" href="https://github.com/enigmampc/catalyst/issues">GitHub issue tracker</a>.</p>
