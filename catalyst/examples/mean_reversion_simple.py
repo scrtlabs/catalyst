@@ -5,6 +5,7 @@ import os
 import tempfile
 import time
 
+import numpy as np
 import pandas as pd
 import talib
 from logbook import Logger
@@ -31,14 +32,14 @@ def initialize(context):
     # trading pairs) you want to backtest.  You'll also want to define any
     # parameters or values you're going to use.
 
-    # In our example, we're looking at Ether in USD Tether.
-    context.neo_eth = symbol('neo_eth')
+    # In our example, we're looking at Neo in USD.
+    context.neo_eth = symbol('neo_usd')
     context.base_price = None
     context.current_day = None
 
-    context.RSI_OVERSOLD = 50
+    context.RSI_OVERSOLD = 30
     context.RSI_OVERBOUGHT = 80
-    context.CANDLE_SIZE = '5T'
+    context.CANDLE_SIZE = '15T'
 
     context.start_time = time.time()
 
@@ -160,13 +161,13 @@ def analyze(context=None, perf=None):
     # Plot the portfolio value over time.
     ax1 = plt.subplot(611)
     perf.loc[:, 'portfolio_value'].plot(ax=ax1)
-    ax1.set_ylabel('Portfolio Value ({})'.format(base_currency))
+    ax1.set_ylabel('Portfolio\nValue\n({})'.format(base_currency))
 
     # Plot the price increase or decrease over time.
     ax2 = plt.subplot(612, sharex=ax1)
     perf.loc[:, 'price'].plot(ax=ax2, label='Price')
 
-    ax2.set_ylabel('{asset} ({base})'.format(
+    ax2.set_ylabel('{asset}\n({base})'.format(
         asset=context.neo_eth.symbol, base=base_currency
     ))
 
@@ -195,18 +196,19 @@ def analyze(context=None, perf=None):
     perf.loc[:, 'cash'].plot(
         ax=ax4, label='Base Currency ({})'.format(base_currency)
     )
-    ax4.set_ylabel('Cash ({})'.format(base_currency))
+    ax4.set_ylabel('Cash\n({})'.format(base_currency))
 
     perf['algorithm'] = perf.loc[:, 'algorithm_period_return']
 
     ax5 = plt.subplot(614, sharex=ax1)
     perf.loc[:, ['algorithm', 'price_change']].plot(ax=ax5)
-    ax5.set_ylabel('Percent Change')
+    ax5.set_ylabel('Percent\nChange')
 
     ax6 = plt.subplot(615, sharex=ax1)
     perf.loc[:, 'rsi'].plot(ax=ax6, label='RSI')
-    ax6.axhline(70, color='darkgoldenrod')
-    ax6.axhline(30, color='darkgoldenrod')
+    ax6.set_ylabel('RSI')
+    ax6.axhline(context.RSI_OVERBOUGHT, color='darkgoldenrod')
+    ax6.axhline(context.RSI_OVERSOLD, color='darkgoldenrod')
 
     if not transaction_df.empty:
         ax6.scatter(
@@ -226,6 +228,8 @@ def analyze(context=None, perf=None):
             label=''
         )
     plt.legend(loc=3)
+    start, end = ax6.get_ylim()
+    ax6.yaxis.set_ticks(np.arange(0, end, end/5))
 
     # Show the plot.
     plt.gcf().set_size_inches(18, 8)
@@ -245,10 +249,10 @@ if __name__ == '__main__':
 
         timestr = time.strftime('%Y%m%d-%H%M%S')
         out = os.path.join(folder, '{}.p'.format(timestr))
-        # catalyst run -f catalyst/examples/mean_reversion_simple.py -x poloniex -s 2017-10-1 -e 2017-11-10 -c usdt -n mean-reversion --data-frequency minute --capital-base 10000
+        # catalyst run -f catalyst/examples/mean_reversion_simple.py -x bitfinex -s 2017-10-1 -e 2017-11-10 -c usdt -n mean-reversion --data-frequency minute --capital-base 10000
         run_algorithm(
             capital_base=10000,
-            data_frequency='daily',
+            data_frequency='minute',
             initialize=initialize,
             handle_data=handle_data,
             analyze=analyze,
@@ -270,6 +274,6 @@ if __name__ == '__main__':
             exchange_name='bittrex',
             live=True,
             algo_namespace=NAMESPACE,
-            base_currency='eth',
+            base_currency='usd',
             live_graph=False
         )
