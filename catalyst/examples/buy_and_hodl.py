@@ -15,15 +15,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from catalyst import run_algorithm
-from catalyst.api import (
-    order_target_value,
-    symbol,
-    record,
-    cancel_order,
-    get_open_orders,
-)
+from catalyst.api import (order_target_value, symbol, record,
+    cancel_order, get_open_orders, )
 
 
 def initialize(context):
@@ -78,15 +74,14 @@ def handle_data(context, data):
 
 
 def analyze(context=None, results=None):
-    import matplotlib.pyplot as plt
 
     # Plot the portfolio and asset data.
     ax1 = plt.subplot(611)
     results[['portfolio_value']].plot(ax=ax1)
-    ax1.set_ylabel('Portfolio Value (USD)')
+    ax1.set_ylabel('Portfolio\nValue\n(USD)')
 
     ax2 = plt.subplot(612, sharex=ax1)
-    ax2.set_ylabel('{asset} (USD)'.format(asset=context.ASSET_NAME))
+    ax2.set_ylabel('{asset}\n(USD)'.format(asset=context.ASSET_NAME))
     results[['price']].plot(ax=ax2)
 
     trans = results.ix[[t != [] for t in results.transactions]]
@@ -126,11 +121,11 @@ def analyze(context=None, results=None):
         'algorithm',
         'benchmark',
     ]].plot(ax=ax5)
-    ax5.set_ylabel('Percent Change')
+    ax5.set_ylabel('Percent\nChange')
 
     ax6 = plt.subplot(616, sharex=ax1)
     results[['volume']].plot(ax=ax6)
-    ax6.set_ylabel('Volume (mCoins/5min)')
+    ax6.set_ylabel('Volume')
 
     plt.legend(loc=3)
 
@@ -142,13 +137,13 @@ def analyze(context=None, results=None):
 if __name__ == '__main__':
     run_algorithm(
         capital_base=10000,
-        data_frequency='minute',
+        data_frequency='daily',
         initialize=initialize,
         handle_data=handle_data,
         analyze=analyze,
         exchange_name='bitfinex',
         algo_namespace='buy_and_hodl',
         base_currency='usd',
-        start=pd.to_datetime('2017-11-01', utc=True),
-        end=pd.to_datetime('2017-11-10', utc=True),
+        start=pd.to_datetime('2015-03-01', utc=True),
+        end=pd.to_datetime('2017-10-31', utc=True),
     )
