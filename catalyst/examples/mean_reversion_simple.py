@@ -248,7 +248,7 @@ if __name__ == '__main__':
         # catalyst run -f catalyst/examples/mean_reversion_simple.py -x poloniex -s 2017-10-1 -e 2017-11-10 -c usdt -n mean-reversion --data-frequency minute --capital-base 10000
         run_algorithm(
             capital_base=10000,
-            data_frequency='minute',
+            data_frequency='daily',
             initialize=initialize,
             handle_data=handle_data,
             analyze=analyze,
