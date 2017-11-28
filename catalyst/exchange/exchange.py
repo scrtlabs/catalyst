@@ -203,10 +203,12 @@ class Exchange:
         assets = self.assets if not is_local else self.local_assets
 
         for key in assets:
-            if not asset and assets[key].symbol.lower() == symbol.lower() and (
-                        not data_frequency or (
-                                    data_frequency == 'minute' and assets[
-                                key].end_minute is not None)):
+            has_data = (data_frequency == 'minute'
+                        and assets[key].end_minute is not None) \
+                       or (data_frequency == 'daily'
+                           and assets[key].end_daily is not None)
+            if not asset and assets[key].symbol.lower() == symbol.lower() \
+                    and (not data_frequency or has_data):
                 asset = assets[key]
 
         return asset

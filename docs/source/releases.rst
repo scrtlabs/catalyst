@@ -2,9 +2,18 @@
 Release Notes
 =============
 
+Version 0.3.10
+^^^^^^^^^^^^^
+**Release Date**: 2017-11-28
+
+Bug Fixes
+~~~~~~~~~
+
+- Fixed issue with fetching assets with daily frequency
+
 Version 0.3.9
 ^^^^^^^^^^^^^
-**Release Date**: 2017-11-14
+**Release Date**: 2017-11-28
 
 Bug Fixes
 ~~~~~~~~~
