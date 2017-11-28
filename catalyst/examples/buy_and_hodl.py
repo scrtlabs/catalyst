@@ -16,6 +16,7 @@
 # limitations under the License.
 import pandas as pd
 
+from catalyst import run_algorithm
 from catalyst.api import (
     order_target_value,
     symbol,
@@ -26,7 +27,7 @@ from catalyst.api import (
 
 
 def initialize(context):
-    context.ASSET_NAME = 'btc_usdt'
+    context.ASSET_NAME = 'btc_usd'
     context.TARGET_HODL_RATIO = 0.8
     context.RESERVE_RATIO = 1.0 - context.TARGET_HODL_RATIO
 
@@ -58,6 +59,7 @@ def handle_data(context, data):
 
     # Check if still buying and could (approximately) afford another purchase
     if context.is_buying and cash > price:
+        print('buying')
         # Place order to make position in asset equal to target_hodl_value
         order_target_value(
             context.asset,
@@ -91,12 +93,13 @@ def analyze(context=None, results=None):
     buys = trans.ix[
         [t[0]['amount'] > 0 for t in trans.transactions]
     ]
-    ax2.plot(
-        buys.index,
+    ax2.scatter(
+        buys.index.to_pydatetime(),
         results.price[buys.index],
-        '^',
-        markersize=10,
-        color='g',
+        marker='^',
+        s=100,
+        c='g',
+        label=''
     )
 
     ax3 = plt.subplot(613, sharex=ax1)
@@ -135,3 +138,17 @@ def analyze(context=None, results=None):
     plt.gcf().set_size_inches(18, 8)
     plt.show()
 
+
+if __name__ == '__main__':
+    run_algorithm(
+        capital_base=10000,
+        data_frequency='minute',
+        initialize=initialize,
+        handle_data=handle_data,
+        analyze=analyze,
+        exchange_name='bitfinex',
+        algo_namespace='buy_and_hodl',
+        base_currency='usd',
+        start=pd.to_datetime('2017-11-01', utc=True),
+        end=pd.to_datetime('2017-11-10', utc=True),
+    )

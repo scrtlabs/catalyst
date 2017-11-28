@@ -132,7 +132,7 @@ class Exchange:
 
     def get_symbol(self, asset):
         """
-        The the exchange specific symbol of the specified market.
+        The exchange specific symbol of the specified market.
 
         Parameters
         ----------
@@ -203,10 +203,12 @@ class Exchange:
         assets = self.assets if not is_local else self.local_assets
 
         for key in assets:
-            if not asset and assets[key].symbol.lower() == symbol.lower() and (
-                        not data_frequency or (
-                                    data_frequency == 'minute' and assets[
-                                key].end_minute is not None)):
+            has_data = (data_frequency == 'minute'
+                        and assets[key].end_minute is not None) \
+                       or (data_frequency == 'daily'
+                           and assets[key].end_daily is not None)
+            if not asset and assets[key].symbol.lower() == symbol.lower() \
+                    and (not data_frequency or has_data):
                 asset = assets[key]
 
         return asset
@@ -226,18 +228,19 @@ class Exchange:
         """
         asset = None
 
-        log.debug('searching asset {} on the server')
+        log.debug('searching asset {} on the server'.format(symbol))
         asset = self._find_asset(asset, symbol, data_frequency, False)
 
-        log.debug('asset {} not found on the server, searching local assets')
+        log.debug('asset {} not found on the server, searching local '
+                  'assets'.format(symbol))
         asset = self._find_asset(asset, symbol, data_frequency, True)
 
         if not asset:
             all_values = list(self.assets.values()) + \
                          list(self.local_assets.values())
-            supported_symbols = [
+            supported_symbols = sorted([
                 asset.symbol for asset in all_values
-            ]
+            ])
 
             raise SymbolNotFoundOnExchange(
                 symbol=symbol,

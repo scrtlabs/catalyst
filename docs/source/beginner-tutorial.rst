@@ -159,13 +159,17 @@ You can now test your algorithm using cryptoassets' historical pricing data,
 ``catalyst`` provides three interfaces: 
 
 -  A command-line interface (CLI),
--  the ``IPython Notebook`` magic,
--  and a :func:`~catalyst.run_algorithm` that you can call from other 
-   Python scripts.
+-  a :func:`~catalyst.run_algorithm()` that you can call from other 
+   Python scripts,
+-  and the ``Jupyter Notebook`` magic.
 
-We'll start with the CLI, and introduce the ``IPython Notebook`` below. Some of 
-the :doc:`example algorithms <example-algos>` provide instructions on how to run
-them both from the CLI, and using the :func:`~catalyst.run_algorithm` function.
+
+We'll start with the CLI, and introduce the ``run_algorithm()`` in the last 
+example of this tutorial. Some of the :doc:`example algorithms <example-algos>` 
+provide instructions on how to run them both from the CLI, and using the 
+:func:`~catalyst.run_algorithm` function. For the third method, refer to the 
+corresponding section on :doc:`Catalyst & Jupyter Notebook <jupyter>` after you 
+have assimilated the contents of this tutorial.
 
 Command line interface
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -263,7 +267,7 @@ command line args all the time.
 Thus, to execute our algorithm from above and save the results to
 ``buy_btc_simple_out.pickle`` we would call ``catalyst run`` as follows:
 
-.. code-block:: python
+.. code-block:: bash
 
     catalyst run -f buy_btc_simple.py -x bitfinex --start 2016-1-1 --end 2017-9-30 -c usd --capital-base 100000 -o buy_btc_simple_out.pickle
 
@@ -560,78 +564,235 @@ If the short-mavg crosses from above we exit the positions as we assume
 the stock to go down further.
 
 As we need to have access to previous prices to implement this strategy
-we need a new concept: History
+we need a new concept: History. ``data.history()`` is a convenience function 
+that keeps a rolling window of data for you. The first argument is the number 
+of bars you want to collect, the second argument is the unit (either ``'1d'`` 
+for daily or ``'1m'`` for minute frequency, but note that you need to have 
+minute-level data when using ``1m``). This is a function we use in the 
+``handle_data()`` section.
 
-``data.history()`` is a convenience function that keeps a rolling window of
-data for you. The first argument is the number of bars you want to
-collect, the second argument is the unit (either ``'1d'`` for ``'1m'``
-but note that you need to have minute-level data for using ``1m``). This is
-a function we use in the ``handle_data()`` section:
+You will note that the code below is substantially longer than the previous 
+examples. Don't get overwhelmed by it as the logic is fairly simple and easy to 
+follow. Most of the added some complexity has been added to beautify the output, 
+which you can skim through for now. A copy of this algorithm is available in 
+the ``examples`` directory:
+`dual_moving_average.py <https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/dual_moving_average.py>`_.
 
 .. code-block:: python
-  
-  %load_ext catalyst
 
-.. code-block:: python
+    import numpy as np
+    import pandas as pd
+    from logbook import Logger
+    import matplotlib.pyplot as plt 
 
-    %%catalyst --start 2016-4-1 --end 2017-9-30 -x bitfinex
+    from catalyst import run_algorithm
+    from catalyst.api import (order, record, symbol, order_target_percent, 
+            get_open_orders)
+    from catalyst.exchange.stats_utils import extract_transactions
 
-    from catalyst.api import order, record, symbol, order_target
+    NAMESPACE = 'dual_moving_average'
+    log = Logger(NAMESPACE)
 
     def initialize(context):
-       context.i = 0
-       context.asset = symbol('btc_usd')
+        context.i = 0
+        context.asset = symbol('ltc_usd')
+        context.base_price = None
+
 
     def handle_data(context, data):
-       # Skip first 150 days to get full windows
-       context.i += 1
-       if context.i < 150:
+        # define the windows for the moving averages 
+        short_window = 50
+        long_window = 200
+
+        # Skip as many bars as long_window to properly compute the average
+        context.i += 1
+        if context.i < long_window:
            return
 
-       # Compute averages
-       # data.history() has to be called with the same params
-       # from above and returns a pandas dataframe.
-       short_mavg = data.history(context.asset, 'price', bar_count=50, frequency="1d").mean()
-       long_mavg = data.history(context.asset, 'price', bar_count=150, frequency="1d").mean()
+        # Compute moving averages calling data.history() for each 
+        # moving average with the appropriate parameters. We choose to use
+        # minute bars for this simulation -> freq="1m"
+        # Returns a pandas dataframe.
+        short_mavg = data.history(context.asset, 'price', 
+                            bar_count=short_window, frequency="1m").mean()
+        long_mavg = data.history(context.asset, 'price',
+                            bar_count=long_window, frequency="1m").mean()
 
-       # Trading logic
-       if short_mavg > long_mavg:
-           # order_target orders as many shares as needed to
-           # achieve the desired number of shares.
-           order_target(context.asset, 100)
-       elif short_mavg < long_mavg:
-           order_target(context.asset, 0)
+        # Let's keep the price of our asset in a more handy variable
+        price = data.current(context.asset, 'price')
 
-       # Save values for later inspection
-       record(btc=data.current(context.asset, 'price'),
-              short_mavg=short_mavg,
-              long_mavg=long_mavg)
+        # If base_price is not set, we use the current value. This is the
+        # price at the first bar which we reference to calculate price_change.
+        if context.base_price is None:
+            context.base_price = price
+        price_change = (price - context.base_price) / context.base_price
+
+        # Save values for later inspection
+        record(price=price,
+               cash=context.portfolio.cash,
+               price_change=price_change,
+               short_mavg=short_mavg,
+               long_mavg=long_mavg)
+
+        # Since we are using limit orders, some orders may not execute immediately
+        # we wait until all orders are executed before considering more trades.
+        orders = get_open_orders(context.asset)
+        if len(orders) > 0:
+            return
+
+        # Exit if we cannot trade
+        if not data.can_trade(context.asset):
+            return
+
+        # We check what's our position on our portfolio and trade accordingly
+        pos_amount = context.portfolio.positions[context.asset].amount
+
+        # Trading logic
+        if short_mavg > long_mavg and pos_amount == 0:
+           # we buy 100% of our portfolio for this asset
+           order_target_percent(context.asset, 1)
+        elif short_mavg < long_mavg and pos_amount > 0:
+           # we sell all our positions for this asset
+           order_target_percent(context.asset, 0)
+
 
     def analyze(context, perf):
-       import matplotlib.pyplot as plt
-       fig = plt.figure(figsize=(12,12))
-       ax1 = fig.add_subplot(211)
-       perf.portfolio_value.plot(ax=ax1)
-       ax1.set_ylabel('portfolio value in $')
 
-       ax2 = fig.add_subplot(212)
-       perf['btc'].plot(ax=ax2)
-       perf[['short_mavg', 'long_mavg']].plot(ax=ax2)
+        # Get the base_currency that was passed as a parameter to the simulation
+        base_currency = context.exchanges.values()[0].base_currency.upper()
 
-       perf_trans = perf.ix[[t != [] for t in perf.transactions]]
-       buys = perf_trans.ix[[t[0]['amount'] > 0 for t in perf_trans.transactions]]
-       sells = perf_trans.ix[
-           [t[0]['amount'] < 0 for t in perf_trans.transactions]]
-       ax2.plot(buys.index, perf.short_mavg.ix[buys.index],
-                '^', markersize=10, color='m')
-       ax2.plot(sells.index, perf.short_mavg.ix[sells.index],
-                'v', markersize=10, color='k')
-       ax2.set_ylabel('price in $')
-       plt.legend(loc=0)
-       plt.show()
+        # First chart: Plot portfolio value using base_currency
+        ax1 = plt.subplot(411)
+        perf.loc[:, ['portfolio_value']].plot(ax=ax1)
+        ax1.legend_.remove()
+        ax1.set_ylabel('Portfolio Value\n({})'.format(base_currency))
+        start, end = ax1.get_ylim()
+        ax1.yaxis.set_ticks(np.arange(start, end, (end-start)/5))
 
-Here we are explicitly defining an ``analyze()`` function that gets
-automatically called once the backtest is done.
+        # Second chart: Plot asset price, moving averages and buys/sells
+        ax2 = plt.subplot(412, sharex=ax1)
+        perf.loc[:, ['price','short_mavg','long_mavg']].plot(ax=ax2, label='Price')
+        ax2.legend_.remove()
+        ax2.set_ylabel('{asset}\n({base})'.format(
+            asset = context.asset.symbol,
+            base = base_currency
+            ))
+        start, end = ax2.get_ylim()
+        ax2.yaxis.set_ticks(np.arange(start, end, (end-start)/5))
+
+        transaction_df = extract_transactions(perf)
+        if not transaction_df.empty:
+            buy_df = transaction_df[transaction_df['amount'] > 0]
+            sell_df = transaction_df[transaction_df['amount'] < 0]
+            ax2.scatter(
+                buy_df.index.to_pydatetime(),
+                perf.loc[buy_df.index, 'price'],
+                marker='^',
+                s=100,
+                c='green',
+                label=''
+            )
+            ax2.scatter(
+                sell_df.index.to_pydatetime(),
+                perf.loc[sell_df.index, 'price'],
+                marker='v',
+                s=100,
+                c='red',
+                label=''
+            )
+
+        # Third chart: Compare percentage change between our portfolio
+        # and the price of the asset
+        ax3 = plt.subplot(413, sharex=ax1)
+        perf.loc[:, ['algorithm_period_return', 'price_change']].plot(ax=ax3)
+        ax3.legend_.remove()
+        ax3.set_ylabel('Percent Change')
+        start, end = ax3.get_ylim()
+        ax3.yaxis.set_ticks(np.arange(start, end, (end-start)/5))
+
+        # Fourth chart: Plot our cash
+        ax4 = plt.subplot(414, sharex=ax1)
+        perf.cash.plot(ax=ax4)
+        ax4.set_ylabel('Cash\n({})'.format(base_currency))
+        start, end = ax4.get_ylim()
+        ax4.yaxis.set_ticks(np.arange(0, end, end/5))
+
+        plt.show()
+
+
+    if __name__ == '__main__':
+        run_algorithm(
+                capital_base=1000,
+                data_frequency='minute',
+                initialize=initialize,
+                handle_data=handle_data,
+                analyze=analyze,
+                exchange_name='bitfinex',
+                algo_namespace=NAMESPACE,
+                base_currency='usd',
+                start=pd.to_datetime('2017-9-22', utc=True),
+                end=pd.to_datetime('2017-9-23', utc=True),
+            )
+
+In order to run the code above, you have to ingest the needed data first:
+
+.. code-block:: bash
+
+  catalyst ingest-exchange -x bitfinex -f minute -i ltc_usd
+
+And then run the code above with the following command:
+
+.. code-block:: bash
+
+  catalyst run -f dual_moving_average.py -x bitfinex -s 2017-9-22 -e 2017-9-23 --capital-base 1000 --base-currency usd --data-frequency minute -o out.pickle
+
+Alternatively, we can make use of the ``run_algorithm()`` function included at 
+the end of the file, where we can specify all the simulation parameters, and 
+execute this file as a Python script:
+
+.. code-block:: bash
+
+  python dual_moving_average.py
+
+Either way, we obtain the following charts:
+
+.. image:: https://s3.amazonaws.com/enigmaco-docs/github.io/tutorial_dual_moving_average.png
+
+
+A few comments on the code above:
+
+  At the beginning of our code, we import a number of Python libraries that we
+  will be using in different parts of our script. It's good practice to keep all
+  imports at the beginning of the file, as they are available globally 
+  throughout our script. All the libraries imported in this example are already
+  present in your environment since they are prerequisites for the Catalyst 
+  installation.
+
+  Focus on the code that is inside ``handle_data()`` that is where all the 
+  trading logic occurs. You can safely dismiss most of the code in the 
+  ``analyze()`` section, which is mostly to customize the visualization of the 
+  performance of our algorithm using the matplotlib library. You can copy and
+  paste this whole section into other algorithms to obtain a similar display.
+
+  Inside the ``handle_data()``, we also used the ``order_target_percent()`` 
+  function above. This and other functions like it can make order management 
+  and portfolio rebalancing much easier.
+
+  The ``ltc_usd`` asset was arbitrarily chosen. The values of 50 and 200 for the 
+  ``short_window`` and ``long_window`` parameters are fairly common for a dual 
+  moving average crossover strategy from the world of traditional stocks (but 
+  bear in mind that they are usually used with daily bars instead of minute 
+  bars). The ``start`` and ``end`` dates have been chosen so as to demonstrate 
+  how our strategy can both perform better (blue line above green line on the 
+  ``Percent Change`` chart) and worse (green line above blue line towards the end) than the
+  price of the asset we are trading. 
+
+  You can change any of these parameters: ``asset``, ``short_window``, 
+  ``long_window``, ``start_date`` and ``end_date`` and compare the results, and 
+  you will see that in most cases, the performance is either worse than the 
+  price of the asset, or you are overfitting to one specific case. As we said 
+  at the beginning of this section, this strategy is probably not used by any 
+  serious trader anymore, but its educational purpose.
 
 Although it might not be directly apparent, the power of ``history()``
 (pun intended) can not be under-estimated as most algorithms make use of
@@ -643,21 +804,13 @@ the ``scikit-learn`` functions require ``numpy.ndarray``\ s rather than
 ``pandas.DataFrame``\ s, so you can simply pass the underlying
 ``ndarray`` of a ``DataFrame`` via ``.values``).
 
-We also used the ``order_target()`` function above. This and other
-functions like it can make order management and portfolio rebalancing
-much easier.
 
-
-Conclusions
-~~~~~~~~~~~
+Next steps
+~~~~~~~~~~
 
 We hope that this tutorial gave you a little insight into the
-architecture, API, and features of ``catalyst``. For next steps, check
-out some of the
-`examples <https://github.com/enigmampc/catalyst/tree/master/catalyst/examples>`__.
-The natural next step would be too look into the 
-`buy_and_hodl <https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/buy_and_hodl.py>`_ 
-example, which is a more elaborated and realistic version of the ``buy_btc_simple`` example presented in this tutorial.
+architecture, API, and features of Catalyst. For next steps, check
+out some of the other :doc:`example algorithms<example-algos>`.
 
 Feel free to ask questions on the ``#catalyst_dev`` channel of our 
 `Discord group <https://discord.gg/SJK32GY>`__ and report
