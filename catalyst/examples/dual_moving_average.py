@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
 from logbook import Logger
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 
 from catalyst import run_algorithm
-from catalyst.api import (order, record, symbol, order_target_percent, 
+from catalyst.api import (order, record, symbol, order_target_percent,
         get_open_orders)
 from catalyst.exchange.stats_utils import extract_transactions
 
@@ -18,7 +18,7 @@ def initialize(context):
 
 
 def handle_data(context, data):
-    # define the windows for the moving averages 
+    # define the windows for the moving averages
     short_window = 50
     long_window = 200
 
@@ -27,11 +27,11 @@ def handle_data(context, data):
     if context.i < long_window:
        return
 
-    # Compute moving averages calling data.history() for each 
+    # Compute moving averages calling data.history() for each
     # moving average with the appropriate parameters. We choose to use
     # minute bars for this simulation -> freq="1m"
     # Returns a pandas dataframe.
-    short_mavg = data.history(context.asset, 'price', 
+    short_mavg = data.history(context.asset, 'price',
                         bar_count=short_window, frequency="1m").mean()
     long_mavg = data.history(context.asset, 'price',
                         bar_count=long_window, frequency="1m").mean()
@@ -79,7 +79,7 @@ def analyze(context, perf):
     # Get the base_currency that was passed as a parameter to the simulation
     base_currency = context.exchanges.values()[0].base_currency.upper()
 
-    # First subgraph: Plot portfolio value using base_currency
+    # First chart: Plot portfolio value using base_currency
     ax1 = plt.subplot(411)
     perf.loc[:, ['portfolio_value']].plot(ax=ax1)
     ax1.legend_.remove()
@@ -87,7 +87,7 @@ def analyze(context, perf):
     start, end = ax1.get_ylim()
     ax1.yaxis.set_ticks(np.arange(start, end, (end-start)/5))
 
-    # Second subgraph: Plot asset price, moving averages and buys/sells
+    # Second chart: Plot asset price, moving averages and buys/sells
     ax2 = plt.subplot(412, sharex=ax1)
     perf.loc[:, ['price','short_mavg','long_mavg']].plot(ax=ax2, label='Price')
     ax2.legend_.remove()
@@ -119,7 +119,7 @@ def analyze(context, perf):
             label=''
         )
 
-    # Third subgraph: Compare percentage change between our portfolio
+    # Third chart: Compare percentage change between our portfolio
     # and the price of the asset
     ax3 = plt.subplot(413, sharex=ax1)
     perf.loc[:, ['algorithm_period_return', 'price_change']].plot(ax=ax3)
@@ -128,7 +128,7 @@ def analyze(context, perf):
     start, end = ax3.get_ylim()
     ax3.yaxis.set_ticks(np.arange(start, end, (end-start)/5))
 
-    # Plot our cash
+    # Fourth chart: Plot our cash
     ax4 = plt.subplot(414, sharex=ax1)
     perf.cash.plot(ax=ax4)
     ax4.set_ylabel('Cash\n({})'.format(base_currency))
