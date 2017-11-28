@@ -3,7 +3,8 @@
 	https://enigmampc.github.io/catalyst/beginner-tutorial.html
 
 	Run this example, by executing the following from your terminal:
-	catalyst run -f buy_btc_simple.py -x bitfinex --start 2016-1-1 --end 2017-9-30 -o buy_btc_simple_out.pickle
+	  catalyst ingest-exchange -x bitfinex -f daily -i btc_usdt
+	  catalyst run -f buy_btc_simple.py -x bitfinex --start 2016-1-1 --end 2017-9-30 -o buy_btc_simple_out.pickle
 
 	If you want to run this code using another exchange, make sure that 
 	the asset is available on that exchange. For example, if you were to run 
@@ -12,7 +13,7 @@
 		context.asset = symbol('btc_usdt')     # note 'usdt' instead of 'usd'
 
 	and specify exchange poloniex as follows:
-
+	catalyst ingest-exchange -x poloniex -f daily -i btc_usdt
 	catalyst run -f buy_btc_simple.py -x poloniex --start 2016-1-1 --end 2017-9-30 -o buy_btc_simple_out.pickle
 
 	To see which assets are available on each exchange, visit:
