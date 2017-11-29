@@ -127,6 +127,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#buy-and-hodl-algorithm">Buy and Hodl Algorithm</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dual-moving-average-crossover">Dual Moving Average Crossover</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#mean-reversion-algorithm">Mean Reversion Algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#portfolio-optimization">Portfolio Optimization</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a><ul>
@@ -278,6 +279,12 @@ in the <code class="docutils literal"><span class="pre">analyze()</span></code> 
 strategy that is used in our
 <a class="reference external" href="videos.html#backtesting-a-strategy">two-part video tutorial</a> to show how
 to get started in backtesting and live trading with Catalyst.</li>
+<li><a class="reference internal" href="#portfolio-optimization"><span>Portfolio Optimization</span></a>: Use this code to
+execute a portfolio optimization model. This strategy will select the
+portfolio with the maximum Sharpe Ratio. The parameters are set to use 180
+days of historical data and rebalance every 30 days. This code was used in
+writting the following article:
+<a class="reference external" href="https://blog.enigma.co/markowitz-portfolio-optimization-for-cryptocurrencies-in-catalyst-b23c38652556">Markowitz Portfolio Optimization for Cryptocurrencies</a>.</li>
 </ul>
 </div>
 <div class="section" id="buy-btc-simple-algorithm">
@@ -955,6 +962,144 @@ the differences result from a more realistic slippage model
 implemented after the video was recorded, which executes the orders at slighlty
 different prices, but resulting in significant changes in performance of our
 strategy.</p>
+</div>
+<div class="section" id="portfolio-optimization">
+<span id="id1"></span><h2>Portfolio Optimization<a class="headerlink" href="#portfolio-optimization" title="Permalink to this headline">¶</a></h2>
+<p>Use this code to execute a portfolio optimization model. This strategy will
+select the portfolio with the maximum Sharpe Ratio. The parameters are set to
+use 180 days of historical data and rebalance every 30 days. This code was used
+in writting the following article:
+<a class="reference external" href="https://blog.enigma.co/markowitz-portfolio-optimization-for-cryptocurrencies-in-catalyst-b23c38652556">Markowitz Portfolio Optimization for Cryptocurrencies</a>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">   You can run this code using the Python interpreter:</span>
+
+<span class="sd">   $ python portfolio_optimization.py</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pytz</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">minimize</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="kn">from</span> <span class="nn">catalyst.api</span> <span class="kn">import</span> <span class="n">record</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">symbols</span><span class="p">,</span> <span class="n">order_target_percent</span>
+<span class="kn">from</span> <span class="nn">catalyst.utils.run_algo</span> <span class="kn">import</span> <span class="n">run_algorithm</span>
+
+<span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="s">&#39;nan&#39;</span><span class="p">,</span> <span class="n">suppress</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
+   <span class="c"># Portfolio assets list</span>
+   <span class="n">context</span><span class="o">.</span><span class="n">assets</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s">&#39;btc_usdt&#39;</span><span class="p">,</span> <span class="s">&#39;eth_usdt&#39;</span><span class="p">,</span> <span class="s">&#39;ltc_usdt&#39;</span><span class="p">,</span> <span class="s">&#39;dash_usdt&#39;</span><span class="p">,</span>
+                            <span class="s">&#39;xmr_usdt&#39;</span><span class="p">)</span>
+   <span class="n">context</span><span class="o">.</span><span class="n">nassets</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">assets</span><span class="p">)</span>
+   <span class="c"># Set the time window that will be used to compute expected return</span>
+   <span class="c"># and asset correlations</span>
+   <span class="n">context</span><span class="o">.</span><span class="n">window</span> <span class="o">=</span> <span class="mi">180</span>
+   <span class="c"># Set the number of days between each portfolio rebalancing</span>
+   <span class="n">context</span><span class="o">.</span><span class="n">rebalance_period</span> <span class="o">=</span> <span class="mi">30</span>
+   <span class="n">context</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+
+
+<span class="k">def</span> <span class="nf">handle_data</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+   <span class="c"># Only rebalance at the beggining of the algorithm execution and</span>
+   <span class="c"># every multiple of the rebalance period</span>
+   <span class="k">if</span> <span class="n">context</span><span class="o">.</span><span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">context</span><span class="o">.</span><span class="n">i</span><span class="o">%</span><span class="n">context</span><span class="o">.</span><span class="n">rebalance_period</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+       <span class="n">n</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">window</span>
+       <span class="n">prices</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">history</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">assets</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="s">&#39;price&#39;</span><span class="p">,</span>
+                             <span class="n">bar_count</span><span class="o">=</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="s">&#39;1d&#39;</span><span class="p">)</span>
+       <span class="n">pr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asmatrix</span><span class="p">(</span><span class="n">prices</span><span class="p">)</span>
+       <span class="n">t_prices</span> <span class="o">=</span> <span class="n">prices</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+       <span class="n">t_val</span> <span class="o">=</span> <span class="n">t_prices</span><span class="o">.</span><span class="n">values</span>
+       <span class="n">tminus_prices</span> <span class="o">=</span> <span class="n">prices</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">n</span><span class="p">]</span>
+       <span class="n">tminus_val</span> <span class="o">=</span> <span class="n">tminus_prices</span><span class="o">.</span><span class="n">values</span>
+       <span class="c"># Compute daily returns (r)</span>
+       <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asmatrix</span><span class="p">(</span><span class="n">t_val</span><span class="o">/</span><span class="n">tminus_val</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+       <span class="c"># Compute the expected returns of each asset with the average</span>
+       <span class="c"># daily return for the selected time window</span>
+       <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asmatrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+       <span class="c"># ###</span>
+       <span class="n">stds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+       <span class="c"># Compute excess returns matrix (xr)</span>
+       <span class="n">xr</span> <span class="o">=</span> <span class="n">r</span> <span class="o">-</span> <span class="n">m</span>
+       <span class="c"># Matrix algebra to get variance-covariance matrix</span>
+       <span class="n">cov_m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">xr</span><span class="p">),</span><span class="n">xr</span><span class="p">)</span><span class="o">/</span><span class="n">n</span>
+       <span class="c"># Compute asset correlation matrix (informative only)</span>
+       <span class="n">corr_m</span> <span class="o">=</span> <span class="n">cov_m</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">stds</span><span class="p">),</span><span class="n">stds</span><span class="p">)</span>
+
+       <span class="c"># Define portfolio optimization parameters</span>
+       <span class="n">n_portfolios</span> <span class="o">=</span> <span class="mi">50000</span>
+       <span class="n">results_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="o">+</span><span class="n">context</span><span class="o">.</span><span class="n">nassets</span><span class="p">,</span><span class="n">n_portfolios</span><span class="p">))</span>
+       <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">n_portfolios</span><span class="p">):</span>
+           <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">nassets</span><span class="p">)</span>
+           <span class="n">weights</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+           <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asmatrix</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+           <span class="n">p_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">w</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">m</span><span class="p">)))</span><span class="o">*</span><span class="mi">365</span>
+           <span class="n">p_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">w</span><span class="p">,</span><span class="n">cov_m</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">w</span><span class="p">)))</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">365</span><span class="p">)</span>
+
+           <span class="c">#store results in results array</span>
+           <span class="n">results_array</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_r</span>
+           <span class="n">results_array</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_std</span>
+           <span class="c">#store Sharpe Ratio (return / volatility) - risk free rate element</span>
+           <span class="c">#excluded for simplicity</span>
+           <span class="n">results_array</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">results_array</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">p</span><span class="p">]</span> <span class="o">/</span> <span class="n">results_array</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">p</span><span class="p">]</span>
+           <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+           <span class="k">for</span> <span class="n">iw</span> <span class="ow">in</span> <span class="n">weights</span><span class="p">:</span>
+               <span class="n">results_array</span><span class="p">[</span><span class="mi">3</span><span class="o">+</span><span class="n">i</span><span class="p">,</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+               <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+       <span class="c">#convert results array to Pandas DataFrame</span>
+       <span class="n">results_frame</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">results_array</span><span class="p">),</span>
+                          <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;r&#39;</span><span class="p">,</span><span class="s">&#39;stdev&#39;</span><span class="p">,</span><span class="s">&#39;sharpe&#39;</span><span class="p">]</span><span class="o">+</span><span class="n">context</span><span class="o">.</span><span class="n">assets</span><span class="p">)</span>
+       <span class="c">#locate position of portfolio with highest Sharpe Ratio</span>
+       <span class="n">max_sharpe_port</span> <span class="o">=</span> <span class="n">results_frame</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">results_frame</span><span class="p">[</span><span class="s">&#39;sharpe&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">idxmax</span><span class="p">()]</span>
+       <span class="c">#locate positon of portfolio with minimum standard deviation</span>
+       <span class="n">min_vol_port</span> <span class="o">=</span> <span class="n">results_frame</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">results_frame</span><span class="p">[</span><span class="s">&#39;stdev&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">idxmin</span><span class="p">()]</span>
+
+       <span class="c">#order optimal weights for each asset</span>
+       <span class="k">for</span> <span class="n">asset</span> <span class="ow">in</span> <span class="n">context</span><span class="o">.</span><span class="n">assets</span><span class="p">:</span>
+           <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">can_trade</span><span class="p">(</span><span class="n">asset</span><span class="p">):</span>
+               <span class="n">order_target_percent</span><span class="p">(</span><span class="n">asset</span><span class="p">,</span> <span class="n">max_sharpe_port</span><span class="p">[</span><span class="n">asset</span><span class="p">])</span>
+
+       <span class="c">#create scatter plot coloured by Sharpe Ratio</span>
+       <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">results_frame</span><span class="o">.</span><span class="n">stdev</span><span class="p">,</span><span class="n">results_frame</span><span class="o">.</span><span class="n">r</span><span class="p">,</span><span class="n">c</span><span class="o">=</span><span class="n">results_frame</span><span class="o">.</span><span class="n">sharpe</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="s">&#39;RdYlGn&#39;</span><span class="p">)</span>
+       <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;Volatility&#39;</span><span class="p">)</span>
+       <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&#39;Returns&#39;</span><span class="p">)</span>
+       <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
+       <span class="c">#plot red star to highlight position of portfolio with highest Sharpe Ratio</span>
+       <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">max_sharpe_port</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">max_sharpe_port</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">marker</span><span class="o">=</span><span class="s">&#39;o&#39;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&#39;b&#39;</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+       <span class="c">#plot green star to highlight position of minimum variance portfolio</span>
+       <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+       <span class="k">print</span><span class="p">(</span><span class="n">max_sharpe_port</span><span class="p">)</span>
+       <span class="n">record</span><span class="p">(</span><span class="n">pr</span><span class="o">=</span><span class="n">pr</span><span class="p">,</span><span class="n">r</span><span class="o">=</span><span class="n">r</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">stds</span><span class="o">=</span><span class="n">stds</span> <span class="p">,</span><span class="n">max_sharpe_port</span><span class="o">=</span><span class="n">max_sharpe_port</span><span class="p">,</span> <span class="n">corr_m</span><span class="o">=</span><span class="n">corr_m</span><span class="p">)</span>
+   <span class="n">context</span><span class="o">.</span><span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+
+<span class="k">def</span> <span class="nf">analyze</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">results</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+   <span class="c"># Form DataFrame with selected data</span>
+   <span class="n">data</span> <span class="o">=</span> <span class="n">results</span><span class="p">[[</span><span class="s">&#39;pr&#39;</span><span class="p">,</span><span class="s">&#39;r&#39;</span><span class="p">,</span><span class="s">&#39;m&#39;</span><span class="p">,</span><span class="s">&#39;stds&#39;</span><span class="p">,</span><span class="s">&#39;max_sharpe_port&#39;</span><span class="p">,</span><span class="s">&#39;corr_m&#39;</span><span class="p">,</span><span class="s">&#39;portfolio_value&#39;</span><span class="p">]]</span>
+
+   <span class="c"># Save results in CSV file</span>
+   <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">__file__</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+   <span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">filename</span> <span class="o">+</span> <span class="s">&#39;.csv&#39;</span><span class="p">)</span>
+
+
+<span class="c"># Bitcoin data is available from 2015-3-2. Dates vary for other tokens.</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2017</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">pytz</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
+<span class="n">end</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2017</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">pytz</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">run_algorithm</span><span class="p">(</span><span class="n">initialize</span><span class="o">=</span><span class="n">initialize</span><span class="p">,</span>
+                        <span class="n">handle_data</span><span class="o">=</span><span class="n">handle_data</span><span class="p">,</span>
+                        <span class="n">analyze</span><span class="o">=</span><span class="n">analyze</span><span class="p">,</span>
+                        <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
+                        <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
+                        <span class="n">exchange_name</span><span class="o">=</span><span class="s">&#39;poloniex&#39;</span><span class="p">,</span>
+                        <span class="n">capital_base</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="p">)</span>
+</pre></div>
+</div>
+<img alt="https://cdn-images-1.medium.com/max/1600/0*EjjiKZHlYF3sn7yQ." class="align-center" src="https://cdn-images-1.medium.com/max/1600/0*EjjiKZHlYF3sn7yQ." />
 </div>
 </div>
 
