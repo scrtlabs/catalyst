@@ -571,3 +571,22 @@ def resample_history_df(df, freq, field):
 
     resampled_df = df.resample(freq).agg(agg)
     return resampled_df
+
+
+def mixin_market_params(params, market):
+    """
+    Applies a CCXT market dict to parameters of TradingPair init.
+
+    Parameters
+    ----------
+    params: dict[Object]
+    market: dict[Object]
+
+    Returns
+    -------
+
+    """
+    params['min_trade_size'] = market['lot']
+    params['maker'] = market['maker']
+    params['taker'] = market['taker']
+    params['trading_state'] = 1 if int(market['info']['isFrozen']) == 0 else 0

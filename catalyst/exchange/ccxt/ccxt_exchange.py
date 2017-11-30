@@ -3,12 +3,15 @@ from collections import defaultdict
 
 import ccxt
 import pandas as pd
+from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
 from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.exchange_bundle import ExchangeBundle
-from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError
+from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
+    ExchangeSymbolsNotFound
+from catalyst.exchange.exchange_utils import mixin_market_params
 
 log = Logger('CCXT', level=LOG_LEVEL)
 
@@ -95,6 +98,57 @@ class CCXT(Exchange):
                 volume=ohlcv[5]
             ))
         return candles
+
+    def load_assets(self, is_local=False):
+        markets = self.api.fetch_markets()
+        try:
+            symbol_map = self.fetch_symbol_map(is_local)
+        except ExchangeSymbolsNotFound:
+            return None
+
+        data_source = 'local' if is_local else 'catalyst'
+        for market in markets:
+            asset = symbol_map[market['id']] \
+                if market['id'] in markets else None
+
+            params = dict(exchange=self.name, data_source=data_source)
+            mixin_market_params(params, market)
+
+            if asset:
+                params['symbol'] = asset['symbol']
+
+                params['start_date'] = pd.to_datetime(
+                    asset['start_date'], utc=True
+                ) if 'start_date' in asset else None
+
+                params['end_date'] = pd.to_datetime(
+                    asset['end_date'], utc=True
+                ) if 'end_date' in asset else None
+
+                params['leverage'] = asset['leverage'] \
+                    if 'leverage' in asset else 1.0
+
+                params['asset_name'] = asset['asset_name'] \
+                    if 'asset_name' in asset else None
+
+                params['end_daily'] = pd.to_datetime(
+                    asset['end_daily'], utc=True
+                ) if 'end_daily' in asset and asset['end_daily'] != 'N/A' \
+                    else None
+
+                params['end_minute'] = pd.to_datetime(
+                    asset['end_minute'], utc=True
+                ) if 'end_minute' in asset and asset['end_minute'] != 'N/A' \
+                    else None
+
+            else:
+                params['symbol'] = market['id']
+
+            trading_pair = TradingPair(**params)
+            if is_local:
+                self.local_assets[market['id']] = trading_pair
+            else:
+                self.assets[market['id']] = trading_pair
 
     def get_balances(self):
         return None

@@ -99,3 +99,6 @@ class TestCCXT(BaseExchangeTestCase):
         asset = self.exchange.get_asset('eth_btc')
         orderbook = self.exchange.get_orderbook(asset)
         pass
+
+    def test_get_fees(self):
+        pass

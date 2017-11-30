@@ -36,8 +36,8 @@ def initialize(context):
     context.base_price = None
     context.current_day = None
 
-    context.RSI_OVERSOLD = 50
-    context.RSI_OVERBOUGHT = 80
+    context.RSI_OVERSOLD = 25
+    context.RSI_OVERBOUGHT = 82
     context.CANDLE_SIZE = '5T'
 
     context.start_time = time.time()
@@ -247,14 +247,14 @@ if __name__ == '__main__':
         out = os.path.join(folder, '{}.p'.format(timestr))
         # catalyst run -f catalyst/examples/mean_reversion_simple.py -x poloniex -s 2017-10-1 -e 2017-11-10 -c usdt -n mean-reversion --data-frequency minute --capital-base 10000
         run_algorithm(
-            capital_base=10000,
+            capital_base=0.5,
             data_frequency='minute',
             initialize=initialize,
             handle_data=handle_data,
             analyze=analyze,
             exchange_name='bitfinex',
             algo_namespace=NAMESPACE,
-            base_currency='usd',
+            base_currency='eth',
             start=pd.to_datetime('2017-10-01', utc=True),
             end=pd.to_datetime('2017-11-10', utc=True),
             output=out
