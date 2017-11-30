@@ -573,7 +573,7 @@ def resample_history_df(df, freq, field):
     return resampled_df
 
 
-def mixin_market_params(params, market):
+def mixin_market_params(exchange_name, params, market):
     """
     Applies a CCXT market dict to parameters of TradingPair init.
 
@@ -586,7 +586,26 @@ def mixin_market_params(params, market):
     -------
 
     """
-    params['min_trade_size'] = market['lot']
-    params['maker'] = market['maker']
-    params['taker'] = market['taker']
-    params['trading_state'] = 1 if int(market['info']['isFrozen']) == 0 else 0
+    # TODO: make this more externalized / configurable
+    if 'lot' in market:
+        params['min_trade_size'] = market['lot']
+
+    if exchange_name == 'bitfinex':
+        params['maker'] = 0.001
+        params['taker'] = 0.002
+
+    else:
+        if 'maker' in market:
+            params['maker'] = market['maker']
+
+        if 'taker' in market:
+            params['taker'] = market['taker']
+
+    info = market['info'] if 'info' in market else None
+    if info:
+        if 'minimum_order_size' in info:
+            params['min_trade_size'] = float(info['minimum_order_size'])
+
+
+def from_ms_timestamp(ms):
+    return pd.to_datetime(ms, unit='ms', utc=True)

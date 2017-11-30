@@ -15,7 +15,7 @@ log = Logger('test_ccxt')
 class TestCCXT(BaseExchangeTestCase):
     @classmethod
     def setup(self):
-        exchange_name = 'poloniex'
+        exchange_name = 'binance'
         auth = get_exchange_auth(exchange_name)
         self.exchange = CCXT(
             exchange_name=exchange_name,
@@ -97,7 +97,7 @@ class TestCCXT(BaseExchangeTestCase):
     def test_orderbook(self):
         log.info('testing order book for bittrex')
         asset = self.exchange.get_asset('eth_btc')
-        orderbook = self.exchange.get_orderbook(asset)
+        orderbook = self.exchange.get_orderbook(asset, 'all', limit=10)
         pass
 
     def test_get_fees(self):

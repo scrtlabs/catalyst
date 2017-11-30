@@ -16,7 +16,7 @@ from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     InvalidOrderStyle, BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
     PricingDataNotLoadedError, \
-    NoDataAvailableOnExchange, ExchangeSymbolsNotFound
+    NoDataAvailableOnExchange, ExchangeSymbolsNotFound, NoValueForField
 from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
     ExchangeLimitOrder, ExchangeStopOrder
 from catalyst.exchange.exchange_portfolio import ExchangePortfolio
@@ -412,12 +412,15 @@ class Exchange:
         if field not in BASE_FIELDS:
             raise KeyError('Invalid column: {}'.format(field))
 
-        values = []
-        for asset in assets:
-            value = self.get_single_spot_value(asset, field, data_frequency)
-            values.append(value)
+        tickers = self.tickers(assets)
+        if field == 'close' or field == 'price':
+            return [t['last'] for t in tickers]
 
-        return values
+        elif field == 'volume':
+            return [t['volume'] for t in tickers]
+
+        else:
+            raise NoValueForField(field=field)
 
     def get_single_spot_value(self, asset, field, data_frequency):
         """

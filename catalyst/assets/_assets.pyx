@@ -396,7 +396,7 @@ cdef class Future(Asset):
 
 cdef class TradingPair(Asset):
     cdef readonly float leverage
-    cdef readonly object market_currency
+    cdef readonly object quote_currency
     cdef readonly object base_currency
     cdef readonly object end_daily
     cdef readonly object end_minute
@@ -417,7 +417,7 @@ cdef class TradingPair(Asset):
         'exchange',
         'exchange_full',
         'leverage',
-        'market_currency',
+        'quote_currency',
         'base_currency',
         'end_daily',
         'end_minute',
@@ -442,7 +442,7 @@ cdef class TradingPair(Asset):
                  object first_traded=None,
                  object auto_close_date=None,
                  object exchange_full=None,
-                 float min_trade_size=0.000001,
+                 float min_trade_size=0.0001,
                  float maker=0.0015,
                  float taker=0.0025,
                  int trading_state=0,
@@ -516,7 +516,7 @@ cdef class TradingPair(Asset):
 
         symbol = symbol.lower()
         try:
-            self.market_currency, self.base_currency = symbol.split('_')
+            self.base_currency,self.quote_currency  = symbol.split('_')
         except Exception as e:
             raise InvalidSymbolError(symbol=symbol, error=e)
 
@@ -530,7 +530,7 @@ cdef class TradingPair(Asset):
             asset_name = ' / '.join(symbol.split('_')).upper()
 
         if start_date is None:
-            start_date = pd.Timestamp.utcnow()
+            start_date = pd.to_datetime('2009-1-1', utc=True)
 
         if end_date is None:
             end_date = pd.Timestamp.utcnow() + timedelta(days=365)
@@ -560,8 +560,8 @@ cdef class TradingPair(Asset):
     def __repr__(self):
         return 'Trading Pair {symbol}({sid}) Exchange: {exchange}, ' \
                'Introduced On: {start_date}, ' \
-               'Market Currency: {market_currency}, ' \
                'Base Currency: {base_currency}, ' \
+               'Quote Currency: {quote_currency}, ' \
                'Exchange Leverage: {leverage}, ' \
                'Minimum Trade Size: {min_trade_size} ' \
                'Last daily ingestion: {end_daily} ' \
@@ -570,7 +570,7 @@ cdef class TradingPair(Asset):
             sid=self.sid,
             exchange=self.exchange,
             start_date=self.start_date,
-            market_currency=self.market_currency,
+            quote_currency=self.quote_currency,
             base_currency=self.base_currency,
             leverage=self.leverage,
             min_trade_size=self.min_trade_size,
