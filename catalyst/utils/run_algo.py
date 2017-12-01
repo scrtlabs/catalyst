@@ -13,6 +13,7 @@ from catalyst.data.bundles import load
 from catalyst.data.data_portal import DataPortal
 from catalyst.exchange.bittrex.bittrex import Bittrex
 from catalyst.exchange.bitfinex.bitfinex import Bitfinex
+from catalyst.exchange.factory import get_exchange
 from catalyst.exchange.poloniex.poloniex import Poloniex
 
 try:
@@ -164,42 +165,15 @@ def _run(handle_data,
 
         if portfolio is None:
             portfolio = ExchangePortfolio(
-                start_date=pd.Timestamp.utcnow()
+                start if start is not None else pd.Timestamp.utcnow()
             )
 
-        # This corresponds to the json file containing api token info
-        exchange_auth = get_exchange_auth(exchange_name)
-
-        if live and (exchange_auth['key'] == '' \
-                             or exchange_auth['secret'] == ''):
-            raise ExchangeAuthEmpty(
-                exchange=exchange_name.title(),
-                filename=os.path.join(
-                    get_exchange_folder(exchange_name, environ), 'auth.json'))
-
-        if exchange_name == 'bitfinex':
-            exchanges[exchange_name] = Bitfinex(
-                key=exchange_auth['key'],
-                secret=exchange_auth['secret'],
-                base_currency=base_currency,
-                portfolio=portfolio
-            )
-        elif exchange_name == 'bittrex':
-            exchanges[exchange_name] = Bittrex(
-                key=exchange_auth['key'],
-                secret=exchange_auth['secret'],
-                base_currency=base_currency,
-                portfolio=portfolio
-            )
-        elif exchange_name == 'poloniex':
-            exchanges[exchange_name] = Poloniex(
-                key=exchange_auth['key'],
-                secret=exchange_auth['secret'],
-                base_currency=base_currency,
-                portfolio=portfolio
-            )
-        else:
-            raise ExchangeNotFoundError(exchange_name=exchange_name)
+        exchanges[exchange_name] = get_exchange(
+            exchange_name=exchange_name,
+            base_currency=base_currency,
+            portfolio=portfolio,
+            must_authenticate=live,
+        )
 
     open_calendar = get_calendar('OPEN')
 

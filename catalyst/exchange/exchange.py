@@ -357,10 +357,10 @@ class Exchange:
 
         tickers = self.tickers(assets)
         if field == 'close' or field == 'price':
-            return [t['last'] for t in tickers]
+            return [tickers[asset]['last'] for asset in tickers]
 
         elif field == 'volume':
-            return [t['volume'] for t in tickers]
+            return [tickers[asset]['volume'] for asset in tickers]
 
         else:
             raise NoValueForField(field=field)

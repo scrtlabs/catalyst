@@ -16,7 +16,8 @@ from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.exchange import Exchange, ExchangeLimitOrder
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
-    ExchangeSymbolsNotFound, ExchangeRequestError, InvalidOrderStyle
+    ExchangeSymbolsNotFound, ExchangeRequestError, InvalidOrderStyle, \
+    ExchangeNotFoundError
 from catalyst.exchange.exchange_utils import mixin_market_params, \
     from_ms_timestamp
 
@@ -50,8 +51,9 @@ class CCXT(Exchange):
                 'apiKey': key,
                 'secret': secret,
             })
+
         except Exception:
-            raise ValueError('exchange not in CCXT')
+            raise ExchangeNotFoundError(exchange_name=exchange_name)
 
         markets = self.api.load_markets()
         log.debug('the markets:\n{}'.format(markets))
@@ -122,24 +124,27 @@ class CCXT(Exchange):
         delta = start_dt - pd.to_datetime('1970-1-1', utc=True)
         ms = int(delta.total_seconds()) * 1000
 
-        ohlcvs = self.api.fetch_ohlcv(
-            symbol=symbols[0],
-            timeframe=timeframe,
-            since=ms,
-            limit=bar_count,
-            params={}
-        )
+        candles = dict()
+        for asset in assets:
+            ohlcvs = self.api.fetch_ohlcv(
+                symbol=symbols[0],
+                timeframe=timeframe,
+                since=ms,
+                limit=bar_count,
+                params={}
+            )
 
-        candles = []
-        for ohlcv in ohlcvs:
-            candles.append(dict(
-                last_traded=pd.to_datetime(ohlcv[0], unit='ms', utc=True),
-                open=ohlcv[1],
-                high=ohlcv[2],
-                low=ohlcv[3],
-                close=ohlcv[4],
-                volume=ohlcv[5]
-            ))
+            candles[asset] = []
+            for ohlcv in ohlcvs:
+                candles[asset].append(dict(
+                    last_traded=pd.to_datetime(ohlcv[0], unit='ms', utc=True),
+                    open=ohlcv[1],
+                    high=ohlcv[2],
+                    low=ohlcv[3],
+                    close=ohlcv[4],
+                    volume=ohlcv[5]
+                ))
+
         return candles
 
     def _fetch_symbol_map(self, is_local):
