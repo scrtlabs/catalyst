@@ -289,9 +289,11 @@ class Exchange:
                 log.debug('found open order: {}'.format(order_id))
 
                 order, executed_price = self.get_order(order_id)
-                log.debug('got updated order {} {}'.format(
-                    order, executed_price))
-
+                log.debug(
+                    'got updated order {} {}'.format(
+                        order, executed_price
+                    )
+                )
                 if order.status == ORDER_STATUS.FILLED:
                     transaction = Transaction(
                         asset=order.asset,
@@ -822,7 +824,7 @@ class Exchange:
         pass
 
     @abstractmethod
-    def get_order(self, order_id):
+    def get_order(self, order_id, symbol_or_asset=None):
         """Lookup an order based on the order id returned from one of the
         order functions.
 
@@ -830,6 +832,8 @@ class Exchange:
         ----------
         order_id : str
             The unique identifier for the order.
+        symbol_or_asset: str|TradingPair
+            The catalyst symbol, some exchanges need this
 
         Returns
         -------
@@ -841,13 +845,15 @@ class Exchange:
         pass
 
     @abstractmethod
-    def cancel_order(self, order_param):
+    def cancel_order(self, order_param, symbol_or_asset=None):
         """Cancel an open order.
 
         Parameters
         ----------
         order_param : str or Order
             The order_id or order object to cancel.
+        symbol_or_asset: str|TradingPair
+            The catalyst symbol, some exchanges need this
         """
         pass
 

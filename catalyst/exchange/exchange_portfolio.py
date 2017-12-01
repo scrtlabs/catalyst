@@ -3,7 +3,6 @@ from logbook import Logger
 
 from catalyst.constants import LOG_LEVEL
 from catalyst.protocol import Portfolio, Positions, Position
-from catalyst.utils.deprecate import deprecated
 
 log = Logger('ExchangePortfolio', level=LOG_LEVEL)
 
@@ -11,7 +10,8 @@ log = Logger('ExchangePortfolio', level=LOG_LEVEL)
 class ExchangePortfolio(Portfolio):
     """
     Since the goal is to support multiple exchanges, it makes sense to
-    include additional stats in the portfolio object.
+    include additional stats in the portfolio object. This fills the role
+    of Blotter and Portfolio in live mode.
 
     Instead of relying on the performance tracker, each exchange portfolio
     tracks its own holding. This offers a separation between tracking an
@@ -83,32 +83,6 @@ class ExchangePortfolio(Portfolio):
                 order_position.cost_basis = np.average(
                     [order_position.cost_basis, transaction.price],
                     weights=[order_position.amount, order.amount]
-                )
-            else:
-                order_position.cost_basis = transaction.price
-
-        log.debug('updated portfolio with executed order')
-
-    @deprecated
-    def execute_transaction(self, transaction):
-        # TODO: almost duplicate of execute_order. Not sure why Poloniex needs this.
-        log.debug('executing transaction {}'.format(transaction.order_id))
-
-        order_position = self.positions[transaction.asset] \
-            if transaction.asset in self.positions else None
-
-        if order_position is None:
-            raise ValueError(
-                'Trying to execute transaction for a position not held: %s' % transaction.order_id
-            )
-
-        self.capital_used += transaction.amount * transaction.price
-
-        if transaction.amount > 0:
-            if order_position.cost_basis > 0:
-                order_position.cost_basis = np.average(
-                    [order_position.cost_basis, transaction.price],
-                    weights=[order_position.amount, transaction.amount]
                 )
             else:
                 order_position.cost_basis = transaction.price

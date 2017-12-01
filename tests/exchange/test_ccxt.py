@@ -45,14 +45,14 @@ class TestCCXT(BaseExchangeTestCase):
 
     def test_get_order(self):
         log.info('retrieving order')
-        order = self.exchange.get_order(
-            u'2c584020-9caf-4af5-bde0-332c0bba17e2')
+        order = self.exchange.get_order('2631386', 'neo_eth')
+        # order = self.exchange.get_order('2631386')
         assert isinstance(order, Order)
         pass
 
     def test_cancel_order(self, ):
         log.info('cancel order')
-        self.exchange.cancel_order(u'dc7bcca2-5219-4145-8848-8a593d2a72f9')
+        self.exchange.cancel_order('2631386', 'neo_eth')
         pass
 
     def test_get_candles(self):

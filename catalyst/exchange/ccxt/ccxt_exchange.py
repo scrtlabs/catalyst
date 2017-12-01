@@ -77,8 +77,12 @@ class CCXT(Exchange):
     def time_skew(self):
         return None
 
-    def get_symbol(self, asset):
-        parts = asset.symbol.split('_')
+    def get_symbol(self, asset_or_symbol):
+        symbol = asset_or_symbol if isinstance(
+            asset_or_symbol, string_types
+        ) else asset_or_symbol.symbol
+
+        parts = symbol.split('_')
         return '{}/{}'.format(parts[0].upper(), parts[1].upper())
 
     def get_catalyst_symbol(self, market_or_symbol):
@@ -230,15 +234,24 @@ class CCXT(Exchange):
 
     def _create_order(self, order_status):
         """
-        Create a Catalyst order object from a Bitfinex order dictionary
-        :param order_status:
-        :return: Order
+        Create a Catalyst order object from a CCXT order dictionary
+
+        Parameters
+        ----------
+        order_status: dict[str, Object]
+            The order dict from the CCXT api.
+
+        Returns
+        -------
+        Order
+            The Catalyst order object
+
         """
         if order_status['status'] == 'canceled':
             status = ORDER_STATUS.CANCELLED
 
         elif order_status['status'] == 'closed' and order_status['filled'] > 0:
-            log.info('found executed order {}'.format(order_status))
+            log.debug('found executed order {}'.format(order_status))
             status = ORDER_STATUS.FILLED
 
         elif order_status['status'] == 'open':
@@ -247,30 +260,27 @@ class CCXT(Exchange):
         else:
             raise ValueError('invalid state for order')
 
-        amount = float(order_status['amount'])
-        filled = float(order_status['filled'])
+        amount = order_status['amount']
+        filled = order_status['filled']
 
         if order_status['side'] == 'sell':
             amount = -amount
             filled = -filled
 
-        price = float(order_status['price'])
+        price = order_status['price']
         order_type = order_status['type']
 
-        stop_price = None
-        limit_price = None
-
-        # TODO: is this comprehensive enough?
-        if order_type.endswith('limit'):
-            limit_price = price
-        elif order_type.endswith('stop'):
-            stop_price = price
+        limit_price = price if order_type == 'limit' else None
+        stop_price = None  # TODO: add support
 
         executed_price = order_status['cost'] / order_status['amount']
         commission = order_status['fee']
         date = from_ms_timestamp(order_status['timestamp'])
 
+        # order_id = str(order_status['info']['clientOrderId'])
+        order_id = order_status['id']
         symbol = order_status['info']['symbol']
+
         order = Order(
             dt=date,
             asset=self.assets[symbol],
@@ -278,7 +288,7 @@ class CCXT(Exchange):
             stop=stop_price,
             limit=limit_price,
             filled=filled,
-            id=str(order_status['id']),
+            id=order_id,
             commission=commission
         )
         order.status = status
@@ -319,7 +329,8 @@ class CCXT(Exchange):
         if 'info' not in result:
             raise ValueError('cannot use order without info attribute')
 
-        order_id = str(result['info']['clientOrderId'])
+        # order_id = str(result['info']['clientOrderId'])
+        order_id = result['id']
         order = Order(
             dt=from_ms_timestamp(result['info']['transactTime']),
             asset=asset,
@@ -350,11 +361,53 @@ class CCXT(Exchange):
 
         return orders
 
-    def get_order(self, order_id):
-        return None
+    def _get_asset_from_order(self, order_id):
+        open_orders = self.portfolio.open_orders
+        order = next(
+            (order for order in open_orders if order.id == order_id),
+            None
+        )  # type: Order
+        return order.asset if order is not None else None
 
-    def cancel_order(self, order_param):
-        return None
+    def get_order(self, order_id, asset_or_symbol=None):
+        if asset_or_symbol is None and self.portfolio is not None:
+            asset_or_symbol = self._get_asset_from_order(order_id)
+
+        if asset_or_symbol is None:
+            log.debug(
+                'order not found in memory, the request might fail '
+                'on some exchanges.'
+            )
+        try:
+            symbol = self.get_symbol(asset_or_symbol) \
+                if asset_or_symbol is not None else None
+            order_status = self.api.fetch_order(id=order_id, symbol=symbol)
+            order, _ = self._create_order(order_status)
+
+        except Exception as e:
+            raise ExchangeRequestError(error=e)
+
+        return order
+
+    def cancel_order(self, order_param, asset_or_symbol=None):
+        order_id = order_param.id \
+            if isinstance(order_param, Order) else order_param
+
+        if asset_or_symbol is None and self.portfolio is not None:
+            asset_or_symbol = self._get_asset_from_order(order_id)
+
+        if asset_or_symbol is None:
+            log.debug(
+                'order not found in memory, cancelling order might fail '
+                'on some exchanges.'
+            )
+        try:
+            symbol = self.get_symbol(asset_or_symbol) \
+                if asset_or_symbol is not None else None
+            self.api.cancel_order(id=order_id, symbol=symbol)
+
+        except Exception as e:
+            raise ExchangeRequestError(error=e)
 
     def tickers(self, assets):
         """
