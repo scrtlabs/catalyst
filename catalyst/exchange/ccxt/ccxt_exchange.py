@@ -28,6 +28,8 @@ SUPPORTED_EXCHANGES = dict(
     bitfinex=ccxt.bitfinex,
     bittrex=ccxt.bittrex,
     poloniex=ccxt.poloniex,
+    bitmex=ccxt.bitmex,
+    gdax=ccxt.gdax,
 )
 
 
@@ -88,12 +90,15 @@ class CCXT(Exchange):
         return '{}/{}'.format(parts[0].upper(), parts[1].upper())
 
     def get_catalyst_symbol(self, market_or_symbol):
-        symbol = market_or_symbol if isinstance(
-            market_or_symbol, string_types
-        ) else market_or_symbol['symbol']
+        if isinstance(market_or_symbol, string_types):
+            parts = market_or_symbol.split('/')
+            return '{}_{}'.format(parts[0].lower(), parts[1].lower())
 
-        parts = symbol.split('/')
-        return '{}_{}'.format(parts[0].lower(), parts[1].lower())
+        else:
+            return '{}_{}'.format(
+                market_or_symbol['base'].lower(),
+                market_or_symbol['quote'].lower(),
+            )
 
     def get_timeframe(self, freq):
         freq_match = re.match(r'([0-9].*)?(m|M|d|D|h|H|T)', freq, re.M | re.I)

@@ -594,12 +594,15 @@ def mixin_market_params(exchange_name, params, market):
         params['maker'] = 0.001
         params['taker'] = 0.002
 
-    else:
-        if 'maker' in market:
-            params['maker'] = market['maker']
+    elif 'maker' in market and 'taker' in market \
+            and market['maker'] is not None and market['taker'] is not None:
+        params['maker'] = market['maker']
+        params['taker'] = market['taker']
 
-        if 'taker' in market:
-            params['taker'] = market['taker']
+    else:
+        # TODO: default commission, make configurable
+        params['maker'] = 0.0015
+        params['taker'] = 0.0025
 
     info = market['info'] if 'info' in market else None
     if info:

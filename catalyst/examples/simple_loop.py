@@ -107,25 +107,25 @@ def analyze(context, perf):
     pass
 
 
-# run_algorithm(
-#     capital_base=250,
-#     start=pd.to_datetime('2017-11-1 0:00', utc=True),
-#     end=pd.to_datetime('2017-11-10 23:59', utc=True),
-#     data_frequency='daily',
-#     initialize=initialize,
-#     handle_data=handle_data,
-#     analyze=analyze,
-#     exchange_name='bitfinex',
-#     algo_namespace='simple_loop',
-#     base_currency='usd'
-# )
 run_algorithm(
+    capital_base=250,
+    start=pd.to_datetime('2017-11-1 0:00', utc=True),
+    end=pd.to_datetime('2017-11-10 23:59', utc=True),
+    data_frequency='daily',
     initialize=initialize,
     handle_data=handle_data,
-    analyze=None,
-    exchange_name='binance',
-    live=True,
+    analyze=analyze,
+    exchange_name='bitfinex',
     algo_namespace='simple_loop',
-    base_currency='eth',
-    live_graph=False,
+    base_currency='usd'
 )
+# run_algorithm(
+#     initialize=initialize,
+#     handle_data=handle_data,
+#     analyze=None,
+#     exchange_name='binance',
+#     live=True,
+#     algo_namespace='simple_loop',
+#     base_currency='eth',
+#     live_graph=False,
+# )

@@ -15,7 +15,7 @@ log = Logger('test_ccxt')
 class TestCCXT(BaseExchangeTestCase):
     @classmethod
     def setup(self):
-        exchange_name = 'binance'
+        exchange_name = 'gdax'
         auth = get_exchange_auth(exchange_name)
         self.exchange = CCXT(
             exchange_name=exchange_name,
@@ -64,25 +64,17 @@ class TestCCXT(BaseExchangeTestCase):
             start_dt=pd.to_datetime('2017-01-01', utc=True)
         )
 
-        df = pd.DataFrame(candles)
-        df.set_index('last_traded', drop=True, inplace=True)
-
-        folder = os.path.join(
-            tempfile.gettempdir(), 'catalyst', self.exchange.name, 'eth_btc'
-        )
-        ensure_directory(folder)
-
-        path = os.path.join(folder, 'output.csv')
-        df.to_csv(path)
+        for asset in candles:
+            df = pd.DataFrame(candles[asset])
+            df.set_index('last_traded', drop=True, inplace=True)
         pass
 
     def test_tickers(self):
         log.info('retrieving tickers')
         tickers = self.exchange.tickers([
             self.exchange.get_asset('eth_btc'),
-            self.exchange.get_asset('etc_btc')
         ])
-        assert len(tickers) == 2
+        assert len(tickers) == 1
         pass
 
     def test_get_balances(self):
