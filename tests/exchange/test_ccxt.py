@@ -21,16 +21,16 @@ class TestCCXT(BaseExchangeTestCase):
             exchange_name=exchange_name,
             key=auth['key'],
             secret=auth['secret'],
-            base_currency=None,
+            base_currency='eth',
             portfolio=None
         )
 
     def test_order(self):
         log.info('creating order')
-        asset = self.exchange.get_asset('neo_btc')
+        asset = self.exchange.get_asset('neo_eth')
         order_id = self.exchange.order(
             asset=asset,
-            limit_price=0.0005,
+            limit_price=0.07,
             amount=1,
         )
         log.info('order created {}'.format(order_id))
@@ -39,7 +39,7 @@ class TestCCXT(BaseExchangeTestCase):
 
     def test_open_orders(self):
         log.info('retrieving open orders')
-        asset = self.exchange.get_asset('neo_btc')
+        asset = self.exchange.get_asset('neo_eth')
         orders = self.exchange.get_open_orders(asset)
         pass
 

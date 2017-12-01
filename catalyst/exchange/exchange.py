@@ -8,15 +8,16 @@ import pandas as pd
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
+from catalyst.algorithm import MarketOrder
 from catalyst.constants import LOG_LEVEL
 from catalyst.data.data_portal import BASE_FIELDS
 from catalyst.exchange.bundle_utils import get_start_dt, \
     get_delta, get_periods, get_periods_range
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
-    InvalidOrderStyle, BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
+    BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
     PricingDataNotLoadedError, \
-    NoDataAvailableOnExchange, ExchangeSymbolsNotFound, NoValueForField
+    NoDataAvailableOnExchange, NoValueForField
 from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
     ExchangeLimitOrder, ExchangeStopOrder
 from catalyst.exchange.exchange_portfolio import ExchangePortfolio
@@ -34,7 +35,6 @@ class Exchange:
     def __init__(self):
         self.name = None
         self.assets = dict()
-        self.local_assets = dict()
         self._portfolio = None
         self.minute_writer = None
         self.minute_reader = None
@@ -200,13 +200,13 @@ class Exchange:
         return assets
 
     def _find_asset(self, asset, symbol, data_frequency, is_local=False):
-        assets = self.assets if not is_local else self.local_assets
-
+        assets = self.assets
         for key in assets:
             has_data = (data_frequency == 'minute'
                         and assets[key].end_minute is not None) \
                        or (data_frequency == 'daily'
                            and assets[key].end_daily is not None)
+
             if not asset and assets[key].symbol.lower() == symbol.lower() \
                     and (not data_frequency or has_data):
                 asset = assets[key]
@@ -236,8 +236,7 @@ class Exchange:
         asset = self._find_asset(asset, symbol, data_frequency, True)
 
         if not asset:
-            all_values = list(self.assets.values()) + \
-                         list(self.local_assets.values())
+            all_values = list(self.assets.values())
             supported_symbols = sorted([
                 asset.symbol for asset in all_values
             ])
@@ -253,6 +252,7 @@ class Exchange:
     def fetch_symbol_map(self, is_local=False):
         return get_exchange_symbols(self.name, is_local)
 
+    @abstractmethod
     def load_assets(self, is_local=False):
         """
         Populate the 'assets' attribute with a dictionary of Assets.
@@ -270,66 +270,7 @@ class Exchange:
         via its api.
 
         """
-        try:
-            symbol_map = self.fetch_symbol_map(is_local)
-        except ExchangeSymbolsNotFound:
-            return None
-
-        for exchange_symbol in symbol_map:
-            asset = symbol_map[exchange_symbol]
-
-            if 'start_date' in asset:
-                start_date = pd.to_datetime(asset['start_date'], utc=True)
-            else:
-                start_date = None
-
-            if 'end_date' in asset:
-                end_date = pd.to_datetime(asset['end_date'], utc=True)
-            else:
-                end_date = None
-
-            if 'leverage' in asset:
-                leverage = asset['leverage']
-            else:
-                leverage = 1.0
-
-            if 'asset_name' in asset:
-                asset_name = asset['asset_name']
-            else:
-                asset_name = None
-
-            if 'min_trade_size' in asset:
-                min_trade_size = asset['min_trade_size']
-            else:
-                min_trade_size = 0.0000001
-
-            if 'end_daily' in asset and asset['end_daily'] != 'N/A':
-                end_daily = pd.to_datetime(asset['end_daily'], utc=True)
-            else:
-                end_daily = None
-
-            if 'end_minute' in asset and asset['end_minute'] != 'N/A':
-                end_minute = pd.to_datetime(asset['end_minute'], utc=True)
-            else:
-                end_minute = None
-
-            trading_pair = TradingPair(
-                symbol=asset['symbol'],
-                exchange=self.name,
-                start_date=start_date,
-                end_date=end_date,
-                leverage=leverage,
-                asset_name=asset_name,
-                min_trade_size=min_trade_size,
-                end_daily=end_daily,
-                end_minute=end_minute,
-                exchange_symbol=exchange_symbol
-            )
-
-            if is_local:
-                self.local_assets[exchange_symbol] = trading_pair
-            else:
-                self.assets[exchange_symbol] = trading_pair
+        pass
 
     def check_open_orders(self):
         """
@@ -694,7 +635,7 @@ class Exchange:
         log.debug('synchronizing portfolio with exchange {}'.format(self.name))
         balances = self.get_balances()
 
-        base_position_available = balances[self.base_currency] \
+        base_position_available = balances[self.base_currency]['free'] \
             if self.base_currency in balances else None
 
         if base_position_available is None:
@@ -777,28 +718,30 @@ class Exchange:
             log.warn('skipping order amount of 0')
             return None
 
-        if asset.base_currency != self.base_currency.lower():
+        if self.base_currency is None:
+            raise ValueError('no base_currency defined for this exchange')
+
+        if asset.quote_currency != self.base_currency.lower():
             raise MismatchingBaseCurrencies(
-                base_currency=asset.base_currency,
+                base_currency=asset.quote_currency,
                 algo_currency=self.base_currency
             )
 
         is_buy = (amount > 0)
 
         if limit_price is not None and stop_price is not None:
-            style = ExchangeStopLimitOrder(limit_price, stop_price,
-                                           exchange=self.name)
+            style = ExchangeStopLimitOrder(
+                limit_price, stop_price, exchange=self.name
+            )
+
         elif limit_price is not None:
             style = ExchangeLimitOrder(limit_price, exchange=self.name)
 
         elif stop_price is not None:
             style = ExchangeStopOrder(stop_price, exchange=self.name)
 
-        elif style is not None:
-            raise InvalidOrderStyle(exchange=self.name.title(),
-                                    style=style.__class__.__name__)
         else:
-            raise ValueError('Incomplete order data.')
+            style = MarketOrder(exchange=self.name)
 
         display_price = limit_price if limit_price is not None else stop_price
         log.debug(
@@ -807,9 +750,10 @@ class Exchange:
                 amount=amount,
                 symbol=asset.symbol,
                 type=style.__class__.__name__,
-                price='{}{}'.format(display_price, asset.base_currency)
+                price='{}{}'.format(display_price, asset.quote_currency)
             )
         )
+
         order = self.create_order(asset, amount, is_buy, style)
         if order:
             self._portfolio.create_order(order)

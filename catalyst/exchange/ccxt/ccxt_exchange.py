@@ -3,18 +3,31 @@ from collections import defaultdict
 
 import ccxt
 import pandas as pd
+from ccxt import ExchangeNotAvailable
+from six import string_types
+
+from catalyst.finance.order import Order, ORDER_STATUS
+
+from catalyst.algorithm import MarketOrder
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
 from catalyst.constants import LOG_LEVEL
-from catalyst.exchange.exchange import Exchange
+from catalyst.exchange.exchange import Exchange, ExchangeLimitOrder
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
-    ExchangeSymbolsNotFound
+    ExchangeSymbolsNotFound, ExchangeRequestError, InvalidOrderStyle
 from catalyst.exchange.exchange_utils import mixin_market_params, \
     from_ms_timestamp
 
 log = Logger('CCXT', level=LOG_LEVEL)
+
+SUPPORTED_EXCHANGES = dict(
+    binance=ccxt.binance,
+    bitfinex=ccxt.bitfinex,
+    bittrex=ccxt.bittrex,
+    poloniex=ccxt.poloniex,
+)
 
 
 class CCXT(Exchange):
@@ -26,7 +39,13 @@ class CCXT(Exchange):
             )
         )
         try:
-            exchange_attr = getattr(ccxt, exchange_name)
+            # Making instantiation as explicit as possible for code tracking.
+            if exchange_name in SUPPORTED_EXCHANGES:
+                exchange_attr = SUPPORTED_EXCHANGES[exchange_name]
+
+            else:
+                exchange_attr = getattr(ccxt, exchange_name)
+
             self.api = exchange_attr({
                 'apiKey': key,
                 'secret': secret,
@@ -62,8 +81,12 @@ class CCXT(Exchange):
         parts = asset.symbol.split('_')
         return '{}/{}'.format(parts[0].upper(), parts[1].upper())
 
-    def get_catalyst_symbol(self, market):
-        parts = market['symbol'].split('/')
+    def get_catalyst_symbol(self, market_or_symbol):
+        symbol = market_or_symbol if isinstance(
+            market_or_symbol, string_types
+        ) else market_or_symbol['symbol']
+
+        parts = symbol.split('/')
         return '{}_{}'.format(parts[0].lower(), parts[1].lower())
 
     def get_timeframe(self, freq):
@@ -191,13 +214,141 @@ class CCXT(Exchange):
             self.assets[market['id']] = trading_pair
 
     def get_balances(self):
-        return None
+        try:
+            log.debug('retrieving wallets balances')
+            balances = self.api.fetch_balance()
+
+            balances_lower = dict()
+            for key in balances:
+                balances_lower[key.lower()] = balances[key]
+
+        except Exception as e:
+            log.debug('error retrieving balances: {}', e)
+            raise ExchangeRequestError(error=e)
+
+        return balances_lower
+
+    def _create_order(self, order_status):
+        """
+        Create a Catalyst order object from a Bitfinex order dictionary
+        :param order_status:
+        :return: Order
+        """
+        if order_status['status'] == 'canceled':
+            status = ORDER_STATUS.CANCELLED
+
+        elif order_status['status'] == 'closed' and order_status['filled'] > 0:
+            log.info('found executed order {}'.format(order_status))
+            status = ORDER_STATUS.FILLED
+
+        elif order_status['status'] == 'open':
+            status = ORDER_STATUS.OPEN
+
+        else:
+            raise ValueError('invalid state for order')
+
+        amount = float(order_status['amount'])
+        filled = float(order_status['filled'])
+
+        if order_status['side'] == 'sell':
+            amount = -amount
+            filled = -filled
+
+        price = float(order_status['price'])
+        order_type = order_status['type']
+
+        stop_price = None
+        limit_price = None
+
+        # TODO: is this comprehensive enough?
+        if order_type.endswith('limit'):
+            limit_price = price
+        elif order_type.endswith('stop'):
+            stop_price = price
+
+        executed_price = order_status['cost'] / order_status['amount']
+        commission = order_status['fee']
+        date = from_ms_timestamp(order_status['timestamp'])
+
+        symbol = order_status['info']['symbol']
+        order = Order(
+            dt=date,
+            asset=self.assets[symbol],
+            amount=amount,
+            stop=stop_price,
+            limit=limit_price,
+            filled=filled,
+            id=str(order_status['id']),
+            commission=commission
+        )
+        order.status = status
+
+        return order, executed_price
 
     def create_order(self, asset, amount, is_buy, style):
-        return None
+        symbol = self.get_symbol(asset)
+
+        if isinstance(style, ExchangeLimitOrder):
+            price = style.get_limit_price(is_buy)
+            order_type = 'limit'
+
+        elif isinstance(style, MarketOrder):
+            price = None
+            order_type = 'market'
+
+        else:
+            raise InvalidOrderStyle(
+                exchange=self.name,
+                style=style.__class__.__name__
+            )
+
+        side = 'buy' if amount > 0 else 'sell'
+
+        try:
+            result = self.api.create_order(
+                symbol=symbol,
+                type=order_type,
+                side=side,
+                amount=abs(amount),
+                price=price
+            )
+        except ExchangeNotAvailable as e:
+            log.debug('unable to create order: {}'.format(e))
+            raise ExchangeRequestError(error=e)
+
+        if 'info' not in result:
+            raise ValueError('cannot use order without info attribute')
+
+        order_id = str(result['info']['clientOrderId'])
+        order = Order(
+            dt=from_ms_timestamp(result['info']['transactTime']),
+            asset=asset,
+            amount=amount,
+            stop=style.get_stop_price(is_buy),
+            limit=style.get_limit_price(is_buy),
+            id=order_id
+        )
+        return order
 
     def get_open_orders(self, asset):
-        return None
+        try:
+            symbol = self.get_symbol(asset)
+            result = self.api.fetch_open_orders(
+                symbol=symbol,
+                since=None,
+                limit=None,
+                params=dict()
+            )
+        except Exception as e:
+            raise ExchangeRequestError(error=e)
+
+        orders = []
+        for order_status in result:
+            order, executed_price = self._create_order(order_status)
+            if asset is None or asset == order.sid:
+                orders.append(order)
+
+        return orders
 
     def get_order(self, order_id):
         return None

@@ -263,7 +263,7 @@ def _run(handle_data,
                     )
 
             if base_currency in balances:
-                base_currency_available = balances[base_currency]
+                base_currency_available = balances[base_currency]['free']
                 log.info(
                     'base currency available in the account: {} {}'.format(
                         base_currency_available, base_currency

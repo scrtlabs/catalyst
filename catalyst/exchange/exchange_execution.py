@@ -1,4 +1,4 @@
-from catalyst.finance.execution import LimitOrder, StopOrder, StopLimitOrder
+from catalyst.finance.execution import LimitOrder, StopOrder, StopLimitOrder, MarketOrder
 
 
 class ExchangeLimitOrder(LimitOrder):
