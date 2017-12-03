@@ -34,7 +34,8 @@ class Exchange:
 
     def __init__(self):
         self.name = None
-        self.assets = dict()
+        self.assets = []
+        self._symbol_maps = [None, None]
         self._portfolio = None
         self.minute_writer = None
         self.minute_reader = None
@@ -145,9 +146,9 @@ class Exchange:
         """
         symbol = None
 
-        for key in self.assets:
-            if not symbol and self.assets[key].symbol == asset.symbol:
-                symbol = key
+        for a in self.assets:
+            if not symbol and a.symbol == asset.symbol:
+                symbol = a.symbol
 
         if not symbol:
             raise ValueError('Currency %s not supported by exchange %s' %
@@ -187,33 +188,32 @@ class Exchange:
         list[TradingPair]
 
         """
-        assets = []
 
         if symbols is not None:
+            assets = []
             for symbol in symbols:
                 asset = self.get_asset(symbol, data_frequency)
                 assets.append(asset)
+            return assets
         else:
-            for key in self.assets:
-                assets.append(self.assets[key])
+            return self.assets
 
-        return assets
-
-    def _find_asset(self, asset, symbol, data_frequency, is_local=False):
-        assets = self.assets
-        for key in assets:
+    def _find_asset(self, asset, symbol, data_frequency, is_exchange_symbol,
+                    is_local=False):
+        for a in self.assets:
             has_data = (data_frequency == 'minute'
-                        and assets[key].end_minute is not None) \
+                        and a.end_minute is not None) \
                        or (data_frequency == 'daily'
-                           and assets[key].end_daily is not None)
+                           and a.end_daily is not None)
 
-            if not asset and assets[key].symbol.lower() == symbol.lower() \
+            symbol_attr = a.exchange_symbol if is_exchange_symbol else a.symbol
+            if not asset and symbol_attr.lower() == symbol.lower() \
                     and (not data_frequency or has_data):
-                asset = assets[key]
+                asset = a
 
         return asset
 
-    def get_asset(self, symbol, data_frequency=None):
+    def get_asset(self, symbol, data_frequency=None, is_exchange_symbol=False):
         """
         The market for the specified symbol.
 
@@ -229,16 +229,19 @@ class Exchange:
         asset = None
 
         log.debug('searching asset {} on the server'.format(symbol))
-        asset = self._find_asset(asset, symbol, data_frequency, False)
+        asset = self._find_asset(
+            asset, symbol, data_frequency, is_exchange_symbol, False
+        )
 
         log.debug('asset {} not found on the server, searching local '
                   'assets'.format(symbol))
-        asset = self._find_asset(asset, symbol, data_frequency, True)
+        asset = self._find_asset(
+            asset, symbol, data_frequency, is_exchange_symbol, True
+        )
 
         if not asset:
-            all_values = list(self.assets.values())
             supported_symbols = sorted([
-                asset.symbol for asset in all_values
+                asset.symbol for asset in self.assets
             ])
 
             raise SymbolNotFoundOnExchange(
@@ -250,7 +253,14 @@ class Exchange:
         return asset
 
     def fetch_symbol_map(self, is_local=False):
-        return get_exchange_symbols(self.name, is_local)
+        index = 1 if is_local else 0
+        if self._symbol_maps[index] is not None:
+            return self._symbol_maps[index]
+
+        else:
+            symbol_map = get_exchange_symbols(self.name, is_local)
+            self._symbol_maps[index] = symbol_map
+            return symbol_map
 
     @abstractmethod
     def load_assets(self, is_local=False):

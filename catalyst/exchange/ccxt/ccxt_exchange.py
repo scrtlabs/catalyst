@@ -57,12 +57,14 @@ class CCXT(Exchange):
         except Exception:
             raise ExchangeNotFoundError(exchange_name=exchange_name)
 
-        markets = self.api.load_markets()
-        log.debug('the markets:\n{}'.format(markets))
+        self._symbol_maps = [None, None]
+
+        markets_symbols = self.api.load_markets()
+        log.debug('the markets:\n{}'.format(markets_symbols))
 
         self.name = exchange_name
 
-        self.assets = dict()
+        self.markets = self.api.fetch_markets()
         self.load_assets()
 
         self.base_currency = base_currency
@@ -80,6 +82,14 @@ class CCXT(Exchange):
 
     def time_skew(self):
         return None
+
+    def get_market(self, symbol):
+        s = self.get_symbol(symbol)
+        market = next(
+            (market for market in self.markets if market['symbol'] == s),
+            None,
+        )
+        return market
 
     def get_symbol(self, asset_or_symbol):
         symbol = asset_or_symbol if isinstance(
@@ -158,74 +168,102 @@ class CCXT(Exchange):
         except ExchangeSymbolsNotFound:
             return None
 
-    def _fetch_asset(self, market_id, is_local=False):
+    def fetch_asset_defs(self, market):
+        asset_defs = []
+
+        for is_local in (False, True):
+            asset_def = self.fetch_asset_def(market, is_local)
+            asset_defs.append((asset_def, is_local))
+
+        return asset_defs
+
+    def fetch_asset_def(self, market, is_local=False):
+        exchange_symbol = market['id']
+
         symbol_map = self._fetch_symbol_map(is_local)
         if symbol_map is not None:
             assets_lower = {k.lower(): v for k, v in symbol_map.items()}
-            key = market_id.lower()
+            key = exchange_symbol.lower()
 
             asset = assets_lower[key] if key in assets_lower else None
             if asset is not None:
-                return asset, is_local
-
-            elif not is_local:
-                return self._fetch_asset(market_id, True)
+                return asset
 
             else:
-                return None, is_local
-
-        elif not is_local:
-            return self._fetch_asset(market_id, True)
+                return None
 
         else:
-            return None, is_local
+            return None
+
+    def create_trading_pair(self, market, asset_def, is_local):
+        """
+        Creating a TradingPair from market and asset data.
+
+        Parameters
+        ----------
+        market: dict[str, Object]
+        asset_def: dict[str, Object]
+        is_local: bool
+
+        Returns
+        -------
+
+        """
+        data_source = 'local' if is_local else 'catalyst'
+        params = dict(
+            exchange=self.name,
+            data_source=data_source,
+            exchange_symbol=market['id'],
+        )
+        mixin_market_params(self.name, params, market)
+
+        if asset_def is not None:
+            params['symbol'] = asset_def['symbol']
+
+            params['start_date'] = asset_def['start_date'] \
+                if 'start_date' in asset_def else None
+
+            params['end_date'] = asset_def['end_date'] \
+                if 'end_date' in asset_def else None
+
+            params['leverage'] = asset_def['leverage'] \
+                if 'leverage' in asset_def else 1.0
+
+            params['asset_name'] = asset_def['asset_name'] \
+                if 'asset_name' in asset_def else None
+
+            params['end_daily'] = asset_def['end_daily'] \
+                if 'end_daily' in asset_def \
+                   and asset_def['end_daily'] != 'N/A' else None
+
+            params['end_minute'] = asset_def['end_minute'] \
+                if 'end_minute' in asset_def \
+                   and asset_def['end_minute'] != 'N/A' else None
+
+        else:
+            params['symbol'] = self.get_catalyst_symbol(market)
+            params['leverage'] = 1.0
+
+        return TradingPair(**params)
 
     def load_assets(self):
-        markets = self.api.fetch_markets()
+        self.assets = []
 
-        for market in markets:
-            asset, is_local = self._fetch_asset(market['id'])
-            data_source = 'local' if is_local else 'catalyst'
+        for market in self.markets:
+            log.debug('fetching asset for market: {}'.format(market['id']))
+            asset_defs = self.fetch_asset_defs(market)
 
-            params = dict(
-                exchange=self.name,
-                data_source=data_source,
-                exchange_symbol=market['id'],
-            )
-            mixin_market_params(self.name, params, market)
-
-            if asset is not None:
-                params['symbol'] = asset['symbol']
-
-                params['start_date'] = pd.to_datetime(
-                    asset['start_date'], utc=True
-                ) if 'start_date' in asset else None
-
-                params['end_date'] = pd.to_datetime(
-                    asset['end_date'], utc=True
-                ) if 'end_date' in asset else None
-
-                params['leverage'] = asset['leverage'] \
-                    if 'leverage' in asset else 1.0
-
-                params['asset_name'] = asset['asset_name'] \
-                    if 'asset_name' in asset else None
-
-                params['end_daily'] = pd.to_datetime(
-                    asset['end_daily'], utc=True
-                ) if 'end_daily' in asset and asset['end_daily'] != 'N/A' \
-                    else None
-
-                params['end_minute'] = pd.to_datetime(
-                    asset['end_minute'], utc=True
-                ) if 'end_minute' in asset and asset['end_minute'] != 'N/A' \
-                    else None
-
-            else:
-                params['symbol'] = self.get_catalyst_symbol(market)
-
-            trading_pair = TradingPair(**params)
-            self.assets[market['id']] = trading_pair
+            for asset_def in asset_defs:
+                if asset_def[0] is not None or not asset_defs[1]:
+                    try:
+                        asset = self.create_trading_pair(
+                            market=market,
+                            asset_def=asset_def[0],
+                            is_local=asset_def[1]
+                        )
+                        self.assets.append(asset)
+                    except TypeError as e:
+                        pass
 
     def get_balances(self):
         try:
@@ -293,7 +331,7 @@ class CCXT(Exchange):
 
         order = Order(
             dt=date,
-            asset=self.assets[symbol],
+            asset=self.get_asset(symbol, is_exchange_symbol=True),
             amount=amount,
             stop=stop_price,
             limit=limit_price,

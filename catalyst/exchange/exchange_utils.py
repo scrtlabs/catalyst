@@ -8,6 +8,7 @@ from datetime import date, datetime
 
 import pandas as pd
 from catalyst.assets._assets import TradingPair
+from six import string_types
 from six.moves.urllib import request
 
 from catalyst.constants import DATE_FORMAT, SYMBOLS_URL
@@ -100,6 +101,20 @@ def download_exchange_symbols(exchange_name, environ=None):
     return response
 
 
+def symbols_parser(asset_def):
+    for key, value in asset_def.items():
+        match = isinstance(value, string_types) \
+                and re.search(r'(\d{4}-\d{2}-\d{2})', value)
+
+        if match:
+            try:
+                asset_def[key] = pd.to_datetime(value, utc=True)
+            except ValueError:
+                pass
+
+    return asset_def
+
+
 def get_exchange_symbols(exchange_name, is_local=False, environ=None):
     """
     The de-serialized content of the exchange's symbols.json.
@@ -125,10 +140,10 @@ def get_exchange_symbols(exchange_name, is_local=False, environ=None):
     if os.path.isfile(filename):
         with open(filename) as data_file:
             try:
-                data = json.load(data_file)
+                data = json.load(data_file, object_hook=symbols_parser)
                 return data
 
-            except ValueError:
+            except ValueError as e:
                 return dict()
     else:
         raise ExchangeSymbolsNotFound(
