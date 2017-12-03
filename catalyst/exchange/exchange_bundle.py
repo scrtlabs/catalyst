@@ -715,7 +715,7 @@ class ExchangeBundle:
             )
             mixin_market_params(self.exchange_name, params, market)
 
-            asset_def = self.exchange.fetch_asset_def(market, True)
+            asset_def = self.exchange.get_asset_def(market, True)
             if asset_def is not None:
                 params['symbol'] = asset_def['symbol']
 

@@ -175,71 +175,102 @@ class Exchange:
 
         return symbols
 
-    def get_assets(self, symbols=None, data_frequency=None):
+    def get_assets(self, symbols=None, data_frequency=None,
+                   is_exchange_symbol=False,
+                   is_local=None):
         """
         The list of markets for the specified symbols.
 
         Parameters
         ----------
         symbols: list[str]
+        data_frequency: str
+        is_exchange_symbol: bool
+        is_local: bool
 
         Returns
         -------
         list[TradingPair]
+            A list of asset objects.
+
+        Notes
+        -----
+        See get_asset for details of each parameter.
 
         """
+        if symbols is None:
+            # Make a distinct list of all symbols
+            symbols = list(set([asset.symbol for asset in self.assets]))
+            is_exchange_symbol = False
 
-        if symbols is not None:
-            assets = []
-            for symbol in symbols:
-                asset = self.get_asset(symbol, data_frequency)
-                assets.append(asset)
-            return assets
-        else:
-            return self.assets
+        assets = []
+        for symbol in symbols:
+            asset = self.get_asset(
+                symbol, data_frequency, is_exchange_symbol, is_local
+            )
+            assets.append(asset)
+        return assets
 
-    def _find_asset(self, asset, symbol, data_frequency, is_exchange_symbol,
-                    is_local=False):
-        for a in self.assets:
-            has_data = (data_frequency == 'minute'
-                        and a.end_minute is not None) \
-                       or (data_frequency == 'daily'
-                           and a.end_daily is not None)
-
-            symbol_attr = a.exchange_symbol if is_exchange_symbol else a.symbol
-            if not asset and symbol_attr.lower() == symbol.lower() \
-                    and (not data_frequency or has_data):
-                asset = a
-
-        return asset
-
-    def get_asset(self, symbol, data_frequency=None, is_exchange_symbol=False):
+    def get_asset(self, symbol, data_frequency=None, is_exchange_symbol=False,
+                  is_local=None):
         """
         The market for the specified symbol.
 
         Parameters
         ----------
         symbol: str
+            The Catalyst or exchange symbol.
+
+        data_frequency: str
+            Check for asset corresponding to the specified data_frequency.
+            The same asset might exist in the Catalyst repository or
+            locally (following a CSV ingestion). Filtering by
+            data_frequency picks the right asset.
+
+        is_exchange_symbol: bool
+            Whether the symbol uses the Catalyst or exchange convention.
+
+        is_local: bool
+            For the local or Catalyst asset.
 
         Returns
         -------
         TradingPair
+            The asset object.
 
         """
         asset = None
 
-        log.debug('searching asset {} on the server'.format(symbol))
-        asset = self._find_asset(
-            asset, symbol, data_frequency, is_exchange_symbol, False
+        log.debug(
+            'searching assets for: {} {}'.format(
+                self.name, symbol
+            )
         )
+        for a in self.assets:
+            if asset is not None:
+                break
 
-        log.debug('asset {} not found on the server, searching local '
-                  'assets'.format(symbol))
-        asset = self._find_asset(
-            asset, symbol, data_frequency, is_exchange_symbol, True
-        )
+            if is_local is not None:
+                data_source = 'local' if is_local else 'catalyst'
+                applies = (a.data_source == data_source)
 
-        if not asset:
+            elif data_frequency is not None:
+                applies = (
+                    (data_frequency == 'minute' and a.end_minute is not None)
+                    or (data_frequency == 'daily' and a.end_daily is not None)
+                )
+
+            else:
+                applies = True
+
+            # The symbol provided may use the Catalyst or the exchange
+            # convention
+            key = a.exchange_symbol if is_exchange_symbol else a.symbol
+            if not asset and key.lower() == symbol.lower() and applies:
+                asset = a
+
+        if asset is None:
+
             supported_symbols = sorted([
                 asset.symbol for asset in self.assets
             ])
@@ -250,6 +281,7 @@ class Exchange:
                 supported_symbols=supported_symbols
             )
 
+        log.debug('found asset: {}'.format(asset))
         return asset
 
     def fetch_symbol_map(self, is_local=False):

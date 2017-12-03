@@ -84,6 +84,19 @@ class CCXT(Exchange):
         return None
 
     def get_market(self, symbol):
+        """
+        The CCXT market.
+
+        Parameters
+        ----------
+        symbol:
+            The CCXT symbol.
+
+        Returns
+        -------
+        dict[str, Object]
+
+        """
         s = self.get_symbol(symbol)
         market = next(
             (market for market in self.markets if market['symbol'] == s),
@@ -92,6 +105,17 @@ class CCXT(Exchange):
         return market
 
     def get_symbol(self, asset_or_symbol):
+        """
+        The CCXT symbol.
+
+        Parameters
+        ----------
+        asset_or_symbol
+
+        Returns
+        -------
+
+        """
         symbol = asset_or_symbol if isinstance(
             asset_or_symbol, string_types
         ) else asset_or_symbol.symbol
@@ -100,6 +124,17 @@ class CCXT(Exchange):
         return '{}/{}'.format(parts[0].upper(), parts[1].upper())
 
     def get_catalyst_symbol(self, market_or_symbol):
+        """
+        The Catalyst symbol.
+
+        Parameters
+        ----------
+        market_or_symbol
+
+        Returns
+        -------
+
+        """
         if isinstance(market_or_symbol, string_types):
             parts = market_or_symbol.split('/')
             return '{}_{}'.format(parts[0].lower(), parts[1].lower())
@@ -111,6 +146,19 @@ class CCXT(Exchange):
             )
 
     def get_timeframe(self, freq):
+        """
+        The CCXT timeframe from the Catalyst frequency.
+
+        Parameters
+        ----------
+        freq: str
+            The Catalyst frequency (Pandas convention)
+
+        Returns
+        -------
+        str
+
+        """
         freq_match = re.match(r'([0-9].*)?(m|M|d|D|h|H|T)', freq, re.M | re.I)
         if freq_match:
             candle_size = int(freq_match.group(1)) \
@@ -168,16 +216,47 @@ class CCXT(Exchange):
         except ExchangeSymbolsNotFound:
             return None
 
-    def fetch_asset_defs(self, market):
+    def get_asset_defs(self, market):
+        """
+        The local and Catalyst definitions of the specified market.
+
+        Parameters
+        ----------
+        market: dict[str, Object]
+            The CCXT market dicts.
+
+        Returns
+        -------
+        dict[str, Object]
+            The asset definition.
+
+        """
         asset_defs = []
 
         for is_local in (False, True):
-            asset_def = self.fetch_asset_def(market, is_local)
+            asset_def = self.get_asset_def(market, is_local)
             asset_defs.append((asset_def, is_local))
 
         return asset_defs
 
-    def fetch_asset_def(self, market, is_local=False):
+    def get_asset_def(self, market, is_local=False):
+        """
+        The asset definition (in symbols.json files) corresponding
+        to the the specified market.
+
+        Parameters
+        ----------
+        market: dict[str, Object]
+            The CCXT market dict.
+        is_local
+            Whether to search in local or Catalyst asset definitions.
+
+        Returns
+        -------
+        dict[str, Object]
+            The asset definition.
+
+        """
         exchange_symbol = market['id']
 
         symbol_map = self._fetch_symbol_map(is_local)
@@ -250,8 +329,7 @@ class CCXT(Exchange):
         self.assets = []
 
         for market in self.markets:
-            log.debug('fetching asset for market: {}'.format(market['id']))
-            asset_defs = self.fetch_asset_defs(market)
+            asset_defs = self.get_asset_defs(market)
 
             for asset_def in asset_defs:
                 if asset_def[0] is not None or not asset_defs[1]:

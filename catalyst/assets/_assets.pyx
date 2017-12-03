@@ -516,7 +516,7 @@ cdef class TradingPair(Asset):
 
         symbol = symbol.lower()
         try:
-            self.base_currency,self.quote_currency  = symbol.split('_')
+            self.base_currency, self.quote_currency = symbol.split('_')
         except Exception as e:
             raise InvalidSymbolError(symbol=symbol, error=e)
 
@@ -600,8 +600,8 @@ cdef class TradingPair(Asset):
         -------
         boolean: whether the asset's exchange is open at the given minute.
         """
-        #TODO: consider implementing to spot holds
-        return self.trading_state > 0
+        #TODO: make more dymanic to catch holds
+        return True
 
     cpdef __reduce__(self):
         """
