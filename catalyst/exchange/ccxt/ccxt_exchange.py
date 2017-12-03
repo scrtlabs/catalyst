@@ -321,6 +321,7 @@ class CCXT(Exchange):
 
         else:
             params['symbol'] = self.get_catalyst_symbol(market)
+            # TODO: add as an optional column
             params['leverage'] = 1.0
 
         return TradingPair(**params)
@@ -340,7 +341,8 @@ class CCXT(Exchange):
                             is_local=asset_def[1]
                         )
                         self.assets.append(asset)
-                    except TypeError as e:
+
+                    except TypeError:
                         pass
 
     def get_balances(self):
@@ -405,7 +407,11 @@ class CCXT(Exchange):
 
         # order_id = str(order_status['info']['clientOrderId'])
         order_id = order_status['id']
-        symbol = order_status['info']['symbol']
+
+        # TODO: this won't work, redo the packages with a different key.
+        symbol = order_status['info']['symbol'] \
+            if 'symbol' in order_status['info'] \
+            else order_status['info']['Exchange']
 
         order = Order(
             dt=date,
@@ -455,10 +461,9 @@ class CCXT(Exchange):
         if 'info' not in result:
             raise ValueError('cannot use order without info attribute')
 
-        # order_id = str(result['info']['clientOrderId'])
         order_id = result['id']
         order = Order(
-            dt=from_ms_timestamp(result['info']['transactTime']),
+            dt=pd.Timestamp.utcnow(),
             asset=asset,
             amount=amount,
             stop=style.get_stop_price(is_buy),
@@ -490,7 +495,7 @@ class CCXT(Exchange):
     def _get_asset_from_order(self, order_id):
         open_orders = self.portfolio.open_orders
         order = next(
-            (order for order in open_orders if order.id == order_id),
+            (open_orders[id] for id in open_orders if id == order_id),
             None
         )  # type: Order
         return order.asset if order is not None else None
@@ -508,12 +513,12 @@ class CCXT(Exchange):
             symbol = self.get_symbol(asset_or_symbol) \
                 if asset_or_symbol is not None else None
             order_status = self.api.fetch_order(id=order_id, symbol=symbol)
-            order, _ = self._create_order(order_status)
+            order, executed_price = self._create_order(order_status)
 
         except Exception as e:
             raise ExchangeRequestError(error=e)
 
-        return order
+        return order, executed_price
 
     def cancel_order(self, order_param, asset_or_symbol=None):
         order_id = order_param.id \
@@ -554,6 +559,10 @@ class CCXT(Exchange):
             ticker = self.api.fetch_ticker(ccxt_symbol)
 
             ticker['last_traded'] = from_ms_timestamp(ticker['timestamp'])
+
+            if 'last_price' not in ticker:
+                # TODO: any more exceptions?
+                ticker['last_price'] = ticker['last']
 
             # Using the volume represented in the base currency
             ticker['volume'] = ticker['baseVolume'] \

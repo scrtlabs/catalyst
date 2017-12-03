@@ -1,5 +1,4 @@
 import os
-import os
 import shutil
 from datetime import datetime, timedelta
 from functools import partial
@@ -28,10 +27,9 @@ from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
 from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
     TempBundleNotFoundError, \
     NoDataAvailableOnExchange, \
-    PricingDataNotLoadedError, DataCorruptionError, ExchangeSymbolsNotFound, \
-    PricingDataValueError
+    PricingDataNotLoadedError, DataCorruptionError, PricingDataValueError
 from catalyst.exchange.exchange_utils import get_exchange_folder, \
-    get_exchange_symbols, save_exchange_symbols, mixin_market_params
+    save_exchange_symbols, mixin_market_params
 from catalyst.utils.cli import maybe_show_progress
 from catalyst.utils.paths import ensure_directory
 

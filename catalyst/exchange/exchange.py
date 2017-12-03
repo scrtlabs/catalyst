@@ -270,7 +270,6 @@ class Exchange:
                 asset = a
 
         if asset is None:
-
             supported_symbols = sorted([
                 asset.symbol for asset in self.assets
             ])
@@ -704,8 +703,9 @@ class Exchange:
                 # TODO: convert if the position is not in the base currency
                 ticker = tickers[asset]
                 position = portfolio.positions[asset]
+
                 position.last_sale_price = ticker['last_price']
-                position.last_sale_date = ticker['timestamp']
+                position.last_sale_date = ticker['last_traded']
 
                 portfolio.positions_value += \
                     position.amount * position.last_sale_price

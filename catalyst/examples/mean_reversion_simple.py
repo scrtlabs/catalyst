@@ -37,7 +37,7 @@ def initialize(context):
     context.base_price = None
     context.current_day = None
 
-    context.RSI_OVERSOLD = 25
+    context.RSI_OVERSOLD = 55
     context.RSI_OVERBOUGHT = 82
     context.CANDLE_SIZE = '5T'
 
@@ -239,7 +239,7 @@ def analyze(context=None, perf=None):
 
 if __name__ == '__main__':
     # The execution mode: backtest or live
-    MODE = 'backtest'
+    MODE = 'live'
 
     if MODE == 'backtest':
         folder = os.path.join(
@@ -251,7 +251,7 @@ if __name__ == '__main__':
         out = os.path.join(folder, '{}.p'.format(timestr))
         # catalyst run -f catalyst/examples/mean_reversion_simple.py -x bitfinex -s 2017-10-1 -e 2017-11-10 -c usdt -n mean-reversion --data-frequency minute --capital-base 10000
         run_algorithm(
-            capital_base=0.5,
+            capital_base=0.1,
             data_frequency='minute',
             initialize=initialize,
             handle_data=handle_data,
@@ -267,7 +267,7 @@ if __name__ == '__main__':
 
     elif MODE == 'live':
         run_algorithm(
-            capital_base=0.5,
+            capital_base=0.1,
             initialize=initialize,
             handle_data=handle_data,
             analyze=analyze,

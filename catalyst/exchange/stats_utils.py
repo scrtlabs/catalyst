@@ -153,11 +153,11 @@ def get_pretty_stats(stats_df, recorded_cols=None, num_rows=10):
     def format_positions(positions):
         parts = []
         for position in positions:
-            msg = '{amount:.2f}{market} cost basis {cost_basis:.4f}{base}'.format(
+            msg = '{amount:.2f}{base} cost basis {cost_basis:.4f}{quote}'.format(
                 amount=position['amount'],
-                market=position['sid'].market_currency,
+                base=position['sid'].base_currency,
                 cost_basis=position['cost_basis'],
-                base=position['sid'].base_currency
+                quote=position['sid'].quote_currency
             )
             parts.append(msg)
         return ', '.join(parts)
