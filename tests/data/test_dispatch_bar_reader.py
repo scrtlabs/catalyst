@@ -11,6 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+
+'''
+#   ZIPLINE legacy test: Catalyst does not use DispatchBarReader, and thus
+#   this test suite is irrelevant, and is commented out in its entirety
+
 from numpy import array, nan
 from numpy.testing import assert_almost_equal
 from pandas import DataFrame, Timestamp
@@ -330,3 +336,4 @@ class AssetDispatchMinuteBarTestCase(WithBcolzEquityMinuteBarReader,
         for i, (sid, expected, msg) in enumerate(expected_per_sid):
             for j, result in enumerate(results):
                 assert_almost_equal(result[:, i], expected[j], err_msg=msg)
+'''

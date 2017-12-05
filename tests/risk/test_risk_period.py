@@ -232,6 +232,28 @@ class TestRisk(WithTradingEnvironment, ZiplineTestCase):
         # The sortino ratio is calculated by a empyrical function so testing
         # of period sortino ratios will be limited to determine if the value is
         # numerical. This tests for its existence and format.
+
+        # This test needs a different result set that, with some
+        # negative results, otherwise fails in a legitimate way.
+
+        RETURNS = (np.random.rand(251) * 0.1) - 0.05
+
+        self.algo_returns = factory.create_returns_from_list(
+            RETURNS,
+            self.sim_params
+        )
+
+        self.metrics = risk.RiskReport(
+            self.algo_returns,
+            self.sim_params,
+            benchmark_returns=self.benchmark_returns,
+            trading_calendar=self.trading_calendar,
+            treasury_curves=self.env.treasury_curves,
+        )
+
+        for x in self.metrics.month_periods:
+            print (type(x.sortino))
+
         np.testing.assert_equal(
             all(isinstance(x.sortino, float)
                 for x in self.metrics.month_periods),
