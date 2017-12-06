@@ -21,23 +21,19 @@ from time import sleep
 
 import logbook
 import pandas as pd
-from catalyst.assets._assets import TradingPair
 
 import catalyst.protocol as zp
 from catalyst.algorithm import TradingAlgorithm
 from catalyst.constants import LOG_LEVEL
-from catalyst.errors import OrderInBeforeTradingStart
 from catalyst.exchange.exchange_blotter import ExchangeBlotter
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     ExchangePortfolioDataError,
-    ExchangeTransactionError,
-    OrphanOrderError, OrderTypeNotSupported)
-from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
-    ExchangeLimitOrder, ExchangeStopOrder
+    OrderTypeNotSupported)
+from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.exchange_utils import save_algo_object, get_algo_object, \
     get_algo_folder, get_algo_df, \
-    save_algo_df
+    save_algo_df, group_assets_by_exchange
 from catalyst.exchange.live_graph_clock import LiveGraphClock
 from catalyst.exchange.simple_clock import SimpleClock
 from catalyst.exchange.stats_utils import get_pretty_stats
@@ -45,10 +41,8 @@ from catalyst.finance.execution import MarketOrder
 from catalyst.finance.performance.period import calc_period_stats
 from catalyst.gens.tradesimulation import AlgorithmSimulator
 from catalyst.utils.api_support import (
-    api_method,
-    disallowed_in_before_trading_start)
-from catalyst.utils.input_validation import error_keywords, ensure_upper_case, \
-    expect_types
+    api_method)
+from catalyst.utils.input_validation import error_keywords, ensure_upper_case
 from catalyst.utils.math_utils import round_nearest
 from catalyst.utils.preprocess import preprocess
 
@@ -75,7 +69,8 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
             data_frequency=self.data_frequency,
             # Default to NeverCancel in catalyst
             cancel_policy=self.cancel_policy,
-            simulate_orders=self.simulate_orders
+            simulate_orders=self.simulate_orders,
+            exchanges=self.exchanges
         )
 
     @staticmethod
@@ -441,22 +436,25 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
     def updated_account(self):
         return self.perf_tracker.get_account(False)
 
-    def _synchronize_portfolio(self, attempt_index=0):
+    def update_positions(self, attempt_index=0):
+        tracker = self.perf_tracker.position_tracker
+
         try:
-            for exchange_name in self.exchanges:
-                exchange = self.exchanges[exchange_name]
+            # Position keys correspond to assets
+            assets = list(tracker.positions)
+            exchange_assets = group_assets_by_exchange(assets)
+            for exchange_name in exchange_assets:
+                assets = exchange_assets[exchange_name]
+                exchange_positions = \
+                    [tracker.positions[asset] for asset in assets]
 
-                exchange.synchronize_portfolio()
+                exchange = self.exchanges[exchange_name]  # Type: Exchange
+                cash, positions_value = \
+                    exchange.calculate_totals(exchange_positions)
 
-                # Applying the updated last_sales_price to the positions
-                # in the performance tracker. This seems a bit redundant
-                # but it will make sense when we have multiple exchange portfolios
-                # feeding into the same performance tracker.
-                tracker = self.perf_tracker.todays_performance.position_tracker
-                for asset in exchange.portfolio.positions:
-                    position = exchange.portfolio.positions[asset]
+                for position in exchange_positions:
                     tracker.update_position(
-                        asset=asset,
+                        asset=position.asset,
                         last_sale_date=position.last_sale_date,
                         last_sale_price=position.last_sale_price
                     )
@@ -467,7 +465,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             )
             if attempt_index < self.retry_synchronize_portfolio:
                 sleep(self.retry_delay)
-                self._synchronize_portfolio(attempt_index + 1)
+                self.update_positions(attempt_index + 1)
             else:
                 raise ExchangePortfolioDataError(
                     data_type='update-portfolio',
@@ -576,7 +574,10 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             order = self.blotter.orders[transaction.order_id]
             self.perf_tracker.process_order(order)
 
-        self.perf_tracker.update_performance()
+        if len(new_transactions) > 0:
+            self.perf_tracker.update_performance()
+
+        self.update_positions()
 
         if self._handle_data:
             self._handle_data(self, data)
@@ -643,102 +644,20 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             log.warn('unable to save minute perfs to disk: {}'.format(e))
 
         try:
-            for exchange_name in self.exchanges:
-                exchange = self.exchanges[exchange_name]
-                save_algo_object(
-                    algo_name=self.algo_namespace,
-                    key='portfolio_{}'.format(exchange_name),
-                    obj=exchange.portfolio
-                )
+            blotter_params = dict(
+                open_orders=self.blotter.open_orders,
+                orders=self.blotter.orders,
+                new_orders=self.blotter.new_orders,
+                data_frequency=self.blotter.data_frequency,
+                current_dt=self.blotter.current_dt,
+            )
+            save_algo_object(
+                algo_name=self.algo_namespace,
+                key='blotter',
+                obj=blotter_params,
+            )
         except Exception as e:
             log.warn('unable to save portfolio to disk: {}'.format(e))
-
-    def _order(self,
-               asset,
-               amount,
-               limit_price=None,
-               stop_price=None,
-               style=None,
-               attempt_index=0):
-        try:
-            exchange = self.exchanges[asset.exchange]
-            return exchange.order(asset, amount, limit_price,
-                                  stop_price,
-                                  style)
-        except ExchangeRequestError as e:
-            log.warn(
-                'order attempt {}: {}'.format(attempt_index, e)
-            )
-            if attempt_index < self.retry_order:
-                sleep(self.retry_delay)
-                return self._order(
-                    asset, amount, limit_price, stop_price, style,
-                    attempt_index + 1)
-            else:
-                raise ExchangeTransactionError(
-                    transaction_type='order',
-                    attempts=attempt_index,
-                    error=e
-                )
-
-    @api_method
-    @disallowed_in_before_trading_start(OrderInBeforeTradingStart())
-    @expect_types(asset=TradingPair)
-    def order(self,
-              asset,
-              amount,
-              limit_price=None,
-              stop_price=None,
-              style=None):
-        """
-        We use the exchange specific portfolio to place orders.
-        The cumulative portfolio does not contain open orders but exchange
-        portfolios do.
-
-        Parameters
-        ----------
-        asset: TradingPair
-        amount: float
-        limit_price: float
-        stop_price: float
-        style: Style
-        order: Order
-            The catalyst order object or None
-        """
-
-        if self.simulate_orders:
-            order_id = super(ExchangeTradingAlgorithmLive, self).order(
-                asset, amount, limit_price, stop_price, style
-            )
-            log.debug('created a simulated order {}'.format(order_id))
-
-        else:
-            amount, style = self._calculate_order(
-                asset, amount, limit_price, stop_price, style
-            )
-            order_id = self._order(
-                asset, amount, limit_price, stop_price, style
-            )
-
-        if order_id is not None:
-            current_order = None
-            for order in self.blotter.open_orders[asset]:
-                if current_order is None and order.id == order_id:
-                    self.perf_tracker.process_order(order)
-                    current_order = order
-
-            if current_order is not None:
-                return current_order
-
-            else:
-                raise OrphanOrderError(
-                    order_id=order_id,
-                    exchange=asset.exchange
-                )
-        else:
-            log.warn('unable to order {} {} on exchange {}'.format(
-                amount, asset.symbol, asset.exchange))
-            return None
 
     @api_method
     def batch_market_order(self, share_counts):

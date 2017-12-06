@@ -35,8 +35,7 @@ SUPPORTED_EXCHANGES = dict(
 
 
 class CCXT(Exchange):
-    def __init__(self, exchange_name, key, secret, base_currency,
-                 portfolio=None):
+    def __init__(self, exchange_name, key, secret, base_currency):
         log.debug(
             'finding {} in CCXT exchanges:\n{}'.format(
                 exchange_name, ccxt.exchanges
@@ -69,7 +68,6 @@ class CCXT(Exchange):
         self.load_assets()
 
         self.base_currency = base_currency
-        self._portfolio = portfolio
         self.transactions = defaultdict(list)
 
         self.num_candles_limit = 2000
@@ -508,18 +506,7 @@ class CCXT(Exchange):
 
         return orders
 
-    def _get_asset_from_order(self, order_id):
-        open_orders = self.portfolio.open_orders
-        order = next(
-            (open_orders[id] for id in open_orders if id == order_id),
-            None
-        )  # type: Order
-        return order.asset if order is not None else None
-
     def get_order(self, order_id, asset_or_symbol=None):
-        if asset_or_symbol is None and self.portfolio is not None:
-            asset_or_symbol = self._get_asset_from_order(order_id)
-
         if asset_or_symbol is None:
             log.debug(
                 'order not found in memory, the request might fail '
@@ -539,9 +526,6 @@ class CCXT(Exchange):
     def cancel_order(self, order_param, asset_or_symbol=None):
         order_id = order_param.id \
             if isinstance(order_param, Order) else order_param
-
-        if asset_or_symbol is None and self.portfolio is not None:
-            asset_or_symbol = self._get_asset_from_order(order_id)
 
         if asset_or_symbol is None:
             log.debug(

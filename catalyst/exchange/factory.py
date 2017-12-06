@@ -6,8 +6,7 @@ from catalyst.exchange.exchange_utils import get_exchange_auth, \
     get_exchange_folder
 
 
-def get_exchange(exchange_name, base_currency=None, portfolio=None,
-                 must_authenticate=False):
+def get_exchange(exchange_name, base_currency=None, must_authenticate=False):
     exchange_auth = get_exchange_auth(exchange_name)
 
     has_auth = (exchange_auth['key'] != '' and exchange_auth['secret'] != '')
@@ -24,7 +23,6 @@ def get_exchange(exchange_name, base_currency=None, portfolio=None,
         key=exchange_auth['key'],
         secret=exchange_auth['secret'],
         base_currency=base_currency,
-        portfolio=portfolio
     )
 
 

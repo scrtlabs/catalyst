@@ -20,7 +20,6 @@ from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     NoDataAvailableOnExchange, NoValueForField
 from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
     ExchangeLimitOrder, ExchangeStopOrder
-from catalyst.exchange.exchange_portfolio import ExchangePortfolio
 from catalyst.exchange.exchange_utils import get_exchange_symbols, \
     get_frequency, resample_history_df
 from catalyst.finance.order import ORDER_STATUS
@@ -36,7 +35,6 @@ class Exchange:
         self.name = None
         self.assets = []
         self._symbol_maps = [None, None]
-        self._portfolio = None
         self.minute_writer = None
         self.minute_reader = None
         self.base_currency = None
@@ -45,27 +43,6 @@ class Exchange:
         self.max_requests_per_minute = None
         self.request_cpt = None
         self.bundle = ExchangeBundle(self.name)
-
-    @property
-    def positions(self):
-        return self.portfolio.positions
-
-    @property
-    def portfolio(self):
-        """
-        The exchange portfolio
-
-        Returns
-        -------
-        ExchangePortfolio
-        """
-        if self._portfolio is None:
-            self._portfolio = ExchangePortfolio(
-                start_date=pd.Timestamp.utcnow()
-            )
-            self.synchronize_portfolio()
-
-        return self._portfolio
 
     @abstractproperty
     def account(self):
@@ -312,53 +289,6 @@ class Exchange:
 
         """
         pass
-
-    def check_open_orders(self):
-        """
-        Loop through the list of open orders in the Portfolio object.
-        For each executed order found, create a transaction and apply to the
-        Portfolio.
-
-        Returns
-        -------
-        list[Transaction]
-
-        """
-        if self.portfolio.open_orders:
-            for order_id in list(self.portfolio.open_orders):
-                log.debug('found open order: {}'.format(order_id))
-
-                order, executed_price = self.get_order(order_id)
-                log.debug(
-                    'got updated order {} {}'.format(
-                        order, executed_price
-                    )
-                )
-                if order.status == ORDER_STATUS.FILLED:
-                    transaction = Transaction(
-                        asset=order.asset,
-                        amount=order.amount,
-                        dt=pd.Timestamp.utcnow(),
-                        price=executed_price,
-                        order_id=order.id,
-                        commission=order.commission
-                    )
-                    yield order, transaction
-
-                    # self.portfolio.execute_order(order, transaction)
-
-                elif order.status == ORDER_STATUS.CANCELLED:
-                    # self.portfolio.remove_order(order)
-                    yield order, None
-
-                else:
-                    delta = pd.Timestamp.utcnow() - order.dt
-                    log.info(
-                        'order {order_id} still open after {delta}'.format(
-                            order_id=order_id,
-                            delta=delta
-                        )
-                    )
 
     def get_spot_value(self, assets, field, dt=None, data_frequency='minute'):
         """
@@ -668,7 +598,7 @@ class Exchange:
 
         return df
 
-    def synchronize_portfolio(self):
+    def calculate_totals(self, positions=None):
         """
         Update the portfolio cash and position balances based on the
         latest ticker prices.
@@ -677,42 +607,36 @@ class Exchange:
         log.debug('synchronizing portfolio with exchange {}'.format(self.name))
         balances = self.get_balances()
 
-        base_position_available = balances[self.base_currency]['free'] \
+        cash = balances[self.base_currency]['free'] \
             if self.base_currency in balances else None
 
-        if base_position_available is None:
+        if cash is None:
             raise BaseCurrencyNotFoundError(
                 base_currency=self.base_currency,
-                exchange=self.name.title()
+                exchange=self.name
             )
+        log.debug('found base currency balance: {}'.format(cash))
 
-        portfolio = self._portfolio
-        portfolio.cash = base_position_available
-        log.debug('found base currency balance: {}'.format(portfolio.cash))
-
-        if portfolio.starting_cash is None:
-            portfolio.starting_cash = portfolio.cash
-
-        if portfolio.positions:
-            assets = list(portfolio.positions.keys())
+        positions_value = 0.0
+        if positions is not None:
+            assets = set([position.asset for position in positions])
             tickers = self.tickers(assets)
+            log.debug('got tickers for positions: {}'.format(tickers))
 
-            portfolio.positions_value = 0.0
             for asset in tickers:
-                # TODO: convert if the position is not in the base currency
                 ticker = tickers[asset]
-                position = portfolio.positions[asset]
+                positions = [p for p in positions if p.asset == asset]
 
-                position.last_sale_price = ticker['last_price']
-                position.last_sale_date = ticker['last_traded']
+                for position in positions:
+                    position.last_sale_price = ticker['last_price']
+                    position.last_sale_date = ticker['last_traded']
 
-                portfolio.positions_value += \
-                    position.amount * position.last_sale_price
-                portfolio.portfolio_value = \
-                    portfolio.positions_value + portfolio.cash
+                    positions_value += \
+                        position.amount * position.last_sale_price
 
-    def order(self, asset, amount, limit_price=None, stop_price=None,
-              style=None):
+        return cash, positions_value
+
+    def order(self, asset, amount, style):
         """Place an order.
 
         Parameters
@@ -771,22 +695,8 @@ class Exchange:
             )
 
         is_buy = (amount > 0)
+        display_price = style.get_limit_price(is_buy)
 
-        if limit_price is not None and stop_price is not None:
-            style = ExchangeStopLimitOrder(
-                limit_price, stop_price, exchange=self.name
-            )
-
-        elif limit_price is not None:
-            style = ExchangeLimitOrder(limit_price, exchange=self.name)
-
-        elif stop_price is not None:
-            style = ExchangeStopOrder(stop_price, exchange=self.name)
-
-        else:
-            style = MarketOrder(exchange=self.name)
-
-        display_price = limit_price if limit_price is not None else stop_price
         log.debug(
             'issuing {side} order of {amount} {symbol} for {type}: {price}'.format(
                 side='buy' if is_buy else 'sell',
@@ -797,12 +707,7 @@ class Exchange:
             )
         )
 
-        order = self.create_order(asset, amount, is_buy, style)
-        if order:
-            self._portfolio.create_order(order)
-            return order.id
-        else:
-            return None
+        return self.create_order(asset, amount, is_buy, style)
 
     # The methods below must be implemented for each exchange.
     @abstractmethod

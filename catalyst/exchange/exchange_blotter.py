@@ -1,15 +1,18 @@
 from time import sleep
 
+import pandas as pd
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
 from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.exchange_errors import ExchangeRequestError, \
-    ExchangePortfolioDataError
+    ExchangePortfolioDataError, OrphanOrderError, ExchangeTransactionError
 from catalyst.finance.blotter import Blotter
 from catalyst.finance.commission import CommissionModel
+from catalyst.finance.order import ORDER_STATUS
 from catalyst.finance.slippage import SlippageModel
-from catalyst.finance.transaction import create_transaction
+from catalyst.finance.transaction import create_transaction, Transaction
+from catalyst.utils.input_validation import expect_types
 
 log = Logger('exchange_blotter', level=LOG_LEVEL)
 
@@ -127,6 +130,11 @@ class ExchangeBlotter(Blotter):
     def __init__(self, *args, **kwargs):
         self.simulate_orders = kwargs.pop('simulate_orders', False)
 
+        self.exchanges = kwargs.pop('exchanges', None)
+        if not self.exchanges:
+            raise ValueError('ExchangeBlotter must have an `exchanges` '
+                             'attribute.')
+
         super(ExchangeBlotter, self).__init__(*args, **kwargs)
 
         # Using the equity models for now
@@ -139,22 +147,106 @@ class ExchangeBlotter(Blotter):
             TradingPair: TradingPairFeeSchedule()
         }
 
+    def exchange_order(self, asset, amount, style=None, attempt_index=0):
+        try:
+            exchange = self.exchanges[asset.exchange]
+            return exchange.order(
+                asset, amount, style
+            )
+        except ExchangeRequestError as e:
+            log.warn(
+                'order attempt {}: {}'.format(attempt_index, e)
+            )
+            if attempt_index < self.retry_order:
+                sleep(self.retry_delay)
+
+                return self.exchange_order(
+                    asset, amount, style, attempt_index + 1
+                )
+            else:
+                raise ExchangeTransactionError(
+                    transaction_type='order',
+                    attempts=attempt_index,
+                    error=e
+                )
+
+    @expect_types(asset=TradingPair)
+    def order(self, asset, amount, style, order_id=None):
+        if self.simulate_orders:
+            return super(ExchangeBlotter, self).order(
+                asset, amount, style, order_id
+            )
+
+        else:
+            order = self.exchange_order(
+                asset, amount, style
+            )
+
+            self.open_orders[order.asset].append(order)
+            self.orders[order.id] = order
+            self.new_orders.append(order)
+
+            return order.id
+
+    def check_open_orders(self):
+        """
+        Loop through the list of open orders in the Portfolio object.
+        For each executed order found, create a transaction and apply to the
+        Portfolio.
+
+        Returns
+        -------
+        list[Transaction]
+
+        """
+        for asset in self.open_orders:
+            exchange = self.exchanges[asset.exchange]
+
+            for order in self.open_orders[asset]:
+                log.debug('found open order: {}'.format(order.id))
+
+                order, executed_price = exchange.get_order(order.id, asset)
+                log.debug(
+                    'got updated order {} {}'.format(
+                        order, executed_price
+                    )
+                )
+                if order.status == ORDER_STATUS.FILLED:
+                    transaction = Transaction(
+                        asset=order.asset,
+                        amount=order.amount,
+                        dt=pd.Timestamp.utcnow(),
+                        price=executed_price,
+                        order_id=order.id,
+                        commission=order.commission
+                    )
+                    yield order, transaction
+
+                elif order.status == ORDER_STATUS.CANCELLED:
+                    yield order, None
+
+                else:
+                    delta = pd.Timestamp.utcnow() - order.dt
+                    log.info(
+                        'order {order_id} still open after {delta}'.format(
+                            order_id=order.id,
+                            delta=delta
+                        )
+                    )
+
     def get_exchange_transactions(self, attempt_index=0):
         closed_orders = []
         transactions = []
         commissions = []
 
         try:
-            for exchange_name in self.exchanges:
-                exchange = self.exchanges[exchange_name]
-                for order, txn in exchange.check_open_orders():
+            for order, txn in self.check_open_orders():
+                order.dt = txn.dt
 
-                    order.dt = txn.dt
+                transactions.append(txn)
 
-                    transactions.append(txn)
-
-                    if not order.open:
-                        closed_orders.append(order)
+                if not order.open:
+                    closed_orders.append(order)
 
             return transactions, commissions, closed_orders
 
@@ -165,6 +257,7 @@ class ExchangeBlotter(Blotter):
             if attempt_index < self.retry_check_open_orders:
                 sleep(self.retry_delay)
                 return self.get_exchange_transactions(attempt_index + 1)
+
             else:
                 raise ExchangePortfolioDataError(
                     data_type='order-status',

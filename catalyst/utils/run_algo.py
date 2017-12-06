@@ -152,22 +152,9 @@ def _run(handle_data,
     exchanges = dict()
     for exchange_name in exchange_list:
 
-        # Looking for the portfolio from the cache first
-        portfolio = get_algo_object(
-            algo_name=algo_namespace,
-            key='portfolio_{}'.format(exchange_name),
-            environ=environ
-        )
-
-        if portfolio is None:
-            portfolio = ExchangePortfolio(
-                start if start is not None else pd.Timestamp.utcnow()
-            )
-
         exchanges[exchange_name] = get_exchange(
             exchange_name=exchange_name,
             base_currency=base_currency,
-            portfolio=portfolio,
             must_authenticate=live,
         )
 

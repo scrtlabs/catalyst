@@ -276,5 +276,5 @@ if __name__ == '__main__':
             algo_namespace=NAMESPACE,
             base_currency='eth',
             live_graph=False,
-            simulate_orders=True
+            simulate_orders=False
         )

@@ -631,3 +631,14 @@ def from_ms_timestamp(ms):
 
 def get_epoch():
     return pd.to_datetime('1970-1-1', utc=True)
+
+
+def group_assets_by_exchange(assets):
+    exchange_assets = dict()
+    for asset in assets:
+        if asset.exchange not in exchange_assets:
+            exchange_assets[asset.exchange] = list()
+
+        exchange_assets[asset.exchange].append(asset)
+
+    return exchange_assets
