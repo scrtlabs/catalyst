@@ -9,7 +9,7 @@ from catalyst.exchange.stats_utils import get_pretty_stats, \
 
 def initialize(context):
     print('initializing')
-    context.asset = symbol('neo_usd')
+    context.asset = symbol('neo_eth')
     context.base_price = None
 
 
@@ -19,17 +19,14 @@ def handle_data(context, data):
     price = data.current(context.asset, 'close')
     print('got price {price}'.format(price=price))
 
-    try:
-        prices = data.history(
-            context.asset,
-            fields='price',
-            bar_count=14,
-            frequency='15T'
-        )
-        rsi = talib.RSI(prices.values, timeperiod=14)[-1]
-        print('got rsi: {}'.format(rsi))
-    except Exception as e:
-        print(e)
+    prices = data.history(
+        context.asset,
+        fields='price',
+        bar_count=20,
+        frequency='15T'
+    )
+    rsi = talib.RSI(prices.values, timeperiod=14)[-1]
+    print('got rsi: {}'.format(rsi))
 
     # If base_price is not set, we use the current value. This is the
     # price at the first bar which we reference to calculate price_change.
@@ -126,8 +123,9 @@ run_algorithm(
 #     initialize=initialize,
 #     handle_data=handle_data,
 #     analyze=None,
-#     exchange_name='poloniex',
+#     exchange_name='binance',
 #     live=True,
 #     algo_namespace='simple_loop',
 #     base_currency='eth',
-#     live_graph=False
+#     live_graph=False,
+# )

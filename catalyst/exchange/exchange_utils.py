@@ -8,6 +8,7 @@ from datetime import date, datetime
 
 import pandas as pd
 from catalyst.assets._assets import TradingPair
+from six import string_types
 from six.moves.urllib import request
 
 from catalyst.constants import DATE_FORMAT, SYMBOLS_URL
@@ -100,6 +101,20 @@ def download_exchange_symbols(exchange_name, environ=None):
     return response
 
 
+def symbols_parser(asset_def):
+    for key, value in asset_def.items():
+        match = isinstance(value, string_types) \
+                and re.search(r'(\d{4}-\d{2}-\d{2})', value)
+
+        if match:
+            try:
+                asset_def[key] = pd.to_datetime(value, utc=True)
+            except ValueError:
+                pass
+
+    return asset_def
+
+
 def get_exchange_symbols(exchange_name, is_local=False, environ=None):
     """
     The de-serialized content of the exchange's symbols.json.
@@ -125,10 +140,10 @@ def get_exchange_symbols(exchange_name, is_local=False, environ=None):
     if os.path.isfile(filename):
         with open(filename) as data_file:
             try:
-                data = json.load(data_file)
+                data = json.load(data_file, object_hook=symbols_parser)
                 return data
 
-            except ValueError:
+            except ValueError as e:
                 return dict()
     else:
         raise ExchangeSymbolsNotFound(
@@ -571,3 +586,44 @@ def resample_history_df(df, freq, field):
 
     resampled_df = df.resample(freq).agg(agg)
     return resampled_df
+
+
+def mixin_market_params(exchange_name, params, market):
+    """
+    Applies a CCXT market dict to parameters of TradingPair init.
+
+    Parameters
+    ----------
+    params: dict[Object]
+    market: dict[Object]
+
+    Returns
+    -------
+
+    """
+    # TODO: make this more externalized / configurable
+    if 'lot' in market:
+        params['min_trade_size'] = market['lot']
+
+    if exchange_name == 'bitfinex':
+        params['maker'] = 0.001
+        params['taker'] = 0.002
+
+    elif 'maker' in market and 'taker' in market \
+            and market['maker'] is not None and market['taker'] is not None:
+        params['maker'] = market['maker']
+        params['taker'] = market['taker']
+
+    else:
+        # TODO: default commission, make configurable
+        params['maker'] = 0.0015
+        params['taker'] = 0.0025
+
+    info = market['info'] if 'info' in market else None
+    if info:
+        if 'minimum_order_size' in info:
+            params['min_trade_size'] = float(info['minimum_order_size'])
+
+
+def from_ms_timestamp(ms):
+    return pd.to_datetime(ms, unit='ms', utc=True)

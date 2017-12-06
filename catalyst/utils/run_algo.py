@@ -11,9 +11,7 @@ import pandas as pd
 
 from catalyst.data.bundles import load
 from catalyst.data.data_portal import DataPortal
-from catalyst.exchange.bittrex.bittrex import Bittrex
-from catalyst.exchange.bitfinex.bitfinex import Bitfinex
-from catalyst.exchange.poloniex.poloniex import Poloniex
+from catalyst.exchange.factory import get_exchange
 
 try:
     from pygments import highlight
@@ -39,11 +37,9 @@ from catalyst.exchange.exchange_data_portal import DataPortalExchangeLive, \
 from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
 from catalyst.exchange.exchange_portfolio import ExchangePortfolio
 from catalyst.exchange.exchange_errors import (
-    ExchangeRequestError, ExchangeAuthEmpty,
-    ExchangeRequestErrorTooManyAttempts,
-    BaseCurrencyNotFoundError, ExchangeNotFoundError)
-from catalyst.exchange.exchange_utils import get_exchange_auth, \
-    get_algo_object, get_exchange_folder
+    ExchangeRequestError, ExchangeRequestErrorTooManyAttempts,
+    BaseCurrencyNotFoundError)
+from catalyst.exchange.exchange_utils import get_algo_object
 from logbook import Logger
 
 from catalyst.constants import LOG_LEVEL
@@ -94,7 +90,8 @@ def _run(handle_data,
          exchange,
          algo_namespace,
          base_currency,
-         live_graph):
+         live_graph,
+         simulate_orders):
     """Run a backtest for the given algorithm.
 
     This is shared between the cli and :func:`catalyst.run_algo`.
@@ -164,42 +161,15 @@ def _run(handle_data,
 
         if portfolio is None:
             portfolio = ExchangePortfolio(
-                start_date=pd.Timestamp.utcnow()
+                start if start is not None else pd.Timestamp.utcnow()
             )
 
-        # This corresponds to the json file containing api token info
-        exchange_auth = get_exchange_auth(exchange_name)
-
-        if live and (exchange_auth['key'] == '' \
-                             or exchange_auth['secret'] == ''):
-            raise ExchangeAuthEmpty(
-                exchange=exchange_name.title(),
-                filename=os.path.join(
-                    get_exchange_folder(exchange_name, environ), 'auth.json'))
-
-        if exchange_name == 'bitfinex':
-            exchanges[exchange_name] = Bitfinex(
-                key=exchange_auth['key'],
-                secret=exchange_auth['secret'],
-                base_currency=base_currency,
-                portfolio=portfolio
-            )
-        elif exchange_name == 'bittrex':
-            exchanges[exchange_name] = Bittrex(
-                key=exchange_auth['key'],
-                secret=exchange_auth['secret'],
-                base_currency=base_currency,
-                portfolio=portfolio
-            )
-        elif exchange_name == 'poloniex':
-            exchanges[exchange_name] = Poloniex(
-                key=exchange_auth['key'],
-                secret=exchange_auth['secret'],
-                base_currency=base_currency,
-                portfolio=portfolio
-            )
-        else:
-            raise ExchangeNotFoundError(exchange_name=exchange_name)
+        exchanges[exchange_name] = get_exchange(
+            exchange_name=exchange_name,
+            base_currency=base_currency,
+            portfolio=portfolio,
+            must_authenticate=live,
+        )
 
     open_calendar = get_calendar('OPEN')
 
@@ -263,7 +233,7 @@ def _run(handle_data,
                     )
 
             if base_currency in balances:
-                base_currency_available = balances[base_currency]
+                base_currency_available = balances[base_currency]['free']
                 log.info(
                     'base currency available in the account: {} {}'.format(
                         base_currency_available, base_currency
@@ -308,7 +278,8 @@ def _run(handle_data,
             ExchangeTradingAlgorithmLive,
             exchanges=exchanges,
             algo_namespace=algo_namespace,
-            live_graph=live_graph
+            live_graph=live_graph,
+            simulate_orders=simulate_orders
         )
     elif exchanges:
         # Removed the existing Poloniex fork to keep things simple
@@ -470,6 +441,7 @@ def run_algorithm(initialize,
                   base_currency=None,
                   algo_namespace=None,
                   live_graph=False,
+                  simulate_orders=True,
                   output=os.devnull):
     """Run a trading algorithm.
 
@@ -591,5 +563,6 @@ def run_algorithm(initialize,
         exchange=exchange_name,
         algo_namespace=algo_namespace,
         base_currency=base_currency,
-        live_graph=live_graph
+        live_graph=live_graph,
+        simulate_orders=simulate_orders
     )

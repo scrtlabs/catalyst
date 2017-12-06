@@ -142,8 +142,10 @@ def load_crypto_market_data(trading_day=None, trading_days=None,
     if exchange is None:
         # This is exceptional, since placing the import at the module scope
         #  breaks things and it's only needed here
-        from catalyst.exchange.poloniex.poloniex import Poloniex
-        exchange = Poloniex('', '', '')
+        from catalyst.exchange.factory import get_exchange
+        exchange = get_exchange(
+            exchange_name='poloniex', base_currency='usdt'
+        )
 
     benchmark_asset = exchange.get_asset(bm_symbol)
 

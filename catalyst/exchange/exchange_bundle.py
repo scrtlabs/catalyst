@@ -1,5 +1,4 @@
 import os
-import os
 import shutil
 from datetime import datetime, timedelta
 from functools import partial
@@ -28,10 +27,9 @@ from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
 from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
     TempBundleNotFoundError, \
     NoDataAvailableOnExchange, \
-    PricingDataNotLoadedError, DataCorruptionError, ExchangeSymbolsNotFound, \
-    PricingDataValueError
+    PricingDataNotLoadedError, DataCorruptionError, PricingDataValueError
 from catalyst.exchange.exchange_utils import get_exchange_folder, \
-    get_exchange_symbols, save_exchange_symbols
+    save_exchange_symbols, mixin_market_params
 from catalyst.utils.cli import maybe_show_progress
 from catalyst.utils.paths import ensure_directory
 
@@ -667,12 +665,11 @@ class ExchangeBundle:
 
         """
         log.info('ingesting csv file: {}'.format(path))
-        try:
-            symbols_def = get_exchange_symbols(
-                self.exchange_name, is_local=True
-            )
-        except ExchangeSymbolsNotFound:
-            symbols_def = dict()
+
+        if self.exchange is None:
+            # Avoid circular dependencies
+            from catalyst.exchange.factory import get_exchange
+            self.exchange = get_exchange(self.exchange_name)
 
         problems = []
         df = pd.read_csv(
@@ -705,24 +702,40 @@ class ExchangeBundle:
             end_dt = df.index.get_level_values(1).max()
             end_dt_key = 'end_{}'.format(data_frequency)
 
-            if symbol is symbols_def:
-                symbol_def = symbols_def[symbol]
+            market = self.exchange.get_market(symbol)
+            if market is None:
+                raise ValueError('symbol not available in the exchange.')
 
-                start_dt = symbol_def['start_date'] \
-                    if symbol_def['start_date'] < start_dt else start_dt
+            params = dict(
+                exchange=self.exchange.name,
+                data_source='local',
+                exchange_symbol=market['id'],
+            )
+            mixin_market_params(self.exchange_name, params, market)
 
-                end_dt = symbol_def[end_dt_key] \
-                    if symbol_def[end_dt_key] > end_dt else end_dt
+            asset_def = self.exchange.get_asset_def(market, True)
+            if asset_def is not None:
+                params['symbol'] = asset_def['symbol']
 
-                end_daily = end_dt \
-                    if data_frequency == 'daily' else symbol_def['end_daily']
+                params['start_date'] = asset_def['start_date'] \
+                    if asset_def['start_date'] < start_dt else start_dt
 
-                end_minute = end_dt \
-                    if data_frequency == 'minute' else symbol_def['end_minute']
+                params['end_date'] = asset_def[end_dt_key] \
+                    if asset_def[end_dt_key] > end_dt else end_dt
+
+                params['end_daily'] = end_dt \
+                    if data_frequency == 'daily' else asset_def['end_daily']
+
+                params['end_minute'] = end_dt \
+                    if data_frequency == 'minute' else asset_def['end_minute']
 
             else:
-                end_daily = end_dt if data_frequency == 'daily' else 'N/A'
-                end_minute = end_dt if data_frequency == 'minute' else 'N/A'
+                params['symbol'] = self.exchange.get_catalyst_symbol(market)
+
+                params['end_daily'] = end_dt \
+                    if data_frequency == 'daily' else 'N/A'
+                params['end_minute'] = end_dt \
+                    if data_frequency == 'minute' else 'N/A'
 
             if min_start_dt is None or start_dt < min_start_dt:
                 min_start_dt = start_dt
@@ -730,19 +743,8 @@ class ExchangeBundle:
             if max_end_dt is None or end_dt > max_end_dt:
                 max_end_dt = end_dt
 
-            asset = TradingPair(
-                symbol=symbol,
-                exchange=self.exchange_name,
-                start_date=start_dt,
-                end_date=end_dt,
-                leverage=0,  # TODO: add as an optional column
-                asset_name=symbol,
-                min_trade_size=0,  # TODO: add as an optional column
-                end_daily=end_daily,
-                end_minute=end_minute,
-                exchange_symbol=symbol
-            )
-            assets[symbol] = asset
+            asset = TradingPair(**params)
+            assets[market['id']] = asset
 
         save_exchange_symbols(self.exchange_name, assets, True)
 

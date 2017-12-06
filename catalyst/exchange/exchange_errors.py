@@ -240,3 +240,7 @@ class NoDataAvailableOnExchange(ZiplineError):
         'Requested data for trading pair {symbol} is not available on exchange {exchange} '
         'in `{data_frequency}` frequency at this time. '
         'Check `http://enigma.co/catalyst/status` for market coverage.').strip()
+
+
+class NoValueForField(ZiplineError):
+    msg = ('Value not found for field: {field}.').strip()

@@ -7,7 +7,8 @@ import logbook
     For example, if you want to see the DEBUG messages, run:
     $ export CATALYST_LOG_LEVEL=10
 '''
-LOG_LEVEL = int(os.environ.get('CATALYST_LOG_LEVEL', logbook.INFO))
+# LOG_LEVEL = int(os.environ.get('CATALYST_LOG_LEVEL', logbook.INFO))
+LOG_LEVEL = logbook.DEBUG
 
 SYMBOLS_URL = 'https://s3.amazonaws.com/enigmaco/catalyst-exchanges/' \
               '{exchange}/symbols.json'

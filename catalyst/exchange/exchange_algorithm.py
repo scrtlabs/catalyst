@@ -289,6 +289,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
     def __init__(self, *args, **kwargs):
         self.algo_namespace = kwargs.pop('algo_namespace', None)
         self.live_graph = kwargs.pop('live_graph', None)
+        self.simulate_orders = kwargs.pop('simulate_orders', None)
 
         self._clock = None
         self.frame_stats = deque(maxlen=60)

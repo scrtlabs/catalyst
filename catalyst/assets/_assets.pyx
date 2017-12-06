@@ -396,11 +396,15 @@ cdef class Future(Asset):
 
 cdef class TradingPair(Asset):
     cdef readonly float leverage
-    cdef readonly object market_currency
+    cdef readonly object quote_currency
     cdef readonly object base_currency
     cdef readonly object end_daily
     cdef readonly object end_minute
     cdef readonly object exchange_symbol
+    cdef readonly float maker
+    cdef readonly float taker
+    cdef readonly int trading_state
+    cdef readonly object data_source
 
     _kwargnames = frozenset({
         'sid',
@@ -413,12 +417,16 @@ cdef class TradingPair(Asset):
         'exchange',
         'exchange_full',
         'leverage',
-        'market_currency',
+        'quote_currency',
         'base_currency',
         'end_daily',
         'end_minute',
         'exchange_symbol',
-        'min_trade_size'
+        'min_trade_size',
+        'maker',
+        'taker',
+        'trading_state',
+        'data_source'
     })
     def __init__(self,
                  object symbol,
@@ -434,10 +442,14 @@ cdef class TradingPair(Asset):
                  object first_traded=None,
                  object auto_close_date=None,
                  object exchange_full=None,
-                 object min_trade_size=None):
+                 float min_trade_size=0.0001,
+                 float maker=0.0015,
+                 float taker=0.0025,
+                 int trading_state=0,
+                 object data_source='catalyst'):
         """
         Replicates the Asset constructor with some built-in conventions
-        and a new 'leverage' attribute.
+        and adds properties for leverage and fees.
 
         Symbol
         ------
@@ -469,8 +481,6 @@ cdef class TradingPair(Asset):
         highest volume and market cap generally benefit from high leverage.
         New currencies from ICO generally cannot be leveraged.
 
-        The leverage value is either None or and integer.
-
         Leverage allows you to open a larger position with a smaller amount
         of funds. For example, if you open a $5,000 position in BTC/USD
         with 5:1 leverage, only one-fifth of this amount, or $1000, will be
@@ -479,6 +489,11 @@ cdef class TradingPair(Asset):
         position with 2:1 leverage, $2,500 of your balance will be tied to
         the position. If you open with 1:1 leverage, $5,000 of your balance
         will be tied to the position.
+
+        Fees
+        ----
+        Exchanges generally charge a taker (taking from the order book) or
+        maker (adding to the order book) fee.
 
         :param symbol:
         :param exchange:
@@ -494,11 +509,14 @@ cdef class TradingPair(Asset):
         :param auto_close_date:
         :param exchange_full:
         :param min_trade_size:
+        :param maker:
+        :param taker:
+        :param data_source
         """
 
         symbol = symbol.lower()
         try:
-            self.market_currency, self.base_currency = symbol.split('_')
+            self.base_currency, self.quote_currency = symbol.split('_')
         except Exception as e:
             raise InvalidSymbolError(symbol=symbol, error=e)
 
@@ -512,7 +530,7 @@ cdef class TradingPair(Asset):
             asset_name = ' / '.join(symbol.split('_')).upper()
 
         if start_date is None:
-            start_date = pd.Timestamp.utcnow()
+            start_date = pd.to_datetime('2009-1-1', utc=True)
 
         if end_date is None:
             end_date = pd.Timestamp.utcnow() + timedelta(days=365)
@@ -527,19 +545,23 @@ cdef class TradingPair(Asset):
             first_traded=first_traded,
             auto_close_date=auto_close_date,
             exchange_full=exchange_full,
-            min_trade_size=min_trade_size
+            min_trade_size=min_trade_size,
         )
 
+        self.maker = maker
+        self.taker = taker
         self.leverage = leverage
         self.end_daily = end_daily
         self.end_minute = end_minute
         self.exchange_symbol = exchange_symbol
+        self.trading_state = trading_state
+        self.data_source = data_source
 
     def __repr__(self):
         return 'Trading Pair {symbol}({sid}) Exchange: {exchange}, ' \
                'Introduced On: {start_date}, ' \
-               'Market Currency: {market_currency}, ' \
                'Base Currency: {base_currency}, ' \
+               'Quote Currency: {quote_currency}, ' \
                'Exchange Leverage: {leverage}, ' \
                'Minimum Trade Size: {min_trade_size} ' \
                'Last daily ingestion: {end_daily} ' \
@@ -548,7 +570,7 @@ cdef class TradingPair(Asset):
             sid=self.sid,
             exchange=self.exchange,
             start_date=self.start_date,
-            market_currency=self.market_currency,
+            quote_currency=self.quote_currency,
             base_currency=self.base_currency,
             leverage=self.leverage,
             min_trade_size=self.min_trade_size,
@@ -578,7 +600,7 @@ cdef class TradingPair(Asset):
         -------
         boolean: whether the asset's exchange is open at the given minute.
         """
-        #TODO: consider implementing to spot holds
+        #TODO: make more dymanic to catch holds
         return True
 
     cpdef __reduce__(self):

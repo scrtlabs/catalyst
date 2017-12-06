@@ -80,3 +80,6 @@ empyrical==0.2.1
 
 tables==3.3.0
 
+#Catalyst dependencies
+ccxt==1.10.251
+
