@@ -217,6 +217,7 @@ class PricingDataNotLoadedError(ZiplineError):
            '{data_frequency} -i {symbol_list}`. See catalyst documentation '
            'for details.').strip()
 
+
 class PricingDataValueError(ZiplineError):
     msg = ('Unable to retrieve pricing data for {exchange} {symbol} '
            '[{start_dt} - {end_dt}]: {error}').strip()
@@ -244,3 +245,9 @@ class NoDataAvailableOnExchange(ZiplineError):
 
 class NoValueForField(ZiplineError):
     msg = ('Value not found for field: {field}.').strip()
+
+
+class OrderTypeNotSupported(ZiplineError):
+    msg = (
+        'Order type `{order_type}` not currencly supported by Catalyst. '
+        'Please use `limit` or `market` orders only.').strip()

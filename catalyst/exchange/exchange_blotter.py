@@ -1,7 +1,11 @@
+from time import sleep
+
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
 from catalyst.constants import LOG_LEVEL
+from catalyst.exchange.exchange_errors import ExchangeRequestError, \
+    ExchangePortfolioDataError
 from catalyst.finance.blotter import Blotter
 from catalyst.finance.commission import CommissionModel
 from catalyst.finance.slippage import SlippageModel
@@ -121,6 +125,8 @@ class TradingPairFixedSlippage(SlippageModel):
 
 class ExchangeBlotter(Blotter):
     def __init__(self, *args, **kwargs):
+        self.simulate_orders = kwargs.pop('simulate_orders', False)
+
         super(ExchangeBlotter, self).__init__(*args, **kwargs)
 
         # Using the equity models for now
@@ -132,3 +138,43 @@ class ExchangeBlotter(Blotter):
         self.commission_models = {
             TradingPair: TradingPairFeeSchedule()
         }
+
+    def get_exchange_transactions(self, attempt_index=0):
+        closed_orders = []
+        transactions = []
+        commissions = []
+
+        try:
+            for exchange_name in self.exchanges:
+                exchange = self.exchanges[exchange_name]
+                for order, txn in exchange.check_open_orders():
+
+                    order.dt = txn.dt
+
+                    transactions.append(txn)
+
+                    if not order.open:
+                        closed_orders.append(order)
+
+            return transactions, commissions, closed_orders
+
+        except ExchangeRequestError as e:
+            log.warn(
+                'check open orders attempt {}: {}'.format(attempt_index, e)
+            )
+            if attempt_index < self.retry_check_open_orders:
+                sleep(self.retry_delay)
+                return self.get_exchange_transactions(attempt_index + 1)
+            else:
+                raise ExchangePortfolioDataError(
+                    data_type='order-status',
+                    attempts=attempt_index,
+                    error=e
+                )
+
+    def get_transactions(self, bar_data):
+        if self.simulate_orders:
+            return super(ExchangeBlotter, self).get_transactions(bar_data)
+
+        else:
+            return self.get_exchange_transactions()

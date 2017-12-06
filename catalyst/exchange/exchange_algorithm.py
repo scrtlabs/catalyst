@@ -32,7 +32,7 @@ from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     ExchangePortfolioDataError,
     ExchangeTransactionError,
-    OrphanOrderError)
+    OrphanOrderError, OrderTypeNotSupported)
 from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
     ExchangeLimitOrder, ExchangeStopOrder
 from catalyst.exchange.exchange_utils import save_algo_object, get_algo_object, \
@@ -63,8 +63,71 @@ class ExchangeAlgorithmExecutor(AlgorithmSimulator):
 class ExchangeTradingAlgorithmBase(TradingAlgorithm):
     def __init__(self, *args, **kwargs):
         self.exchanges = kwargs.pop('exchanges', None)
+        self.simulate_orders = kwargs.pop('simulate_orders', None)
 
         super(ExchangeTradingAlgorithmBase, self).__init__(*args, **kwargs)
+
+        if self.simulate_orders is None \
+                and self.sim_params.arena == 'backtest':
+            self.simulate_orders = True
+
+        self.blotter = ExchangeBlotter(
+            data_frequency=self.data_frequency,
+            # Default to NeverCancel in catalyst
+            cancel_policy=self.cancel_policy,
+            simulate_orders=self.simulate_orders
+        )
+
+    @staticmethod
+    def __convert_order_params_for_blotter(limit_price, stop_price, style):
+        """
+        Helper method for converting deprecated limit_price and stop_price
+        arguments into ExecutionStyle instances.
+
+        This function assumes that either style == None or (limit_price,
+        stop_price) == (None, None).
+        """
+        if stop_price:
+            raise OrderTypeNotSupported(order_type='stop')
+
+        if style:
+            if limit_price is not None:
+                raise ValueError(
+                    'An order style and a limit price was included in the '
+                    'order. Please pick one to avoid any possible conflict.'
+                )
+
+            # Currently limiting order types or limit and market to
+            # be in-line with CXXT and many exchanges. We'll consider
+            # adding more order types in the future.
+            if not isinstance(style, ExchangeLimitOrder) or \
+                    not isinstance(style, MarketOrder):
+                raise OrderTypeNotSupported(
+                    order_type=style.__class__.__name__
+                )
+
+            return style
+
+        if limit_price:
+            return ExchangeLimitOrder(limit_price)
+        else:
+            return MarketOrder()
+
+    def _calculate_order(self, asset, amount,
+                         limit_price=None, stop_price=None, style=None):
+        # Raises a ZiplineError if invalid parameters are detected.
+        self.validate_order_params(asset,
+                                   amount,
+                                   limit_price,
+                                   stop_price,
+                                   style)
+
+        # Convert deprecated limit_price and stop_price parameters to use
+        # ExecutionStyle objects.
+        style = self.__convert_order_params_for_blotter(limit_price,
+                                                        stop_price,
+                                                        style)
+        return amount, style
 
     def round_order(self, amount, asset):
         """
@@ -204,49 +267,7 @@ class ExchangeTradingAlgorithmBacktest(ExchangeTradingAlgorithmBase):
         super(ExchangeTradingAlgorithmBacktest, self).__init__(*args, **kwargs)
 
         self.frame_stats = list()
-        self.blotter = ExchangeBlotter(
-            data_frequency=self.data_frequency,
-            # Default to NeverCancel in catalyst
-            cancel_policy=self.cancel_policy,
-        )
         log.info('initialized trading algorithm in backtest mode')
-
-    def _calculate_order(self, asset, amount,
-                         limit_price=None, stop_price=None, style=None):
-        # Raises a ZiplineError if invalid parameters are detected.
-        self.validate_order_params(asset,
-                                   amount,
-                                   limit_price,
-                                   stop_price,
-                                   style)
-
-        # Convert deprecated limit_price and stop_price parameters to use
-        # ExecutionStyle objects.
-        style = self.__convert_order_params_for_blotter(limit_price,
-                                                        stop_price,
-                                                        style)
-        return amount, style
-
-    @staticmethod
-    def __convert_order_params_for_blotter(limit_price, stop_price, style):
-        """
-        Helper method for converting deprecated limit_price and stop_price
-        arguments into ExecutionStyle instances.
-
-        This function assumes that either style == None or (limit_price,
-        stop_price) == (None, None).
-        """
-        if style:
-            assert (limit_price, stop_price) == (None, None)
-            return style
-        if limit_price and stop_price:
-            return ExchangeStopLimitOrder(limit_price, stop_price)
-        if limit_price:
-            return ExchangeLimitOrder(limit_price)
-        if stop_price:
-            return ExchangeStopOrder(stop_price)
-        else:
-            return MarketOrder()
 
     def is_last_frame_of_day(self, data):
         # TODO: adjust here to support more intervals
@@ -289,7 +310,6 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
     def __init__(self, *args, **kwargs):
         self.algo_namespace = kwargs.pop('algo_namespace', None)
         self.live_graph = kwargs.pop('live_graph', None)
-        self.simulate_orders = kwargs.pop('simulate_orders', None)
 
         self._clock = None
         self.frame_stats = deque(maxlen=60)
@@ -416,16 +436,6 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         return self.trading_client.transform()
 
     def updated_portfolio(self):
-        """
-        We skip the entire performance tracker business and update the
-        portfolio directly.
-
-        Returns
-        -------
-        ExchangePortfolio
-
-        """
-        # TODO: build cumulative portfolio
         return self.perf_tracker.get_portfolio(False)
 
     def updated_account(self):
@@ -450,6 +460,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                         last_sale_date=position.last_sale_date,
                         last_sale_price=position.last_sale_price
                     )
+
         except ExchangeRequestError as e:
             log.warn(
                 'update portfolio attempt {}: {}'.format(attempt_index, e)
@@ -460,30 +471,6 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             else:
                 raise ExchangePortfolioDataError(
                     data_type='update-portfolio',
-                    attempts=attempt_index,
-                    error=e
-                )
-
-    def _check_open_orders(self, attempt_index=0):
-        try:
-            orders = list()
-            for exchange_name in self.exchanges:
-                exchange = self.exchanges[exchange_name]
-                exchange_orders = exchange.check_open_orders()
-
-                orders += exchange_orders
-
-            return orders
-        except ExchangeRequestError as e:
-            log.warn(
-                'check open orders attempt {}: {}'.format(attempt_index, e)
-            )
-            if attempt_index < self.retry_check_open_orders:
-                sleep(self.retry_delay)
-                return self._check_open_orders(attempt_index + 1)
-            else:
-                raise ExchangePortfolioDataError(
-                    data_type='order-status',
                     attempts=attempt_index,
                     error=e
                 )
@@ -577,14 +564,19 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         if not self.is_running:
             return
 
-        self._synchronize_portfolio()
+        new_transactions, new_commissions, closed_orders = \
+            self.blotter.get_transactions(data)
 
-        transactions = self._check_open_orders()
-        if len(transactions) > 0:
-            for transaction in transactions:
-                self.perf_tracker.process_transaction(transaction)
+        self.blotter.prune_orders(closed_orders)
 
-            self.perf_tracker.update_performance()
+        for transaction in new_transactions:
+            self.perf_tracker.process_transaction(transaction)
+
+            # since this order was modified, record it
+            order = self.blotter.orders[transaction.order_id]
+            self.perf_tracker.process_order(order)
+
+        self.perf_tracker.update_performance()
 
         if self._handle_data:
             self._handle_data(self, data)
@@ -713,25 +705,35 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         order: Order
             The catalyst order object or None
         """
-        amount, style = self._calculate_order(asset, amount,
-                                              limit_price, stop_price,
-                                              style)
 
-        order_id = self._order(asset, amount, limit_price, stop_price, style)
+        if self.simulate_orders:
+            order_id = super(ExchangeTradingAlgorithmLive, self).order(
+                asset, amount, limit_price, stop_price, style
+            )
+            log.debug('created a simulated order {}'.format(order_id))
 
-        exchange = self.exchanges[asset.exchange]
-        exchange_portfolio = exchange.portfolio
+        else:
+            amount, style = self._calculate_order(
+                asset, amount, limit_price, stop_price, style
+            )
+            order_id = self._order(
+                asset, amount, limit_price, stop_price, style
+            )
+
         if order_id is not None:
+            current_order = None
+            for order in self.blotter.open_orders[asset]:
+                if current_order is None and order.id == order_id:
+                    self.perf_tracker.process_order(order)
+                    current_order = order
 
-            if order_id in exchange_portfolio.open_orders:
-                order = exchange_portfolio.open_orders[order_id]
-                self.perf_tracker.process_order(order)
-                return order
+            if current_order is not None:
+                return current_order
 
             else:
                 raise OrphanOrderError(
                     order_id=order_id,
-                    exchange=exchange.name
+                    exchange=asset.exchange
                 )
         else:
             log.warn('unable to order {} {} on exchange {}'.format(

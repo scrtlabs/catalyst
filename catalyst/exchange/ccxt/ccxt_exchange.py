@@ -3,6 +3,7 @@ from collections import defaultdict
 
 import ccxt
 import pandas as pd
+import six
 from ccxt import ExchangeNotAvailable
 from six import string_types
 
@@ -19,7 +20,7 @@ from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
     ExchangeSymbolsNotFound, ExchangeRequestError, InvalidOrderStyle, \
     ExchangeNotFoundError
 from catalyst.exchange.exchange_utils import mixin_market_params, \
-    from_ms_timestamp
+    from_ms_timestamp, get_epoch
 
 log = Logger('CCXT', level=LOG_LEVEL)
 
@@ -182,33 +183,48 @@ class CCXT(Exchange):
 
     def get_candles(self, freq, assets, bar_count=None, start_dt=None,
                     end_dt=None):
+        is_single = (isinstance(assets, TradingPair))
+        if is_single:
+            assets = [assets]
+
         symbols = self.get_symbols(assets)
+
         timeframe = self.get_timeframe(freq)
-        delta = start_dt - pd.to_datetime('1970-1-1', utc=True)
+        delta = start_dt - get_epoch()
         ms = int(delta.total_seconds()) * 1000
 
         candles = dict()
         for asset in assets:
-            ohlcvs = self.api.fetch_ohlcv(
-                symbol=symbols[0],
-                timeframe=timeframe,
-                since=ms,
-                limit=bar_count,
-                params={}
-            )
+            try:
+                ohlcvs = self.api.fetch_ohlcv(
+                    symbol=symbols[0],
+                    timeframe=timeframe,
+                    since=ms,
+                    limit=bar_count,
+                    params={}
+                )
 
-            candles[asset] = []
-            for ohlcv in ohlcvs:
-                candles[asset].append(dict(
-                    last_traded=pd.to_datetime(ohlcv[0], unit='ms', utc=True),
-                    open=ohlcv[1],
-                    high=ohlcv[2],
-                    low=ohlcv[3],
-                    close=ohlcv[4],
-                    volume=ohlcv[5]
-                ))
+                candles[asset] = []
+                for ohlcv in ohlcvs:
+                    candles[asset].append(dict(
+                        last_traded=pd.to_datetime(
+                            ohlcv[0], unit='ms', utc=True
+                        ),
+                        open=ohlcv[1],
+                        high=ohlcv[2],
+                        low=ohlcv[3],
+                        close=ohlcv[4],
+                        volume=ohlcv[5]
+                    ))
 
-        return candles
+            except Exception as e:
+                raise ExchangeRequestError(error=e)
+
+        if is_single:
+            return six.next(six.itervalues(candles))
+
+        else:
+            return candles
 
     def _fetch_symbol_map(self, is_local):
         try:

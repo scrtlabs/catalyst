@@ -627,3 +627,7 @@ def mixin_market_params(exchange_name, params, market):
 
 def from_ms_timestamp(ms):
     return pd.to_datetime(ms, unit='ms', utc=True)
+
+
+def get_epoch():
+    return pd.to_datetime('1970-1-1', utc=True)

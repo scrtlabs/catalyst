@@ -324,7 +324,6 @@ class Exchange:
         list[Transaction]
 
         """
-        transactions = list()
         if self.portfolio.open_orders:
             for order_id in list(self.portfolio.open_orders):
                 log.debug('found open order: {}'.format(order_id))
@@ -344,12 +343,13 @@ class Exchange:
                         order_id=order.id,
                         commission=order.commission
                     )
-                    transactions.append(transaction)
+                    yield order, transaction
 
-                    self.portfolio.execute_order(order, transaction)
+                    # self.portfolio.execute_order(order, transaction)
 
                 elif order.status == ORDER_STATUS.CANCELLED:
-                    self.portfolio.remove_order(order)
+                    # self.portfolio.remove_order(order)
+                    yield order, None
 
                 else:
                     delta = pd.Timestamp.utcnow() - order.dt
@@ -359,7 +359,6 @@ class Exchange:
                             delta=delta
                         )
                     )
-        return transactions
 
     def get_spot_value(self, assets, field, dt=None, data_frequency='minute'):
         """

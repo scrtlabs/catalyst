@@ -256,7 +256,7 @@ if __name__ == '__main__':
             initialize=initialize,
             handle_data=handle_data,
             analyze=analyze,
-            exchange_name='bitfinex',
+            exchange_name='bittrex',
             algo_namespace=NAMESPACE,
             base_currency='eth',
             start=pd.to_datetime('2017-10-01', utc=True),
@@ -275,5 +275,6 @@ if __name__ == '__main__':
             live=True,
             algo_namespace=NAMESPACE,
             base_currency='eth',
-            live_graph=False
+            live_graph=False,
+            simulate_orders=True
         )
