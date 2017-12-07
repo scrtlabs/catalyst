@@ -82,4 +82,4 @@ tables==3.3.0
 
 #Catalyst dependencies
 ccxt==1.10.283
-boto3=1.4.8
+boto3==1.4.8
