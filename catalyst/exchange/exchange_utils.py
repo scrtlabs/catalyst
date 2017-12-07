@@ -604,6 +604,7 @@ def mixin_market_params(exchange_name, params, market):
     # TODO: make this more externalized / configurable
     if 'lot' in market:
         params['min_trade_size'] = market['lot']
+        params['lot'] = market['lot']
 
     if exchange_name == 'bitfinex':
         params['maker'] = 0.001
@@ -623,6 +624,9 @@ def mixin_market_params(exchange_name, params, market):
     if info:
         if 'minimum_order_size' in info:
             params['min_trade_size'] = float(info['minimum_order_size'])
+
+            if 'lot' not in params:
+                params['lot'] = params['min_trade_size']
 
 
 def from_ms_timestamp(ms):

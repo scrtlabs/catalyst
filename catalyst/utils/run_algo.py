@@ -91,7 +91,8 @@ def _run(handle_data,
          algo_namespace,
          base_currency,
          live_graph,
-         simulate_orders):
+         simulate_orders,
+         stats_output):
     """Run a backtest for the given algorithm.
 
     This is shared between the cli and :func:`catalyst.run_algo`.
@@ -151,7 +152,6 @@ def _run(handle_data,
 
     exchanges = dict()
     for exchange_name in exchange_list:
-
         exchanges[exchange_name] = get_exchange(
             exchange_name=exchange_name,
             base_currency=base_currency,
@@ -266,7 +266,8 @@ def _run(handle_data,
             exchanges=exchanges,
             algo_namespace=algo_namespace,
             live_graph=live_graph,
-            simulate_orders=simulate_orders
+            simulate_orders=simulate_orders,
+            stats_output=stats_output,
         )
     elif exchanges:
         # Removed the existing Poloniex fork to keep things simple
@@ -429,6 +430,7 @@ def run_algorithm(initialize,
                   algo_namespace=None,
                   live_graph=False,
                   simulate_orders=True,
+                  stats_output=None,
                   output=os.devnull):
     """Run a trading algorithm.
 
@@ -551,5 +553,6 @@ def run_algorithm(initialize,
         algo_namespace=algo_namespace,
         base_currency=base_currency,
         live_graph=live_graph,
-        simulate_orders=simulate_orders
+        simulate_orders=simulate_orders,
+        stats_output=stats_output
     )

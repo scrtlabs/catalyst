@@ -36,7 +36,7 @@ from catalyst.exchange.exchange_utils import save_algo_object, get_algo_object, 
     save_algo_df, group_assets_by_exchange
 from catalyst.exchange.live_graph_clock import LiveGraphClock
 from catalyst.exchange.simple_clock import SimpleClock
-from catalyst.exchange.stats_utils import get_pretty_stats
+from catalyst.exchange.stats_utils import get_pretty_stats, stats_to_s3
 from catalyst.finance.execution import MarketOrder
 from catalyst.finance.performance.period import calc_period_stats
 from catalyst.gens.tradesimulation import AlgorithmSimulator
@@ -305,6 +305,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
     def __init__(self, *args, **kwargs):
         self.algo_namespace = kwargs.pop('algo_namespace', None)
         self.live_graph = kwargs.pop('live_graph', None)
+        self.stats_output = kwargs.pop('stats_output', None)
 
         self._clock = None
         self.frame_stats = deque(maxlen=60)
@@ -436,21 +437,28 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
     def updated_account(self):
         return self.perf_tracker.get_account(False)
 
-    def update_positions(self, attempt_index=0):
+    def synchronize_portfolio(self, attempt_index=0):
         tracker = self.perf_tracker.position_tracker
+        total_cash = 0.0
+        total_positions_value = 0.0
 
         try:
             # Position keys correspond to assets
             assets = list(tracker.positions)
             exchange_assets = group_assets_by_exchange(assets)
-            for exchange_name in exchange_assets:
-                assets = exchange_assets[exchange_name]
+            for exchange_name in self.exchanges:
+                assets = exchange_assets[exchange_name] \
+                    if exchange_name in exchange_assets else []
+
                 exchange_positions = \
                     [tracker.positions[asset] for asset in assets]
 
                 exchange = self.exchanges[exchange_name]  # Type: Exchange
                 cash, positions_value = \
                     exchange.calculate_totals(exchange_positions)
+
+                total_cash += cash
+                total_positions_value += total_positions_value
 
                 for position in exchange_positions:
                     tracker.update_position(
@@ -459,13 +467,17 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                         last_sale_price=position.last_sale_price
                     )
 
+            if total_cash < self.portfolio.cash:
+                raise ValueError('Cash on exchanges is lower than the algo.')
+
+            return total_cash, total_positions_value
         except ExchangeRequestError as e:
             log.warn(
                 'update portfolio attempt {}: {}'.format(attempt_index, e)
             )
             if attempt_index < self.retry_synchronize_portfolio:
                 sleep(self.retry_delay)
-                self.update_positions(attempt_index + 1)
+                self.synchronize_portfolio(attempt_index + 1)
             else:
                 raise ExchangePortfolioDataError(
                     data_type='update-portfolio',
@@ -565,20 +577,15 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         new_transactions, new_commissions, closed_orders = \
             self.blotter.get_transactions(data)
 
-        self.blotter.prune_orders(closed_orders)
-
-        for transaction in new_transactions:
-            self.perf_tracker.process_transaction(transaction)
-
-            # since this order was modified, record it
-            order = self.blotter.orders[transaction.order_id]
-            self.perf_tracker.process_order(order)
-
         if len(new_transactions) > 0:
             self.perf_tracker.update_performance()
 
-        self.update_positions()
-
+        cash, positions_value = self.synchronize_portfolio()
+        log.info(
+            'got totals from exchanges, cash: {} positions: {}'.format(
+                cash, positions_value
+            )
+        )
         if self._handle_data:
             self._handle_data(self, data)
 
@@ -612,11 +619,25 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                 'statistics for the last {stats_minutes} minutes:\n{stats}'.format(
                     stats_minutes=self.stats_minutes,
                     stats=get_pretty_stats(
-                        stats_df=print_df,
+                        df=print_df,
                         recorded_cols=recorded_cols,
                         num_rows=self.stats_minutes
                     )
                 ))
+
+            if self.stats_output is not None:
+                if 's3://' in self.stats_output:
+                    stats_to_s3(
+                        uri=self.stats_output,
+                        df=print_df,
+                        algo_namespace=self.algo_namespace,
+                        recorded_cols=recorded_cols,
+                    )
+
+                else:
+                    raise ValueError(
+                        'Only S3 stats output is supported for now.'
+                    )
 
             today = pd.to_datetime('today', utc=True)
             daily_stats = self.prepare_period_stats(
@@ -642,22 +663,6 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             )
         except Exception as e:
             log.warn('unable to save minute perfs to disk: {}'.format(e))
-
-        try:
-            blotter_params = dict(
-                open_orders=self.blotter.open_orders,
-                orders=self.blotter.orders,
-                new_orders=self.blotter.new_orders,
-                data_frequency=self.blotter.data_frequency,
-                current_dt=self.blotter.current_dt,
-            )
-            save_algo_object(
-                algo_name=self.algo_namespace,
-                key='blotter',
-                obj=blotter_params,
-            )
-        except Exception as e:
-            log.warn('unable to save portfolio to disk: {}'.format(e))
 
     @api_method
     def batch_market_order(self, share_counts):

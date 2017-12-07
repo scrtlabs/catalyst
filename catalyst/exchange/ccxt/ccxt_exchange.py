@@ -4,23 +4,22 @@ from collections import defaultdict
 import ccxt
 import pandas as pd
 import six
-from ccxt import ExchangeNotAvailable
+from catalyst.assets._assets import TradingPair
+from ccxt import ExchangeNotAvailable, InvalidOrder
+from logbook import Logger
 from six import string_types
 
-from catalyst.finance.order import Order, ORDER_STATUS
-
 from catalyst.algorithm import MarketOrder
-from catalyst.assets._assets import TradingPair
-from logbook import Logger
-
 from catalyst.constants import LOG_LEVEL
-from catalyst.exchange.exchange import Exchange, ExchangeLimitOrder
+from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
     ExchangeSymbolsNotFound, ExchangeRequestError, InvalidOrderStyle, \
-    ExchangeNotFoundError
+    ExchangeNotFoundError, CreateOrderError
+from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.exchange_utils import mixin_market_params, \
     from_ms_timestamp, get_epoch
+from catalyst.finance.order import Order, ORDER_STATUS
 
 log = Logger('CCXT', level=LOG_LEVEL)
 
@@ -288,7 +287,7 @@ class CCXT(Exchange):
         else:
             return None
 
-    def create_trading_pair(self, market, asset_def, is_local):
+    def create_trading_pair(self, market, asset_def=None, is_local=False):
         """
         Creating a TradingPair from market and asset data.
 
@@ -346,6 +345,7 @@ class CCXT(Exchange):
         for market in self.markets:
             asset_defs = self.get_asset_defs(market)
 
+            asset = None
             for asset_def in asset_defs:
                 if asset_def[0] is not None or not asset_defs[1]:
                     try:
@@ -356,8 +356,12 @@ class CCXT(Exchange):
                         )
                         self.assets.append(asset)
 
-                    except TypeError:
-                        pass
+                    except TypeError as e:
+                        log.warn('unable to add asset: {}'.format(e))
+
+            if asset is None:
+                asset = self.create_trading_pair(market=market)
+                self.assets.append(asset)
 
     def get_balances(self):
         try:
@@ -460,26 +464,45 @@ class CCXT(Exchange):
 
         side = 'buy' if amount > 0 else 'sell'
 
+        if hasattr(self.api, 'amount_to_lots'):
+            adj_amount = self.api.amount_to_lots(
+                symbol=symbol,
+                amount=abs(amount),
+            )
+            if adj_amount != abs(amount):
+                log.info(
+                    'adjusted order amount {} to {} based on lot size'.format(
+                        abs(amount), adj_amount,
+                    )
+                )
+        else:
+            adj_amount = abs(amount)
+
         try:
             result = self.api.create_order(
                 symbol=symbol,
                 type=order_type,
                 side=side,
-                amount=abs(amount),
+                amount=adj_amount,
                 price=price
             )
         except ExchangeNotAvailable as e:
             log.debug('unable to create order: {}'.format(e))
             raise ExchangeRequestError(error=e)
 
+        except InvalidOrder as e:
+            log.warn('the exchange rejected the order: {}'.format(e))
+            raise CreateOrderError(exchange=self.name, error=e)
+
         if 'info' not in result:
             raise ValueError('cannot use order without info attribute')
 
+        final_amount = adj_amount if side == 'buy' else -adj_amount
         order_id = result['id']
         order = Order(
             dt=pd.Timestamp.utcnow(),
             asset=asset,
-            amount=amount,
+            amount=final_amount,
             stop=style.get_stop_price(is_buy),
             limit=style.get_limit_price(is_buy),
             id=order_id

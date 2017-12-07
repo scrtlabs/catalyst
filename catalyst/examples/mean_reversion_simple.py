@@ -12,7 +12,8 @@ from logbook import Logger
 
 from catalyst import run_algorithm
 from catalyst.api import symbol, record, order_target_percent, get_open_orders
-from catalyst.exchange.stats_utils import extract_transactions
+from catalyst.exchange.stats_utils import extract_transactions, \
+    get_pretty_stats
 # We give a name to the algorithm which Catalyst will use to persist its state.
 # In this example, Catalyst will create the `.catalyst/data/live_algos`
 # directory. If we stop and start the algorithm, Catalyst will resume its
@@ -33,11 +34,11 @@ def initialize(context):
     # parameters or values you're going to use.
 
     # In our example, we're looking at Neo in Ether.
-    context.neo_eth = symbol('neo_eth')
+    context.market = symbol('rdn_eth')
     context.base_price = None
     context.current_day = None
 
-    context.RSI_OVERSOLD = 55
+    context.RSI_OVERSOLD = 65
     context.RSI_OVERBOUGHT = 82
     context.CANDLE_SIZE = '5T'
 
@@ -59,14 +60,14 @@ def handle_data(context, data):
         context.current_day = today
 
     # We're computing the volume-weighted-average-price of the security
-    # defined above, in the context.neo_eth variable.  For this example, we're 
+    # defined above, in the context.market variable.  For this example, we're
     # using three bars on the 15 min bars.
 
     # The frequency attribute determine the bar size. We use this convention
     # for the frequency alias:
     # http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
     prices = data.history(
-        context.neo_eth,
+        context.market,
         fields='close',
         bar_count=50,
         frequency=context.CANDLE_SIZE
@@ -81,7 +82,7 @@ def handle_data(context, data):
     # We need a variable for the current price of the security to compare to
     # the average. Since we are requesting two fields, data.current()
     # returns a DataFrame with
-    current = data.current(context.neo_eth, fields=['close', 'volume'])
+    current = data.current(context.market, fields=['close', 'volume'])
     price = current['close']
 
     # If base_price is not set, we use the current value. This is the
@@ -110,19 +111,20 @@ def handle_data(context, data):
 
     # Since we are using limit orders, some orders may not execute immediately
     # we wait until all orders are executed before considering more trades.
-    orders = get_open_orders(context.neo_eth)
+    orders = get_open_orders(context.market)
     if len(orders) > 0:
+        log.info('exiting because orders are open: {}'.format(orders))
         return
 
     # Exit if we cannot trade
-    if not data.can_trade(context.neo_eth):
+    if not data.can_trade(context.market):
         return
 
     # Another powerful built-in feature of the Catalyst backtester is the
     # portfolio object.  The portfolio object tracks your positions, cash,
     # cost basis of specific holdings, and more.  In this line, we calculate
     # how long or short our position is at this minute.   
-    pos_amount = context.portfolio.positions[context.neo_eth].amount
+    pos_amount = context.portfolio.positions[context.market].amount
 
     if rsi[-1] <= context.RSI_OVERSOLD and pos_amount == 0:
         log.info(
@@ -133,7 +135,7 @@ def handle_data(context, data):
         # Set a style for limit orders,
         limit_price = price * 1.005
         order_target_percent(
-            context.neo_eth, 1, limit_price=limit_price
+            context.market, 1, limit_price=limit_price
         )
         context.traded_today = True
 
@@ -145,7 +147,7 @@ def handle_data(context, data):
         )
         limit_price = price * 0.995
         order_target_percent(
-            context.neo_eth, 0, limit_price=limit_price
+            context.market, 0, limit_price=limit_price
         )
         context.traded_today = True
 
@@ -168,7 +170,7 @@ def analyze(context=None, perf=None):
     perf.loc[:, 'price'].plot(ax=ax2, label='Price')
 
     ax2.set_ylabel('{asset}\n({base})'.format(
-        asset=context.neo_eth.symbol, base=base_currency
+        asset=context.market.symbol, base=base_currency
     ))
 
     transaction_df = extract_transactions(perf)
@@ -229,7 +231,7 @@ def analyze(context=None, perf=None):
         )
     plt.legend(loc=3)
     start, end = ax6.get_ylim()
-    ax6.yaxis.set_ticks(np.arange(0, end, end/5))
+    ax6.yaxis.set_ticks(np.arange(0, end, end / 5))
 
     # Show the plot.
     plt.gcf().set_size_inches(18, 8)
@@ -267,14 +269,15 @@ if __name__ == '__main__':
 
     elif MODE == 'live':
         run_algorithm(
-            capital_base=0.1,
+            capital_base=0.05,
             initialize=initialize,
             handle_data=handle_data,
             analyze=analyze,
-            exchange_name='bittrex',
+            exchange_name='binance',
             live=True,
             algo_namespace=NAMESPACE,
             base_currency='eth',
             live_graph=False,
-            simulate_orders=False
+            simulate_orders=False,
+            stats_output='s3://something'
         )

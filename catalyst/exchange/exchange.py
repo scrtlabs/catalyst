@@ -8,7 +8,6 @@ import pandas as pd
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
-from catalyst.algorithm import MarketOrder
 from catalyst.constants import LOG_LEVEL
 from catalyst.data.data_portal import BASE_FIELDS
 from catalyst.exchange.bundle_utils import get_start_dt, \
@@ -18,12 +17,8 @@ from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
     PricingDataNotLoadedError, \
     NoDataAvailableOnExchange, NoValueForField
-from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
-    ExchangeLimitOrder, ExchangeStopOrder
 from catalyst.exchange.exchange_utils import get_exchange_symbols, \
     get_frequency, resample_history_df
-from catalyst.finance.order import ORDER_STATUS
-from catalyst.finance.transaction import Transaction
 
 log = Logger('Exchange', level=LOG_LEVEL)
 
@@ -618,7 +613,7 @@ class Exchange:
         log.debug('found base currency balance: {}'.format(cash))
 
         positions_value = 0.0
-        if positions is not None:
+        if positions:
             assets = set([position.asset for position in positions])
             tickers = self.tickers(assets)
             log.debug('got tickers for positions: {}'.format(tickers))
