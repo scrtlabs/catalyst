@@ -279,5 +279,5 @@ if __name__ == '__main__':
             base_currency='eth',
             live_graph=False,
             simulate_orders=False,
-            stats_output='s3://something'
+            stats_output=None
         )

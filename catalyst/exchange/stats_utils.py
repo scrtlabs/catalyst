@@ -2,7 +2,10 @@ import numbers
 
 import numpy as np
 import pandas as pd
+import boto3
 import time
+
+s3 = boto3.resource('s3')
 
 
 def trend_direction(series):
@@ -212,12 +215,9 @@ def get_csv_stats(df, recorded_cols=None):
 
 
 def stats_to_s3(uri, df, algo_namespace, recorded_cols=None):
-    import boto3
-    s3 = boto3.resource('s3')
-
     bytes_to_write = get_csv_stats(df, recorded_cols=recorded_cols)
 
-    timestr = time.strftime('%Y%m%d-%H%M%S')
+    timestr = time.strftime('%Y%m%d')
 
     parts = uri.split('//')
     obj = s3.Object(parts[1], 'stats/{}-{}.csv'.format(

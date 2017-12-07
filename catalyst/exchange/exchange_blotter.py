@@ -147,6 +147,9 @@ class ExchangeBlotter(Blotter):
             TradingPair: TradingPairFeeSchedule()
         }
 
+        self.retry_delay = 5
+        self.retry_check_open_orders = 5
+
     def exchange_order(self, asset, amount, style=None, attempt_index=0):
         try:
             exchange = self.exchanges[asset.exchange]
@@ -205,13 +208,25 @@ class ExchangeBlotter(Blotter):
             for order in self.open_orders[asset]:
                 log.debug('found open order: {}'.format(order.id))
 
-                order, executed_price = exchange.get_order(order.id, asset)
+                new_order, executed_price = exchange.get_order(order.id, asset)
                 log.debug(
                     'got updated order {} {}'.format(
-                        order, executed_price
+                        new_order, executed_price
                     )
                 )
+                order.status = new_order.status
+
                 if order.status == ORDER_STATUS.FILLED:
+                    order.commission = new_order.commission
+                    if order.amount != new_order.amount:
+                        log.warn(
+                            'executed order amount {} differs '
+                            'from original'.format(
+                                new_order.amount, order.amount
+                            )
+                        )
+                        order.amount = new_order.amount
+
                     transaction = Transaction(
                         asset=order.asset,
                         amount=order.amount,

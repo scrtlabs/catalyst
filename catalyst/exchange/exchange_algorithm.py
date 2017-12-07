@@ -625,6 +625,21 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                     )
                 ))
 
+            today = pd.to_datetime('today', utc=True)
+            daily_stats = self.prepare_period_stats(
+                start_dt=today,
+                end_dt=pd.Timestamp.utcnow()
+            )
+            save_algo_object(
+                algo_name=self.algo_namespace,
+                key=today.strftime('%Y-%m-%d'),
+                obj=daily_stats,
+                rel_path='daily_perf'
+            )
+        except Exception as e:
+            log.warn('unable to calculate performance: {}'.format(e))
+
+        try:
             if self.stats_output is not None:
                 if 's3://' in self.stats_output:
                     stats_to_s3(
@@ -638,22 +653,8 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                     raise ValueError(
                         'Only S3 stats output is supported for now.'
                     )
-
-            today = pd.to_datetime('today', utc=True)
-            daily_stats = self.prepare_period_stats(
-                start_dt=today,
-                end_dt=pd.Timestamp.utcnow()
-            )
-            save_algo_object(
-                algo_name=self.algo_namespace,
-                key=today.strftime('%Y-%m-%d'),
-                obj=daily_stats,
-                rel_path='daily_perf'
-            )
-
         except Exception as e:
-            log.warn('unable to calculate performance: {}'.format(e))
-
+            log.warn('unable save stats: {}'.format(e))
         # TODO: pickle does not seem to work in python 3
         try:
             save_algo_object(
