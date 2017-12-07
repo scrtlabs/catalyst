@@ -129,7 +129,7 @@ class PoloniexCurator(object):
                     start = str(newstart),
                     end = str(end)
                 )
-        print url
+        print(url)
 
         attempts = 0
         success = 0
