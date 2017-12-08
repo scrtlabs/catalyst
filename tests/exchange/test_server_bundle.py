@@ -51,7 +51,7 @@ class ValidateChunks(object):
         if data_frequency == 'daily':
             end = end - pd.Timedelta(hours=23, minutes=59)
 
-        print start, end, data_frequency
+        print(start, end, data_frequency)
 
         arrays = reader.load_raw_arrays(self.columns, start, end,
                                         [asset.sid, ])
