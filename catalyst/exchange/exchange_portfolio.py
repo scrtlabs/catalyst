@@ -90,7 +90,8 @@ class ExchangePortfolio(Portfolio):
 
         if order_position is None:
             raise ValueError(
-                'Trying to execute order for a position not held: %s' % order.id
+                'Trying to execute order for a position not held:'
+                ' {}'.format(order.id)
             )
 
         self.capital_used += order.amount * transaction.price

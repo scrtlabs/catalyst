@@ -143,7 +143,8 @@ class OrphanOrderError(ZiplineError):
 
 class OrphanOrderReverseError(ZiplineError):
     msg = (
-        'Order {order_id} tracked by algorithm, but not found in exchange {exchange}.'
+        'Order {order_id} tracked by algorithm, but not found in exchange '
+        '{exchange}.'
     ).strip()
 
 
@@ -206,8 +207,9 @@ class EmptyValuesInBundleError(ZiplineError):
 
 class PricingDataBeforeTradingError(ZiplineError):
     msg = ('Pricing data for trading pairs {symbols} on exchange {exchange} '
-           'starts on {first_trading_day}, but you are either trying to trade or '
-           'retrieve pricing data on {dt}. Adjust your dates accordingly.').strip()
+           'starts on {first_trading_day}, but you are either trying to trade '
+           'or retrieve pricing data on {dt}. Adjust your dates accordingly.'
+           ).strip()
 
 
 class PricingDataNotLoadedError(ZiplineError):
@@ -238,9 +240,11 @@ class ApiCandlesError(ZiplineError):
 
 class NoDataAvailableOnExchange(ZiplineError):
     msg = (
-        'Requested data for trading pair {symbol} is not available on exchange {exchange} '
+        'Requested data for trading pair {symbol} is not available on '
+        'exchange {exchange} '
         'in `{data_frequency}` frequency at this time. '
-        'Check `http://enigma.co/catalyst/status` for market coverage.').strip()
+        'Check `http://enigma.co/catalyst/status` for market coverage.'
+        ).strip()
 
 
 class NoValueForField(ZiplineError):

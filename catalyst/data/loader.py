@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import datetime
 import os
 from collections import OrderedDict
 
@@ -129,11 +128,13 @@ def load_crypto_market_data(trading_day=None, trading_days=None,
     # before this date.
     '''
     if(bundle_data):
-        # If we are using the bundle to retrieve the cryptobenchmark, find the last
-        # date for which there is trading data in the bundle
-        asset = bundle_data.asset_finder.lookup_symbol(symbol=bm_symbol,as_of_date=None)
+        # If we are using the bundle to retrieve the cryptobenchmark, find
+        # the last date for which there is trading data in the bundle
+        asset = bundle_data.asset_finder.lookup_symbol(
+                    symbol=bm_symbol,as_of_date=None)
         ix = bundle_data.daily_bar_reader._last_rows[asset.sid]
-        last_date = pd.to_datetime(bundle_data.daily_bar_reader._spot_col('day')[ix],unit='s')
+        last_date = pd.to_datetime(
+                    bundle_data.daily_bar_reader._spot_col('day')[ix],unit='s')
     else:
         last_date = trading_days[trading_days.get_loc(now, method='ffill') - 2]
     '''
@@ -164,8 +165,8 @@ def load_crypto_market_data(trading_day=None, trading_days=None,
     br.loc[start_dt] = 0
     br = br.sort_index()
 
-    # Override first_date for treasury data since we have it for many more years
-    # and is independent of crypto data
+    # Override first_date for treasury data since we have it for many more
+    # years and is independent of crypto data
     first_date_treasury = pd.Timestamp('1990-01-02', tz='UTC')
     tc = ensure_treasury_data(
         bm_symbol,
@@ -301,14 +302,14 @@ def ensure_crypto_benchmark_data(symbol,
 
     if (bundle == 'poloniex'):
         '''
-        If we're using the Poloniex bundle, we'll get the benchmark from the bundle
-        instead of downloading it from Poloniex every time we need it.
-        Poloniex has a captcha for API queries originating from outside the US that 
-        prevents users abroad from getting Catalyst to work
+        If we're using the Poloniex bundle, we'll get the benchmark from the
+        bundle instead of downloading it from Poloniex every time we need it.
+        Poloniex has a captcha for API queries originating from outside the US
+        that prevents users abroad from getting Catalyst to work
         '''
         logger.info(
-            (
-                'Retrieving benchmark data from bundle for {symbol!r} from {first_date} to {last_date}'),
+            ('Retrieving benchmark data from bundle for {symbol!r}'
+             ' from {first_date} to {last_date}'),
             symbol=symbol, first_date=first_date, last_date=last_date)
 
         asset = bundle_data.asset_finder.lookup_symbol(symbol=symbol,
@@ -330,11 +331,12 @@ def ensure_crypto_benchmark_data(symbol,
                         last_date)]
 
     else:
-        # This is how it used to be: downloading the benchmark everytime. 
-        # Leaving this code here to be repurposed in the future for other bundles.
+        # This is how it used to be: downloading the benchmark everytime.
+        # Leaving this code here to be repurposed in the future for
+        # other bundles.
         logger.info(
-            (
-                'Downloading benchmark data for {symbol!r} from {first_date} to {last_date}'),
+            ('Downloading benchmark data for {symbol!r}'
+             ' from {first_date} to {last_date}'),
             symbol=symbol, first_date=first_date, last_date=last_date)
 
         raise DeprecationWarning('poloniex bundle deprecated')
@@ -368,67 +370,6 @@ def ensure_crypto_benchmark_data(symbol,
         logger.warn("Still don't have expected data after redownload!")
 
     return daily_close
-
-
-def ensure_benchmark_data(symbol, first_date, last_date, now, trading_day,
-                          environ=None):
-    """
-    Ensure we have benchmark data for `symbol` from `first_date` to `last_date`
-
-    Parameters
-    ----------
-    symbol : str
-        The symbol for the benchmark to load.
-    first_date : pd.Timestamp
-        First required date for the cache.
-    last_date : pd.Timestamp
-        Last required date for the cache.
-    now : pd.Timestamp
-        The current time.  This is used to prevent repeated attempts to
-        re-download data that isn't available due to scheduling quirks or other
-        failures.
-    trading_day : pd.CustomBusinessDay
-        A trading day delta.  Used to find the day before first_date so we can
-        get the close of the day prior to first_date.
-
-    We attempt to download data unless we already have data stored at the data
-    cache for `symbol` whose first entry is before or on `first_date` and whose
-    last entry is on or after `last_date`.
-
-    If we perform a download and the cache criteria are not satisfied, we wait
-    at least one hour before attempting a redownload.  This is determined by
-    comparing the current time to the result of os.path.getmtime on the cache
-    path.
-    """
-    filename = get_benchmark_filename(symbol)
-    data = _load_cached_data(filename, first_date, last_date, now, 'benchmark',
-                             environ)
-    if data is not None:
-        return data
-
-    # If no cached data was found or it was missing any dates then download the
-    # necessary data.
-    logger.info(
-        ('Downloading benchmark data for {symbol!r} '
-         'from {first_date} to {last_date}'),
-        symbol=symbol,
-        first_date=first_date - trading_day,
-        last_date=last_date
-    )
-
-    try:
-        data = get_benchmark_returns(
-            symbol,
-            first_date - trading_day,
-            last_date,
-        )
-        data.to_csv(get_data_filepath(filename, environ))
-    except (OSError, IOError, HTTPError):
-        logger.exception('Failed to cache the new benchmark returns')
-        raise
-    if not has_data_for_dates(data, first_date, last_date):
-        logger.warn("Still don't have expected data after redownload!")
-    return data
 
 
 def ensure_benchmark_data(symbol, first_date, last_date, now, trading_day,

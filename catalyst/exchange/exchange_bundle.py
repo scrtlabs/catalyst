@@ -1,6 +1,6 @@
 import os
 import shutil
-from datetime import datetime, timedelta
+from datetime import timedelta
 from functools import partial
 from itertools import chain
 from operator import is_not
@@ -233,11 +233,13 @@ class ExchangeBundle:
 
                 problem = '{name} ({start_dt} to {end_dt}) has empty ' \
                           'periods: {dates}'.format(
-                    name=asset.symbol,
-                    start_dt=asset.start_date.strftime(DATE_TIME_FORMAT),
-                    end_dt=end_dt.strftime(DATE_TIME_FORMAT),
-                    dates=[date.strftime(DATE_TIME_FORMAT) for date in dates]
-                )
+                            name=asset.symbol,
+                            start_dt=asset.start_date.strftime(
+                                DATE_TIME_FORMAT),
+                            end_dt=end_dt.strftime(DATE_TIME_FORMAT),
+                            dates=[date.strftime(
+                                DATE_TIME_FORMAT) for date in dates])
+
                 if empty_rows_behavior == 'warn':
                     log.warn(problem)
 
@@ -245,8 +247,7 @@ class ExchangeBundle:
                     raise EmptyValuesInBundleError(
                         name=asset.symbol,
                         end_minute=end_dt,
-                        dates=dates
-                    )
+                        dates=dates, )
 
                 else:
                     ohlcv_df.dropna(inplace=True)
@@ -286,13 +287,12 @@ class ExchangeBundle:
 
             problem = '{name} ({start_dt} to {end_dt}) has {threshold} ' \
                       'identical close values on: {dates}'.format(
-                name=asset.symbol,
-                start_dt=asset.start_date.strftime(DATE_TIME_FORMAT),
-                end_dt=end_dt.strftime(DATE_TIME_FORMAT),
-                threshold=threshold,
-                dates=[pd.to_datetime(date).strftime(DATE_TIME_FORMAT)
-                       for date in dates]
-            )
+                        name=asset.symbol,
+                        start_dt=asset.start_date.strftime(DATE_TIME_FORMAT),
+                        end_dt=end_dt.strftime(DATE_TIME_FORMAT),
+                        threshold=threshold,
+                        dates=[pd.to_datetime(date).strftime(DATE_TIME_FORMAT)
+                               for date in dates])
 
             problems.append(problem)
 
@@ -630,8 +630,8 @@ class ExchangeBundle:
                     show_progress,
                     label='Ingesting {frequency} price data on '
                           '{exchange}'.format(
-                        exchange=self.exchange_name,
-                        frequency=data_frequency,
+                            exchange=self.exchange_name,
+                            frequency=data_frequency,
                     )) as it:
                 for chunk in it:
                     problems += self.ingest_ctable(

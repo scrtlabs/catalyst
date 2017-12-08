@@ -262,11 +262,10 @@ class Bittrex(Exchange):
             end = int(time.mktime(end_dt.timetuple()))
             url = '{url}/pub/market/GetTicks?marketName={symbol}' \
                   '&tickInterval={frequency}&_={end}'.format(
-                url=URL2,
-                symbol=self.get_symbol(asset),
-                frequency=frequency,
-                end=end
-            )
+                    url=URL2,
+                    symbol=self.get_symbol(asset),
+                    frequency=frequency,
+                    end=end, )
 
             try:
                 data = json.loads(urllib.request.urlopen(url).read().decode())
@@ -359,12 +358,12 @@ class Bittrex(Exchange):
 
             try:
                 end_daily = cached_symbols[exchange_symbol]['end_daily']
-            except KeyError as e:
+            except KeyError:
                 end_daily = 'N/A'
 
             try:
                 end_minute = cached_symbols[exchange_symbol]['end_minute']
-            except KeyError as e:
+            except KeyError:
                 end_minute = 'N/A'
 
             symbol_map[exchange_symbol] = dict(

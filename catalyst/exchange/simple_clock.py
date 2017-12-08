@@ -31,7 +31,8 @@ class SimpleClock(object):
     This class is a drop-in replacement for
     :class:`zipline.gens.sim_engine.MinuteSimulationClock`.
 
-    This is a stripped down version because crypto exchanges run around the clock.
+    This is a stripped down version because crypto exchanges run
+    around the clock.
 
     The :param:`time_skew` parameter represents the time difference between
     the Broker and the live trading machine's clock.

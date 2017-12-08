@@ -52,12 +52,13 @@ def initialize(context):
 
     schedule_function(
         rebalance,
-        time_rules=times_rules.every_minute(),
+        time_rules=date_rules.every_minute(),
     )
 
 
 def before_trading_start(context, data):
     context.pipeline_data = pipeline_output('vwap_pipeline')
+
 
 def make_pipeline(context):
     return Pipeline(
@@ -68,6 +69,7 @@ def make_pipeline(context):
             'long_mavg': VWAP(window_length=context.LONG_WINDOW),
         }
     )
+
 
 def rebalance(context, data):
     context.i += 1
@@ -111,7 +113,6 @@ def rebalance(context, data):
         long_mavg=long_mavg,
         volume=volume,
     )
-    
 
 
 def analyze(context=None, results=None):
@@ -124,10 +125,11 @@ def analyze(context=None, results=None):
 
     ax2 = plt.subplot(612, sharex=ax1)
     ax2.set_ylabel('{asset} (USD)'.format(asset=context.ASSET_NAME))
-    (context.TICK_SIZE*results[['price', 'short_mavg', 'long_mavg']]).plot(ax=ax2)
+    (context.TICK_SIZE*results[['price',
+                                'short_mavg',
+                                'long_mavg']]).plot(ax=ax2)
 
     trans = results.ix[[t != [] for t in results.transactions]]
-    amounts = [t[0]['amount'] for t in trans.transactions]
 
     buys = trans.ix[
         [t[0]['amount'] > 0 for t in trans.transactions]

@@ -154,8 +154,8 @@ class RiskMetricsPeriod(object):
             self.algorithm_returns.values,
             self.benchmark_returns.values,
         )
-        self.excess_return = self.algorithm_period_returns - \
-                             self.treasury_period_return
+        self.excess_return = self.algorithm_period_returns \
+            - self.treasury_period_return
         self.max_drawdown = max_drawdown(self.algorithm_returns.values)
         self.max_leverage = self.calculate_max_leverage()
 

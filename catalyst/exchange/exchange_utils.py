@@ -134,7 +134,7 @@ def get_exchange_symbols(exchange_name, is_local=False, environ=None):
 
     if not is_local and (not os.path.isfile(filename) or pd.Timedelta(
                 pd.Timestamp('now', tz='UTC') - last_modified_time(
-                filename)).days > 1):
+                    filename)).days > 1):
         download_exchange_symbols(exchange_name, environ)
 
     if os.path.isfile(filename):
@@ -143,7 +143,7 @@ def get_exchange_symbols(exchange_name, is_local=False, environ=None):
                 data = json.load(data_file, object_hook=symbols_parser)
                 return data
 
-            except ValueError as e:
+            except ValueError:
                 return dict()
     else:
         raise ExchangeSymbolsNotFound(
@@ -296,7 +296,7 @@ def get_algo_object(algo_name, key, environ=None, rel_path=None):
         try:
             with open(filename, 'rb') as handle:
                 return pickle.load(handle)
-        except Exception as e:
+        except Exception:
             return None
     else:
         return None

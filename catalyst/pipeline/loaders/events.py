@@ -231,7 +231,7 @@ class EventsLoader(PipelineLoader):
             self.load_next_events(n, dates, sids, mask),
             self.load_previous_events(p, dates, sids, mask),
         )
-    
+
     @property
     def columns(self):
         return self._columns

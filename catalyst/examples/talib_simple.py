@@ -1,9 +1,11 @@
 # Run Command
-# catalyst run --start 2017-1-1 --end 2017-11-1 -o talib_simple.pickle -f talib_simple.py -x poloniex
-# 
+# catalyst run --start 2017-1-1 --end 2017-11-1 -o talib_simple.pickle \
+#   -f talib_simple.py -x poloniex
+#
 # Description
-# Simple TALib Example showing how to use various indicators in you strategy
-# Based loosly on https://github.com/mellertson/talib-macd-example/blob/master/talib-macd-matplotlib-example.py
+# Simple TALib Example showing how to use various indicators
+# in you strategy. Based loosly on
+# https://github.com/mellertson/talib-macd-example/blob/master/talib-macd-matplotlib-example.py
 
 import os
 
@@ -88,7 +90,7 @@ def _handle_data(context, data):
         prices.close.as_matrix(), fastperiod=context.MACD_FAST,
         slowperiod=context.MACD_SLOW, signalperiod=context.MACD_SIGNAL)
 
-    # Stochastics %K %D 
+    # Stochastics %K %D
     # %K = (Current Close - Lowest Low)/(Highest High - Lowest Low) * 100
     # %D = 3-day SMA of %K
     analysis['stoch_k'], analysis['stoch_d'] = ta.STOCH(

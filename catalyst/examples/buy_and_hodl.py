@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 
 from catalyst import run_algorithm
 from catalyst.api import (order_target_value, symbol, record,
-    cancel_order, get_open_orders, )
+                          cancel_order, get_open_orders, )
 
 
 def initialize(context):

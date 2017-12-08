@@ -1,4 +1,4 @@
-import pandas as pd
+# import pandas as pd
 from catalyst.exchange.bittrex.bittrex import Bittrex
 from catalyst.finance.order import Order
 from base import BaseExchangeTestCase
@@ -33,8 +33,8 @@ class TestBittrex(BaseExchangeTestCase):
 
     def test_open_orders(self):
         log.info('retrieving open orders')
-        asset = self.exchange.get_asset('neo_btc')
-        orders = self.exchange.get_open_orders(asset)
+        # asset = self.exchange.get_asset('neo_btc')
+        # orders = self.exchange.get_open_orders(asset)
         pass
 
     def test_get_order(self):
@@ -51,21 +51,21 @@ class TestBittrex(BaseExchangeTestCase):
 
     def test_get_candles(self):
         log.info('retrieving candles')
-        ohlcv_neo = self.exchange.get_candles(
-            freq='5T',
-            assets=self.exchange.get_asset('neo_btc'),
-            bar_count=20,
-            end_dt=pd.to_datetime('2017-10-20', utc=True)
-        )
-        ohlcv_neo_ubq = self.exchange.get_candles(
-            freq='1D',
-            assets=[
-                self.exchange.get_asset('neo_btc'),
-                self.exchange.get_asset('ubq_btc')
-            ],
-            bar_count=14,
-            end_dt=pd.to_datetime('2017-10-20', utc=True)
-        )
+        # ohlcv_neo = self.exchange.get_candles(
+        #     freq='5T',
+        #     assets=self.exchange.get_asset('neo_btc'),
+        #     bar_count=20,
+        #     end_dt=pd.to_datetime('2017-10-20', utc=True)
+        # )
+        # ohlcv_neo_ubq = self.exchange.get_candles(
+        #     freq='1D',
+        #     assets=[
+        #         self.exchange.get_asset('neo_btc'),
+        #         self.exchange.get_asset('ubq_btc')
+        #     ],
+        #     bar_count=14,
+        #     end_dt=pd.to_datetime('2017-10-20', utc=True)
+        # )
         pass
 
     def test_tickers(self):
@@ -79,7 +79,7 @@ class TestBittrex(BaseExchangeTestCase):
 
     def test_get_balances(self):
         log.info('testing wallet balances')
-        balances = self.exchange.get_balances()
+        # balances = self.exchange.get_balances()
         pass
 
     def test_get_account(self):
@@ -88,6 +88,6 @@ class TestBittrex(BaseExchangeTestCase):
 
     def test_orderbook(self):
         log.info('testing order book for bittrex')
-        asset = self.exchange.get_asset('eth_btc')
-        orderbook = self.exchange.get_orderbook(asset)
+        # asset = self.exchange.get_asset('eth_btc')
+        # orderbook = self.exchange.get_orderbook(asset)
         pass

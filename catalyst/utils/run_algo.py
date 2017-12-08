@@ -8,6 +8,7 @@ from time import sleep
 
 import click
 import pandas as pd
+from logbook import Logger
 
 from catalyst.data.bundles import load
 from catalyst.data.data_portal import DataPortal
@@ -30,17 +31,16 @@ from catalyst.utils.factory import create_simulation_parameters
 from catalyst.data.loader import load_crypto_market_data
 import catalyst.utils.paths as pth
 
-from catalyst.exchange.exchange_algorithm import ExchangeTradingAlgorithmLive, \
-    ExchangeTradingAlgorithmBacktest
+from catalyst.exchange.exchange_algorithm import (
+    ExchangeTradingAlgorithmLive,
+    ExchangeTradingAlgorithmBacktest,
+)
 from catalyst.exchange.exchange_data_portal import DataPortalExchangeLive, \
     DataPortalExchangeBacktest
 from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
-from catalyst.exchange.exchange_portfolio import ExchangePortfolio
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError, ExchangeRequestErrorTooManyAttempts,
     BaseCurrencyNotFoundError)
-from catalyst.exchange.exchange_utils import get_algo_object
-from logbook import Logger
 
 from catalyst.constants import LOG_LEVEL
 
@@ -172,7 +172,7 @@ def _run(handle_data,
         asset_db_path=None  # We don't need an asset db, we have exchanges
     )
     env.asset_finder = AssetFinderExchange()
-    choose_loader = None  # TODO: use the DataPortal for in the algorithm class for this
+    choose_loader = None  # TODO: use the DataPortal in the algo class for this
 
     if live:
         start = pd.Timestamp.utcnow()

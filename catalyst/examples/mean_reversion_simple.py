@@ -1,4 +1,4 @@
-# For this example, we're going to write a simple momentum script.  When the 
+# For this example, we're going to write a simple momentum script.  When the
 # stock goes up quickly, we're going to buy; when it goes down quickly, we're
 # going to sell.  Hopefully we'll ride the waves.
 import os
@@ -12,8 +12,8 @@ from logbook import Logger
 
 from catalyst import run_algorithm
 from catalyst.api import symbol, record, order_target_percent, get_open_orders
-from catalyst.exchange.stats_utils import extract_transactions, \
-    get_pretty_stats
+from catalyst.exchange.stats_utils import extract_transactions
+
 # We give a name to the algorithm which Catalyst will use to persist its state.
 # In this example, Catalyst will create the `.catalyst/data/live_algos`
 # directory. If we stop and start the algorithm, Catalyst will resume its
@@ -122,7 +122,7 @@ def handle_data(context, data):
     # Another powerful built-in feature of the Catalyst backtester is the
     # portfolio object.  The portfolio object tracks your positions, cash,
     # cost basis of specific holdings, and more.  In this line, we calculate
-    # how long or short our position is at this minute.   
+    # how long or short our position is at this minute.
     pos_amount = context.portfolio.positions[context.market].amount
 
     if rsi[-1] <= context.RSI_OVERSOLD and pos_amount == 0:
@@ -250,7 +250,9 @@ if __name__ == '__main__':
 
         timestr = time.strftime('%Y%m%d-%H%M%S')
         out = os.path.join(folder, '{}.p'.format(timestr))
-        # catalyst run -f catalyst/examples/mean_reversion_simple.py -x bitfinex -s 2017-10-1 -e 2017-11-10 -c usdt -n mean-reversion --data-frequency minute --capital-base 10000
+        # catalyst run -f catalyst/examples/mean_reversion_simple.py \
+        #    -x bitfinex -s 2017-10-1 -e 2017-11-10 -c usdt -n mean-reversion \
+        #   --data-frequency minute --capital-base 10000
         run_algorithm(
             capital_base=0.1,
             data_frequency='minute',
