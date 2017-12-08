@@ -3,11 +3,14 @@ import numbers
 
 import copy
 import numpy as np
+import os
 import pandas as pd
 import boto3
 import time
 
 from catalyst.assets._assets import TradingPair
+
+from catalyst.exchange.exchange_utils import get_algo_folder
 
 s3 = boto3.resource('s3')
 
@@ -183,7 +186,7 @@ def prepare_stats(stats, recorded_cols=list()):
     """
     asset_cols = list()
 
-    stats = copy.deepcopy(list(stats))
+    stats = copy.deepcopy(stats)
     # Using a copy since we are adding rows inside the loop.
     for row_index, row_data in enumerate(list(stats)):
         assets = [p['sid'] for p in row_data['positions']]
@@ -301,16 +304,49 @@ def get_csv_stats(stats, recorded_cols=None):
     ).encode()
 
 
-def stats_to_s3(uri, stats, algo_namespace, recorded_cols=None):
-    bytes_to_write = get_csv_stats(stats, recorded_cols=recorded_cols)
+def stats_to_s3(uri, stats, algo_namespace, recorded_cols=None,
+                folder='catalyst/stats', bytes_to_write=None):
+    """
+    Uploads the performance stats to a S3 bucket.
+
+    Parameters
+    ----------
+    uri: str
+    stats: list[Object]
+    algo_namespace: str
+    recorded_cols: list[str]
+    folder: str
+    bytes_to_write: str
+        Option to reuse bytes instead of re-computing the csv
+
+    Returns
+    -------
+
+    """
+    if bytes_to_write is None:
+        bytes_to_write = get_csv_stats(stats, recorded_cols=recorded_cols)
 
     timestr = time.strftime('%Y%m%d')
 
     parts = uri.split('//')
-    obj = s3.Object(parts[1], 'stats/{}-{}.csv'.format(
-        timestr, algo_namespace
+    obj = s3.Object(parts[1], '{}/{}-{}.csv'.format(
+        folder, timestr, algo_namespace
     ))
     obj.put(Body=bytes_to_write)
+
+
+def stats_to_algo_folder(stats, algo_namespace, recorded_cols=None):
+    bytes_to_write = get_csv_stats(stats, recorded_cols=recorded_cols)
+
+    timestr = time.strftime('%Y%m%d')
+    folder = get_algo_folder(algo_namespace)
+
+    filename = os.path.join(folder, '{}-{}.csv'.format(timestr, 'frames'))
+
+    with open(filename, 'wb') as handle:
+        handle.write(bytes_to_write)
+
+    return bytes_to_write
 
 
 def df_to_string(df):
