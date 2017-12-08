@@ -326,7 +326,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         self.retry_order = 2
         self.retry_delay = 5
 
-        self.stats_minutes = 5
+        self.stats_minutes = 20
 
         super(ExchangeTradingAlgorithmLive, self).__init__(*args, **kwargs)
 

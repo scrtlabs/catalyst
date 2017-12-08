@@ -176,6 +176,9 @@ class ExchangeBlotter(Blotter):
     @expect_types(asset=TradingPair)
     def order(self, asset, amount, style, order_id=None):
         log.debug('ordering {} {}'.format(amount, asset.symbol))
+        if amount == 0:
+            log.warn('skipping 0 amount orders')
+            return None
 
         if self.simulate_orders:
             return super(ExchangeBlotter, self).order(
