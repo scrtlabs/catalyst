@@ -183,6 +183,7 @@ def prepare_stats(stats, recorded_cols=list()):
     """
     asset_cols = list()
 
+    stats = copy.deepcopy(list(stats))
     # Using a copy since we are adding rows inside the loop.
     for row_index, row_data in enumerate(list(stats)):
         assets = [p['sid'] for p in row_data['positions']]
@@ -219,7 +220,7 @@ def prepare_stats(stats, recorded_cols=list()):
                 asset_cols = set_position_row(row, assets[asset_index],
                                               asset_values)
 
-    df = pd.DataFrame(list(stats))
+    df = pd.DataFrame(stats)
 
     index_cols = [
         'period_close', 'starting_cash', 'ending_cash', 'portfolio_value',
@@ -239,7 +240,7 @@ def prepare_stats(stats, recorded_cols=list()):
 
     df.set_index(index_cols, drop=True, inplace=True)
     df.dropna(axis=1, how='all', inplace=True)
-    df.sort_index(inplace=True)
+    df.sort_index(axis=0, level=0, inplace=True)
 
     return df, asset_cols
 
