@@ -1,3 +1,4 @@
+import csv
 import numbers
 
 import copy
@@ -294,7 +295,8 @@ def get_csv_stats(stats, recorded_cols=None):
     return df.to_csv(
         None,
         columns=columns,
-        encoding='utf-8',
+        # encoding='utf-8',
+        quoting=csv.QUOTE_NONNUMERIC
     ).encode()
 
 
