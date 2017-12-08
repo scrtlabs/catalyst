@@ -124,7 +124,6 @@ from catalyst.utils.events import (
 from catalyst.utils.factory import create_simulation_parameters
 from catalyst.utils.math_utils import (
     tolerant_equals,
-    round_if_near_integer,
     round_nearest
 )
 from catalyst.utils.pandas_utils import clear_dataframe_indexer_caches
@@ -1485,7 +1484,6 @@ class TradingAlgorithm(object):
         """
         Converts the number of shares to the smallest tradable lot size for
         the asset being ordered.
-        
         """
         return round_nearest(amount, asset.min_trade_size)
 
@@ -1523,6 +1521,7 @@ class TradingAlgorithm(object):
                              self.updated_portfolio(),
                              self.get_datetime(),
                              self.trading_client.current_data)
+
     @staticmethod
     def __convert_order_params_for_blotter(limit_price, stop_price, style):
         """

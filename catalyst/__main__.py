@@ -10,7 +10,6 @@ from six import text_type
 from catalyst.data import bundles as bundles_module
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_utils import delete_algo_folder
-from catalyst.exchange.factory import get_exchange
 from catalyst.utils.cli import Date, Timestamp
 from catalyst.utils.run_algo import _run, load_extensions
 
@@ -520,7 +519,7 @@ def live(ctx,
     default=False,
     help='Report potential anomalies found in data bundles.'
 )
-def ingest_exchange(exchange_name, data_frequency, start, end,
+def ingest_exchange(ctx, exchange_name, data_frequency, start, end,
                     include_symbols, exclude_symbols, csv, show_progress,
                     verbose, validate):
     """

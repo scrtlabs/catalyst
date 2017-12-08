@@ -14,18 +14,16 @@
 # limitations under the License.
 
 import sys
-
-from datetime import datetime
+from six.moves.urllib.parse import urlencode
 
 import pandas as pd
-
-from six.moves.urllib.parse import urlencode
 
 from catalyst.data.bundles.core import register_bundle
 from catalyst.data.bundles.base_pricing import BaseCryptoPricingBundle
 from catalyst.utils.memoize import lazyval
 
 from catalyst.curate.poloniex import PoloniexCurator
+
 
 class PoloniexBundle(BaseCryptoPricingBundle):
     @lazyval
@@ -46,7 +44,8 @@ class PoloniexBundle(BaseCryptoPricingBundle):
     @lazyval
     def tar_url(self):
         return (
-            'https://s3.amazonaws.com/enigmaco/catalyst-bundles/poloniex/poloniex-bundle.tar.gz'
+            'https://s3.amazonaws.com/enigmaco/catalyst-bundles/'
+            'poloniex/poloniex-bundle.tar.gz'
         )
 
     @lazyval
@@ -67,12 +66,11 @@ class PoloniexBundle(BaseCryptoPricingBundle):
 
         raw = raw.sort_index().reset_index()
         raw.rename(
-            columns={'index':'symbol'},
+            columns={'index': 'symbol'},
             inplace=True,
         )
 
         raw = raw[raw['isFrozen'] == 0]
-
         return raw
 
     def post_process_symbol_metadata(self, asset_id, sym_md, sym_data):
@@ -98,7 +96,8 @@ class PoloniexBundle(BaseCryptoPricingBundle):
                                frequency):
 
         # TODO: replace this with direct exchange call
-        # The end date and frequency should be used to calculate the number of bars
+        # The end date and frequency should be used to
+        # calculate the number of bars
         if(frequency == 'minute'):
             pc = PoloniexCurator()
             raw = pc.onemin_to_dataframe(symbol, start_date, end_date)
@@ -116,8 +115,9 @@ class PoloniexBundle(BaseCryptoPricingBundle):
             )
             raw.set_index('date', inplace=True)
 
-        # BcolzDailyBarReader introduces a 1/1000 factor in the way pricing is stored
-        # on disk, which we compensate here to get the right pricing amounts
+        # BcolzDailyBarReader introduces a 1/1000 factor in the way
+        # pricing is stored on disk, which we compensate here to get
+        # the right pricing amounts
         # ref: data/us_equity_pricing.py
         scale = 1
         raw.loc[:, 'open'] /= scale
@@ -138,7 +138,6 @@ class PoloniexBundle(BaseCryptoPricingBundle):
         ]
 
         return self._format_polo_query(query_params)
-
 
     def _format_data_url(self,
                          api_key,
@@ -162,27 +161,26 @@ class PoloniexBundle(BaseCryptoPricingBundle):
             ('end', end_date.value / 10**9),
             ('period', period),
         ]
-            
+
         return self._format_polo_query(query_params)
-    
+
     def _format_polo_query(self, query_params):
         # TODO: got against the exchange object
         return 'https://poloniex.com/public?{query}'.format(
             query=urlencode(query_params),
         )
 
-''' 
-As a second parameter, you can pass an array of currency pairs 
-that will be processed as an asset_filter to only process that 
+
+'''
+As a second parameter, you can pass an array of currency pairs
+that will be processed as an asset_filter to only process that
 subset of assets in the bundle, such as:
 register_bundle(PoloniexBundle, ['USDT_BTC',])
 
 For a production environment make sure to use (to bundle all pairs):
 register_bundle(PoloniexBundle)
 '''
-
 if 'ingest' in sys.argv and '-c' in sys.argv:
     register_bundle(PoloniexBundle)
 else:
     register_bundle(PoloniexBundle, create_writers=False)
-

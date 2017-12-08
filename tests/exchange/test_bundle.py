@@ -1,11 +1,10 @@
-import hashlib
+# import hashlib
 import os
 import tempfile
 from logging import getLogger
 
 import pandas as pd
 
-from catalyst import get_calendar
 from catalyst.exchange.bundle_utils import get_bcolz_chunk, \
     get_start_dt, get_df_from_arrays
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
@@ -22,22 +21,22 @@ log = getLogger('test_exchange_bundle')
 
 class TestExchangeBundle:
     def test_spot_value(self):
-        data_frequency = 'daily'
-        exchange_name = 'poloniex'
+        # data_frequency = 'daily'
+        # exchange_name = 'poloniex'
 
-        exchange = get_exchange(exchange_name)
-        exchange_bundle = ExchangeBundle(exchange)
-        assets = [
-            exchange.get_asset('btc_usdt')
-        ]
-        dt = pd.to_datetime('2017-10-14', utc=True)
+        # exchange = get_exchange(exchange_name)
+        # exchange_bundle = ExchangeBundle(exchange)
+        # assets = [
+        #     exchange.get_asset('btc_usdt')
+        # ]
+        # dt = pd.to_datetime('2017-10-14', utc=True)
 
-        values = exchange_bundle.get_spot_values(
-            assets=assets,
-            field='close',
-            dt=dt,
-            data_frequency=data_frequency
-        )
+        # values = exchange_bundle.get_spot_values(
+        #     assets=assets,
+        #     field='close',
+        #     dt=dt,
+        #     data_frequency=data_frequency
+        # )
         pass
 
     def test_ingest_minute(self):
@@ -215,7 +214,7 @@ class TestExchangeBundle:
         # encounter these problems as I have been focusing on minute data.
         reader = exchange_bundle.get_reader(data_frequency)
         for asset in assets:
-            # Since this pair was loaded last. It should be there in daily mode.
+            # Since this pair was loaded last. It should be here in daily mode.
             arrays = reader.load_raw_arrays(
                 sids=[asset.sid],
                 fields=['close'],
@@ -252,7 +251,6 @@ class TestExchangeBundle:
         ensure_directory(path)
 
         exchange_bundle = ExchangeBundle(exchange)
-        calendar = get_calendar('OPEN')
 
         # We are using a BcolzMinuteBarWriter even though the data is daily
         # Each day has a maximum of one bar
@@ -304,26 +302,25 @@ class TestExchangeBundle:
         pass
 
     def test_minute_bundle(self):
-        exchange_name = 'poloniex'
-        data_frequency = 'minute'
+        # exchange_name = 'poloniex'
+        # data_frequency = 'minute'
 
-        exchange = get_exchange(exchange_name)
-        asset = exchange.get_asset('neos_btc')
+        # exchange = get_exchange(exchange_name)
+        # asset = exchange.get_asset('neos_btc')
 
-        path = get_bcolz_chunk(
-            exchange_name=exchange_name,
-            symbol=asset.symbol,
-            data_frequency=data_frequency,
-            period='2017-5',
-        )
-
+        # path = get_bcolz_chunk(
+        #     exchange_name=exchange_name,
+        #     symbol=asset.symbol,
+        #     data_frequency=data_frequency,
+        #     period='2017-5',
+        # )
         pass
 
     def test_hash_symbol(self):
-        symbol = 'etc_btc'
-        sid = int(
-            hashlib.sha256(symbol.encode('utf-8')).hexdigest(), 16
-        ) % 10 ** 6
+        # symbol = 'etc_btc'
+        # sid = int(
+        #     hashlib.sha256(symbol.encode('utf-8')).hexdigest(), 16
+        # ) % 10 ** 6
         pass
 
     def test_validate_data(self):

@@ -1,12 +1,13 @@
 '''
-This algorithm requires an additional library (ta-lib) beyond those required by catalyst.
-Install it first by running: 
+This algorithm requires an additional library (ta-lib) beyond those
+required by catalyst. Install it first by running:
 $ pip install TA-Lib
 
-If you get build errors like "fatal error: ta-lib/ta_libc.h: No such file or directory"
-it typically means that it can't find the underlying TA-Lib library and needs to be installed.
-See https://mrjbq7.github.io/ta-lib/install.html for instructions on how to install 
-the required dependencies.
+If you get build errors like:
+    "fatal error: ta-lib/ta_libc.h: No such file or directory"
+it typically means that it can't find the underlying TA-Lib library and it
+needs to be installed. See https://mrjbq7.github.io/ta-lib/install.html for
+instructions on how to install the required dependencies.
 '''
 
 import talib
@@ -100,8 +101,8 @@ def _handle_data(context, data):
 
         if price < cost_basis:
             is_buy = True
-        elif position.amount > 0 and \
-                        price > cost_basis * (1 + context.PROFIT_TARGET):
+        elif(position.amount > 0
+             and price > cost_basis * (1 + context.PROFIT_TARGET)):
             profit = (price * position.amount) - (cost_basis * position.amount)
             log.info('closing position, taking profit: {}'.format(profit))
             order_target_percent(

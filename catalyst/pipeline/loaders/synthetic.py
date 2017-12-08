@@ -163,7 +163,7 @@ class SeededRandomLoader(PrecomputedLoader):
             bool_dtype: self._bool_values,
             object_dtype: self._object_values,
         }[dtype](shape)
-    
+
     @property
     def columns(self):
         return self._columns

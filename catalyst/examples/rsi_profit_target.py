@@ -11,7 +11,6 @@ from catalyst.api import (
     record,
     get_open_orders,
 )
-from catalyst.exchange.stats_utils import crossover, crossunder
 from catalyst.utils.run_algo import run_algorithm
 
 algo_namespace = 'rsi'
@@ -55,7 +54,7 @@ def _handle_buy_sell_decision(context, data, signal, price):
             stop=None
         )
 
-    action = None
+    # action = None
     if context.position is not None:
         cost_basis = context.position['cost_basis']
         amount = context.position['amount']
@@ -80,7 +79,7 @@ def _handle_buy_sell_decision(context, data, signal, price):
                 amount=-amount,
                 limit_price=price * (1 - context.SLIPPAGE_ALLOWED),
             )
-            action = 0
+            # action = 0
             context.position = None
 
     else:
@@ -97,7 +96,7 @@ def _handle_buy_sell_decision(context, data, signal, price):
                 amount=buy_amount,
                 stop=None
             )
-            action = 0
+            # action = 0
 
 
 def _handle_data_rsi_only(context, data):

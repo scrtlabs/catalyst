@@ -88,8 +88,8 @@ def _handle_data(context, data):
 
         if price < cost_basis:
             is_buy = True
-        elif position.amount > 0 and \
-                        price > cost_basis * (1 + context.PROFIT_TARGET):
+        elif(position.amount > 0
+             and price > cost_basis * (1 + context.PROFIT_TARGET)):
             profit = (price * position.amount) - (cost_basis * position.amount)
             log.info('closing position, taking profit: {}'.format(profit))
             order_target_percent(

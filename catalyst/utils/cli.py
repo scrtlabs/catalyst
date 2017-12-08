@@ -9,6 +9,7 @@ DEFAULT_BAR_TEMPLATE = '    [%(bar)s]  %(label)s:  %(info)s'
 DEFAULT_EMPTY_CHAR = ' '
 DEFAULT_FILL_CHAR = '='
 
+
 def item_show_count(total=None):
     def maybe_show_total(index):
         if total is not None:
@@ -17,11 +18,12 @@ def item_show_count(total=None):
 
     def item_show_func(item, _it=iter(count())):
         if item is not None:
-            starting = False
+            # starting = False
             return maybe_show_total(next(_it))
         return 'DONE'
 
     return item_show_func
+
 
 def maybe_show_progress(it,
                         show_progress,

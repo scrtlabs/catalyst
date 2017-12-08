@@ -116,7 +116,7 @@ class TestBcolzWriter(object):
 
         df = self.generate_df(exchange_name, freq, start, end)
 
-        print df.index[0],df.index[-1]
+        print(df.index[0], df.index[-1])
 
         writer = BcolzExchangeBarWriter(
             rootdir=self.root_dir,
@@ -140,7 +140,7 @@ class TestBcolzWriter(object):
 
         dx = get_df_from_arrays(arrays, periods)
 
-        assert_equals(df.equals(df), True)
+        assert_equals(df.equals(dx), True)
         pass
 
     def test_bcolz_bitfinex_daily_write_read(self):

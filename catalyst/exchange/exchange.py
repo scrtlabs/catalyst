@@ -5,7 +5,6 @@ from time import sleep
 
 import numpy as np
 import pandas as pd
-from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
 from catalyst.constants import LOG_LEVEL
@@ -242,9 +241,7 @@ class Exchange:
                 asset = a
 
         if asset is None:
-            supported_symbols = sorted([
-                asset.symbol for asset in self.assets
-            ])
+            supported_symbols = sorted([a.symbol for a in self.assets])
 
             raise SymbolNotFoundOnExchange(
                 symbol=symbol,
@@ -551,7 +548,7 @@ class Exchange:
                 start_dt = get_start_dt(end_dt, adj_bar_count, data_frequency)
                 trailing_dt = \
                     series[asset].index[-1] + get_delta(1, data_frequency) \
-                        if asset in series else start_dt
+                    if asset in series else start_dt
 
                 # The get_history method supports multiple asset
                 # Use the original frequency to let each api optimize
@@ -693,7 +690,8 @@ class Exchange:
         display_price = style.get_limit_price(is_buy)
 
         log.debug(
-            'issuing {side} order of {amount} {symbol} for {type}: {price}'.format(
+            'issuing {side} order of {amount} {symbol} for {type}:'
+            ' {price}'.format(
                 side='buy' if is_buy else 'sell',
                 amount=amount,
                 symbol=asset.symbol,

@@ -1,21 +1,16 @@
 import os
-import tarfile
 import importlib
+
 import pandas as pd
-
-from catalyst import get_calendar
-
-from catalyst.exchange.exchange_bundle import ExchangeBundle
-from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader
-from catalyst.data.minute_bars import BcolzMinuteBarMetadata
-from catalyst.exchange.bundle_utils import get_df_from_arrays, get_bcolz_chunk
-
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.finance import candlestick2_ohlc
-from matplotlib.finance import volume_overlay
+# from matplotlib.finance import volume_overlay
 import matplotlib.ticker as ticker
 
+from catalyst.exchange.exchange_bundle import ExchangeBundle
+from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader
+from catalyst.exchange.bundle_utils import get_df_from_arrays, get_bcolz_chunk
 from catalyst.exchange.factory import get_exchange
 
 EXCHANGE_NAMES = ['bitfinex', 'bittrex', 'poloniex']
@@ -85,8 +80,8 @@ class ValidateChunks(object):
             matplotlib.transforms.Bbox([[0.125, 0.1], [0.9, 0.26]]))
 
         # Plot the volume overlay
-        bc = volume_overlay(ax2, df['open'], df['close'], df['volume'],
-                            colorup='g', alpha=0.5, width=1)
+        # bc = volume_overlay(ax2, df['open'], df['close'], df['volume'],
+        #                     colorup='g', alpha=0.5, width=1)
 
         ax.xaxis.set_major_locator(ticker.MaxNLocator(6))
 

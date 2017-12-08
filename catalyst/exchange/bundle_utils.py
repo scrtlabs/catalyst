@@ -6,11 +6,9 @@ from datetime import timedelta, datetime, date
 import numpy as np
 import pandas as pd
 import pytz
-from catalyst.assets._assets import TradingPair
 
 from catalyst.data.bundles.core import download_without_progress
-from catalyst.exchange.exchange_utils import get_exchange_bundles_folder, \
-    get_exchange_symbols
+from catalyst.exchange.exchange_utils import get_exchange_bundles_folder
 
 EXCHANGE_NAMES = ['bitfinex', 'bittrex', 'poloniex']
 API_URL = 'http://data.enigma.co/api/v1'
@@ -80,9 +78,8 @@ def get_bcolz_chunk(exchange_name, symbol, data_frequency, period):
     if not os.path.isdir(path):
         url = 'https://s3.amazonaws.com/enigmaco/catalyst-bundles/' \
               'exchange-{exchange}/{name}.tar.gz'.format(
-            exchange=exchange_name,
-            name=name
-        )
+                exchange=exchange_name,
+                name=name)
 
         bytes = download_without_progress(url)
         with tarfile.open('r', fileobj=bytes) as tar:
@@ -193,8 +190,10 @@ def get_period_label(dt, data_frequency):
     str
 
     """
-    return '{}-{:02d}'.format(dt.year, dt.month) if data_frequency == 'minute' \
-        else '{}'.format(dt.year)
+    if data_frequency == 'minute':
+        return '{}-{:02d}'.format(dt.year, dt.month)
+    else:
+        return '{}'.format(dt.year)
 
 
 def get_month_start_end(dt, first_day=None, last_day=None):
@@ -315,7 +314,7 @@ def range_in_bundle(asset, start_dt, end_dt, reader):
             if np.isnan(close):
                 has_data = False
 
-        except Exception as e:
+        except Exception:
             has_data = False
 
     return has_data

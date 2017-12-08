@@ -1,5 +1,4 @@
 import json
-import json
 import time
 from collections import defaultdict
 
@@ -18,7 +17,9 @@ from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     InvalidHistoryFrequencyError,
-    InvalidOrderStyle, OrphanOrderReverseError)
+    InvalidOrderStyle,
+    OrphanOrderError,
+    OrphanOrderReverseError)
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder, \
     ExchangeStopLimitOrder
 from catalyst.exchange.exchange_utils import get_exchange_symbols_filename, \
@@ -87,7 +88,6 @@ class Poloniex(Exchange):
             # filled = -filled
 
         price = float(order_status['rate'])
-        order_type = order_status['type']
 
         stop_price = None
         limit_price = None
@@ -101,11 +101,11 @@ class Poloniex(Exchange):
         # executed_price = float(order_status['avg_execution_price'])
         executed_price = price
 
-        # TODO: bitfinex does not specify comission. I could calculate it but not sure if it's worth it.
+        # TODO: Set Poloniex comission
         commission = None
 
-        # date = pd.Timestamp.utcfromtimestamp(float(order_status['timestamp']))
-        # date = pytz.utc.localize(date)
+        # date=pd.Timestamp.utcfromtimestamp(float(order_status['timestamp']))
+        # date=pytz.utc.localize(date)
         date = None
 
         order = Order(
@@ -292,8 +292,8 @@ class Poloniex(Exchange):
         """
         exchange_symbol = self.get_symbol(asset)
 
-        if isinstance(style, ExchangeLimitOrder) or isinstance(style,
-                                                               ExchangeStopLimitOrder):
+        if(isinstance(style, ExchangeLimitOrder)
+           or isinstance(style, ExchangeStopLimitOrder)):
             if isinstance(style, ExchangeStopLimitOrder):
                 log.warn('{} will ignore the stop price'.format(self.name))
 
@@ -350,8 +350,8 @@ class Poloniex(Exchange):
         return self.portfolio.open_orders
 
         """
-            TODO: Why going to the exchange if we already have this info locally?
-                  And why creating all these Orders if we later discard them?
+        TODO: Why going to the exchange if we already have this info locally?
+              And why creating all these Orders if we later discard them?
         """
 
         try:
@@ -365,7 +365,7 @@ class Poloniex(Exchange):
         if 'error' in response:
             raise ExchangeRequestError(
                 error='Unable to retrieve open orders: {}'.format(
-                    order_statuses['message'])
+                    response['message'])
             )
 
         print(self.portfolio.open_orders)
@@ -373,8 +373,8 @@ class Poloniex(Exchange):
         # TODO: Need to handle openOrders for 'all'
         orders = list()
         for order_status in response:
-            order, executed_price = self._create_order(
-                order_status)  # will Throw error b/c Polo doesn't track order['symbol']
+            # will Throw error b/c Polo doesn't track order['symbol']
+            order, executed_price = self._create_order(order_status)
             if asset is None or asset == order.sid:
                 orders.append(order)
 
@@ -437,7 +437,8 @@ class Poloniex(Exchange):
 
         if 'error' in response:
             log.info(
-                'Unable to cancel order {order_id} on exchange {exchange} {error}.'.format(
+                'Unable to cancel order {order_id} on exchange {exchange} '
+                '{error}.'.format(
                     order_id=order.id,
                     exchange=self.name,
                     error=response['error']
@@ -512,17 +513,17 @@ class Poloniex(Exchange):
             else:
                 try:
                     start_date = cached_symbols[exchange_symbol]['start_date']
-                except KeyError as e:
+                except KeyError:
                     start_date = time.strftime('%Y-%m-%d')
 
             try:
                 end_daily = cached_symbols[exchange_symbol]['end_daily']
-            except KeyError as e:
+            except KeyError:
                 end_daily = 'N/A'
 
             try:
                 end_minute = cached_symbols[exchange_symbol]['end_minute']
-            except KeyError as e:
+            except KeyError:
                 end_minute = 'N/A'
 
             symbol_map[exchange_symbol] = dict(
@@ -593,19 +594,21 @@ class Poloniex(Exchange):
                 else:
                     for tx in response:
                         """
-                            We maintain a list of dictionaries of transactions that correspond to
-                            partially filled orders, indexed by order_id. Every time we query 
-                            executed transactions from the exchange, we check if we had that 
-                            transaction for that order already. If not, we process it.
+                        We maintain a list of dictionaries of transactions that
+                        correspond to partially filled orders, indexed by
+                        order_id. Every time we query executed transactions
+                        from the exchange, we check if we had that transaction
+                        for that order already. If not, we process it.
 
-                            When an order if fully filled, we flush the dict of transactions  
-                            associated with that order.
+                        When an order if fully filled, we flush the dict of
+                        transactions associated with that order.
                         """
                         if (not filter(
                                 lambda item: item['order_id'] == tx['tradeID'],
                                 self.transactions[order_id])):
                             log.debug(
-                                'Got new transaction for order {}: amount {}, price {}'.format(
+                                'Got new transaction for order {}: amount {}, '
+                                'price {}'.format(
                                     order_id, tx['amount'], tx['rate']))
                             tx['amount'] = float(tx['amount'])
                             if (tx['type'] == 'sell'):
@@ -616,7 +619,7 @@ class Poloniex(Exchange):
                                 dt=pd.to_datetime(tx['date'], utc=True),
                                 price=float(tx['rate']),
                                 order_id=tx['tradeID'],
-                                # it's a misnomer, but keeping it for compatibility
+                                # it's a misnomer, but keep for compatibility
                                 commission=float(tx['fee'])
                             )
                             self.transactions[order_id].append(transaction)
@@ -626,7 +629,8 @@ class Poloniex(Exchange):
                     if (not order_open):
                         """
                             Since transactions have been executed individually
-                            the only thing left to do is remove them from list of open_orders
+                            the only thing left to do is remove them from list
+                            of open_orders
                         """
                         del self.portfolio.open_orders[order_id]
                         del self.transactions[order_id]

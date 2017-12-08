@@ -3,11 +3,13 @@ from logbook import Logger
 
 from catalyst import get_calendar
 from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
-from catalyst.exchange.exchange_data_portal import DataPortalExchangeBacktest, \
+from catalyst.exchange.exchange_data_portal import (
+    DataPortalExchangeBacktest,
     DataPortalExchangeLive
+)
 from catalyst.exchange.exchange_utils import get_common_assets
-from catalyst.exchange.factory import get_exchange, get_exchanges
-from test_utils import rnd_history_date_days, rnd_bar_count, output_df
+from catalyst.exchange.factory import get_exchanges
+from test_utils import rnd_history_date_days, rnd_bar_count
 
 log = Logger('test_bitfinex')
 
@@ -35,31 +37,31 @@ class TestExchangeDataPortal:
         )
 
     def test_get_history_window_live(self):
-        asset_finder = self.data_portal_live.asset_finder
+        # asset_finder = self.data_portal_live.asset_finder
 
-        assets = [
-            asset_finder.lookup_symbol('eth_btc', self.bitfinex),
-            asset_finder.lookup_symbol('eth_btc', self.bittrex)
-        ]
-        now = pd.Timestamp.utcnow()
-        data = self.data_portal_live.get_history_window(
-            assets,
-            now,
-            10,
-            '1m',
-            'price')
+        # assets = [
+        #     asset_finder.lookup_symbol('eth_btc', self.bitfinex),
+        #     asset_finder.lookup_symbol('eth_btc', self.bittrex)
+        # ]
+        # now = pd.Timestamp.utcnow()
+        # data = self.data_portal_live.get_history_window(
+        #     assets,
+        #     now,
+        #     10,
+        #     '1m',
+        #     'price')
         pass
 
     def test_get_spot_value_live(self):
-        asset_finder = self.data_portal_live.asset_finder
+        # asset_finder = self.data_portal_live.asset_finder
 
-        assets = [
-            asset_finder.lookup_symbol('eth_btc', self.bitfinex),
-            asset_finder.lookup_symbol('eth_btc', self.bittrex)
-        ]
-        now = pd.Timestamp.utcnow()
-        value = self.data_portal_live.get_spot_value(
-            assets, 'price', now, '1m')
+        # assets = [
+        #     asset_finder.lookup_symbol('eth_btc', self.bitfinex),
+        #     asset_finder.lookup_symbol('eth_btc', self.bittrex)
+        # ]
+        # now = pd.Timestamp.utcnow()
+        # value = self.data_portal_live.get_spot_value(
+        #     assets, 'price', now, '1m')
         pass
 
     def test_get_history_window_backtest(self):

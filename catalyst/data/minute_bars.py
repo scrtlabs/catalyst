@@ -341,12 +341,10 @@ class BcolzMinuteBarMetadata(object):
             'end_session': str(self.end_session.date()),
             # Write these values for backwards compatibility
             'first_trading_day': str(self.start_session.date()),
-            'market_opens': (
-                market_opens.values.astype('datetime64[m]').
-                    astype(np.int64).tolist()),
-            'market_closes': (
-                market_closes.values.astype('datetime64[m]').
-                    astype(np.int64).tolist()),
+            'market_opens': (market_opens.values.astype('datetime64[m]').
+                             astype(np.int64).tolist()),
+            'market_closes': (market_closes.values.astype('datetime64[m]').
+                              astype(np.int64).tolist()),
         }
         with open(self.metadata_path(rootdir), 'w+') as fp:
             json.dump(metadata, fp)
@@ -1256,8 +1254,8 @@ class BcolzMinuteBarReader(MinuteBarReader):
                 values = carray[start_idx:end_idx + 1]
                 if indices_to_exclude is not None:
                     for excl_start, excl_stop in indices_to_exclude[::-1]:
-                        excl_slice = np.s_[
-                                     excl_start - start_idx:excl_stop - start_idx + 1]
+                        excl_slice = np.s_[excl_start - start_idx:excl_stop
+                                           - start_idx + 1]
                         values = np.delete(values, excl_slice)
 
                 where = values != 0
@@ -1320,9 +1318,8 @@ class H5MinuteBarUpdateWriter(object):
 
     def __init__(self, path, complevel=None, complib=None):
         self._complevel = complevel if complevel \
-                                       is not None else self._COMPLEVEL
-        self._complib = complib if complib \
-                                   is not None else self._COMPLIB
+                            is not None else self._COMPLEVEL
+        self._complib = complib if complib is not None else self._COMPLIB
         self._path = path
 
     def write(self, frames):

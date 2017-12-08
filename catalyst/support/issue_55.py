@@ -1,4 +1,3 @@
-import talib
 import pandas as pd
 
 from catalyst import run_algorithm

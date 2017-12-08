@@ -37,6 +37,7 @@ from catalyst.utils.cli import maybe_show_progress
 
 ONE_MEGABYTE = 1024 * 1024
 
+
 def asset_db_path(bundle_name, timestr, environ=None, db_version=None):
     return pth.data_path(
         asset_db_relative(bundle_name, timestr, environ, db_version),
@@ -134,6 +135,7 @@ def ingestions_for_bundle(bundle, environ=None):
          if not pth.hidden(ing)),
         reverse=True,
     )
+
 
 def download_with_progress(url, chunk_size, **progress_kwargs):
     """
@@ -705,4 +707,5 @@ def _make_bundle_core():
     )
 
 
-bundles, register_bundle, register, unregister, ingest, load, clean = _make_bundle_core()
+bundles, register_bundle, register, unregister, ingest, load, clean = \
+    _make_bundle_core()

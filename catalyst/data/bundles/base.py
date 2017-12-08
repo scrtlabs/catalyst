@@ -13,10 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from itertools import count
 import tarfile
-from time import time, sleep
+from time import sleep
 
 from abc import abstractmethod, abstractproperty
 import logbook
@@ -36,6 +35,7 @@ logbook.StderrHandler().push_application()
 log = logbook.Logger(__name__, level=LOG_LEVEL)
 
 DEFAULT_RETRIES = 5
+
 
 class BaseBundle(object):
     def __init__(self, asset_filter=[]):
@@ -104,11 +104,11 @@ class BaseBundle(object):
 
     def post_process_symbol_metadata(self, metadata, data):
         return metadata
-    
+
     @abstractmethod
     def fetch_raw_symbol_frame(self, api_key, symbol, start_date, end_date):
         raise NotImplementedError()
-    
+
     def ingest(self,
                environ,
                asset_db_writer,
@@ -128,7 +128,7 @@ class BaseBundle(object):
             retries = environ.get('CATALYST_DOWNLOAD_ATTEMPTS', 5)
 
             if is_compile:
-                # User has instructed local compilation and ingestion of bundle.
+                # User has instructed local compilation & ingestion of bundle.
                 # Fetch raw metadata for all symbols.
                 raw_metadata = self._fetch_metadata_frame(
                     api_key,
@@ -157,9 +157,9 @@ class BaseBundle(object):
                         show_progress=show_progress,
                     )
 
-                # Post-process metadata using cached symbol frames, and write to
-                # disk.  This metadata must be written before any attempt to write
-                # minute data.
+                # Post-process metadata using cached symbol frames, and write
+                # to disk.  This metadata must be written before any attempt
+                # to write minute data.
                 metadata = self._post_process_metadata(
                     raw_metadata,
                     cache,
@@ -184,10 +184,11 @@ class BaseBundle(object):
                         show_progress=show_progress,
                     )
 
-                # For legacy purposes, this call is required to ensure the database
-                # contains an appropriately initialized file structure.  We don't
-                # forsee a usecase for adjustments at this time, but may later
-                # choose to expose this functionality in the future.
+                # For legacy purposes, this call is required to ensure the
+                # database contains an appropriately initialized file
+                # structure.  We don't forsee a usecase for adjustments at
+                # this time, but may later choose to expose this functionality
+                # in the future.
                 adjustment_writer.write(
                     splits=(
                         pd.concat(self.splits, ignore_index=True)
@@ -232,12 +233,12 @@ class BaseBundle(object):
             tar.extractall(output_dir)
 
     def _fetch_metadata_frame(self,
-                             api_key,
-                             cache,
-                             retries=DEFAULT_RETRIES,
-                             environ=None,
-                             show_progress=False):
-        
+                              api_key,
+                              cache,
+                              retries=DEFAULT_RETRIES,
+                              environ=None,
+                              show_progress=False):
+
         # Setup raw metadata iterator to fetch pages if necessary.
         raw_iter = self._fetch_metadata_iter(api_key, cache, retries, environ)
 
@@ -251,7 +252,7 @@ class BaseBundle(object):
             show_percent=False,
         ) as blocks:
             metadata = pd.concat(blocks, ignore_index=True)
-        
+
         return metadata
 
     def _fetch_metadata_iter(self, api_key, cache, retries, environ):
@@ -269,20 +270,19 @@ class BaseBundle(object):
                             page_number,
                         )
                         break
-                    except ValueError as e:
+                    except ValueError:
                         raw = pd.DataFrame([])
                         break
-                    except Exception as e:
+                    except Exception:
                         log.exception(
                             'Failed to load metadata from {}. '
                             'Retrying.'.format(self.name)
-                        ) 
+                        )
                 else:
                     raise ValueError(
                         'Failed to download metadata page {} after {} '
                         'attempts.'.format(page_number, retries)
                     )
-
 
             if raw.empty:
                 # Empty DataFrame signals completion.
@@ -305,7 +305,7 @@ class BaseBundle(object):
             columns=self.md_column_names,
             index=metadata.index,
         )
-        
+
         # Iterate over the available symbols, loading the asset's raw symbol
         # data from the cache.  The final metadata is computed and recorded in
         # the appropriate row depending on the asset's id.
@@ -318,22 +318,22 @@ class BaseBundle(object):
             show_percent=False,
         ) as symbols_map:
             for asset_id, symbol in symbols_map:
-                # Attempt to load data from disk, the cache should have an entry
-                # for each symbol at this point of the execution. If one does
-                # not exist, we should fail.
+                # Attempt to load data from disk, the cache should have an
+                # entry for each symbol at this point of the execution. If one
+                # does not exist, we should fail.
                 key = '{sym}.daily.frame'.format(sym=symbol)
                 try:
                     raw_data = cache[key]
                 except KeyError:
                     raise ValueError(
-                      'Unable to find cached data for symbol: {0}'.format(symbol)
-                    )
+                      'Unable to find cached data for symbol:'
+                      ' {0}'.format(symbol))
 
                 # Perform and require post-processing of metadata.
                 final_symbol_metadata = self.post_process_symbol_metadata(
                     asset_id,
                     metadata.iloc[asset_id],
-                    raw_data,        
+                    raw_data,
                 )
 
                 # Record symbol's final metadata.
@@ -363,8 +363,8 @@ class BaseBundle(object):
             # returns the cached data unaltered.  The `should_sleep` flag
             # indicates that an API call was attempted, and that we should be
             # ensure aren't exceeding our rate limit before proceeding to the
-            # next symbol. If the raw_data is updated, it is cached before being
-            # returned.
+            # next symbol. If the raw_data is updated, it is cached before
+            # being returned.
             raw_data, should_sleep = self._maybe_update_symbol_frame(
                 start_time,
                 api_key,
@@ -414,7 +414,7 @@ class BaseBundle(object):
         last = start_session
         if raw_data is not None and len(raw_data) > 0:
             last = raw_data.index[-1].tz_localize('UTC')
-        
+
         should_sleep = False
 
         # Determine time at which cached data will be considered stale.
@@ -455,7 +455,7 @@ class BaseBundle(object):
                             retries=DEFAULT_RETRIES):
 
         # Data for symbol is old enough to attempt an update or is not
-        # present in the cache.  Fetch raw data for a single symbol 
+        # present in the cache.  Fetch raw data for a single symbol
         # with requested intervals and frequency. Retry as necessary.
         for _ in range(retries):
             try:
@@ -468,7 +468,6 @@ class BaseBundle(object):
                     data_frequency,
                 )
                 raw_data.index = pd.to_datetime(raw_data.index, utc=True)
-                #raw_data.index = raw_data.index.tz_localize('UTC')
 
                 # Filter incoming data to fit start and end sessions.
                 raw_data = raw_data[
@@ -482,7 +481,7 @@ class BaseBundle(object):
 
                 return raw_data
 
-            except Exception as e:
+            except Exception:
                 log.exception(
                     'Exception raised fetching {name} data. Retrying.'
                     .format(name=self.name)
