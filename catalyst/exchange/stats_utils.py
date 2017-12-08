@@ -336,6 +336,20 @@ def stats_to_s3(uri, stats, algo_namespace, recorded_cols=None,
 
 
 def stats_to_algo_folder(stats, algo_namespace, recorded_cols=None):
+    """
+    Saves the performance stats to the algo local folder.
+
+    Parameters
+    ----------
+    stats: list[Object]
+    algo_namespace: str
+    recorded_cols: list[str]
+
+    Returns
+    -------
+    str
+
+    """
     bytes_to_write = get_csv_stats(stats, recorded_cols=recorded_cols)
 
     timestr = time.strftime('%Y%m%d')

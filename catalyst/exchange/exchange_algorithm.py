@@ -675,6 +675,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         except Exception as e:
             log.warn('unable to calculate performance: {}'.format(e))
 
+        # Writing the stats output
         csv_bytes = None
         try:
             csv_bytes = stats_to_algo_folder(
