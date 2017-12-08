@@ -283,7 +283,9 @@ def run(ctx,
         exchange=exchange_name,
         algo_namespace=algo_namespace,
         base_currency=base_currency,
-        live_graph=False
+        live_graph=False,
+        simulate_orders=True,
+        stats_output=None,
     )
 
     if output == '-':
