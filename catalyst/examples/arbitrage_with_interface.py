@@ -263,13 +263,20 @@ def analyze(context, stats):
     pass
 
 
-run_algorithm(
-    initialize=initialize,
-    handle_data=handle_data,
-    analyze=analyze,
-    exchange_name='poloniex,bitfinex',
-    live=True,
-    algo_namespace=algo_namespace,
-    quote_currency='btc',
-    live_graph=False
-)
+if __name__ == '__main__':
+    # The execution mode: backtest or live
+    MODE = 'live'
+    if MODE == 'live':
+        run_algorithm(
+            capital_base=0.1,
+            initialize=initialize,
+            handle_data=handle_data,
+            analyze=analyze,
+            exchange_name='poloniex,bitfinex',
+            live=True,
+            algo_namespace=algo_namespace,
+            base_currency='btc',
+            live_graph=False,
+            simulate_orders=True,
+            stats_output=None,
+        )
