@@ -1,9 +1,13 @@
+import csv
 import numbers
 
+import copy
 import numpy as np
 import pandas as pd
 import boto3
 import time
+
+from catalyst.assets._assets import TradingPair
 
 s3 = boto3.resource('s3')
 
@@ -123,50 +127,132 @@ def vwap(df):
     return ret
 
 
-def format_positions(positions):
-    parts = []
-    for position in positions:
-        msg = '{amount:.2f}{base} cost basis {cost_basis:.8f}{quote}'.format(
-            amount=position['amount'],
-            base=position['sid'].base_currency,
-            cost_basis=position['cost_basis'],
-            quote=position['sid'].quote_currency
-        )
-        parts.append(msg)
-    return ', '.join(parts)
+def set_position_row(row, asset, asset_values=list()):
+    """
+    Apply the position data as individual columns.
+
+    Parameters
+    ----------
+    row: dict[str, Object]
+    asset: TradingPair
+    asset_values: list[str]
+        If a recorded_col contains a tuple which first value is an asset
+        matching a position, its value will be displayed with the
+        position and not in the index.
+
+    Returns
+    -------
+
+    """
+    asset_cols = ['symbol']
+    row['symbol'] = asset.symbol
+
+    position = next((p for p in row['positions'] if p['sid'] == asset), None)
+
+    columns = ['amount', 'cost_basis', 'last_sale_price']
+    for column in columns:
+        if position is not None:
+            row[column] = position[column]
+
+        else:
+            row[column] = 0
+
+        asset_cols.append(column)
+
+    values = asset_values[asset] if asset in asset_values else list()
+    for column in values:
+        row[column] = values[column]
+
+        asset_cols.append(column)
+
+    return asset_cols
 
 
-def prepare_stats(df, recorded_cols=None):
-    columns = ['starting_cash', 'ending_cash', 'portfolio_value',
-               'pnl', 'long_exposure', 'short_exposure', 'orders',
-               'transactions', 'positions']
+def prepare_stats(stats, recorded_cols=list()):
+    """
+    Prepare the stats DataFrame for user-friendly output.
 
+    Parameters
+    ----------
+    stats: list[Object]
+    recorded_cols: list[str]
+
+    Returns
+    -------
+
+    """
+    asset_cols = list()
+
+    stats = copy.deepcopy(list(stats))
+    # Using a copy since we are adding rows inside the loop.
+    for row_index, row_data in enumerate(list(stats)):
+        assets = [p['sid'] for p in row_data['positions']]
+
+        asset_values = dict()
+        for column in recorded_cols[:]:
+            value = row_data[column]
+            if type(value) is dict:
+                for asset in value:
+                    if not isinstance(asset, TradingPair):
+                        break
+
+                    if asset not in assets:
+                        assets.append(asset)
+
+                    if asset not in asset_values:
+                        asset_values[asset] = dict()
+
+                    asset_values[asset][column] = value[asset]
+
+        if len(assets) == 1:
+            row = stats[row_index]
+            asset_cols = set_position_row(row, assets[0], asset_values)
+
+        elif len(assets) > 1:
+            for asset_index, asset in enumerate(assets):
+                if asset_index > 0:
+                    row = copy.deepcopy(row_data)
+                    stats.append(row)
+
+                else:
+                    row = stats[row_index]
+
+                asset_cols = set_position_row(row, assets[asset_index],
+                                              asset_values)
+
+    df = pd.DataFrame(stats)
+
+    index_cols = [
+        'period_close', 'starting_cash', 'ending_cash', 'portfolio_value',
+        'pnl', 'long_exposure', 'short_exposure', 'orders', 'transactions',
+    ]
+
+    # Removing the asset specific entries
+    recorded_cols = [x for x in recorded_cols if x not in asset_cols]
     if recorded_cols is not None:
         for column in recorded_cols:
-            columns.append(column)
-
-    df = df.copy(True)
-
-    df.set_index('period_close', drop=True, inplace=True)
-    df.dropna(axis=1, how='all', inplace=True)
+            index_cols.append(column)
 
     df['orders'] = df['orders'].apply(lambda orders: len(orders))
     df['transactions'] = df['transactions'].apply(
         lambda transactions: len(transactions)
     )
-    df['positions'] = df['positions'].apply(format_positions)
 
-    return df, columns
+    df.set_index(index_cols, drop=True, inplace=True)
+    df.dropna(axis=1, how='all', inplace=True)
+    df.sort_index(axis=0, level=0, inplace=True)
+
+    return df, asset_cols
 
 
-def get_pretty_stats(df, recorded_cols=None, num_rows=10):
+def get_pretty_stats(stats, recorded_cols=None, num_rows=10):
     """
     Format and print the last few rows of a statistics DataFrame.
     See the pyfolio project for the data structure.
 
     Parameters
     ----------
-    df: pd.DataFrame
+    stats: list[Object]
     num_rows: int
 
     Returns
@@ -174,10 +260,10 @@ def get_pretty_stats(df, recorded_cols=None, num_rows=10):
     str
 
     """
-    df, columns = prepare_stats(df, recorded_cols=recorded_cols)
+    df, columns = prepare_stats(stats, recorded_cols=recorded_cols)
 
     pd.set_option('display.expand_frame_repr', False)
-    pd.set_option('precision', 3)
+    pd.set_option('precision', 8)
     pd.set_option('display.width', 1000)
     pd.set_option('display.max_colwidth', 1000)
 
@@ -191,31 +277,32 @@ def get_pretty_stats(df, recorded_cols=None, num_rows=10):
     )
 
 
-def get_csv_stats(df, recorded_cols=None):
+def get_csv_stats(stats, recorded_cols=None):
     """
     Create a CSV buffer from the stats DataFrame.
 
     Parameters
     ----------
     path: str
-    df: pd.DataFrame
+    stats: list[Object]
     recorded_cols: list[str]
 
     Returns
     -------
 
     """
-    df, columns = prepare_stats(df, recorded_cols=recorded_cols)
+    df, columns = prepare_stats(stats, recorded_cols=recorded_cols)
 
     return df.to_csv(
         None,
         columns=columns,
-        encoding='utf-8',
+        # encoding='utf-8',
+        quoting=csv.QUOTE_NONNUMERIC
     ).encode()
 
 
-def stats_to_s3(uri, df, algo_namespace, recorded_cols=None):
-    bytes_to_write = get_csv_stats(df, recorded_cols=recorded_cols)
+def stats_to_s3(uri, stats, algo_namespace, recorded_cols=None):
+    bytes_to_write = get_csv_stats(stats, recorded_cols=recorded_cols)
 
     timestr = time.strftime('%Y%m%d')
 

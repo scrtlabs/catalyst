@@ -96,14 +96,13 @@ def handle_data(context, data):
     # Now that we've collected all current data for this frame, we use
     # the record() method to save it. This data will be available as
     # a parameter of the analyze() function for further analysis.
+
     record(
-        price=price,
-        volume=current['volume'],
-        price_change=price_change,
-        rsi=rsi[-1],
+        volume=(context.market, current['volume']),
+        price_change=(context.market, price_change),
+        rsi=(context.market, rsi[-1]),
         cash=cash
     )
-
     # We are trying to avoid over-trading by limiting our trades to
     # one per day.
     if context.traded_today:
@@ -278,6 +277,6 @@ if __name__ == '__main__':
             algo_namespace=NAMESPACE,
             base_currency='eth',
             live_graph=False,
-            simulate_orders=False,
+            simulate_orders=True,
             stats_output=None
         )

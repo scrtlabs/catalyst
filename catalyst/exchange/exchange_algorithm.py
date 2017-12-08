@@ -326,7 +326,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         self.retry_order = 2
         self.retry_delay = 5
 
-        self.stats_minutes = 5
+        self.stats_minutes = 20
 
         super(ExchangeTradingAlgorithmLive, self).__init__(*args, **kwargs)
 
@@ -614,12 +614,12 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
 
             self.add_exposure_stats(frame_stats)
 
-            print_df = pd.DataFrame(list(self.frame_stats))
+            # print_df = pd.DataFrame(list(self.frame_stats))
             log.info(
                 'statistics for the last {stats_minutes} minutes:\n{stats}'.format(
                     stats_minutes=self.stats_minutes,
                     stats=get_pretty_stats(
-                        df=print_df,
+                        stats=self.frame_stats,
                         recorded_cols=recorded_cols,
                         num_rows=self.stats_minutes
                     )
@@ -644,7 +644,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                 if 's3://' in self.stats_output:
                     stats_to_s3(
                         uri=self.stats_output,
-                        df=print_df,
+                        stats=self.frame_stats,
                         algo_namespace=self.algo_namespace,
                         recorded_cols=recorded_cols,
                     )

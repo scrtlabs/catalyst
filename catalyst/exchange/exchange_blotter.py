@@ -6,7 +6,7 @@ from logbook import Logger
 
 from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.exchange_errors import ExchangeRequestError, \
-    ExchangePortfolioDataError, OrphanOrderError, ExchangeTransactionError
+    ExchangePortfolioDataError, ExchangeTransactionError
 from catalyst.finance.blotter import Blotter
 from catalyst.finance.commission import CommissionModel
 from catalyst.finance.order import ORDER_STATUS
@@ -175,6 +175,11 @@ class ExchangeBlotter(Blotter):
 
     @expect_types(asset=TradingPair)
     def order(self, asset, amount, style, order_id=None):
+        log.debug('ordering {} {}'.format(amount, asset.symbol))
+        if amount == 0:
+            log.warn('skipping 0 amount orders')
+            return None
+
         if self.simulate_orders:
             return super(ExchangeBlotter, self).order(
                 asset, amount, style, order_id
