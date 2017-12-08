@@ -127,6 +127,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#buy-and-hodl-algorithm">Buy and Hodl Algorithm</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dual-moving-average-crossover">Dual Moving Average Crossover</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#mean-reversion-algorithm">Mean Reversion Algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#simple-universe">Simple Universe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#portfolio-optimization">Portfolio Optimization</a></li>
 </ul>
 </li>
@@ -279,6 +280,10 @@ in the <code class="docutils literal"><span class="pre">analyze()</span></code> 
 strategy that is used in our
 <a class="reference external" href="videos.html#backtesting-a-strategy">two-part video tutorial</a> to show how
 to get started in backtesting and live trading with Catalyst.</li>
+<li><a class="reference internal" href="#simple-universe"><span>Simple Universe</span></a>: This code provides the &#8216;universe&#8217;
+of available trading pairs on a given exchange on any given day. You can use
+this code to dynamically select which currency pairs you want to trade each
+day of your strategy. This example does not make any trades.</li>
 <li><a class="reference internal" href="#portfolio-optimization"><span>Portfolio Optimization</span></a>: Use this code to
 execute a portfolio optimization model. This strategy will select the
 portfolio with the maximum Sharpe Ratio. The parameters are set to use 180
@@ -963,8 +968,165 @@ implemented after the video was recorded, which executes the orders at slighlty
 different prices, but resulting in significant changes in performance of our
 strategy.</p>
 </div>
+<div class="section" id="simple-universe">
+<span id="id1"></span><h2>Simple Universe<a class="headerlink" href="#simple-universe" title="Permalink to this headline">¶</a></h2>
+<p>Source code: <a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/simple_universe.py">examples/simple_universe.py</a></p>
+<p>This example aims to provide an easy way for users to learn how to
+collect data from any given exchange and select a subset of the available
+currency pairs for trading. You simply need to specify the exchange and
+the market (base_currency) that you want to focus on. You will then see
+how to create a universe of assets, and filter it based the market you
+desire.</p>
+<p>The example prints out the closing price of all the pairs for a given
+market in a given exchange every 30 minutes. The example also contains
+the OHLCV data with minute-resolution for the past seven days which
+could be used to create indicators. Use this code as the backbone to
+create your own trading strategy.</p>
+<p>The lookback_date variable is used to ensure data for a coin existed on
+the lookback period specified.</p>
+<p>To run, execute the following two commands in a terminal (inside catalyst
+environment). The first one retrieves all the pricing data needed for this
+script to run (only needs to be run once), and the second one executes this
+script with the parameters specified in the run_algorithm() call at the end
+of the file:</p>
+<div class="highlight-bash"><div class="highlight"><pre>catalyst ingest-exchange -x bitfinex -f minute
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre>python simple_universe.py
+</pre></div>
+</div>
+<p>Credits: This code was originally submitted by <a class="reference external" href="https://github.com/abnera">Abner Ayala-Acevedo</a>. Thank you!</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">catalyst</span> <span class="kn">import</span> <span class="n">run_algorithm</span>
+<span class="kn">from</span> <span class="nn">catalyst.exchange.exchange_utils</span> <span class="kn">import</span> <span class="n">get_exchange_symbols</span>
+<span class="kn">from</span> <span class="nn">catalyst.api</span> <span class="kn">import</span> <span class="p">(</span><span class="n">symbols</span><span class="p">,</span> <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c"># minute counter</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">exchange</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">exchanges</span><span class="o">.</span><span class="n">values</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">base_currency</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">exchanges</span><span class="o">.</span><span class="n">values</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">base_currency</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">handle_data</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">lookback_days</span> <span class="o">=</span> <span class="mi">7</span>  <span class="c"># 7 days</span>
+
+    <span class="c"># current date &amp; time in each iteration formatted into a string</span>
+    <span class="n">now</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">current_dt</span>
+    <span class="n">date</span><span class="p">,</span> <span class="n">time</span> <span class="o">=</span> <span class="n">now</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&#39;%Y-%m-</span><span class="si">%d</span><span class="s"> %H:%M:%S&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">)</span>
+    <span class="n">lookback_date</span> <span class="o">=</span> <span class="n">now</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">lookback_days</span><span class="p">)</span>
+    <span class="c"># keep only the date as a string, discard the time</span>
+    <span class="n">lookback_date</span> <span class="o">=</span> <span class="n">lookback_date</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&#39;%Y-%m-</span><span class="si">%d</span><span class="s"> %H:%M:%S&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">one_day_in_minutes</span> <span class="o">=</span> <span class="mi">1440</span>  <span class="c"># 60 * 24 assumes data_frequency=&#39;minute&#39;</span>
+    <span class="c"># update universe everyday at midnight</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">context</span><span class="o">.</span><span class="n">i</span> <span class="o">%</span> <span class="n">one_day_in_minutes</span><span class="p">:</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">universe</span> <span class="o">=</span> <span class="n">universe</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">lookback_date</span><span class="p">,</span> <span class="n">date</span><span class="p">)</span>
+
+    <span class="c"># get data every 30 minutes</span>
+    <span class="n">minutes</span> <span class="o">=</span> <span class="mi">30</span>
+    <span class="c"># get lookback_days of history data: that is &#39;lookback&#39; number of bins</span>
+    <span class="n">lookback</span> <span class="o">=</span> <span class="n">one_day_in_minutes</span> <span class="o">/</span> <span class="n">minutes</span> <span class="o">*</span> <span class="n">lookback_days</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">context</span><span class="o">.</span><span class="n">i</span> <span class="o">%</span> <span class="n">minutes</span> <span class="ow">and</span> <span class="n">context</span><span class="o">.</span><span class="n">universe</span><span class="p">:</span>
+        <span class="c"># we iterate for every pair in the current universe</span>
+        <span class="k">for</span> <span class="n">coin</span> <span class="ow">in</span> <span class="n">context</span><span class="o">.</span><span class="n">coins</span><span class="p">:</span>
+            <span class="n">pair</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">coin</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span>
+
+            <span class="c"># Get 30 minute interval OHLCV data. This is the standard data</span>
+            <span class="c"># required for candlestick or indicators/signals. Return Pandas</span>
+            <span class="c"># DataFrames. 30T means 30-minute re-sampling of one minute data.</span>
+            <span class="c"># Adjust it to your desired time interval as needed.</span>
+            <span class="n">opened</span> <span class="o">=</span> <span class="n">fill</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">history</span><span class="p">(</span><span class="n">coin</span><span class="p">,</span> <span class="s">&#39;open&#39;</span><span class="p">,</span>
+                                  <span class="n">bar_count</span><span class="o">=</span><span class="n">lookback</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="s">&#39;30T&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">values</span>
+            <span class="n">high</span> <span class="o">=</span> <span class="n">fill</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">history</span><span class="p">(</span><span class="n">coin</span><span class="p">,</span> <span class="s">&#39;high&#39;</span><span class="p">,</span>
+                                  <span class="n">bar_count</span><span class="o">=</span><span class="n">lookback</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="s">&#39;30T&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">values</span>
+            <span class="n">low</span> <span class="o">=</span> <span class="n">fill</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">history</span><span class="p">(</span><span class="n">coin</span><span class="p">,</span> <span class="s">&#39;low&#39;</span><span class="p">,</span>
+                                  <span class="n">bar_count</span><span class="o">=</span><span class="n">lookback</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="s">&#39;30T&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">values</span>
+            <span class="n">close</span> <span class="o">=</span> <span class="n">fill</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">history</span><span class="p">(</span><span class="n">coin</span><span class="p">,</span> <span class="s">&#39;price&#39;</span><span class="p">,</span>
+                                  <span class="n">bar_count</span><span class="o">=</span><span class="n">lookback</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="s">&#39;30T&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">values</span>
+            <span class="n">volume</span> <span class="o">=</span> <span class="n">fill</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">history</span><span class="p">(</span><span class="n">coin</span><span class="p">,</span> <span class="s">&#39;volume&#39;</span><span class="p">,</span>
+                                  <span class="n">bar_count</span><span class="o">=</span><span class="n">lookback</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="s">&#39;30T&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">values</span>
+
+            <span class="c"># close[-1] is the last value in the set, which is the equivalent</span>
+            <span class="c"># to current price (as in the most recent value)</span>
+            <span class="c"># displays the minute price for each pair every 30 minutes</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&#39;{now}: {pair} -</span><span class="se">\t</span><span class="s">O:{o},</span><span class="se">\t</span><span class="s">H:{h},</span><span class="se">\t</span><span class="s">L:{c},</span><span class="se">\t</span><span class="s">C{c},</span><span class="se">\t</span><span class="s">V:{v}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">now</span><span class="o">=</span><span class="n">now</span><span class="p">,</span>
+                    <span class="n">pair</span><span class="o">=</span><span class="n">pair</span><span class="p">,</span>
+                    <span class="n">o</span><span class="o">=</span><span class="n">opened</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                    <span class="n">h</span><span class="o">=</span><span class="n">high</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                    <span class="n">l</span><span class="o">=</span><span class="n">low</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                    <span class="n">c</span><span class="o">=</span><span class="n">close</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                    <span class="n">v</span><span class="o">=</span><span class="n">volume</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                 <span class="p">))</span>
+
+            <span class="c"># -------------------------------------------------------------</span>
+            <span class="c"># --------------- Insert Your Strategy Here -------------------</span>
+            <span class="c"># -------------------------------------------------------------</span>
+
+
+<span class="k">def</span> <span class="nf">analyze</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">results</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="c"># Get the universe for a given exchange and a given base_currency market</span>
+<span class="c"># Example: Poloniex BTC Market</span>
+<span class="k">def</span> <span class="nf">universe</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">lookback_date</span><span class="p">,</span> <span class="n">current_date</span><span class="p">):</span>
+    <span class="c"># get all the pairs for the given exchange</span>
+    <span class="n">json_symbols</span> <span class="o">=</span> <span class="n">get_exchange_symbols</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">exchange</span><span class="p">)</span>
+    <span class="c"># convert into a DataFrame for easier processing</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">json_symbols</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">&#39;base_currency&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">row</span><span class="o">.</span><span class="n">symbol</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">&#39;market_currency&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">row</span><span class="o">.</span><span class="n">symbol</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c"># Filter all the pairs to get only the ones for a given base_currency</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s">&#39;base_currency&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">context</span><span class="o">.</span><span class="n">base_currency</span><span class="p">]</span>
+
+    <span class="c"># Filter all the pairs to ensure that pair existed in the current date range</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">start_date</span> <span class="o">&lt;</span> <span class="n">lookback_date</span><span class="p">]</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">end_daily</span> <span class="o">&gt;=</span> <span class="n">current_date</span><span class="p">]</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">coins</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="o">*</span><span class="n">df</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span>  <span class="c"># convert all the pairs to symbols</span>
+
+    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">symbol</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+
+<span class="c"># Replace all NA, NAN or infinite values with its nearest value</span>
+<span class="k">def</span> <span class="nf">fill</span><span class="p">(</span><span class="n">series</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">series</span><span class="o">.</span><span class="n">replace</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span><span class="o">.</span><span class="n">ffill</span><span class="p">()</span><span class="o">.</span><span class="n">bfill</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">series</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                     <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                    <span class="p">)</span><span class="o">.</span><span class="n">ffill</span><span class="p">()</span><span class="o">.</span><span class="n">bfill</span><span class="p">()</span><span class="o">.</span><span class="n">values</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">series</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">start_date</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="s">&#39;2017-11-10&#39;</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">end_date</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="s">&#39;2017-11-13&#39;</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="n">performance</span> <span class="o">=</span> <span class="n">run_algorithm</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end_date</span><span class="p">,</span>
+                                <span class="n">capital_base</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span>  <span class="c"># amount of base_currency</span>
+                                <span class="n">initialize</span><span class="o">=</span><span class="n">initialize</span><span class="p">,</span>
+                                <span class="n">handle_data</span><span class="o">=</span><span class="n">handle_data</span><span class="p">,</span>
+                                <span class="n">analyze</span><span class="o">=</span><span class="n">analyze</span><span class="p">,</span>
+                                <span class="n">exchange_name</span><span class="o">=</span><span class="s">&#39;bitfinex&#39;</span><span class="p">,</span>
+                                <span class="n">data_frequency</span><span class="o">=</span><span class="s">&#39;minute&#39;</span><span class="p">,</span>
+                                <span class="n">base_currency</span><span class="o">=</span><span class="s">&#39;btc&#39;</span><span class="p">,</span>
+                                <span class="n">live</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                <span class="n">live_graph</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                <span class="n">algo_namespace</span><span class="o">=</span><span class="s">&#39;simple_universe&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
 <div class="section" id="portfolio-optimization">
-<span id="id1"></span><h2>Portfolio Optimization<a class="headerlink" href="#portfolio-optimization" title="Permalink to this headline">¶</a></h2>
+<span id="id2"></span><h2>Portfolio Optimization<a class="headerlink" href="#portfolio-optimization" title="Permalink to this headline">¶</a></h2>
 <p>Use this code to execute a portfolio optimization model. This strategy will
 select the portfolio with the maximum Sharpe Ratio. The parameters are set to
 use 180 days of historical data and rebalance every 30 days. This code was used
