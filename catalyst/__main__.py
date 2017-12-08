@@ -521,6 +521,7 @@ def live(ctx,
     default=False,
     help='Report potential anomalies found in data bundles.'
 )
+@click.pass_context
 def ingest_exchange(ctx, exchange_name, data_frequency, start, end,
                     include_symbols, exclude_symbols, csv, show_progress,
                     verbose, validate):
