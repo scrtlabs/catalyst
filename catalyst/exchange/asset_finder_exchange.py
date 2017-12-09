@@ -1,6 +1,7 @@
 from logbook import Logger
 
 from catalyst.constants import LOG_LEVEL
+from catalyst.errors import SidsNotFound
 
 log = Logger('AssetFinderExchange', level=LOG_LEVEL)
 
@@ -47,6 +48,36 @@ class AssetFinderExchange(object):
         #     else:
         #         log.debug('fetching asset: {}'.format(sid))
         return list()
+
+    def retrieve_asset(self, sid, default_none=False):
+        """
+        Retrieve asset `sid`.
+
+        Parameters
+        ----------
+        sid - asset to retrieve.
+        default_none : bool
+            If True, return None for failed lookups.
+            If False, raise `SidsNotFound`.
+
+        Returns
+        -------
+        assets :Asset or None
+
+        Raises
+        ------
+        SidsNotFound
+            When a requested sid is not found and default_none=False.
+        """
+
+        for asset in self._asset_cache.keys():
+            if self._asset_cache[asset] == sid:
+                return self._asset_cache[asset]
+        else:
+            if default_none:
+                return None
+            else:
+                assert SidsNotFound
 
     def lookup_symbol(self, symbol, exchange, data_frequency=None,
                       as_of_date=None, fuzzy=False):
