@@ -40,7 +40,7 @@ from catalyst.exchange.exchange_data_portal import DataPortalExchangeLive, \
 from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError, ExchangeRequestErrorTooManyAttempts,
-    BaseCurrencyNotFoundError)
+    BaseCurrencyNotFoundError, NotEnoughCapitalError)
 
 from catalyst.constants import LOG_LEVEL
 
@@ -227,28 +227,25 @@ def _run(handle_data,
                     )
                 )
 
-                if capital_base is not None \
-                        and capital_base < base_currency_available:
-                    log.info(
-                        'using capital base limit: {} {}'.format(
-                            capital_base, base_currency
-                        )
-                    )
-                    amount = capital_base
-                else:
-                    amount = base_currency_available
-
-                return amount
+                return base_currency_available
             else:
                 raise BaseCurrencyNotFoundError(
                     base_currency=base_currency,
                     exchange=exchange_name
                 )
 
-        combined_capital_base = 0
-        for exchange_name in exchanges:
-            exchange = exchanges[exchange_name]
-            combined_capital_base += fetch_capital_base(exchange)
+        if not simulate_orders:
+            for exchange_name in exchanges:
+                exchange = exchanges[exchange_name]
+                balance = fetch_capital_base(exchange)
+
+                if balance < capital_base:
+                    raise NotEnoughCapitalError(
+                        exchange=exchange_name,
+                        base_currency=base_currency,
+                        balance=balance,
+                        capital_base=capital_base,
+                    )
 
         sim_params = create_simulation_parameters(
             start=start,
@@ -505,6 +502,14 @@ def run_algorithm(initialize,
         default_extension, extensions, strict_extensions, environ
     )
 
+    if capital_base is None:
+        raise ValueError(
+            'Please specify a `capital_base` parameter which is the maximum '
+            'amount of base currency available for trading. For example, '
+            'if the `capital_base` is 5ETH, the '
+            '`order_target_percent(asset, 1)` command will order 5ETH worth '
+            'of the specified asset.'
+        )
     # I'm not sure that we need this since the modified DataPortal
     # does not require extensions to be explicitly loaded.
 

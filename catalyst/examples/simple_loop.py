@@ -109,9 +109,9 @@ def analyze(context, perf):
 
 run_algorithm(
     capital_base=250,
-    start=pd.to_datetime('2017-11-1 0:00', utc=True),
+    start=pd.to_datetime('2017-11-9 0:00', utc=True),
     end=pd.to_datetime('2017-11-10 23:59', utc=True),
-    data_frequency='daily',
+    data_frequency='minute',
     initialize=initialize,
     handle_data=handle_data,
     analyze=analyze,

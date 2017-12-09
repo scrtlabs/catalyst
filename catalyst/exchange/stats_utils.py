@@ -192,20 +192,21 @@ def prepare_stats(stats, recorded_cols=list()):
         assets = [p['sid'] for p in row_data['positions']]
 
         asset_values = dict()
-        for column in recorded_cols[:]:
-            value = row_data[column]
-            if type(value) is dict:
-                for asset in value:
-                    if not isinstance(asset, TradingPair):
-                        break
+        if recorded_cols is not None:
+            for column in recorded_cols[:]:
+                value = row_data[column]
+                if type(value) is dict:
+                    for asset in value:
+                        if not isinstance(asset, TradingPair):
+                            break
 
-                    if asset not in assets:
-                        assets.append(asset)
+                        if asset not in assets:
+                            assets.append(asset)
 
-                    if asset not in asset_values:
-                        asset_values[asset] = dict()
+                        if asset not in asset_values:
+                            asset_values[asset] = dict()
 
-                    asset_values[asset][column] = value[asset]
+                        asset_values[asset][column] = value[asset]
 
         if len(assets) == 1:
             row = stats[row_index]
@@ -231,8 +232,8 @@ def prepare_stats(stats, recorded_cols=list()):
     ]
 
     # Removing the asset specific entries
-    recorded_cols = [x for x in recorded_cols if x not in asset_cols]
     if recorded_cols is not None:
+        recorded_cols = [x for x in recorded_cols if x not in asset_cols]
         for column in recorded_cols:
             index_cols.append(column)
 
@@ -256,13 +257,24 @@ def get_pretty_stats(stats, recorded_cols=None, num_rows=10):
     Parameters
     ----------
     stats: list[Object]
+        An array of statistics for the period.
+
     num_rows: int
+        The number of rows to display on the screen.
 
     Returns
     -------
     str
 
     """
+    if isinstance(stats, pd.DataFrame):
+        # df = stats
+        # columns = [
+        #     'period_close', 'starting_cash', 'ending_cash', 'portfolio_value',
+        #     'pnl', 'long_exposure', 'short_exposure', 'orders', 'transactions',
+        # ]
+        stats = stats.T.to_dict().values()
+    # else:
     df, columns = prepare_stats(stats, recorded_cols=recorded_cols)
 
     pd.set_option('display.expand_frame_repr', False)

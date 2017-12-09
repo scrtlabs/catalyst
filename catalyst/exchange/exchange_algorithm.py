@@ -13,7 +13,6 @@
 import pickle
 import signal
 import sys
-from collections import deque
 from datetime import timedelta
 from os import listdir
 from os.path import isfile, join
@@ -631,50 +630,72 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         self.validate_account_controls()
 
         try:
-            # Since the clock runs 24/7, I trying to disable the daily
-            # Performance tracker and keep only minute and cumulative
-            self.perf_tracker.update_performance()
-
-            frame_stats = self.prepare_period_stats(
-                data.current_dt, data.current_dt + timedelta(minutes=1))
-
-            # Saving the last hour in memory
-            self.frame_stats.append(frame_stats)
-
-            self.add_pnl_stats(frame_stats)
-            if self.recorded_vars:
-                self.add_custom_signals_stats(frame_stats)
-                recorded_cols = list(self.recorded_vars.keys())
-            else:
-                recorded_cols = None
-
-            self.add_exposure_stats(frame_stats)
-
-            # print_df = pd.DataFrame(list(self.frame_stats))
-            log.info(
-                'statistics for the last {stats_minutes} minutes:\n'
-                '{stats}'.format(
-                    stats_minutes=self.stats_minutes,
-                    stats=get_pretty_stats(
-                        stats=self.frame_stats,
-                        recorded_cols=recorded_cols,
-                        num_rows=self.stats_minutes
-                    )
-                ))
-
-            daily_stats = self.prepare_period_stats(
-                start_dt=today,
-                end_dt=pd.Timestamp.utcnow()
-            )
-            save_algo_object(
-                algo_name=self.algo_namespace,
-                key=today.strftime('%Y-%m-%d'),
-                obj=daily_stats,
-                rel_path='daily_perf'
-            )
+            self._save_stats_csv(self._process_stats(data))
         except Exception as e:
             log.warn('unable to calculate performance: {}'.format(e))
 
+        # TODO: pickle does not seem to work in python 3
+        try:
+            save_algo_object(
+                algo_name=self.algo_namespace,
+                key='perf_tracker',
+                obj=self.perf_tracker
+            )
+        except Exception as e:
+            log.warn('unable to save minute perfs to disk: {}'.format(e))
+
+        self.current_day = data.current_dt.floor('1D')
+
+    def _process_stats(self, data):
+        today = data.current_dt.floor('1D')
+
+        # Since the clock runs 24/7, I trying to disable the daily
+        # Performance tracker and keep only minute and cumulative
+        self.perf_tracker.update_performance()
+
+        frame_stats = self.prepare_period_stats(
+            data.current_dt, data.current_dt + timedelta(minutes=1))
+
+        # Saving the last hour in memory
+        self.frame_stats.append(frame_stats)
+
+        self.add_pnl_stats(frame_stats)
+        if self.recorded_vars:
+            self.add_custom_signals_stats(frame_stats)
+            recorded_cols = list(self.recorded_vars.keys())
+
+        else:
+            recorded_cols = None
+
+        self.add_exposure_stats(frame_stats)
+
+        log.info(
+            'statistics for the last {stats_minutes} minutes:\n'
+            '{stats}'.format(
+                stats_minutes=self.stats_minutes,
+                stats=get_pretty_stats(
+                    stats=self.frame_stats,
+                    recorded_cols=recorded_cols,
+                    num_rows=self.stats_minutes
+                )
+            ))
+
+        # Saving the daily stats in a format usable for performance
+        # analysis.
+        daily_stats = self.prepare_period_stats(
+            start_dt=today,
+            end_dt=data.current_dt
+        )
+        save_algo_object(
+            algo_name=self.algo_namespace,
+            key=today.strftime('%Y-%m-%d'),
+            obj=daily_stats,
+            rel_path='daily_perf'
+        )
+
+        return recorded_cols
+
+    def _save_stats_csv(self, recorded_cols):
         # Writing the stats output
         csv_bytes = None
         try:
@@ -683,7 +704,6 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                 algo_namespace=self.algo_namespace,
                 recorded_cols=recorded_cols,
             )
-
         except Exception as e:
             log.warn('unable save stats locally: {}'.format(e))
 
@@ -697,26 +717,12 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                         recorded_cols=recorded_cols,
                         bytes_to_write=csv_bytes
                     )
-
                 else:
                     raise ValueError(
                         'Only S3 stats output is supported for now.'
                     )
-
         except Exception as e:
             log.warn('unable save stats externally: {}'.format(e))
-
-        # TODO: pickle does not seem to work in python 3
-        try:
-            save_algo_object(
-                algo_name=self.algo_namespace,
-                key='perf_tracker',
-                obj=self.perf_tracker
-            )
-        except Exception as e:
-            log.warn('unable to save minute perfs to disk: {}'.format(e))
-
-        self.current_day = data.current_dt.floor('1D')
 
     @api_method
     def batch_market_order(self, share_counts):

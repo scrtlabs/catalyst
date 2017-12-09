@@ -244,7 +244,7 @@ class NoDataAvailableOnExchange(ZiplineError):
         'exchange {exchange} '
         'in `{data_frequency}` frequency at this time. '
         'Check `http://enigma.co/catalyst/status` for market coverage.'
-        ).strip()
+    ).strip()
 
 
 class NoValueForField(ZiplineError):
@@ -255,3 +255,11 @@ class OrderTypeNotSupported(ZiplineError):
     msg = (
         'Order type `{order_type}` not currencly supported by Catalyst. '
         'Please use `limit` or `market` orders only.').strip()
+
+
+class NotEnoughCapitalError(ZiplineError):
+    msg = (
+        'Not enough capital on exchange {exchange} for trading. Each '
+        'exchange should contain at least as much {base_currency} '
+        'as the specified `capital_base`. The current balance {balance} is '
+        'lower than the `capital_base`: {capital_base}').strip()

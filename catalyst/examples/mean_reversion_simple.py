@@ -34,7 +34,7 @@ def initialize(context):
     # parameters or values you're going to use.
 
     # In our example, we're looking at Neo in Ether.
-    context.market = symbol('rdn_eth')
+    context.market = symbol('neo_eth')
     context.base_price = None
     context.current_day = None
 
@@ -240,7 +240,7 @@ def analyze(context=None, perf=None):
 
 if __name__ == '__main__':
     # The execution mode: backtest or live
-    MODE = 'live'
+    MODE = 'backtest'
 
     if MODE == 'backtest':
         folder = os.path.join(
@@ -259,7 +259,7 @@ if __name__ == '__main__':
             initialize=initialize,
             handle_data=handle_data,
             analyze=analyze,
-            exchange_name='bittrex',
+            exchange_name='bitfinex',
             algo_namespace=NAMESPACE,
             base_currency='eth',
             start=pd.to_datetime('2017-10-01', utc=True),
