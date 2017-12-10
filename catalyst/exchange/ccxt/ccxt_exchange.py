@@ -578,20 +578,29 @@ class CCXT(Exchange):
         """
         tickers = dict()
         for asset in assets:
-            ccxt_symbol = self.get_symbol(asset)
-            ticker = self.api.fetch_ticker(ccxt_symbol)
+            try:
+                ccxt_symbol = self.get_symbol(asset)
+                ticker = self.api.fetch_ticker(ccxt_symbol)
 
-            ticker['last_traded'] = from_ms_timestamp(ticker['timestamp'])
+                ticker['last_traded'] = from_ms_timestamp(ticker['timestamp'])
 
-            if 'last_price' not in ticker:
-                # TODO: any more exceptions?
-                ticker['last_price'] = ticker['last']
+                if 'last_price' not in ticker:
+                    # TODO: any more exceptions?
+                    ticker['last_price'] = ticker['last']
 
-            # Using the volume represented in the base currency
-            ticker['volume'] = ticker['baseVolume'] \
-                if 'baseVolume' in ticker else 0
+                # Using the volume represented in the base currency
+                ticker['volume'] = ticker['baseVolume'] \
+                    if 'baseVolume' in ticker else 0
 
-            tickers[asset] = ticker
+                tickers[asset] = ticker
+
+            except ExchangeNotAvailable as e:
+                log.warn(
+                    'unable to fetch ticker: {} {}'.format(
+                        self.name, asset.symbol
+                    )
+                )
+                raise ExchangeRequestError(error=e)
 
         return tickers
 
