@@ -4,10 +4,12 @@ from base import BaseExchangeTestCase
 from catalyst.exchange.bitfinex.bitfinex import Bitfinex
 from catalyst.exchange.exchange_utils import get_exchange_auth
 from catalyst.finance.execution import (LimitOrder)
+from catalyst.utils.deprecate import deprecated
 
 log = Logger('test_bitfinex')
 
 
+@deprecated
 class TestBitfinex(BaseExchangeTestCase):
     @classmethod
     def setup(self):

@@ -30,15 +30,17 @@ from catalyst.protocol import Account
 
 # Trying to account for REST api instability
 # https://stackoverflow.com/questions/15431044/can-i-set-max-retries-for-requests-request
+from catalyst.utils.deprecate import deprecated
+
 requests.adapters.DEFAULT_RETRIES = 20
 
 BITFINEX_URL = 'https://api.bitfinex.com'
-
 
 log = Logger('Bitfinex', level=LOG_LEVEL)
 warning_logger = Logger('AlgoWarning')
 
 
+@deprecated
 class Bitfinex(Exchange):
     def __init__(self, key, secret, base_currency, portfolio=None):
         self.url = BITFINEX_URL
@@ -666,11 +668,11 @@ class Bitfinex(Exchange):
         """
         url = ('{url}/v2/candles/trade:1D:{symbol}/hist?start={start}'
                '&end={end}').format(
-                    url=self.url,
-                    symbol=symbol_v2,
-                    start=startmonth - 3600 * 24 * 31 * 1000,
-                    end=min(startmonth + 3600 * 24 * 31 * 1000,
-                            int(time.time() * 1000)))
+            url=self.url,
+            symbol=symbol_v2,
+            start=startmonth - 3600 * 24 * 31 * 1000,
+            end=min(startmonth + 3600 * 24 * 31 * 1000,
+                    int(time.time() * 1000)))
 
         try:
             self.ask_request()

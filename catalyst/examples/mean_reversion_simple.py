@@ -38,8 +38,8 @@ def initialize(context):
     context.base_price = None
     context.current_day = None
 
-    context.RSI_OVERSOLD = 65
-    context.RSI_OVERBOUGHT = 82
+    context.RSI_OVERSOLD = 30
+    context.RSI_OVERBOUGHT = 80
     context.CANDLE_SIZE = '5T'
 
     context.start_time = time.time()
@@ -98,9 +98,10 @@ def handle_data(context, data):
     # a parameter of the analyze() function for further analysis.
 
     record(
-        volume=(context.market, current['volume']),
-        price_change=(context.market, price_change),
-        rsi=(context.market, rsi[-1]),
+        volume=current['volume'],
+        price=price,
+        price_change=price_change,
+        rsi=rsi[-1],
         cash=cash
     )
     # We are trying to avoid over-trading by limiting our trades to
@@ -108,6 +109,7 @@ def handle_data(context, data):
     if context.traded_today:
         return
 
+    # TODO: retest with open orders
     # Since we are using limit orders, some orders may not execute immediately
     # we wait until all orders are executed before considering more trades.
     orders = get_open_orders(context.market)

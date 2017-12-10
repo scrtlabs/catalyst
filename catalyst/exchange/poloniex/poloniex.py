@@ -28,10 +28,12 @@ from catalyst.exchange.poloniex.poloniex_api import Poloniex_api
 from catalyst.finance.order import Order, ORDER_STATUS
 from catalyst.finance.transaction import Transaction
 from catalyst.protocol import Account
+from catalyst.utils.deprecate import deprecated
 
 log = Logger('Poloniex', level=LOG_LEVEL)
 
 
+@deprecated
 class Poloniex(Exchange):
     def __init__(self, key, secret, base_currency, portfolio=None):
         self.api = Poloniex_api(key=key, secret=secret)
@@ -292,8 +294,8 @@ class Poloniex(Exchange):
         """
         exchange_symbol = self.get_symbol(asset)
 
-        if(isinstance(style, ExchangeLimitOrder)
-           or isinstance(style, ExchangeStopLimitOrder)):
+        if (isinstance(style, ExchangeLimitOrder)
+                or isinstance(style, ExchangeStopLimitOrder)):
             if isinstance(style, ExchangeStopLimitOrder):
                 log.warn('{} will ignore the stop price'.format(self.name))
 

@@ -4,11 +4,14 @@ from base import BaseExchangeTestCase
 from logbook import Logger
 from catalyst.exchange.exchange_utils import get_exchange_auth
 import pandas as pd
+
+from catalyst.utils.deprecate import deprecated
 from test_utils import output_df
 
 log = Logger('test_poloniex')
 
 
+@deprecated
 class TestPoloniex(BaseExchangeTestCase):
     @classmethod
     def setup(self):

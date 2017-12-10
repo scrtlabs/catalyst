@@ -19,12 +19,14 @@ from catalyst.finance.execution import LimitOrder, StopLimitOrder
 from catalyst.finance.order import Order, ORDER_STATUS
 
 # TODO: consider using this: https://github.com/mondeja/bittrex_v2
+from catalyst.utils.deprecate import deprecated
 
 log = Logger('Bittrex', level=LOG_LEVEL)
 
 URL2 = 'https://bittrex.com/Api/v2.0'
 
 
+@deprecated
 class Bittrex(Exchange):
     def __init__(self, key, secret, base_currency, portfolio=None):
         self.api = Bittrex_api(key=key, secret=secret)
