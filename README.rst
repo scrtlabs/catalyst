@@ -1,6 +1,6 @@
 .. image:: https://s3.amazonaws.com/enigmaco-docs/enigma-catalyst.jpg
-	:target: https://enigmampc.github.io/catalyst
-	:align: center
+    :target: https://enigmampc.github.io/catalyst
+    :align: center
     :alt: Enigma | Catalyst
 
 |version tag|
