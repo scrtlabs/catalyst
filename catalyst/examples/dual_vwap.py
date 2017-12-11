@@ -1,3 +1,11 @@
+''' Catalyst currently does not support the Pipeline implementation
+    from Zipline, see Issue #96:
+    https://github.com/enigmampc/catalyst/issues/96
+
+    Until the above issue is resolved, this example is non-functional.
+    We are keeping this script here for when the issue is resolved
+'''
+
 #!/usr/bin/env python
 #
 # Copyright 2017 Enigma MPC, Inc.
