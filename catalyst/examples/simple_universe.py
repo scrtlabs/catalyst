@@ -63,6 +63,7 @@ def handle_data(context, data):
 
     # get data every 30 minutes
     minutes = 30
+
     # get lookback_days of history data: that is 'lookback' number of bins
     lookback = one_day_in_minutes / minutes * lookback_days
     if not context.i % minutes and context.universe:
