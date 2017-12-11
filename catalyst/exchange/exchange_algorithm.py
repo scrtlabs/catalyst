@@ -507,7 +507,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             )
             if attempt_index < self.retry_synchronize_portfolio:
                 sleep(self.retry_delay)
-                self.synchronize_portfolio(attempt_index + 1)
+                return self.synchronize_portfolio(attempt_index + 1)
             else:
                 raise ExchangePortfolioDataError(
                     data_type='update-portfolio',
