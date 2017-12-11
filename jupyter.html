@@ -253,8 +253,7 @@
             
   <div class="section" id="catalyst-jupyter-notebook">
 <h1>Catalyst &amp; Jupyter Notebook<a class="headerlink" href="#catalyst-jupyter-notebook" title="Permalink to this headline">¶</a></h1>
-<p>(Feel free to check out the actual Notebook file
-<a class="reference external" href="https://github.com/enigmampc/catalyst-docs/blob/master/docs/running_catalyst_in_jupyter_notebook.ipynb">here</a>)</p>
+<p>(<a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/running_catalyst_in_jupyter_notebook.ipynb">This is actual Notebook</a> referenced in the text below)</p>
 <p>The <a class="reference external" href="https://jupyter.org/">Jupyter Notebook</a> is a very powerful
 browser-based interface to a Python interpreter. As it is already the
 de-facto interface for most quantitative researchers, <code class="docutils literal"><span class="pre">catalyst</span></code>
@@ -277,11 +276,17 @@ the interface through which you will interact with Jupyter Notebook.</p>
 </div>
 <div class="section" id="running-algorithms">
 <h2>Running Algorithms<a class="headerlink" href="#running-algorithms" title="Permalink to this headline">¶</a></h2>
-<p>To use it you have to write your algorithm in a cell and let
-<code class="docutils literal"><span class="pre">catalyst</span></code> know that it is supposed to run this algorithm. This is
-done via the <code class="docutils literal"><span class="pre">%%catalyst</span></code> IPython magic command that is available
-after you import <code class="docutils literal"><span class="pre">catalyst</span></code> from within the Notebook. This magic takes
-the same arguments as the command line interface. Thus to run the
+<p>Before running your algorithms inside the Jupyter Notebook, remember to ingest
+the data from the command line interface (CLI). In the example below, you would
+need to run first:</p>
+<div class="code bash highlight-python"><div class="highlight"><pre>catalyst ingest-exchange -x bitfinex -i btc_usd
+</pre></div>
+</div>
+<p>To use Catalyst inside a Jupyter Noebook, you have to write your algorithm in a
+cell and let the Jupyter know that it is supposed to execute this algorithm with
+Catalyst. This is done via the <code class="docutils literal"><span class="pre">%%catalyst</span></code> IPython magic command that is
+available after you import <code class="docutils literal"><span class="pre">catalyst</span></code> from within the Notebook. This magic
+takes the same arguments as the command line interface. Thus to run the
 algorithm just supply the same parameters as the CLI but without the -f
 and -o arguments. We just have to execute the following cell after
 importing <code class="docutils literal"><span class="pre">catalyst</span></code> to register the magic.</p>
@@ -296,7 +301,7 @@ importing <code class="docutils literal"><span class="pre">catalyst</span></code
 <p>Note below that we do not have to specify an input file (-f) since the
 magic will use the contents of the cell and look for your algorithm
 functions.</p>
-<div class="code python highlight-python"><div class="highlight"><pre>%%catalyst --start 2015-3-2 --end 2017-6-28 --capital-base 100000 -x bitfinex
+<div class="code python highlight-python"><div class="highlight"><pre>%%catalyst --start 2015-3-2 --end 2017-6-28 --capital-base 100000 -x bitfinex -c usd
 
 from catalyst.finance.slippage import VolumeShareSlippage
 
@@ -434,9 +439,8 @@ def analyze(context=None, results=None):
 [2017-08-11 07:19:54.620430] INFO: Performance: last close: 2017-06-28 23:59:00+00:00
 </pre></div>
 </div>
-<div class="figure" id="id1">
+<div class="figure">
 <img alt="png" src="https://i.imgur.com/DS5w47q.png" />
-<p class="caption"><span class="caption-text">png</span></p>
 </div>
 <div><table border="1" class="dataframe"><thead><tr style="text-align: right;"><th></th><th><p>algo_volatility</p>
 </th><th><p>algorithm_period_return</p>
