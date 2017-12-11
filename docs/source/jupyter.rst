@@ -1,8 +1,7 @@
 Catalyst & Jupyter Notebook
 ===========================
 
-(Feel free to check out the actual Notebook file
-`here <https://github.com/enigmampc/catalyst-docs/blob/master/docs/running_catalyst_in_jupyter_notebook.ipynb>`__)
+(`This is actual Notebook <https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/running_catalyst_in_jupyter_notebook.ipynb>`_ referenced in the text below)
 
 The `Jupyter Notebook <https://jupyter.org/>`__ is a very powerful
 browser-based interface to a Python interpreter. As it is already the
@@ -33,11 +32,19 @@ the interface through which you will interact with Jupyter Notebook.
 Running Algorithms
 ^^^^^^^^^^^^^^^^^^
 
-To use it you have to write your algorithm in a cell and let
-``catalyst`` know that it is supposed to run this algorithm. This is
-done via the ``%%catalyst`` IPython magic command that is available
-after you import ``catalyst`` from within the Notebook. This magic takes
-the same arguments as the command line interface. Thus to run the
+Before running your algorithms inside the Jupyter Notebook, remember to ingest
+the data from the command line interface (CLI). In the example below, you would
+need to run first:
+
+.. code:: bash
+
+  catalyst ingest-exchange -x bitfinex -i btc_usd
+
+To use Catalyst inside a Jupyter Noebook, you have to write your algorithm in a 
+cell and let the Jupyter know that it is supposed to execute this algorithm with 
+Catalyst. This is done via the ``%%catalyst`` IPython magic command that is 
+available after you import ``catalyst`` from within the Notebook. This magic 
+takes the same arguments as the command line interface. Thus to run the
 algorithm just supply the same parameters as the CLI but without the -f
 and -o arguments. We just have to execute the following cell after
 importing ``catalyst`` to register the magic.
@@ -58,7 +65,7 @@ functions.
 
 .. code:: python
 
-    %%catalyst --start 2015-3-2 --end 2017-6-28 --capital-base 100000 -x bitfinex
+    %%catalyst --start 2015-3-2 --end 2017-6-28 --capital-base 100000 -x bitfinex -c usd
 
     from catalyst.finance.slippage import VolumeShareSlippage
 
@@ -198,8 +205,6 @@ functions.
 
 .. figure:: https://i.imgur.com/DS5w47q.png
    :alt: png
-
-   png
 
 .. raw:: html
 
