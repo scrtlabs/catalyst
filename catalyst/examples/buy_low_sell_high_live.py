@@ -152,7 +152,7 @@ if __name__ == '__main__':
         initialize=initialize,
         handle_data=handle_data,
         analyze=analyze,
-        exchange_name='bittrex',
+        exchange_name='binance',
         live=True,
         algo_namespace=algo_namespace,
         base_currency='btc',

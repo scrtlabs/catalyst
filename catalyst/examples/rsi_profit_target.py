@@ -114,7 +114,7 @@ def _handle_data_rsi_only(context, data):
         prices = data.history(
             context.asset,
             fields='price',
-            bar_count=17,
+            bar_count=20,
             frequency='30T'
         )
     except Exception as e:
@@ -156,7 +156,7 @@ def handle_data(context, data):
     dt = data.current_dt
 
     if context.last_bar is None or (
-                context.last_bar + timedelta(minutes=15)) <= dt:
+            context.last_bar + timedelta(minutes=15)) <= dt:
         context.last_bar = dt
     else:
         return
@@ -249,27 +249,17 @@ def analyze(context=None, results=None):
     pass
 
 
-# run_algorithm(
-#     initialize=initialize,
-#     handle_data=handle_data,
-#     analyze=analyze,
-#     exchange_name='bittrex',
-#     live=True,
-#     algo_namespace=algo_namespace,
-#     base_currency='btc',
-#     live_graph=False
-# )
-
-# Backtest
-run_algorithm(
-    capital_base=0.5,
-    data_frequency='minute',
-    initialize=initialize,
-    handle_data=handle_data,
-    analyze=analyze,
-    exchange_name='poloniex',
-    algo_namespace=algo_namespace,
-    base_currency='btc',
-    start=pd.to_datetime('2017-9-1', utc=True),
-    end=pd.to_datetime('2017-10-1', utc=True),
-)
+if __name__ == '__main__':
+    # Backtest
+    run_algorithm(
+        capital_base=0.5,
+        data_frequency='minute',
+        initialize=initialize,
+        handle_data=handle_data,
+        analyze=analyze,
+        exchange_name='poloniex',
+        algo_namespace=algo_namespace,
+        base_currency='btc',
+        start=pd.to_datetime('2017-9-1', utc=True),
+        end=pd.to_datetime('2017-10-1', utc=True),
+    )
