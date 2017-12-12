@@ -165,46 +165,51 @@
 <li class="toctree-l3"><a class="reference internal" href="releases.html#bug-fixes">Bug Fixes</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-9">Version 0.3.9</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id1">Bug Fixes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#id1">Version 0.3.10</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id2">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#build">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-8">Version 0.3.8</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id2">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-7">Version 0.3.7</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-9">Version 0.3.9</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id3">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id4">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-6">Version 0.3.6</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-8">Version 0.3.8</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id5">Bug Fixes</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-5">Version 0.3.5</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-7">Version 0.3.7</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id6">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id7">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-6">Version 0.3.6</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id8">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-5">Version 0.3.5</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id9">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-4">Version 0.3.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id7">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id8">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id10">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id11">Build</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#documentation">Documentation</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-3">Version 0.3.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id10">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id11">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id13">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id14">Build</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-2">Version 0.3.2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id12">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id13">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id15">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id16">Build</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-1">Version 0.3.1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id14">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id17">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3">Version 0.3</a></li>
@@ -346,6 +351,10 @@ backtest and live execution mode without modification.</p>
 <p>Here is the breakdown of the new arguments:</p>
 <ul class="simple">
 <li><code class="docutils literal"><span class="pre">live</span></code>: Boolean flag which enables live trading.</li>
+<li><code class="docutils literal"><span class="pre">capital_base</span></code>: The amount of base_currency assigned to the strategy.
+It has to be lower or equal to the amount of base currency available for
+trading on the exchange. For illustration, order_target_percent(asset, 1)
+will order the capital_base amount specified here of the specified asset.</li>
 <li><code class="docutils literal"><span class="pre">exchange_name</span></code>: The name of the targeted exchange
 (supported values: <em>bitfinex</em>, <em>bittrex</em>).</li>
 <li><code class="docutils literal"><span class="pre">algo_namespace</span></code>: A arbitrary label assigned to your algorithm for
@@ -353,6 +362,8 @@ data storage purposes.</li>
 <li><code class="docutils literal"><span class="pre">base_currency</span></code>: The base currency used to calculate the
 statistics of your algorithm. Currently, the base currency of all
 trading pairs of your algorithm must match this value.</li>
+<li><code class="docutils literal"><span class="pre">simulate_orders</span></code>: Enables the paper trading mode, in which orders are
+simulated in Catalyst instead of processed on the exchange.</li>
 </ul>
 <p>Here is a complete algorithm for reference:
 <a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/buy_low_sell_high_live.py">Buy Low and Sell High</a></p>

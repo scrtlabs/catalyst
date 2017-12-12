@@ -9,6 +9,7 @@ Current Functionality
 
 * Backtesting and live-trading modes to run your trading algorithms, with a 
   seamless transition between the two.
+* Paper trading simulates order in live-trading mode.
 * Support for 3 exchanges: Bitfinex, Bittrex and Poloniex in both modes 
   (backtesting and live-trading). Historical data for backtesting is provided 
   with daily resolution for all three exchanges, and minute resolution for 
@@ -16,6 +17,9 @@ Current Functionality
   Bittrex. Refer to 
   `Catalyst Market Coverage <https://www.enigma.co/catalyst/status>`_ for 
   details.
+* Interface with over 90 exchanges available in live and paper trading modes.
+* Granular commission models which closely simulates each exchange fee
+  structure in backtesting and paper trading.
 * Standardized naming convention for all asset pairs trading on any exchange in 
   the form ``{market_currency}_{base_currency}``. See 
   :ref:`naming`.
@@ -40,8 +44,6 @@ For additional details on the functionality added on recent releases, see the
 Upcoming features
 ~~~~~~~~~~~~~~~~~
 
-* Paper trading mode (v0.4 - mid Dec. 2017)
-* Support for additional exchanges (v0.4 - mid Dec. 2017)
 * Additional datasets beyond pricing data (Dec. 2017)
 * API documentation (Jan. 2017)
 * Support for decentralized exchanges (Jan. 2017)
