@@ -23,6 +23,7 @@ import pandas as pd
 
 import catalyst.protocol as zp
 from catalyst.algorithm import TradingAlgorithm
+from catalyst.assets._assets import TradingPair
 from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.exchange_blotter import ExchangeBlotter
 from catalyst.exchange.exchange_errors import (
@@ -112,6 +113,21 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
             return ExchangeLimitOrder(limit_price)
         else:
             return MarketOrder()
+
+    @api_method
+    def set_commission(self, maker=None, taker=None):
+        key = self.blotter.commission_models.keys()[0]
+        if maker is not None:
+            self.blotter.commission_models[key].maker = maker
+
+        if taker is not None:
+            self.blotter.commission_models[key].taker = taker
+
+    @api_method
+    def set_slippage(self, spread=None):
+        key = self.blotter.slippage_models.keys()[0]
+        if spread is not None:
+            self.blotter.slippage_models[key].spread = spread
 
     def _calculate_order(self, asset, amount,
                          limit_price=None, stop_price=None, style=None):

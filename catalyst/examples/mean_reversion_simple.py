@@ -44,6 +44,9 @@ def initialize(context):
 
     context.start_time = time.time()
 
+    # context.set_commission(maker=0.1, taker=0.2)
+    context.set_slippage(spread=0.0001)
+
 
 def handle_data(context, data):
     # This handle_data function is where the real work is done.  Our data is

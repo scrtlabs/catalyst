@@ -9,19 +9,12 @@ from catalyst.exchange.exchange_errors import ExchangeRequestError, \
     ExchangePortfolioDataError, ExchangeTransactionError
 from catalyst.finance.blotter import Blotter
 from catalyst.finance.commission import CommissionModel
-from catalyst.finance.order import ORDER_STATUS
+from catalyst.finance.order import ORDER_STATUS, Order
 from catalyst.finance.slippage import SlippageModel
 from catalyst.finance.transaction import create_transaction, Transaction
 from catalyst.utils.input_validation import expect_types
 
 log = Logger('exchange_blotter', level=LOG_LEVEL)
-
-# It seems like we need to accept greater slippage risk in cryptos
-# Orders won't often close at Equity levels.
-# TODO: should work with set_commission and set_slippage
-DEFAULT_SLIPPAGE_SPREAD = 0.0001
-DEFAULT_MAKER_FEE = 0.0015
-DEFAULT_TAKER_FEE = 0.0025
 
 
 class TradingPairFeeSchedule(CommissionModel):
@@ -30,23 +23,24 @@ class TradingPairFeeSchedule(CommissionModel):
 
     Parameters
     ----------
-    fee : float, optional
-        The percentage fee.
+    maker : float, optional
+        The percentage maker fee.
+
+    taker: float, optional
+        The percentage taker fee.
     """
 
-    def __init__(self,
-                 maker_fee=DEFAULT_MAKER_FEE,
-                 taker_fee=DEFAULT_TAKER_FEE):
-        self.maker_fee = maker_fee
-        self.taker_fee = taker_fee
+    def __init__(self, maker=None, taker=None):
+        self.maker = maker
+        self.taker = taker
 
     def __repr__(self):
         return (
-            '{class_name}(maker_fee={maker_fee}, '
-            'taker_fee={taker_fee})'.format(
+            '{class_name}(maker={maker}, '
+            'taker={taker})'.format(
                 class_name=self.__class__.__name__,
-                maker_fee=self.maker_fee,
-                taker_fee=self.taker_fee,
+                maker=self.maker,
+                taker=self.taker,
             )
         )
 
@@ -54,16 +48,25 @@ class TradingPairFeeSchedule(CommissionModel):
         """
         Calculate the final fee based on the order parameters.
 
-        :param order:
-        :param transaction:
+        :param order: Order
+        :param transaction: Transaction
 
         :return float:
             The total commission.
         """
         cost = abs(transaction.amount) * transaction.price
 
+        asset = order.asset
+        maker = self.maker if self.maker is not None else asset.maker
+        taker = self.taker if self.taker is not None else asset.taker
+
+        multiplier = maker \
+            if ((order.amount > 0 and order.limit < transaction.price)
+                or (order.amount < 0 and order.limit > transaction.price)) \
+               and order.limit_reached else taker
+
         # Assuming just the taker fee for now
-        fee = cost * self.taker_fee
+        fee = cost * multiplier
         return fee
 
 
@@ -77,7 +80,7 @@ class TradingPairFixedSlippage(SlippageModel):
         spread / 2 will be added to buys and subtracted from sells.
     """
 
-    def __init__(self, spread=DEFAULT_SLIPPAGE_SPREAD):
+    def __init__(self, spread=0.0001):
         super(TradingPairFixedSlippage, self).__init__()
         self.spread = spread
 
@@ -132,8 +135,9 @@ class ExchangeBlotter(Blotter):
 
         self.exchanges = kwargs.pop('exchanges', None)
         if not self.exchanges:
-            raise ValueError('ExchangeBlotter must have an `exchanges` '
-                             'attribute.')
+            raise ValueError(
+                'ExchangeBlotter must have an `exchanges` attribute.'
+            )
 
         super(ExchangeBlotter, self).__init__(*args, **kwargs)
 
