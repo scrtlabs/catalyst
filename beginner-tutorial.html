@@ -31,7 +31,7 @@
 
   
     <link rel="top" title="Catalyst 0.3 documentation" href="index.html"/>
-        <link rel="next" title="Catalyst &amp; Jupyter Notebook" href="jupyter.html"/>
+        <link rel="next" title="Live Trading" href="live-trading.html"/>
         <link rel="prev" title="Install" href="install.html"/> 
 
   
@@ -105,12 +105,12 @@
 <li class="toctree-l3"><a class="reference internal" href="#working-example-dual-moving-average-cross-over">Working example: Dual Moving Average Cross-Over</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#next-steps">Next steps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#jupyter-notebook">Jupyter Notebook</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#install">Install</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#running-algorithms">Running Algorithms</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="jupyter.html">Catalyst &amp; Jupyter Notebook</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="jupyter.html#install">Install</a></li>
-<li class="toctree-l2"><a class="reference internal" href="jupyter.html#running-algorithms">Running Algorithms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#next-steps">Next steps</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="live-trading.html">Live Trading</a><ul>
@@ -358,8 +358,8 @@ hard drive.</li>
 <li>Pricing data is provided in <code class="docutils literal"><span class="pre">daily</span></code> and <code class="docutils literal"><span class="pre">minute</span></code> resolution. Those are
 different bundle datasets, and are managed separately.</li>
 <li>Bundles are exchange-specific, as the pricing data is specific to the trades
-that happen in each exchange. As a result, you can must specify which
-exchange you want pricing data from when ingesting data</li>
+that happen in each exchange. As a result, you must specify which
+exchange you want pricing data from when ingesting data.</li>
 <li>Catalyst keeps track of all the downloaded bundles, so that it only has to
 download them once, and will do incremental updates as needed.</li>
 <li>When running in <code class="docutils literal"><span class="pre">live</span> <span class="pre">trading</span></code> mode, Catalyst will first look for
@@ -389,7 +389,7 @@ Python scripts,</li>
 example of this tutorial. Some of the <a class="reference internal" href="example-algos.html"><em>example algorithms</em></a>
 provide instructions on how to run them both from the CLI, and using the
 <code class="xref py py-func docutils literal"><span class="pre">run_algorithm()</span></code> function. For the third method, refer to the
-corresponding section on <a class="reference internal" href="jupyter.html"><em>Catalyst &amp; Jupyter Notebook</em></a> after you
+corresponding section on <code class="xref doc docutils literal"><span class="pre">Catalyst</span> <span class="pre">&amp;</span> <span class="pre">Jupyter</span> <span class="pre">Notebook</span></code> after you
 have assimilated the contents of this tutorial.</p>
 <div class="section" id="command-line-interface">
 <h3>Command line interface<a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h3>
@@ -969,6 +969,1702 @@ the <code class="docutils literal"><span class="pre">scikit-learn</span></code> 
 <code class="docutils literal"><span class="pre">ndarray</span></code> of a <code class="docutils literal"><span class="pre">DataFrame</span></code> via <code class="docutils literal"><span class="pre">.values</span></code>).</p>
 </div>
 </div>
+<div class="section" id="jupyter-notebook">
+<h2>Jupyter Notebook<a class="headerlink" href="#jupyter-notebook" title="Permalink to this headline">¶</a></h2>
+<p>(<a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/running_catalyst_in_jupyter_notebook.ipynb">This is actual Notebook</a> referenced in the text below)</p>
+<p>The <a class="reference external" href="https://jupyter.org/">Jupyter Notebook</a> is a very powerful
+browser-based interface to a Python interpreter. As it is already the
+de-facto interface for most quantitative researchers, <code class="docutils literal"><span class="pre">catalyst</span></code>
+provides an easy way to run your algorithm inside the Notebook without
+requiring you to use the CLI. We include this section here as an alternative to
+running algorithms through the command line.</p>
+<div class="section" id="install">
+<h3>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h3>
+<p>In order to use Jupyter Notebook, you first have to install it inside your
+environment. It&#8217;s available as <code class="docutils literal"><span class="pre">pip</span></code> package, so regardless of how you
+installed Catalyst, go inside your catalyst environemnt and run:</p>
+<div class="code bash highlight-python"><div class="highlight"><pre>(catalyst)$ pip install jupyter
+</pre></div>
+</div>
+<p>Once you have Jupyter Notebook installed, every time you want to use it run:</p>
+<div class="code bash highlight-python"><div class="highlight"><pre>(catalyst)$ jupyter notebook
+</pre></div>
+</div>
+<p>A local server will launch, and will open a new window on your browser. That&#8217;s
+the interface through which you will interact with Jupyter Notebook.</p>
+</div>
+<div class="section" id="running-algorithms">
+<h3>Running Algorithms<a class="headerlink" href="#running-algorithms" title="Permalink to this headline">¶</a></h3>
+<p>Before running your algorithms inside the Jupyter Notebook, remember to ingest
+the data from the command line interface (CLI). In the example below, you would
+need to run first:</p>
+<div class="code bash highlight-python"><div class="highlight"><pre>catalyst ingest-exchange -x bitfinex -i btc_usd
+</pre></div>
+</div>
+<p>To use Catalyst inside a Jupyter Noebook, you have to write your algorithm in a
+cell and let the Jupyter know that it is supposed to execute this algorithm with
+Catalyst. This is done via the <code class="docutils literal"><span class="pre">%%catalyst</span></code> IPython magic command that is
+available after you import <code class="docutils literal"><span class="pre">catalyst</span></code> from within the Notebook. This magic
+takes the same arguments as the command line interface. Thus to run the
+algorithm just supply the same parameters as the CLI but without the -f
+and -o arguments. We just have to execute the following cell after
+importing <code class="docutils literal"><span class="pre">catalyst</span></code> to register the magic.</p>
+<div class="code python highlight-python"><div class="highlight"><pre># Register the catalyst magic
+%load_ext catalyst
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre># Setup matplotlib to display graphs inline in this Notebook
+%matplotlib inline
+</pre></div>
+</div>
+<p>Note below that we do not have to specify an input file (-f) since the
+magic will use the contents of the cell and look for your algorithm
+functions.</p>
+<div class="code python highlight-python"><div class="highlight"><pre>%%catalyst --start 2015-3-2 --end 2017-6-28 --capital-base 100000 -x bitfinex -c usd
+
+from catalyst.finance.slippage import VolumeShareSlippage
+
+from catalyst.api import (
+    order_target_value,
+    symbol,
+    record,
+    cancel_order,
+    get_open_orders,
+)
+
+def initialize(context):
+    context.ASSET_NAME = &#39;btc_usd&#39;
+    context.TARGET_HODL_RATIO = 0.8
+    context.RESERVE_RATIO = 1.0 - context.TARGET_HODL_RATIO
+
+    # For all trading pairs in the poloniex bundle, the default denomination
+    # currently supported by Catalyst is 1/1000th of a full coin. Use this
+    # constant to scale the price of up to that of a full coin if desired.
+    context.TICK_SIZE = 1000.0
+
+    context.is_buying = True
+    context.asset = symbol(context.ASSET_NAME)
+
+    context.i = 0
+
+def handle_data(context, data):
+    context.i += 1
+
+    starting_cash = context.portfolio.starting_cash
+    target_hodl_value = context.TARGET_HODL_RATIO * starting_cash
+    reserve_value = context.RESERVE_RATIO * starting_cash
+
+    # Cancel any outstanding orders
+    orders = get_open_orders(context.asset) or []
+    for order in orders:
+        cancel_order(order)
+
+    # Stop buying after passing the reserve threshold
+    cash = context.portfolio.cash
+    if cash &lt;= reserve_value:
+        context.is_buying = False
+
+    # Retrieve current asset price from pricing data
+    price = data.current(context.asset, &#39;price&#39;)
+
+    # Check if still buying and could (approximately) afford another purchase
+    if context.is_buying and cash &gt; price:
+        # Place order to make position in asset equal to target_hodl_value
+        order_target_value(
+            context.asset,
+            target_hodl_value,
+            limit_price=price*1.1,
+            stop_price=price*0.9,
+        )
+
+    record(
+        price=price,
+        volume=data.current(context.asset, &#39;volume&#39;),
+        cash=cash,
+        starting_cash=context.portfolio.starting_cash,
+        leverage=context.account.leverage,
+    )
+
+def analyze(context=None, results=None):
+    import matplotlib.pyplot as plt
+
+    # Plot the portfolio and asset data.
+    ax1 = plt.subplot(611)
+    results[[&#39;portfolio_value&#39;]].plot(ax=ax1)
+    ax1.set_ylabel(&#39;Portfolio Value (USD)&#39;)
+
+    ax2 = plt.subplot(612, sharex=ax1)
+    ax2.set_ylabel(&#39;{asset} (USD)&#39;.format(asset=context.ASSET_NAME))
+    (context.TICK_SIZE * results[[&#39;price&#39;]]).plot(ax=ax2)
+
+    trans = results.ix[[t != [] for t in results.transactions]]
+    buys = trans.ix[
+        [t[0][&#39;amount&#39;] &gt; 0 for t in trans.transactions]
+    ]
+    ax2.plot(
+        buys.index,
+        context.TICK_SIZE * results.price[buys.index],
+        &#39;^&#39;,
+        markersize=10,
+        color=&#39;g&#39;,
+    )
+
+    ax3 = plt.subplot(613, sharex=ax1)
+    results[[&#39;leverage&#39;, &#39;alpha&#39;, &#39;beta&#39;]].plot(ax=ax3)
+    ax3.set_ylabel(&#39;Leverage &#39;)
+
+    ax4 = plt.subplot(614, sharex=ax1)
+    results[[&#39;starting_cash&#39;, &#39;cash&#39;]].plot(ax=ax4)
+    ax4.set_ylabel(&#39;Cash (USD)&#39;)
+
+    results[[
+        &#39;treasury&#39;,
+        &#39;algorithm&#39;,
+        &#39;benchmark&#39;,
+    ]] = results[[
+        &#39;treasury_period_return&#39;,
+        &#39;algorithm_period_return&#39;,
+        &#39;benchmark_period_return&#39;,
+    ]]
+
+    ax5 = plt.subplot(615, sharex=ax1)
+    results[[
+        &#39;treasury&#39;,
+        &#39;algorithm&#39;,
+        &#39;benchmark&#39;,
+    ]].plot(ax=ax5)
+    ax5.set_ylabel(&#39;Percent Change&#39;)
+
+    ax6 = plt.subplot(616, sharex=ax1)
+    results[[&#39;volume&#39;]].plot(ax=ax6)
+    ax6.set_ylabel(&#39;Volume (mCoins/5min)&#39;)
+
+    plt.legend(loc=3)
+
+    # Show the plot.
+    plt.gcf().set_size_inches(18, 8)
+    plt.show()
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>[2017-08-11 07:19:46.411748] INFO: Loader: Loading benchmark data for &#39;USDT_BTC&#39; from 1989-12-31 00:00:00+00:00 to 2017-08-09 00:00:00+00:00
+[2017-08-11 07:19:46.418983] INFO: Loader: Loading data for /Users/&lt;snipped&gt;/.catalyst/data/USDT_BTC_benchmark.csv failed with error [Unknown string format].
+[2017-08-11 07:19:46.419740] INFO: Loader: Cache at /Users/&lt;snipped&gt;/.catalyst/data/USDT_BTC_benchmark.csv does not have data from 1990-01-01 00:00:00+00:00 to 2017-08-09 00:00:00+00:00.
+
+[2017-08-11 07:19:46.420770] INFO: Loader: Downloading benchmark data for &#39;USDT_BTC&#39; from 1989-12-31 00:00:00+00:00 to 2017-08-09 00:00:00+00:00
+[2017-08-11 07:19:50.060244] WARNING: Loader: Still don&#39;t have expected data after redownload!
+[2017-08-11 07:19:50.097334] WARNING: Loader: Refusing to download new treasury data because a download succeeded at 2017-08-11 06:56:49+00:00.
+[2017-08-11 07:19:54.618399] INFO: Performance: Simulated 851 trading days out of 851.
+[2017-08-11 07:19:54.619301] INFO: Performance: first open: 2015-03-01 00:00:00+00:00
+[2017-08-11 07:19:54.620430] INFO: Performance: last close: 2017-06-28 23:59:00+00:00
+</pre></div>
+</div>
+<div class="figure">
+<img alt="png" src="https://i.imgur.com/DS5w47q.png" />
+</div>
+<div><table border="1" class="dataframe"><thead><tr style="text-align: right;"><th></th><th><p>algo_volatility</p>
+</th><th><p>algorithm_period_return</p>
+</th><th><p>alpha</p>
+</th><th><p>benchmark_period_return</p>
+</th><th><p>benchmark_volatility</p>
+</th><th><p>beta</p>
+</th><th><p>capital_used</p>
+</th><th><p>cash</p>
+</th><th><p>ending_cash</p>
+</th><th><p>ending_exposure</p>
+</th><th><p>…</p>
+</th><th><p>starting_cash</p>
+</th><th><p>starting_exposure</p>
+</th><th><p>starting_value</p>
+</th><th><p>trading_days</p>
+</th><th><p>transactions</p>
+</th><th><p>treasury_period_return</p>
+</th><th><p>volume</p>
+</th><th><p>treasury</p>
+</th><th><p>algorithm</p>
+</th><th><p>benchmark</p>
+</th></tr></thead><tbody><tr><th><p>2015-03-01 23:59:00+00:00</p>
+</th><td><p>NaN</p>
+</td><td><p>0.000000</p>
+</td><td><p>NaN</p>
+</td><td><p>0.045833</p>
+</td><td><p>NaN</p>
+</td><td><p>NaN</p>
+</td><td><p>0.000000</p>
+</td><td><p>100000.000000</p>
+</td><td><p>100000.000000</p>
+</td><td><p>0.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>0.000</p>
+</td><td><p>0.000</p>
+</td><td><p>1</p>
+</td><td><p>[]</p>
+</td><td><p>0.0200</p>
+</td><td><p>317</p>
+</td><td><p>0.0200</p>
+</td><td><p>0.000000</p>
+</td><td><p>0.045833</p>
+</td></tr><tr><th><p>2015-03-02 23:59:00+00:00</p>
+</th><td><p>0.000278</p>
+</td><td><p>-0.000025</p>
+</td><td><p>0.011045</p>
+</td><td><p>0.120833</p>
+</td><td><p>0.290503</p>
+</td><td><p>-0.000956</p>
+</td><td><p>-85544.474955</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>85542.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>0.000</p>
+</td><td><p>0.000</p>
+</td><td><p>2</p>
+</td><td><p>[{u’commission’: None, u’amount’: 318, u’sid’:…</p>
+</td><td><p>0.0208</p>
+</td><td><p>98063</p>
+</td><td><p>0.0208</p>
+</td><td><p>-0.000025</p>
+</td><td><p>0.120833</p>
+</td></tr><tr><th><p>2015-03-03 23:59:00+00:00</p>
+</th><td><p>0.051796</p>
+</td><td><p>-0.005688</p>
+</td><td><p>-1.197544</p>
+</td><td><p>0.113416</p>
+</td><td><p>0.633538</p>
+</td><td><p>0.077239</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>84975.642</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>85542.000</p>
+</td><td><p>85542.000</p>
+</td><td><p>3</p>
+</td><td><p>[]</p>
+</td><td><p>0.0212</p>
+</td><td><p>442983</p>
+</td><td><p>0.0212</p>
+</td><td><p>-0.005688</p>
+</td><td><p>0.113416</p>
+</td></tr><tr><th><p>2015-03-04 23:59:00+00:00</p>
+</th><td><p>0.342118</p>
+</td><td><p>0.034955</p>
+</td><td><p>0.401861</p>
+</td><td><p>0.166666</p>
+</td><td><p>0.524400</p>
+</td><td><p>0.181468</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>89040.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>84975.642</p>
+</td><td><p>84975.642</p>
+</td><td><p>4</p>
+</td><td><p>[]</p>
+</td><td><p>0.0212</p>
+</td><td><p>245889</p>
+</td><td><p>0.0212</p>
+</td><td><p>0.034955</p>
+</td><td><p>0.166666</p>
+</td></tr><tr><th><p>2015-03-05 23:59:00+00:00</p>
+</th><td><p>0.637226</p>
+</td><td><p>-0.038185</p>
+</td><td><p>-3.914003</p>
+</td><td><p>0.070834</p>
+</td><td><p>0.976896</p>
+</td><td><p>0.550520</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>81726.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>89040.000</p>
+</td><td><p>89040.000</p>
+</td><td><p>5</p>
+</td><td><p>[]</p>
+</td><td><p>0.0211</p>
+</td><td><p>117440</p>
+</td><td><p>0.0211</p>
+</td><td><p>-0.038185</p>
+</td><td><p>0.070834</p>
+</td></tr><tr><th><p>2015-03-06 23:59:00+00:00</p>
+</th><td><p>0.580521</p>
+</td><td><p>-0.028645</p>
+</td><td><p>-3.100822</p>
+</td><td><p>0.083333</p>
+</td><td><p>0.874082</p>
+</td><td><p>0.546703</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>82680.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>81726.000</p>
+</td><td><p>81726.000</p>
+</td><td><p>6</p>
+</td><td><p>[]</p>
+</td><td><p>0.0224</p>
+</td><td><p>84197</p>
+</td><td><p>0.0224</p>
+</td><td><p>-0.028645</p>
+</td><td><p>0.083333</p>
+</td></tr><tr><th><p>2015-03-07 23:59:00+00:00</p>
+</th><td><p>0.530557</p>
+</td><td><p>-0.028645</p>
+</td><td><p>-2.625704</p>
+</td><td><p>0.083333</p>
+</td><td><p>0.802793</p>
+</td><td><p>0.536589</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>82680.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>82680.000</p>
+</td><td><p>82680.000</p>
+</td><td><p>7</p>
+</td><td><p>[]</p>
+</td><td><p>0.0224</p>
+</td><td><p>181</p>
+</td><td><p>0.0224</p>
+</td><td><p>-0.028645</p>
+</td><td><p>0.083333</p>
+</td></tr><tr><th><p>2015-03-08 23:59:00+00:00</p>
+</th><td><p>0.491628</p>
+</td><td><p>-0.028645</p>
+</td><td><p>-2.276841</p>
+</td><td><p>0.083333</p>
+</td><td><p>0.746605</p>
+</td><td><p>0.529163</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>82680.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>82680.000</p>
+</td><td><p>82680.000</p>
+</td><td><p>8</p>
+</td><td><p>[]</p>
+</td><td><p>0.0224</p>
+</td><td><p>30900</p>
+</td><td><p>0.0224</p>
+</td><td><p>-0.028645</p>
+</td><td><p>0.083333</p>
+</td></tr><tr><th><p>2015-03-09 23:59:00+00:00</p>
+</th><td><p>0.467885</p>
+</td><td><p>-0.015925</p>
+</td><td><p>-1.895269</p>
+</td><td><p>0.100000</p>
+</td><td><p>0.698764</p>
+</td><td><p>0.532652</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>83952.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>82680.000</p>
+</td><td><p>82680.000</p>
+</td><td><p>9</p>
+</td><td><p>[]</p>
+</td><td><p>0.0220</p>
+</td><td><p>128367</p>
+</td><td><p>0.0220</p>
+</td><td><p>-0.015925</p>
+</td><td><p>0.100000</p>
+</td></tr><tr><th><p>2015-03-10 23:59:00+00:00</p>
+</th><td><p>0.626552</p>
+</td><td><p>0.069935</p>
+</td><td><p>-1.625285</p>
+</td><td><p>0.212500</p>
+</td><td><p>0.800983</p>
+</td><td><p>0.676289</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>92538.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>83952.000</p>
+</td><td><p>83952.000</p>
+</td><td><p>10</p>
+</td><td><p>[]</p>
+</td><td><p>0.0214</p>
+</td><td><p>54961</p>
+</td><td><p>0.0214</p>
+</td><td><p>0.069935</p>
+</td><td><p>0.212500</p>
+</td></tr><tr><th><p>2015-03-11 23:59:00+00:00</p>
+</th><td><p>0.644515</p>
+</td><td><p>0.022235</p>
+</td><td><p>-1.727710</p>
+</td><td><p>0.150000</p>
+</td><td><p>0.834650</p>
+</td><td><p>0.684052</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>87768.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>92538.000</p>
+</td><td><p>92538.000</p>
+</td><td><p>11</p>
+</td><td><p>[]</p>
+</td><td><p>0.0211</p>
+</td><td><p>42511</p>
+</td><td><p>0.0211</p>
+</td><td><p>0.022235</p>
+</td><td><p>0.150000</p>
+</td></tr><tr><th><p>2015-03-12 23:59:00+00:00</p>
+</th><td><p>0.614650</p>
+</td><td><p>0.022235</p>
+</td><td><p>-1.573455</p>
+</td><td><p>0.150000</p>
+</td><td><p>0.798403</p>
+</td><td><p>0.680882</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>87768.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>87768.000</p>
+</td><td><p>87768.000</p>
+</td><td><p>12</p>
+</td><td><p>[]</p>
+</td><td><p>0.0210</p>
+</td><td><p>2909</p>
+</td><td><p>0.0210</p>
+</td><td><p>0.022235</p>
+</td><td><p>0.150000</p>
+</td></tr><tr><th><p>2015-03-13 23:59:00+00:00</p>
+</th><td><p>0.588942</p>
+</td><td><p>0.019405</p>
+</td><td><p>-1.454733</p>
+</td><td><p>0.146291</p>
+</td><td><p>0.767688</p>
+</td><td><p>0.677881</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>87484.980</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>87768.000</p>
+</td><td><p>87768.000</p>
+</td><td><p>13</p>
+</td><td><p>[]</p>
+</td><td><p>0.0213</p>
+</td><td><p>57613</p>
+</td><td><p>0.0213</p>
+</td><td><p>0.019405</p>
+</td><td><p>0.146291</p>
+</td></tr><tr><th><p>2015-03-14 23:59:00+00:00</p>
+</th><td><p>0.565911</p>
+</td><td><p>0.019373</p>
+</td><td><p>-1.344915</p>
+</td><td><p>0.146250</p>
+</td><td><p>0.739230</p>
+</td><td><p>0.675665</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>87481.800</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>87484.980</p>
+</td><td><p>87484.980</p>
+</td><td><p>14</p>
+</td><td><p>[]</p>
+</td><td><p>0.0213</p>
+</td><td><p>48310</p>
+</td><td><p>0.0213</p>
+</td><td><p>0.019373</p>
+</td><td><p>0.146250</p>
+</td></tr><tr><th><p>2015-03-15 23:59:00+00:00</p>
+</th><td><p>0.551394</p>
+</td><td><p>0.041659</p>
+</td><td><p>-1.191436</p>
+</td><td><p>0.175450</p>
+</td><td><p>0.714876</p>
+</td><td><p>0.680484</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>89710.344</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>87481.800</p>
+</td><td><p>87481.800</p>
+</td><td><p>15</p>
+</td><td><p>[]</p>
+</td><td><p>0.0213</p>
+</td><td><p>29454</p>
+</td><td><p>0.0213</p>
+</td><td><p>0.041659</p>
+</td><td><p>0.175450</p>
+</td></tr><tr><th><p>2015-03-16 23:59:00+00:00</p>
+</th><td><p>0.541846</p>
+</td><td><p>0.019055</p>
+</td><td><p>-1.188212</p>
+</td><td><p>0.145833</p>
+</td><td><p>0.706049</p>
+</td><td><p>0.680281</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>87450.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>89710.344</p>
+</td><td><p>89710.344</p>
+</td><td><p>16</p>
+</td><td><p>[]</p>
+</td><td><p>0.0210</p>
+</td><td><p>25564</p>
+</td><td><p>0.0210</p>
+</td><td><p>0.019055</p>
+</td><td><p>0.145833</p>
+</td></tr><tr><th><p>2015-03-17 23:59:00+00:00</p>
+</th><td><p>0.524682</p>
+</td><td><p>0.019055</p>
+</td><td><p>-1.115149</p>
+</td><td><p>0.145833</p>
+</td><td><p>0.684599</p>
+</td><td><p>0.678870</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>87450.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>87450.000</p>
+</td><td><p>87450.000</p>
+</td><td><p>17</p>
+</td><td><p>[]</p>
+</td><td><p>0.0206</p>
+</td><td><p>9</p>
+</td><td><p>0.0206</p>
+</td><td><p>0.019055</p>
+</td><td><p>0.145833</p>
+</td></tr><tr><th><p>2015-03-18 23:59:00+00:00</p>
+</th><td><p>0.532621</p>
+</td><td><p>-0.021999</p>
+</td><td><p>-1.180440</p>
+</td><td><p>0.092041</p>
+</td><td><p>0.696261</p>
+</td><td><p>0.685307</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>83344.620</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>87450.000</p>
+</td><td><p>87450.000</p>
+</td><td><p>18</p>
+</td><td><p>[]</p>
+</td><td><p>0.0193</p>
+</td><td><p>164911</p>
+</td><td><p>0.0193</p>
+</td><td><p>-0.021999</p>
+</td><td><p>0.092041</p>
+</td></tr><tr><th><p>2015-03-19 23:59:00+00:00</p>
+</th><td><p>0.518811</p>
+</td><td><p>-0.013234</p>
+</td><td><p>-1.096387</p>
+</td><td><p>0.103526</p>
+</td><td><p>0.676861</p>
+</td><td><p>0.686186</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>84221.028</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>83344.620</p>
+</td><td><p>83344.620</p>
+</td><td><p>19</p>
+</td><td><p>[]</p>
+</td><td><p>0.0198</p>
+</td><td><p>713904</p>
+</td><td><p>0.0198</p>
+</td><td><p>-0.013234</p>
+</td><td><p>0.103526</p>
+</td></tr><tr><th><p>2015-03-20 23:59:00+00:00</p>
+</th><td><p>0.505168</p>
+</td><td><p>-0.017324</p>
+</td><td><p>-1.050273</p>
+</td><td><p>0.098170</p>
+</td><td><p>0.659945</p>
+</td><td><p>0.685070</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>83812.080</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>84221.028</p>
+</td><td><p>84221.028</p>
+</td><td><p>20</p>
+</td><td><p>[]</p>
+</td><td><p>0.0193</p>
+</td><td><p>132725</p>
+</td><td><p>0.0193</p>
+</td><td><p>-0.017324</p>
+</td><td><p>0.098170</p>
+</td></tr><tr><th><p>2015-03-21 23:59:00+00:00</p>
+</th><td><p>0.492384</p>
+</td><td><p>-0.018494</p>
+</td><td><p>-1.002051</p>
+</td><td><p>0.096637</p>
+</td><td><p>0.643679</p>
+</td><td><p>0.684283</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>83695.056</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>83812.080</p>
+</td><td><p>83812.080</p>
+</td><td><p>21</p>
+</td><td><p>[]</p>
+</td><td><p>0.0193</p>
+</td><td><p>201155</p>
+</td><td><p>0.0193</p>
+</td><td><p>-0.018494</p>
+</td><td><p>0.096637</p>
+</td></tr><tr><th><p>2015-03-22 23:59:00+00:00</p>
+</th><td><p>0.482998</p>
+</td><td><p>-0.004744</p>
+</td><td><p>-0.927947</p>
+</td><td><p>0.114653</p>
+</td><td><p>0.629319</p>
+</td><td><p>0.686478</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>85070.088</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>83695.056</p>
+</td><td><p>83695.056</p>
+</td><td><p>22</p>
+</td><td><p>[]</p>
+</td><td><p>0.0193</p>
+</td><td><p>64378</p>
+</td><td><p>0.0193</p>
+</td><td><p>-0.004744</p>
+</td><td><p>0.114653</p>
+</td></tr><tr><th><p>2015-03-23 23:59:00+00:00</p>
+</th><td><p>0.477523</p>
+</td><td><p>-0.026505</p>
+</td><td><p>-0.935352</p>
+</td><td><p>0.086139</p>
+</td><td><p>0.623502</p>
+</td><td><p>0.687025</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>82894.014</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>85070.088</p>
+</td><td><p>85070.088</p>
+</td><td><p>23</p>
+</td><td><p>[]</p>
+</td><td><p>0.0192</p>
+</td><td><p>61850</p>
+</td><td><p>0.0192</p>
+</td><td><p>-0.026505</p>
+</td><td><p>0.086139</p>
+</td></tr><tr><th><p>2015-03-24 23:59:00+00:00</p>
+</th><td><p>0.504086</p>
+</td><td><p>-0.084215</p>
+</td><td><p>-1.021023</p>
+</td><td><p>0.010523</p>
+</td><td><p>0.655188</p>
+</td><td><p>0.701025</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>77122.950</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>82894.014</p>
+</td><td><p>82894.014</p>
+</td><td><p>24</p>
+</td><td><p>[]</p>
+</td><td><p>0.0188</p>
+</td><td><p>490180</p>
+</td><td><p>0.0188</p>
+</td><td><p>-0.084215</p>
+</td><td><p>0.010523</p>
+</td></tr><tr><th><p>2015-03-25 23:59:00+00:00</p>
+</th><td><p>0.497690</p>
+</td><td><p>-0.068474</p>
+</td><td><p>-0.952786</p>
+</td><td><p>0.031148</p>
+</td><td><p>0.644272</p>
+</td><td><p>0.704251</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>78697.050</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>77122.950</p>
+</td><td><p>77122.950</p>
+</td><td><p>25</p>
+</td><td><p>[]</p>
+</td><td><p>0.0193</p>
+</td><td><p>90862</p>
+</td><td><p>0.0193</p>
+</td><td><p>-0.068474</p>
+</td><td><p>0.031148</p>
+</td></tr><tr><th><p>2015-03-26 23:59:00+00:00</p>
+</th><td><p>0.489730</p>
+</td><td><p>-0.084215</p>
+</td><td><p>-0.943240</p>
+</td><td><p>0.010523</p>
+</td><td><p>0.634965</p>
+</td><td><p>0.703738</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>77122.950</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>78697.050</p>
+</td><td><p>78697.050</p>
+</td><td><p>26</p>
+</td><td><p>[]</p>
+</td><td><p>0.0201</p>
+</td><td><p>2299</p>
+</td><td><p>0.0201</p>
+</td><td><p>-0.084215</p>
+</td><td><p>0.010523</p>
+</td></tr><tr><th><p>2015-03-27 23:59:00+00:00</p>
+</th><td><p>0.495916</p>
+</td><td><p>-0.049785</p>
+</td><td><p>-0.857592</p>
+</td><td><p>0.055636</p>
+</td><td><p>0.636644</p>
+</td><td><p>0.713671</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>80565.936</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>77122.950</p>
+</td><td><p>77122.950</p>
+</td><td><p>27</p>
+</td><td><p>[]</p>
+</td><td><p>0.0195</p>
+</td><td><p>663</p>
+</td><td><p>0.0195</p>
+</td><td><p>-0.049785</p>
+</td><td><p>0.055636</p>
+</td></tr><tr><th><p>2015-03-28 23:59:00+00:00</p>
+</th><td><p>0.488469</p>
+</td><td><p>-0.064490</p>
+</td><td><p>-0.848769</p>
+</td><td><p>0.036368</p>
+</td><td><p>0.627920</p>
+</td><td><p>0.713212</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>79095.504</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>80565.936</p>
+</td><td><p>80565.936</p>
+</td><td><p>28</p>
+</td><td><p>[]</p>
+</td><td><p>0.0195</p>
+</td><td><p>7061</p>
+</td><td><p>0.0195</p>
+</td><td><p>-0.064490</p>
+</td><td><p>0.036368</p>
+</td></tr><tr><th><p>2015-03-29 23:59:00+00:00</p>
+</th><td><p>0.479671</p>
+</td><td><p>-0.066903</p>
+</td><td><p>-0.822844</p>
+</td><td><p>0.033205</p>
+</td><td><p>0.616787</p>
+</td><td><p>0.712868</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>78854.142</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>79095.504</p>
+</td><td><p>79095.504</p>
+</td><td><p>29</p>
+</td><td><p>[]</p>
+</td><td><p>0.0195</p>
+</td><td><p>8526</p>
+</td><td><p>0.0195</p>
+</td><td><p>-0.066903</p>
+</td><td><p>0.033205</p>
+</td></tr><tr><th><p>2015-03-30 23:59:00+00:00</p>
+</th><td><p>0.476306</p>
+</td><td><p>-0.046605</p>
+</td><td><p>-0.769239</p>
+</td><td><p>0.059803</p>
+</td><td><p>0.610002</p>
+</td><td><p>0.716464</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>80883.936</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>78854.142</p>
+</td><td><p>78854.142</p>
+</td><td><p>30</p>
+</td><td><p>[]</p>
+</td><td><p>0.0196</p>
+</td><td><p>29654</p>
+</td><td><p>0.0196</p>
+</td><td><p>-0.046605</p>
+</td><td><p>0.059803</p>
+</td></tr><tr><th><p>…</p>
+</th><td><p>…</p>
+</td><td><p>…</p>
+</td><td><p>…</p>
+</td><td><p>…</p>
+</td><td><p>…</p>
+</td><td><p>…</p>
+</td><td><p>…</p>
+</td><td><p>…</p>
+</td><td><p>…</p>
+</td><td><p>…</p>
+</td><td><p>…</p>
+</td><td><p>…</p>
+</td><td><p>…</p>
+</td><td><p>…</p>
+</td><td><p>…</p>
+</td><td><p>…</p>
+</td><td><p>…</p>
+</td><td><p>…</p>
+</td><td><p>…</p>
+</td><td><p>…</p>
+</td><td><p>…</p>
+</td></tr><tr><th><p>2017-05-30 23:59:00+00:00</p>
+</th><td><p>0.495432</p>
+</td><td><p>5.949752</p>
+</td><td><p>-0.016611</p>
+</td><td><p>7.916664</p>
+</td><td><p>0.554369</p>
+</td><td><p>0.888883</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>680519.682</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>701826.000</p>
+</td><td><p>701826.000</p>
+</td><td><p>822</p>
+</td><td><p>[]</p>
+</td><td><p>0.0221</p>
+</td><td><p>40157964723</p>
+</td><td><p>0.0221</p>
+</td><td><p>5.949752</p>
+</td><td><p>7.916664</p>
+</td></tr><tr><th><p>2017-05-31 23:59:00+00:00</p>
+</th><td><p>0.495243</p>
+</td><td><p>6.102328</p>
+</td><td><p>-0.017086</p>
+</td><td><p>8.154164</p>
+</td><td><p>0.554182</p>
+</td><td><p>0.888844</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>695777.322</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>680519.682</p>
+</td><td><p>680519.682</p>
+</td><td><p>823</p>
+</td><td><p>[]</p>
+</td><td><p>0.0221</p>
+</td><td><p>31098652109</p>
+</td><td><p>0.0221</p>
+</td><td><p>6.102328</p>
+</td><td><p>8.154164</p>
+</td></tr><tr><th><p>2017-06-01 23:59:00+00:00</p>
+</th><td><p>0.495836</p>
+</td><td><p>6.504967</p>
+</td><td><p>-0.014668</p>
+</td><td><p>8.644144</p>
+</td><td><p>0.554541</p>
+</td><td><p>0.889303</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>736041.210</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>695777.322</p>
+</td><td><p>695777.322</p>
+</td><td><p>824</p>
+</td><td><p>[]</p>
+</td><td><p>0.0221</p>
+</td><td><p>40944880757</p>
+</td><td><p>0.0221</p>
+</td><td><p>6.504967</p>
+</td><td><p>8.644144</p>
+</td></tr><tr><th><p>2017-06-02 23:59:00+00:00</p>
+</th><td><p>0.495948</p>
+</td><td><p>6.801995</p>
+</td><td><p>-0.013641</p>
+</td><td><p>9.033331</p>
+</td><td><p>0.554581</p>
+</td><td><p>0.889440</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>765744.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>736041.210</p>
+</td><td><p>736041.210</p>
+</td><td><p>825</p>
+</td><td><p>[]</p>
+</td><td><p>0.0215</p>
+</td><td><p>22364557424</p>
+</td><td><p>0.0215</p>
+</td><td><p>6.801995</p>
+</td><td><p>9.033331</p>
+</td></tr><tr><th><p>2017-06-03 23:59:00+00:00</p>
+</th><td><p>0.495729</p>
+</td><td><p>6.952409</p>
+</td><td><p>-0.013100</p>
+</td><td><p>9.230418</p>
+</td><td><p>0.554317</p>
+</td><td><p>0.889470</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>780785.400</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>765744.000</p>
+</td><td><p>765744.000</p>
+</td><td><p>826</p>
+</td><td><p>[]</p>
+</td><td><p>0.0215</p>
+</td><td><p>23687278961</p>
+</td><td><p>0.0215</p>
+</td><td><p>6.952409</p>
+</td><td><p>9.230418</p>
+</td></tr><tr><th><p>2017-06-04 23:59:00+00:00</p>
+</th><td><p>0.495450</p>
+</td><td><p>7.042244</p>
+</td><td><p>-0.012768</p>
+</td><td><p>9.348122</p>
+</td><td><p>0.553999</p>
+</td><td><p>0.889479</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>789768.900</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>780785.400</p>
+</td><td><p>780785.400</p>
+</td><td><p>827</p>
+</td><td><p>[]</p>
+</td><td><p>0.0215</p>
+</td><td><p>21332021248</p>
+</td><td><p>0.0215</p>
+</td><td><p>7.042244</p>
+</td><td><p>9.348122</p>
+</td></tr><tr><th><p>2017-06-05 23:59:00+00:00</p>
+</th><td><p>0.496148</p>
+</td><td><p>7.524987</p>
+</td><td><p>-0.011320</p>
+</td><td><p>9.980649</p>
+</td><td><p>0.554578</p>
+</td><td><p>0.889805</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>838043.208</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>789768.900</p>
+</td><td><p>789768.900</p>
+</td><td><p>828</p>
+</td><td><p>[]</p>
+</td><td><p>0.0218</p>
+</td><td><p>22372229837</p>
+</td><td><p>0.0218</p>
+</td><td><p>7.524987</p>
+</td><td><p>9.980649</p>
+</td></tr><tr><th><p>2017-06-06 23:59:00+00:00</p>
+</th><td><p>0.497592</p>
+</td><td><p>8.194835</p>
+</td><td><p>-0.009554</p>
+</td><td><p>10.858330</p>
+</td><td><p>0.555841</p>
+</td><td><p>0.890368</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>905028.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>838043.208</p>
+</td><td><p>838043.208</p>
+</td><td><p>829</p>
+</td><td><p>[]</p>
+</td><td><p>0.0214</p>
+</td><td><p>81923184446</p>
+</td><td><p>0.0214</p>
+</td><td><p>8.194835</p>
+</td><td><p>10.858330</p>
+</td></tr><tr><th><p>2017-06-07 23:59:00+00:00</p>
+</th><td><p>0.498895</p>
+</td><td><p>7.557258</p>
+</td><td><p>-0.011975</p>
+</td><td><p>10.022932</p>
+</td><td><p>0.557003</p>
+</td><td><p>0.890845</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>841270.272</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>905028.000</p>
+</td><td><p>905028.000</p>
+</td><td><p>830</p>
+</td><td><p>[]</p>
+</td><td><p>0.0218</p>
+</td><td><p>49070430356</p>
+</td><td><p>0.0218</p>
+</td><td><p>7.557258</p>
+</td><td><p>10.022932</p>
+</td></tr><tr><th><p>2017-06-08 23:59:00+00:00</p>
+</th><td><p>0.499349</p>
+</td><td><p>8.010395</p>
+</td><td><p>-0.010676</p>
+</td><td><p>10.616664</p>
+</td><td><p>0.557357</p>
+</td><td><p>0.891092</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>886584.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>841270.272</p>
+</td><td><p>841270.272</p>
+</td><td><p>831</p>
+</td><td><p>[]</p>
+</td><td><p>0.0219</p>
+</td><td><p>34013412940</p>
+</td><td><p>0.0219</p>
+</td><td><p>8.010395</p>
+</td><td><p>10.616664</p>
+</td></tr><tr><th><p>2017-06-09 23:59:00+00:00</p>
+</th><td><p>0.499063</p>
+</td><td><p>8.099750</p>
+</td><td><p>-0.010386</p>
+</td><td><p>10.733746</p>
+</td><td><p>0.557033</p>
+</td><td><p>0.891098</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>895519.482</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>886584.000</p>
+</td><td><p>886584.000</p>
+</td><td><p>832</p>
+</td><td><p>[]</p>
+</td><td><p>0.0221</p>
+</td><td><p>25275425996</p>
+</td><td><p>0.0221</p>
+</td><td><p>8.099750</p>
+</td><td><p>10.733746</p>
+</td></tr><tr><th><p>2017-06-10 23:59:00+00:00</p>
+</th><td><p>0.498769</p>
+</td><td><p>8.086143</p>
+</td><td><p>-0.010416</p>
+</td><td><p>10.715915</p>
+</td><td><p>0.556705</p>
+</td><td><p>0.891098</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>894158.760</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>895519.482</p>
+</td><td><p>895519.482</p>
+</td><td><p>833</p>
+</td><td><p>[]</p>
+</td><td><p>0.0221</p>
+</td><td><p>30620792046</p>
+</td><td><p>0.0221</p>
+</td><td><p>8.086143</p>
+</td><td><p>10.715915</p>
+</td></tr><tr><th><p>2017-06-11 23:59:00+00:00</p>
+</th><td><p>0.498971</p>
+</td><td><p>8.484533</p>
+</td><td><p>-0.009305</p>
+</td><td><p>11.237914</p>
+</td><td><p>0.556827</p>
+</td><td><p>0.891266</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>933997.800</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>894158.760</p>
+</td><td><p>894158.760</p>
+</td><td><p>834</p>
+</td><td><p>[]</p>
+</td><td><p>0.0221</p>
+</td><td><p>30830678595</p>
+</td><td><p>0.0221</p>
+</td><td><p>8.484533</p>
+</td><td><p>11.237914</p>
+</td></tr><tr><th><p>2017-06-12 23:59:00+00:00</p>
+</th><td><p>0.503448</p>
+</td><td><p>7.320494</p>
+</td><td><p>-0.014065</p>
+</td><td><p>9.712706</p>
+</td><td><p>0.560936</p>
+</td><td><p>0.892695</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>817593.900</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>933997.800</p>
+</td><td><p>933997.800</p>
+</td><td><p>835</p>
+</td><td><p>[]</p>
+</td><td><p>0.0221</p>
+</td><td><p>88704710635</p>
+</td><td><p>0.0221</p>
+</td><td><p>7.320494</p>
+</td><td><p>9.712706</p>
+</td></tr><tr><th><p>2017-06-13 23:59:00+00:00</p>
+</th><td><p>0.503565</p>
+</td><td><p>7.656697</p>
+</td><td><p>-0.013054</p>
+</td><td><p>10.153225</p>
+</td><td><p>0.560981</p>
+</td><td><p>0.892830</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>851214.132</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>817593.900</p>
+</td><td><p>817593.900</p>
+</td><td><p>836</p>
+</td><td><p>[]</p>
+</td><td><p>0.0221</p>
+</td><td><p>42251296767</p>
+</td><td><p>0.0221</p>
+</td><td><p>7.656697</p>
+</td><td><p>10.153225</p>
+</td></tr><tr><th><p>2017-06-14 23:59:00+00:00</p>
+</th><td><p>0.506845</p>
+</td><td><p>6.734516</p>
+</td><td><p>-0.016873</p>
+</td><td><p>8.944917</p>
+</td><td><p>0.563995</p>
+</td><td><p>0.893862</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>758996.040</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>851214.132</p>
+</td><td><p>851214.132</p>
+</td><td><p>837</p>
+</td><td><p>[]</p>
+</td><td><p>0.0215</p>
+</td><td><p>63183088135</p>
+</td><td><p>0.0215</p>
+</td><td><p>6.734516</p>
+</td><td><p>8.944917</p>
+</td></tr><tr><th><p>2017-06-15 23:59:00+00:00</p>
+</th><td><p>0.506562</p>
+</td><td><p>6.695367</p>
+</td><td><p>-0.016991</p>
+</td><td><p>8.893622</p>
+</td><td><p>0.563678</p>
+</td><td><p>0.893865</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>755081.142</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>758996.040</p>
+</td><td><p>758996.040</p>
+</td><td><p>838</p>
+</td><td><p>[]</p>
+</td><td><p>0.0216</p>
+</td><td><p>104677533974</p>
+</td><td><p>0.0216</p>
+</td><td><p>6.695367</p>
+</td><td><p>8.893622</p>
+</td></tr><tr><th><p>2017-06-16 23:59:00+00:00</p>
+</th><td><p>0.506404</p>
+</td><td><p>6.887855</p>
+</td><td><p>-0.016343</p>
+</td><td><p>9.145831</p>
+</td><td><p>0.563472</p>
+</td><td><p>0.893913</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>774330.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>755081.142</p>
+</td><td><p>755081.142</p>
+</td><td><p>839</p>
+</td><td><p>[]</p>
+</td><td><p>0.0216</p>
+</td><td><p>43479966625</p>
+</td><td><p>0.0216</p>
+</td><td><p>6.887855</p>
+</td><td><p>9.145831</p>
+</td></tr><tr><th><p>2017-06-17 23:59:00+00:00</p>
+</th><td><p>0.507407</p>
+</td><td><p>7.435283</p>
+</td><td><p>-0.014812</p>
+</td><td><p>9.863113</p>
+</td><td><p>0.564341</p>
+</td><td><p>0.894311</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>829072.746</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>774330.000</p>
+</td><td><p>774330.000</p>
+</td><td><p>840</p>
+</td><td><p>[]</p>
+</td><td><p>0.0216</p>
+</td><td><p>36800919715</p>
+</td><td><p>0.0216</p>
+</td><td><p>7.435283</p>
+</td><td><p>9.863113</p>
+</td></tr><tr><th><p>2017-06-18 23:59:00+00:00</p>
+</th><td><p>0.507740</p>
+</td><td><p>7.070069</p>
+</td><td><p>-0.016112</p>
+</td><td><p>9.384581</p>
+</td><td><p>0.564605</p>
+</td><td><p>0.894482</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>792551.400</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>829072.746</p>
+</td><td><p>829072.746</p>
+</td><td><p>841</p>
+</td><td><p>[]</p>
+</td><td><p>0.0216</p>
+</td><td><p>46411759478</p>
+</td><td><p>0.0216</p>
+</td><td><p>7.070069</p>
+</td><td><p>9.384581</p>
+</td></tr><tr><th><p>2017-06-19 23:59:00+00:00</p>
+</th><td><p>0.507754</p>
+</td><td><p>7.358645</p>
+</td><td><p>-0.015226</p>
+</td><td><p>9.762694</p>
+</td><td><p>0.564557</p>
+</td><td><p>0.894583</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>821408.946</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>792551.400</p>
+</td><td><p>792551.400</p>
+</td><td><p>842</p>
+</td><td><p>[]</p>
+</td><td><p>0.0219</p>
+</td><td><p>28294406623</p>
+</td><td><p>0.0219</p>
+</td><td><p>7.358645</p>
+</td><td><p>9.762694</p>
+</td></tr><tr><th><p>2017-06-20 23:59:00+00:00</p>
+</th><td><p>0.507705</p>
+</td><td><p>7.628795</p>
+</td><td><p>-0.014414</p>
+</td><td><p>10.116664</p>
+</td><td><p>0.564451</p>
+</td><td><p>0.894665</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>848424.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>821408.946</p>
+</td><td><p>821408.946</p>
+</td><td><p>843</p>
+</td><td><p>[]</p>
+</td><td><p>0.0216</p>
+</td><td><p>36903854052</p>
+</td><td><p>0.0216</p>
+</td><td><p>7.628795</p>
+</td><td><p>10.116664</p>
+</td></tr><tr><th><p>2017-06-21 23:59:00+00:00</p>
+</th><td><p>0.507531</p>
+</td><td><p>7.476155</p>
+</td><td><p>-0.014900</p>
+</td><td><p>9.916664</p>
+</td><td><p>0.564238</p>
+</td><td><p>0.894696</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>833160.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>848424.000</p>
+</td><td><p>848424.000</p>
+</td><td><p>844</p>
+</td><td><p>[]</p>
+</td><td><p>0.0216</p>
+</td><td><p>43815656010</p>
+</td><td><p>0.0216</p>
+</td><td><p>7.476155</p>
+</td><td><p>9.916664</p>
+</td></tr><tr><th><p>2017-06-22 23:59:00+00:00</p>
+</th><td><p>0.507315</p>
+</td><td><p>7.645891</p>
+</td><td><p>-0.014372</p>
+</td><td><p>10.139065</p>
+</td><td><p>0.563979</p>
+</td><td><p>0.894725</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>850133.568</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>833160.000</p>
+</td><td><p>833160.000</p>
+</td><td><p>845</p>
+</td><td><p>[]</p>
+</td><td><p>0.0215</p>
+</td><td><p>22304647568</p>
+</td><td><p>0.0215</p>
+</td><td><p>7.645891</p>
+</td><td><p>10.139065</p>
+</td></tr><tr><th><p>2017-06-23 23:59:00+00:00</p>
+</th><td><p>0.507020</p>
+</td><td><p>7.635155</p>
+</td><td><p>-0.014388</p>
+</td><td><p>10.124997</p>
+</td><td><p>0.563652</p>
+</td><td><p>0.894725</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>849060.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>850133.568</p>
+</td><td><p>850133.568</p>
+</td><td><p>846</p>
+</td><td><p>[]</p>
+</td><td><p>0.0215</p>
+</td><td><p>13090231864</p>
+</td><td><p>0.0215</p>
+</td><td><p>7.635155</p>
+</td><td><p>10.124997</p>
+</td></tr><tr><th><p>2017-06-24 23:59:00+00:00</p>
+</th><td><p>0.507936</p>
+</td><td><p>7.105628</p>
+</td><td><p>-0.016304</p>
+</td><td><p>9.431173</p>
+</td><td><p>0.564463</p>
+</td><td><p>0.895061</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>796107.276</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>849060.000</p>
+</td><td><p>849060.000</p>
+</td><td><p>847</p>
+</td><td><p>[]</p>
+</td><td><p>0.0215</p>
+</td><td><p>34088563732</p>
+</td><td><p>0.0215</p>
+</td><td><p>7.105628</p>
+</td><td><p>9.431173</p>
+</td></tr><tr><th><p>2017-06-25 23:59:00+00:00</p>
+</th><td><p>0.507675</p>
+</td><td><p>7.036714</p>
+</td><td><p>-0.016515</p>
+</td><td><p>9.340880</p>
+</td><td><p>0.564168</p>
+</td><td><p>0.895069</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>789215.898</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>796107.276</p>
+</td><td><p>796107.276</p>
+</td><td><p>848</p>
+</td><td><p>[]</p>
+</td><td><p>0.0215</p>
+</td><td><p>41560204433</p>
+</td><td><p>0.0215</p>
+</td><td><p>7.036714</p>
+</td><td><p>9.340880</p>
+</td></tr><tr><th><p>2017-06-26 23:59:00+00:00</p>
+</th><td><p>0.507780</p>
+</td><td><p>6.761571</p>
+</td><td><p>-0.017485</p>
+</td><td><p>8.980368</p>
+</td><td><p>0.564221</p>
+</td><td><p>0.895175</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>761701.584</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>789215.898</p>
+</td><td><p>789215.898</p>
+</td><td><p>849</p>
+</td><td><p>[]</p>
+</td><td><p>0.0214</p>
+</td><td><p>73840480752</p>
+</td><td><p>0.0214</p>
+</td><td><p>6.761571</p>
+</td><td><p>8.980368</p>
+</td></tr><tr><th><p>2017-06-27 23:59:00+00:00</p>
+</th><td><p>0.508048</p>
+</td><td><p>7.126355</p>
+</td><td><p>-0.016390</p>
+</td><td><p>9.458331</p>
+</td><td><p>0.564409</p>
+</td><td><p>0.895349</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>798180.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>761701.584</p>
+</td><td><p>761701.584</p>
+</td><td><p>850</p>
+</td><td><p>[]</p>
+</td><td><p>0.0221</p>
+</td><td><p>62426319778</p>
+</td><td><p>0.0221</p>
+</td><td><p>7.126355</p>
+</td><td><p>9.458331</p>
+</td></tr><tr><th><p>2017-06-28 23:59:00+00:00</p>
+</th><td><p>0.507750</p>
+</td><td><p>7.135895</p>
+</td><td><p>-0.016340</p>
+</td><td><p>9.470831</p>
+</td><td><p>0.564078</p>
+</td><td><p>0.895349</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>799134.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>798180.000</p>
+</td><td><p>798180.000</p>
+</td><td><p>851</p>
+</td><td><p>[]</p>
+</td><td><p>0.0222</p>
+</td><td><p>39676839183</p>
+</td><td><p>0.0222</p>
+</td><td><p>7.135895</p>
+</td><td><p>9.470831</p>
+</td></tr></tbody></table><p><p>851 rows × 45 columns</p>
+</p></div><p>Also, instead of defining an output file we are accessing it via the “_&#8221;
+variable that will be created in the name space and contain the
+performance DataFrame.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">_</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+<div><table border="1" class="dataframe"><thead><tr style="text-align: right;"><th></th><th><p>algo_volatility</p>
+</th><th><p>algorithm_period_return</p>
+</th><th><p>alpha</p>
+</th><th><p>benchmark_period_return</p>
+</th><th><p>benchmark_volatility</p>
+</th><th><p>beta</p>
+</th><th><p>capital_used</p>
+</th><th><p>cash</p>
+</th><th><p>ending_cash</p>
+</th><th><p>ending_exposure</p>
+</th><th><p>…</p>
+</th><th><p>starting_cash</p>
+</th><th><p>starting_exposure</p>
+</th><th><p>starting_value</p>
+</th><th><p>trading_days</p>
+</th><th><p>transactions</p>
+</th><th><p>treasury_period_return</p>
+</th><th><p>volume</p>
+</th><th><p>treasury</p>
+</th><th><p>algorithm</p>
+</th><th><p>benchmark</p>
+</th></tr></thead><tbody><tr><th><p>2015-03-01 23:59:00+00:00</p>
+</th><td><p>NaN</p>
+</td><td><p>0.000000</p>
+</td><td><p>NaN</p>
+</td><td><p>0.045833</p>
+</td><td><p>NaN</p>
+</td><td><p>NaN</p>
+</td><td><p>0.000000</p>
+</td><td><p>100000.000000</p>
+</td><td><p>100000.000000</p>
+</td><td><p>0.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>0.000</p>
+</td><td><p>0.000</p>
+</td><td><p>1</p>
+</td><td><p>[]</p>
+</td><td><p>0.0200</p>
+</td><td><p>317</p>
+</td><td><p>0.0200</p>
+</td><td><p>0.000000</p>
+</td><td><p>0.045833</p>
+</td></tr><tr><th><p>2015-03-02 23:59:00+00:00</p>
+</th><td><p>0.000278</p>
+</td><td><p>-0.000025</p>
+</td><td><p>0.011045</p>
+</td><td><p>0.120833</p>
+</td><td><p>0.290503</p>
+</td><td><p>-0.000956</p>
+</td><td><p>-85544.474955</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>85542.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>0.000</p>
+</td><td><p>0.000</p>
+</td><td><p>2</p>
+</td><td><p>[{u’commission’: None, u’amount’: 318, u’sid’:…</p>
+</td><td><p>0.0208</p>
+</td><td><p>98063</p>
+</td><td><p>0.0208</p>
+</td><td><p>-0.000025</p>
+</td><td><p>0.120833</p>
+</td></tr><tr><th><p>2015-03-03 23:59:00+00:00</p>
+</th><td><p>0.051796</p>
+</td><td><p>-0.005688</p>
+</td><td><p>-1.197544</p>
+</td><td><p>0.113416</p>
+</td><td><p>0.633538</p>
+</td><td><p>0.077239</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>84975.642</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>85542.000</p>
+</td><td><p>85542.000</p>
+</td><td><p>3</p>
+</td><td><p>[]</p>
+</td><td><p>0.0212</p>
+</td><td><p>442983</p>
+</td><td><p>0.0212</p>
+</td><td><p>-0.005688</p>
+</td><td><p>0.113416</p>
+</td></tr><tr><th><p>2015-03-04 23:59:00+00:00</p>
+</th><td><p>0.342118</p>
+</td><td><p>0.034955</p>
+</td><td><p>0.401861</p>
+</td><td><p>0.166666</p>
+</td><td><p>0.524400</p>
+</td><td><p>0.181468</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>89040.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>84975.642</p>
+</td><td><p>84975.642</p>
+</td><td><p>4</p>
+</td><td><p>[]</p>
+</td><td><p>0.0212</p>
+</td><td><p>245889</p>
+</td><td><p>0.0212</p>
+</td><td><p>0.034955</p>
+</td><td><p>0.166666</p>
+</td></tr><tr><th><p>2015-03-05 23:59:00+00:00</p>
+</th><td><p>0.637226</p>
+</td><td><p>-0.038185</p>
+</td><td><p>-3.914003</p>
+</td><td><p>0.070834</p>
+</td><td><p>0.976896</p>
+</td><td><p>0.550520</p>
+</td><td><p>0.000000</p>
+</td><td><p>14455.525045</p>
+</td><td><p>14455.525045</p>
+</td><td><p>81726.000</p>
+</td><td><p>…</p>
+</td><td><p>100000.0</p>
+</td><td><p>89040.000</p>
+</td><td><p>89040.000</p>
+</td><td><p>5</p>
+</td><td><p>[]</p>
+</td><td><p>0.0211</p>
+</td><td><p>117440</p>
+</td><td><p>0.0211</p>
+</td><td><p>-0.038185</p>
+</td><td><p>0.070834</p>
+</td></tr></tbody></table><p><p>5 rows × 45 columns</p>
+</p></div></div>
+</div>
 <div class="section" id="next-steps">
 <h2>Next steps<a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h2>
 <p>We hope that this tutorial gave you a little insight into the
@@ -986,7 +2682,7 @@ problems on our <a class="reference external" href="https://github.com/enigmampc
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="jupyter.html" class="btn btn-neutral float-right" title="Catalyst &amp; Jupyter Notebook" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="live-trading.html" class="btn btn-neutral float-right" title="Live Trading" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="install.html" class="btn btn-neutral" title="Install" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>

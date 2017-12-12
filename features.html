@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Videos &mdash; Catalyst 0.3 documentation</title>
+  <title>Features &mdash; Catalyst 0.3 documentation</title>
   
 
   
@@ -31,8 +31,8 @@
 
   
     <link rel="top" title="Catalyst 0.3 documentation" href="index.html"/>
-        <link rel="next" title="Resources" href="resources.html"/>
-        <link rel="prev" title="Utilities" href="utilities.html"/> 
+        <link rel="next" title="Example Algorithms" href="example-algos.html"/>
+        <link rel="prev" title="Live Trading" href="live-trading.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -120,7 +120,12 @@
 <li class="toctree-l2"><a class="reference internal" href="live-trading.html#trading-an-algorithm">Trading an Algorithm</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="naming-convention.html">Naming Convention</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Features</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#current-functionality">Current Functionality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#upcoming-features">Upcoming features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#naming-convention">Naming Convention</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="example-algos.html">Example Algorithms</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="example-algos.html#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example-algos.html#buy-btc-simple-algorithm">Buy BTC Simple Algorithm</a></li>
@@ -136,11 +141,11 @@
 <li class="toctree-l2"><a class="reference internal" href="utilities.html#extracting-market-data">Extracting market data</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Videos</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#installation-macos">Installation: MacOS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#installation-windows">Installation: Windows</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#backtesting-a-strategy">Backtesting a Strategy</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#live-trading-a-strategy">Live Trading a Strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="videos.html">Videos</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="videos.html#installation-macos">Installation: MacOS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="videos.html#installation-windows">Installation: Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="videos.html#backtesting-a-strategy">Backtesting a Strategy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="videos.html#live-trading-a-strategy">Live Trading a Strategy</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="resources.html">Resources</a><ul>
@@ -238,11 +243,11 @@
   <ul class="wy-breadcrumbs">
     <li><a href="index.html">Docs</a> &raquo;</li>
       
-    <li>Videos</li>
+    <li>Features</li>
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="_sources/videos.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/features.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -251,47 +256,109 @@
 </div>
           <div role="main" class="document">
             
-  <div class="section" id="videos">
-<h1>Videos<a class="headerlink" href="#videos" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="installation-macos">
-<h2>Installation: MacOS<a class="headerlink" href="#installation-macos" title="Permalink to this headline">¶</a></h2>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/ZnsslmHljvw" frameborder="0" allowfullscreen></iframe><div class="line-block">
-<div class="line"><br /></div>
-<div class="line"><br /></div>
+  <div class="section" id="features">
+<h1>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h1>
+<p>This page describes the features that Catalyst provides in the current version,
+and what is planned for future releases.</p>
+<div class="section" id="current-functionality">
+<h2>Current Functionality<a class="headerlink" href="#current-functionality" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Backtesting and live-trading modes to run your trading algorithms, with a
+seamless transition between the two.</li>
+<li>Support for 3 exchanges: Bitfinex, Bittrex and Poloniex in both modes
+(backtesting and live-trading). Historical data for backtesting is provided
+with daily resolution for all three exchanges, and minute resolution for
+Bitfinex and Poloniex. No minute-resolution data is currently available for
+Bittrex. Refer to
+<a class="reference external" href="https://www.enigma.co/catalyst/status">Catalyst Market Coverage</a> for
+details.</li>
+<li>Standardized naming convention for all asset pairs trading on any exchange in
+the form <code class="docutils literal"><span class="pre">{market_currency}_{base_currency}</span></code>. See
+<a class="reference internal" href="#naming"><span>Naming Convention</span></a>.</li>
+<li>Output of performance statistics based on Pandas DataFrames to integrate
+nicely into the existing PyData ecosystem.</li>
+<li>Support for accessing multiple exchanges per algorithm, which opens the door
+to cross-exchange arbitrage opportunities.</li>
+<li>Support for running multiple algorithms on the same exchange independently of
+one another. Catalyst performance tracker stores just enough data to allow
+algorithms to run independently while still sharing critical data through
+exchanges.</li>
+<li>Benchmark defaults to Bitcoin price (btc_usdt in Poloniex exchange) for the
+purpose of comparing performance across trading algorithms. A custom benchmark
+can be specified through <code class="docutils literal"><span class="pre">set_benchmark()</span></code> (but see
+<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/86">issue #86</a>).</li>
+<li>Support for MacOS, Linux and Windows installations.</li>
+<li>Support for Python2 and Python3.</li>
+</ul>
 </div>
+<div class="section" id="upcoming-features">
+<h2>Upcoming features<a class="headerlink" href="#upcoming-features" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Paper trading mode (v0.4 - mid Dec. 2017)</li>
+<li>Support for additional exchanges (v0.4 - mid Dec. 2017)</li>
+<li>Additional datasets beyond pricing data (Dec. 2017)</li>
+<li>API documentation (Jan. 2017)</li>
+<li>Support for decentralized exchanges (Jan. 2017)</li>
+<li>Support for data ingestion of community-contributed data sets (Jan. 2017)</li>
+<li>Pipeline support (Jan. 2018)</li>
+<li>Web UI (Q2 2018)</li>
+</ul>
+<blockquote>
+<div></div></blockquote>
 </div>
-<div class="section" id="installation-windows">
-<h2>Installation: Windows<a class="headerlink" href="#installation-windows" title="Permalink to this headline">¶</a></h2>
-<p>Where things go smoothly:</p>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/H8HqcEbZmkk" frameborder="0" allowfullscreen></iframe><div class="line-block">
-<div class="line"><br /></div>
+<div class="section" id="naming-convention">
+<span id="naming"></span><h2>Naming Convention<a class="headerlink" href="#naming-convention" title="Permalink to this headline">¶</a></h2>
+<p>Catalyst introduces a standardized naming convention for all asset pairs
+trading on any exchange in the following form:</p>
+<blockquote>
+<div><strong>{market_currency}_{base_currency}</strong></div></blockquote>
+<p>Where {market_currency} is the asset to be traded using {base_currency} as
+the reference, both written in lowercase and separated with an underscore.</p>
+<p>This standardization is needed to overcome the lack of consistency in the
+naming of assets across different exchanges, and making it easier to the user
+to refer to the asset pairs that you want to trade.</p>
+<p>Catalyst maintains a <a class="reference external" href="https://www.enigma.co/catalyst/status">Market Coverage Overview</a>
+where you can check the mapping between Catalyst naming pairs and that of each
+exchange. Catalyst will always expect in all its functions that you will refer to
+the asset pairs by using the Catalyst naming convention.</p>
+<p>If at any point, you input the wrong name for an asset pair, you will get an error
+of that pair not found in the given exchange, and a list of pairs available on that exchange:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>catalyst ingest-exchange -x poloniex -i btc_usd
+</pre></div>
 </div>
-<p>Where things don&#8217;t:</p>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/qLkQcWlUBy8" frameborder="0" allowfullscreen></iframe><div class="line-block">
-<div class="line"><br /></div>
-<div class="line"><br /></div>
+<div class="highlight-python"><div class="highlight"><pre>Ingesting exchange bundle poloniex...
+Error traceback: /Volumes/Data/Users/victoris/Desktop/Enigma/user-install/catalyst-dev/catalyst/exchange/exchange.py (line 175)
+SymbolNotFoundOnExchange:  Symbol btc_usd not found on exchange Poloniex.
+Choose from: [&#39;rep_usdt&#39;, &#39;gno_btc&#39;, &#39;xvc_btc&#39;, &#39;pink_btc&#39;, &#39;sys_btc&#39;,
+&#39;emc2_btc&#39;, &#39;rads_btc&#39;, &#39;note_btc&#39;, &#39;maid_btc&#39;, &#39;bch_btc&#39;, &#39;gnt_btc&#39;,
+&#39;bcn_btc&#39;, &#39;rep_btc&#39;, &#39;bcy_btc&#39;, &#39;cvc_btc&#39;, &#39;nxt_xmr&#39;, &#39;zec_usdt&#39;,
+&#39;fct_btc&#39;, &#39;gas_btc&#39;, &#39;pot_btc&#39;, &#39;eth_usdt&#39;, &#39;btc_usdt&#39;, &#39;lbc_btc&#39;,
+&#39;dcr_btc&#39;, &#39;etc_usdt&#39;, &#39;omg_eth&#39;, &#39;amp_btc&#39;, &#39;xpm_btc&#39;, &#39;nxt_btc&#39;,
+&#39;vtc_btc&#39;, &#39;steem_eth&#39;, &#39;blk_xmr&#39;, &#39;pasc_btc&#39;, &#39;zec_xmr&#39;, &#39;grc_btc&#39;,
+&#39;nxc_btc&#39;, &#39;btcd_btc&#39;, &#39;ltc_btc&#39;, &#39;dash_btc&#39;, &#39;naut_btc&#39;, &#39;zec_eth&#39;,
+&#39;zec_btc&#39;, &#39;burst_btc&#39;, &#39;zrx_eth&#39;, &#39;bela_btc&#39;, &#39;steem_btc&#39;, &#39;etc_btc&#39;,
+&#39;eth_btc&#39;, &#39;huc_btc&#39;, &#39;strat_btc&#39;, &#39;lsk_btc&#39;, &#39;exp_btc&#39;, &#39;clam_btc&#39;,
+&#39;rep_eth&#39;, &#39;dash_xmr&#39;, &#39;cvc_eth&#39;, &#39;bch_usdt&#39;, &#39;zrx_btc&#39;, &#39;dash_usdt&#39;,
+&#39;blk_btc&#39;, &#39;xrp_btc&#39;, &#39;nxt_usdt&#39;, &#39;neos_btc&#39;, &#39;omg_btc&#39;, &#39;bts_btc&#39;,
+&#39;doge_btc&#39;, &#39;gnt_eth&#39;, &#39;sbd_btc&#39;, &#39;gno_eth&#39;, &#39;xcp_btc&#39;, &#39;ltc_usdt&#39;,
+&#39;btm_btc&#39;, &#39;xmr_usdt&#39;, &#39;lsk_eth&#39;, &#39;omni_btc&#39;, &#39;nav_btc&#39;, &#39;fldc_btc&#39;,
+&#39;ppc_btc&#39;, &#39;xbc_btc&#39;, &#39;dgb_btc&#39;, &#39;sc_btc&#39;, &#39;btcd_xmr&#39;, &#39;vrc_btc&#39;,
+&#39;ric_btc&#39;, &#39;str_btc&#39;, &#39;maid_xmr&#39;, &#39;xmr_btc&#39;, &#39;sjcx_btc&#39;, &#39;via_btc&#39;,
+&#39;xem_btc&#39;, &#39;nmc_btc&#39;, &#39;etc_eth&#39;, &#39;ltc_xmr&#39;, &#39;ardr_btc&#39;, &#39;gas_eth&#39;,
+&#39;flo_btc&#39;, &#39;xrp_usdt&#39;, &#39;game_btc&#39;, &#39;bch_eth&#39;, &#39;bcn_xmr&#39;, &#39;str_usdt&#39;]
+</pre></div>
 </div>
+<p>In the example above, exchange Poloniex does not use USD, but uses instead the
+USDT cryptocurrency asset that is issued on the Bitcoin blockchain via the Omni
+Layer Protocol. Each USDT unit is backed by a U.S Dollar held in the reserves of
+Tether Limited. USDT can be transferred, stored, and spent, just like bitcoins
+or any other cryptocurrency. Given its 1:1 mapping to the USD, is a viable alternative.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>catalyst ingest-exchange -x poloniex -i btc_usdt
+</pre></div>
 </div>
-<div class="section" id="backtesting-a-strategy">
-<h2>Backtesting a Strategy<a class="headerlink" href="#backtesting-a-strategy" title="Permalink to this headline">¶</a></h2>
-<p>This is the first video of a two-part series on using Catalyst for algorithmic
-trading. This video implements a simple momentum strategy based on
-<a class="reference external" href="example-algos.html#mean-reversion">mean reversion</a>: when the cryptoasset
-goes up quickly, we’re going to buy; when it goes down quickly, we’re going to
-sell. Hopefully, we’ll ride the waves.</p>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/JOBRwst9jUY" frameborder="0" allowfullscreen></iframe><div class="line-block">
-<div class="line"><br /></div>
-<div class="line"><br /></div>
-</div>
-</div>
-<div class="section" id="live-trading-a-strategy">
-<h2>Live Trading a Strategy<a class="headerlink" href="#live-trading-a-strategy" title="Permalink to this headline">¶</a></h2>
-<p>This is the second part of the two-part series on using Catalyst for algorithmic
-trading. Having backtested <a class="reference external" href="example-algos.html#mean-reversion">our strategy</a>
-in the previous video, we now take it to trade live against the Bittrex exchange.</p>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/NupiE-Xuglw" frameborder="0" allowfullscreen></iframe><div class="line-block">
-<div class="line"><br /></div>
-<div class="line"><br /></div>
+<div class="highlight-python"><div class="highlight"><pre>Ingesting exchange bundle poloniex...
+    [====================================]  Fetching poloniex daily candles: :  100%
+</pre></div>
 </div>
 </div>
 </div>
@@ -302,10 +369,10 @@ in the previous video, we now take it to trade live against the Bittrex exchange
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="resources.html" class="btn btn-neutral float-right" title="Resources" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="example-algos.html" class="btn btn-neutral float-right" title="Example Algorithms" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="utilities.html" class="btn btn-neutral" title="Utilities" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="live-trading.html" class="btn btn-neutral" title="Live Trading" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
