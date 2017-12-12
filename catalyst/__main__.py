@@ -255,8 +255,9 @@ def run(ctx,
         ctx.fail("must specify a base currency with '-c' in backtest mode")
 
     if capital_base is None:
-        ctx.fail("must specify a capital base with '--capital-base'"
-                 " in backtest mode")
+        ctx.fail("must specify a capital base with '--capital-base'")
+
+    click.echo('Running in backtesting mode.')
 
     perf = _run(
         initialize=None,
@@ -429,10 +430,21 @@ def live(ctx,
 
     if exchange_name is None:
         ctx.fail("must specify an exchange name '-x'")
+
     if algo_namespace is None:
         ctx.fail("must specify an algorithm name '-n' in live execution mode")
+
     if base_currency is None:
         ctx.fail("must specify a base currency '-c' in live execution mode")
+
+    if capital_base is None:
+        ctx.fail("must specify a capital base with '--capital-base'")
+
+    if simulate_orders:
+        click.echo('Running in paper trading mode.')
+
+    else:
+        click.echo('Running in live trading mode.')
 
     perf = _run(
         initialize=None,

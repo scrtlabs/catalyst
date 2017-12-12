@@ -141,7 +141,8 @@ def _run(handle_data,
         else:
             click.echo(algotext)
 
-    mode = 'live' if live else 'backtest'
+    mode = 'paper-trading' if simulate_orders else 'live-trading' \
+        if live else 'backtest'
     log.info('running algo in {mode} mode'.format(mode=mode))
 
     exchange_name = exchange
