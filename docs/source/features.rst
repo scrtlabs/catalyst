@@ -34,6 +34,9 @@ Current Functionality
 * Support for MacOS, Linux and Windows installations.
 * Support for Python2 and Python3.
 
+For additional details on the functionality added on recent releases, see the
+:doc:`Release Notes<releases>`.
+
 Upcoming features
 ~~~~~~~~~~~~~~~~~
 
