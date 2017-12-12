@@ -193,9 +193,7 @@ def ipython_only(option):
 @click.option(
     '-x',
     '--exchange-name',
-    type=click.Choice({'bitfinex', 'bittrex', 'poloniex'}),
-    help='The name of the targeted exchange (supported: bitfinex,'
-         ' bittrex, poloniex).',
+    help='The name of the targeted exchange.',
 )
 @click.option(
     '-n',
@@ -313,11 +311,11 @@ def catalyst_magic(line, cell=None):
                 '--algotext', cell,
                 '--output', os.devnull,  # don't write the results by default
             ] + ([
-                     # these options are set when running in line magic mode
-                     # set a non None algo text to use the ipython user_ns
-                     '--algotext', '',
-                     '--local-namespace',
-                 ] if cell is None else []) + line.split(),
+                # these options are set when running in line magic mode
+                # set a non None algo text to use the ipython user_ns
+                '--algotext', '',
+                '--local-namespace',
+            ] if cell is None else []) + line.split(),
             '%s%%catalyst' % ((cell or '') and '%'),
             # don't use system exit and propogate errors to the caller
             standalone_mode=False,
@@ -336,6 +334,12 @@ def catalyst_magic(line, cell=None):
     default=None,
     type=click.File('r'),
     help='The file that contains the algorithm to run.',
+)
+@click.option(
+    '--capital-base',
+    type=float,
+    show_default=True,
+    help='The amount of capital (in base_currency) allocated to trading.',
 )
 @click.option(
     '-t',
@@ -375,9 +379,7 @@ def catalyst_magic(line, cell=None):
 @click.option(
     '-x',
     '--exchange-name',
-    type=click.Choice({'bitfinex', 'bittrex', 'poloniex'}),
-    help='The name of the targeted exchange (supported: bitfinex,'
-         ' bittrex, poloniex).',
+    help='The name of the targeted exchange.',
 )
 @click.option(
     '-n',
@@ -396,9 +398,17 @@ def catalyst_magic(line, cell=None):
     default=False,
     help='Display live graph.',
 )
+@click.option(
+    '--simulate-orders/--no-simulate-orders',
+    is_flag=True,
+    default=True,
+    help='Simulating orders enable the paper trading mode. No orders will be '
+         'sent to the exchange unless set to false.',
+)
 @click.pass_context
 def live(ctx,
          algofile,
+         capital_base,
          algotext,
          define,
          output,
@@ -407,7 +417,8 @@ def live(ctx,
          exchange_name,
          algo_namespace,
          base_currency,
-         live_graph):
+         live_graph,
+         simulate_orders):
     """Trade live with the given algorithm.
     """
     if (algotext is not None) == (algofile is not None):
@@ -432,7 +443,7 @@ def live(ctx,
         algotext=algotext,
         defines=define,
         data_frequency=None,
-        capital_base=None,
+        capital_base=capital_base,
         data=None,
         bundle=None,
         bundle_timestamp=None,
@@ -446,7 +457,9 @@ def live(ctx,
         exchange=exchange_name,
         algo_namespace=algo_namespace,
         base_currency=base_currency,
-        live_graph=live_graph
+        live_graph=live_graph,
+        simulate_orders=simulate_orders,
+        stats_output=None,
     )
 
     if output == '-':
@@ -461,9 +474,7 @@ def live(ctx,
 @click.option(
     '-x',
     '--exchange-name',
-    type=click.Choice({'bitfinex', 'bittrex', 'poloniex'}),
-    help='The name of the exchange bundle to ingest (supported: bitfinex,'
-         ' bittrex, poloniex).',
+    help='The name of the exchange bundle to ingest.',
 )
 @click.option(
     '-f',
@@ -567,9 +578,7 @@ def clean_algo(ctx, algo_namespace):
 @click.option(
     '-x',
     '--exchange-name',
-    type=click.Choice({'bitfinex', 'bittrex', 'poloniex'}),
-    help='The name of the exchange bundle to ingest (supported: bitfinex,'
-         ' bittrex, poloniex).',
+    help='The name of the exchange bundle to ingest.',
 )
 @click.option(
     '-f',
@@ -608,9 +617,7 @@ def clean_exchange(ctx, exchange_name, data_frequency):
 @click.option(
     '-x',
     '--exchange-name',
-    type=click.Choice({'bitfinex', 'bittrex', 'poloniex'}),
-    help='The name of the exchange bundle to ingest (supported: bitfinex,'
-         ' bittrex, poloniex).',
+    help='The name of the exchange bundle to ingest.',
 )
 @click.option(
     '-c',
