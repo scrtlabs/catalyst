@@ -242,11 +242,19 @@ def prepare_stats(stats, recorded_cols=list()):
         lambda transactions: len(transactions)
     )
 
-    df.set_index(index_cols, drop=True, inplace=True)
+    if asset_cols:
+        columns = asset_cols
+        df.set_index(index_cols, drop=True, inplace=True)
+
+    else:
+        columns = index_cols
+        columns.remove('period_close')
+        df.set_index('period_close', drop=False, inplace=True)
+
     df.dropna(axis=1, how='all', inplace=True)
     df.sort_index(axis=0, level=0, inplace=True)
 
-    return df, asset_cols
+    return df, columns
 
 
 def get_pretty_stats(stats, recorded_cols=None, num_rows=10):
@@ -268,13 +276,8 @@ def get_pretty_stats(stats, recorded_cols=None, num_rows=10):
 
     """
     if isinstance(stats, pd.DataFrame):
-        # df = stats
-        # columns = [
-        #     'period_close', 'starting_cash', 'ending_cash', 'portfolio_value',
-        #     'pnl', 'long_exposure', 'short_exposure', 'orders', 'transactions',
-        # ]
         stats = stats.T.to_dict().values()
-    # else:
+
     df, columns = prepare_stats(stats, recorded_cols=recorded_cols)
 
     pd.set_option('display.expand_frame_repr', False)

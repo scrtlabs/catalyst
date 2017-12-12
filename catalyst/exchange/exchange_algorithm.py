@@ -23,7 +23,6 @@ import pandas as pd
 
 import catalyst.protocol as zp
 from catalyst.algorithm import TradingAlgorithm
-from catalyst.assets._assets import TradingPair
 from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.exchange_blotter import ExchangeBlotter
 from catalyst.exchange.exchange_errors import (
