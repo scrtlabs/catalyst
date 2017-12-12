@@ -238,12 +238,6 @@ class DataPortalExchangeLive(DataPortalExchangeBase):
         """
         exchange = self.exchanges[exchange_name]
 
-        if end_dt >= pd.Timestamp.utcnow().floor('1T'):
-            is_current = True
-
-        else:
-            is_current = False
-
         df = exchange.get_history_window(
             assets,
             end_dt,
@@ -251,7 +245,7 @@ class DataPortalExchangeLive(DataPortalExchangeBase):
             frequency,
             field,
             data_frequency,
-            is_current)
+            False)
         return df
 
     def get_exchange_spot_value(self, exchange_name, assets, field, dt,

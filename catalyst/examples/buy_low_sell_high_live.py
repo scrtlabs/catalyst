@@ -41,7 +41,7 @@ def _handle_data(context, data):
         context.asset,
         fields='price',
         bar_count=20,
-        frequency='1d'
+        frequency='1D'
     )
     rsi = talib.RSI(prices.values, timeperiod=14)[-1]
     log.info('got rsi: {}'.format(rsi))
@@ -88,8 +88,8 @@ def _handle_data(context, data):
 
         if price < cost_basis:
             is_buy = True
-        elif(position.amount > 0
-             and price > cost_basis * (1 + context.PROFIT_TARGET)):
+        elif (position.amount > 0
+              and price > cost_basis * (1 + context.PROFIT_TARGET)):
             profit = (price * position.amount) - (cost_basis * position.amount)
             log.info('closing position, taking profit: {}'.format(profit))
             order_target_percent(
@@ -146,23 +146,15 @@ def analyze(context, stats):
     pass
 
 
-run_algorithm(
-    capital_base=100000,
-    initialize=initialize,
-    handle_data=handle_data,
-    analyze=analyze,
-    exchange_name='poloniex',
-    start=pd.to_datetime('2017-5-01', utc=True),
-    end=pd.to_datetime('2017-10-16', utc=True),
-    base_currency='usdt',
-    data_frequency='daily'
-)
-# run_algorithm(
-#     initialize=initialize,
-#     handle_data=handle_data,
-#     analyze=analyze,
-#     exchange_name='poloniex',
-#     live=True,
-#     algo_namespace=algo_namespace,
-#     base_currency='btc'
-# )
+if __name__ == '__main__':
+    run_algorithm(
+        capital_base=0.001,
+        initialize=initialize,
+        handle_data=handle_data,
+        analyze=analyze,
+        exchange_name='bittrex',
+        live=True,
+        algo_namespace=algo_namespace,
+        base_currency='btc',
+        simulate_orders=True,
+    )

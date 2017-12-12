@@ -21,8 +21,9 @@
     To see which assets are available on each exchange, visit:
     https://www.enigma.co/catalyst/status
 '''
-
+from catalyst import run_algorithm
 from catalyst.api import order, record, symbol
+import pandas as pd
 
 
 def initialize(context):
@@ -32,3 +33,17 @@ def initialize(context):
 def handle_data(context, data):
     order(context.asset, 1)
     record(btc=data.current(context.asset, 'price'))
+
+
+if __name__ == '__main__':
+    run_algorithm(
+        capital_base=10000,
+        data_frequency='daily',
+        initialize=initialize,
+        handle_data=handle_data,
+        exchange_name='bitfinex',
+        algo_namespace='buy_and_hodl',
+        base_currency='usd',
+        start=pd.to_datetime('2015-03-01', utc=True),
+        end=pd.to_datetime('2017-10-31', utc=True),
+    )

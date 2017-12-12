@@ -61,7 +61,6 @@ def handle_data(context, data):
             context.asset,
             target_hodl_value,
             limit_price=price * 1.1,
-            stop_price=price * 0.9,
         )
 
     record(

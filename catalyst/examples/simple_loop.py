@@ -127,7 +127,7 @@ run_algorithm(
     initialize=initialize,
     handle_data=handle_data,
     analyze=None,
-    exchange_name='gdax',
+    exchange_name='poloniex',
     live=True,
     algo_namespace='simple_loop',
     base_currency='eth',
