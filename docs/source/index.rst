@@ -1,4 +1,4 @@
-.. include:: welcome.rst
+.. include:: ../../README.rst
 |
 |
 Table of Contents
