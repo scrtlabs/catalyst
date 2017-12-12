@@ -261,7 +261,7 @@ class PoloniexCurator(object):
         vol = df['total'].to_frame('volume')           # set Vol aside
         df.drop('total', axis=1, inplace=True)         # Drop volume data
         ohlc = df.resample('T').ohlc()                 # Resample OHLC 1min
-        ohlc.cols = ohlc.cols.map(lambda t: t[1])      # Raname cols
+        ohlc.columns = ohlc.columns.map(lambda t: t[1])  # Rename cols
         closes = ohlc['close'].fillna(method='pad')    # Pad fwd missing close
         ohlc = ohlc.apply(lambda x: x.fillna(closes))  # Fill NA w/ last close
         vol = vol.resample('T').sum().fillna(0)        # Add volumes by bin
