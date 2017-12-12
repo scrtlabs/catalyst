@@ -126,7 +126,7 @@ def catalyst_root(environ=None):
 
     root = environ.get('ZIPLINE_ROOT', None)
     if root is None:
-        root = os.path.join(expanduser('~'),'.catalyst')
+        root = os.path.join(expanduser('~'), '.catalyst')
 
     return root
 

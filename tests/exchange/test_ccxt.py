@@ -1,32 +1,33 @@
-# import pandas as pd
-from catalyst.exchange.bittrex.bittrex import Bittrex
-from catalyst.finance.order import Order
-from base import BaseExchangeTestCase
+import pandas as pd
 from logbook import Logger
+from base import BaseExchangeTestCase
+
+from catalyst.exchange.ccxt.ccxt_exchange import CCXT
+from catalyst.finance.order import Order
 from catalyst.exchange.exchange_utils import get_exchange_auth
-from catalyst.utils.deprecate import deprecated
 
-log = Logger('test_bittrex')
+log = Logger('test_ccxt')
 
 
-@deprecated
-class TestBittrex(BaseExchangeTestCase):
+class TestCCXT(BaseExchangeTestCase):
     @classmethod
     def setup(self):
-        auth = get_exchange_auth('bittrex')
-        self.exchange = Bittrex(
+        exchange_name = 'gdax'
+        auth = get_exchange_auth(exchange_name)
+        self.exchange = CCXT(
+            exchange_name=exchange_name,
             key=auth['key'],
             secret=auth['secret'],
-            base_currency=None,
+            base_currency='eth',
             portfolio=None
         )
 
     def test_order(self):
         log.info('creating order')
-        asset = self.exchange.get_asset('neo_btc')
+        asset = self.exchange.get_asset('neo_eth')
         order_id = self.exchange.order(
             asset=asset,
-            limit_price=0.0005,
+            limit_price=0.07,
             amount=1,
         )
         log.info('order created {}'.format(order_id))
@@ -34,49 +35,43 @@ class TestBittrex(BaseExchangeTestCase):
         pass
 
     def test_open_orders(self):
-        log.info('retrieving open orders')
-        # asset = self.exchange.get_asset('neo_btc')
+        # log.info('retrieving open orders')
+        # asset = self.exchange.get_asset('neo_eth')
         # orders = self.exchange.get_open_orders(asset)
         pass
 
     def test_get_order(self):
         log.info('retrieving order')
-        order = self.exchange.get_order(
-            u'2c584020-9caf-4af5-bde0-332c0bba17e2')
+        order = self.exchange.get_order('2631386', 'neo_eth')
+        # order = self.exchange.get_order('2631386')
         assert isinstance(order, Order)
         pass
 
     def test_cancel_order(self, ):
         log.info('cancel order')
-        self.exchange.cancel_order(u'dc7bcca2-5219-4145-8848-8a593d2a72f9')
+        self.exchange.cancel_order('2631386', 'neo_eth')
         pass
 
     def test_get_candles(self):
         log.info('retrieving candles')
-        # ohlcv_neo = self.exchange.get_candles(
-        #     freq='5T',
-        #     assets=self.exchange.get_asset('neo_btc'),
-        #     bar_count=20,
-        #     end_dt=pd.to_datetime('2017-10-20', utc=True)
-        # )
-        # ohlcv_neo_ubq = self.exchange.get_candles(
-        #     freq='1D',
-        #     assets=[
-        #         self.exchange.get_asset('neo_btc'),
-        #         self.exchange.get_asset('ubq_btc')
-        #     ],
-        #     bar_count=14,
-        #     end_dt=pd.to_datetime('2017-10-20', utc=True)
-        # )
+        candles = self.exchange.get_candles(
+            freq='5T',
+            assets=[self.exchange.get_asset('eth_btc')],
+            bar_count=200,
+            start_dt=pd.to_datetime('2017-01-01', utc=True)
+        )
+
+        for asset in candles:
+            df = pd.DataFrame(candles[asset])
+            df.set_index('last_traded', drop=True, inplace=True)
         pass
 
     def test_tickers(self):
         log.info('retrieving tickers')
         tickers = self.exchange.tickers([
             self.exchange.get_asset('eth_btc'),
-            self.exchange.get_asset('etc_btc')
         ])
-        assert len(tickers) == 2
+        assert len(tickers) == 1
         pass
 
     def test_get_balances(self):
@@ -91,5 +86,8 @@ class TestBittrex(BaseExchangeTestCase):
     def test_orderbook(self):
         log.info('testing order book for bittrex')
         # asset = self.exchange.get_asset('eth_btc')
-        # orderbook = self.exchange.get_orderbook(asset)
+        # orderbook = self.exchange.get_orderbook(asset, 'all', limit=10)
+        pass
+
+    def test_get_fees(self):
         pass

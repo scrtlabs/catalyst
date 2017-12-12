@@ -16,7 +16,6 @@
 from datetime import datetime
 
 import pandas as pd
-
 from six.moves.urllib.parse import urlencode
 
 from catalyst.data.bundles.core import register_bundle
@@ -26,24 +25,15 @@ from catalyst.utils.memoize import lazyval
 """
 Module for building a complete daily dataset from Quandl's WIKI dataset.
 """
-from itertools import count
-import tarfile
-from time import time, sleep
-from datetime import datetime
-
 from logbook import Logger
-import pandas as pd
-from six.moves.urllib.parse import urlencode
-
-from catalyst.utils.calendars import register_calendar_alias
-from catalyst.utils.cli import maybe_show_progress
-
-from . import core as bundles
 
 from catalyst.constants import LOG_LEVEL
+from catalyst.utils.calendars import register_calendar_alias
+
 
 log = Logger(__name__, level=LOG_LEVEL)
 seconds_per_call = (pd.Timedelta('10 minutes') / 2000).total_seconds()
+
 
 class QuandlBundle(BaseEquityPricingBundle):
     @lazyval
@@ -109,8 +99,8 @@ class QuandlBundle(BaseEquityPricingBundle):
         # Filter out invalid symbols
         raw = raw[~raw.symbol.isin(self._excluded_symbols)]
 
-        # cut out all the other stuff in the name column
-        # we need to escape the paren because it is actually splitting on a regex
+        # cut out all the other stuff in the name column. We need to
+        # escape the paren because it is actually splitting on a regex
         raw.asset_name = raw.asset_name.str.split(r' \(', 1).str.get(0)
 
         return raw
@@ -175,7 +165,6 @@ class QuandlBundle(BaseEquityPricingBundle):
         df['sid'] = asset_id
         self.splits.append(df)
 
-
     def _update_dividends(self, asset_id, raw_data):
         divs = raw_data.ex_dividend
         df = pd.DataFrame({'amount': divs[divs != 0]})
@@ -185,7 +174,6 @@ class QuandlBundle(BaseEquityPricingBundle):
         # we do not have this data in the WIKI dataset
         df['record_date'] = df['declared_date'] = df['pay_date'] = pd.NaT
         self.dividends.append(df)
-
 
     def _format_metadata_url(self, api_key, page_number):
         """Build the query RL for the quandl WIKI metadata.
@@ -200,9 +188,9 @@ class QuandlBundle(BaseEquityPricingBundle):
             query_params = [('api_key', api_key)] + query_params
 
         return (
-            'https://www.quandl.com/api/v3/datasets.csv?' + urlencode(query_params)
+            'https://www.quandl.com/api/v3/datasets.csv?'
+            + urlencode(query_params)
         )
-
 
     def _format_wiki_url(self,
                          api_key,
@@ -228,6 +216,7 @@ class QuandlBundle(BaseEquityPricingBundle):
                 query=urlencode(query_params),
             )
         )
+
 
 register_calendar_alias('QUANDL', 'NYSE')
 register_bundle(QuandlBundle)

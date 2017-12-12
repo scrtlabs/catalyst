@@ -31,6 +31,18 @@ Overview
   `two-part video tutorial <videos.html#backtesting-a-strategy>`_ to show how 
   to get started in backtesting and live trading with Catalyst.
 
+- :ref:`Simple Universe <simple_universe>`: This code provides the 'universe' 
+  of available trading pairs on a given exchange on any given day. You can use 
+  this code to dynamically select which currency pairs you want to trade each 
+  day of your strategy. This example does not make any trades. 
+
+- :ref:`Portfolio Optimization <portfolio_optimization>`: Use this code to 
+  execute a portfolio optimization model. This strategy will select the 
+  portfolio with the maximum Sharpe Ratio. The parameters are set to use 180 
+  days of historical data and rebalance every 30 days. This code was used in 
+  writting the following article: 
+  `Markowitz Portfolio Optimization for Cryptocurrencies <https://blog.enigma.co/markowitz-portfolio-optimization-for-cryptocurrencies-in-catalyst-b23c38652556>`_.
+
 
 .. _buy_btc_simple:
 
@@ -745,5 +757,321 @@ the differences result from a more realistic slippage model
 implemented after the video was recorded, which executes the orders at slighlty
 different prices, but resulting in significant changes in performance of our 
 strategy.
+
+.. _simple_universe:
+
+Simple Universe
+~~~~~~~~~~~~~~~
+
+Source code: `examples/simple_universe.py <https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/simple_universe.py>`_
+
+This example aims to provide an easy way for users to learn how to 
+collect data from any given exchange and select a subset of the available
+currency pairs for trading. You simply need to specify the exchange and 
+the market (base_currency) that you want to focus on. You will then see 
+how to create a universe of assets, and filter it based the market you 
+desire.
+
+The example prints out the closing price of all the pairs for a given 
+market in a given exchange every 30 minutes. The example also contains 
+the OHLCV data with minute-resolution for the past seven days which 
+could be used to create indicators. Use this code as the backbone to 
+create your own trading strategy.
+
+The lookback_date variable is used to ensure data for a coin existed on 
+the lookback period specified.
+
+To run, execute the following two commands in a terminal (inside catalyst 
+environment). The first one retrieves all the pricing data needed for this
+script to run (only needs to be run once), and the second one executes this
+script with the parameters specified in the run_algorithm() call at the end 
+of the file:
+
+.. code-block:: bash
+  
+  catalyst ingest-exchange -x bitfinex -f minute
+
+.. code-block:: bash
+
+  python simple_universe.py
+
+Credits: This code was originally submitted by `Abner Ayala-Acevedo 
+<https://github.com/abnera>`_. Thank you!
+
+.. code-block:: python
+
+  from datetime import timedelta
+
+  import numpy as np
+  import pandas as pd
+
+  from catalyst import run_algorithm
+  from catalyst.exchange.exchange_utils import get_exchange_symbols
+  from catalyst.api import (symbols, )
+
+
+  def initialize(context):
+      context.i = -1  # minute counter
+      context.exchange = context.exchanges.values()[0].name.lower()  
+      context.base_currency = context.exchanges.values()[0].base_currency.lower()  
+
+
+  def handle_data(context, data):
+      context.i += 1
+      lookback_days = 7  # 7 days
+
+      # current date & time in each iteration formatted into a string
+      now = data.current_dt
+      date, time = now.strftime('%Y-%m-%d %H:%M:%S').split(' ')
+      lookback_date = now - timedelta(days=lookback_days) 
+      # keep only the date as a string, discard the time
+      lookback_date = lookback_date.strftime('%Y-%m-%d %H:%M:%S').split(' ')[0]  
+
+      one_day_in_minutes = 1440  # 60 * 24 assumes data_frequency='minute'
+      # update universe everyday at midnight
+      if not context.i % one_day_in_minutes:
+          context.universe = universe(context, lookback_date, date)
+
+      # get data every 30 minutes
+      minutes = 30
+      # get lookback_days of history data: that is 'lookback' number of bins
+      lookback = one_day_in_minutes / minutes * lookback_days  
+      if not context.i % minutes and context.universe:
+          # we iterate for every pair in the current universe
+          for coin in context.coins:
+              pair = str(coin.symbol)
+
+              # Get 30 minute interval OHLCV data. This is the standard data 
+              # required for candlestick or indicators/signals. Return Pandas
+              # DataFrames. 30T means 30-minute re-sampling of one minute data. 
+              # Adjust it to your desired time interval as needed.
+              opened = fill(data.history(coin, 'open', 
+                                    bar_count=lookback, frequency='30T')).values
+              high = fill(data.history(coin, 'high', 
+                                    bar_count=lookback, frequency='30T')).values
+              low = fill(data.history(coin, 'low', 
+                                    bar_count=lookback, frequency='30T')).values
+              close = fill(data.history(coin, 'price', 
+                                    bar_count=lookback, frequency='30T')).values
+              volume = fill(data.history(coin, 'volume', 
+                                    bar_count=lookback, frequency='30T')).values
+
+              # close[-1] is the last value in the set, which is the equivalent 
+              # to current price (as in the most recent value)
+              # displays the minute price for each pair every 30 minutes
+              print('{now}: {pair} -\tO:{o},\tH:{h},\tL:{c},\tC{c},\tV:{v}'.format(
+                      now=now, 
+                      pair=pair, 
+                      o=opened[-1], 
+                      h=high[-1], 
+                      l=low[-1],
+                      c=close[-1],
+                      v=volume[-1],
+                   ))
+
+              # -------------------------------------------------------------
+              # --------------- Insert Your Strategy Here -------------------
+              # -------------------------------------------------------------
+
+
+  def analyze(context=None, results=None):
+      pass
+
+
+  # Get the universe for a given exchange and a given base_currency market
+  # Example: Poloniex BTC Market
+  def universe(context, lookback_date, current_date):
+      # get all the pairs for the given exchange
+      json_symbols = get_exchange_symbols(context.exchange)  
+      # convert into a DataFrame for easier processing
+      df = pd.DataFrame.from_dict(json_symbols).transpose().astype(str) 
+      df['base_currency'] = df.apply(lambda row: row.symbol.split('_')[1],axis=1)
+      df['market_currency'] = df.apply(lambda row: row.symbol.split('_')[0],axis=1)
+
+      # Filter all the pairs to get only the ones for a given base_currency
+      df = df[df['base_currency'] == context.base_currency]
+
+      # Filter all the pairs to ensure that pair existed in the current date range
+      df = df[df.start_date < lookback_date]
+      df = df[df.end_daily >= current_date]
+      context.coins = symbols(*df.symbol)  # convert all the pairs to symbols
+
+      return df.symbol.tolist()
+
+
+  # Replace all NA, NAN or infinite values with its nearest value
+  def fill(series):
+      if isinstance(series, pd.Series):
+          return series.replace([np.inf, -np.inf], np.nan).ffill().bfill()
+      elif isinstance(series, np.ndarray):
+          return pd.Series(series).replace(
+                       [np.inf, -np.inf], np.nan
+                      ).ffill().bfill().values
+      else:
+          return series
+
+
+  if __name__ == '__main__':
+      start_date = pd.to_datetime('2017-11-10', utc=True)
+      end_date = pd.to_datetime('2017-11-13', utc=True)
+
+      performance = run_algorithm(start=start_date, end=end_date,
+                                  capital_base=100.0,  # amount of base_currency
+                                  initialize=initialize,
+                                  handle_data=handle_data,
+                                  analyze=analyze,
+                                  exchange_name='bitfinex',
+                                  data_frequency='minute',
+                                  base_currency='btc',
+                                  live=False,
+                                  live_graph=False,
+                                  algo_namespace='simple_universe')
+
+
+
+.. _portfolio_optimization:
+
+Portfolio Optimization
+~~~~~~~~~~~~~~~~~~~~~~
+
+Use this code to execute a portfolio optimization model. This strategy will 
+select the portfolio with the maximum Sharpe Ratio. The parameters are set to 
+use 180 days of historical data and rebalance every 30 days. This code was used 
+in writting the following article: 
+`Markowitz Portfolio Optimization for Cryptocurrencies <https://blog.enigma.co/markowitz-portfolio-optimization-for-cryptocurrencies-in-catalyst-b23c38652556>`_.
+
+.. code-block:: python
+
+  '''
+     You can run this code using the Python interpreter:
+
+     $ python portfolio_optimization.py
+  '''
+
+  from __future__ import division
+  import os
+  import pytz
+  import numpy as np
+  import pandas as pd
+  from scipy.optimize import minimize
+  import matplotlib.pyplot as plt
+  from datetime import datetime
+
+  from catalyst.api import record, symbol, symbols, order_target_percent
+  from catalyst.utils.run_algo import run_algorithm
+
+  np.set_printoptions(threshold='nan', suppress=True)
+
+
+  def initialize(context):
+     # Portfolio assets list
+     context.assets = symbols('btc_usdt', 'eth_usdt', 'ltc_usdt', 'dash_usdt',
+                              'xmr_usdt')
+     context.nassets = len(context.assets)
+     # Set the time window that will be used to compute expected return 
+     # and asset correlations
+     context.window = 180
+     # Set the number of days between each portfolio rebalancing
+     context.rebalance_period = 30                   
+     context.i = 0
+
+     
+  def handle_data(context, data):
+     # Only rebalance at the beggining of the algorithm execution and 
+     # every multiple of the rebalance period
+     if context.i == 0 or context.i%context.rebalance_period == 0:
+         n = context.window
+         prices = data.history(context.assets, fields='price', 
+                               bar_count=n+1, frequency='1d') 
+         pr = np.asmatrix(prices)
+         t_prices = prices.iloc[1:n+1]
+         t_val = t_prices.values
+         tminus_prices = prices.iloc[0:n]
+         tminus_val = tminus_prices.values
+         # Compute daily returns (r)
+         r = np.asmatrix(t_val/tminus_val-1)
+         # Compute the expected returns of each asset with the average 
+         # daily return for the selected time window
+         m = np.asmatrix(np.mean(r, axis=0))
+         # ###
+         stds = np.std(r, axis=0)
+         # Compute excess returns matrix (xr)
+         xr = r - m
+         # Matrix algebra to get variance-covariance matrix
+         cov_m = np.dot(np.transpose(xr),xr)/n
+         # Compute asset correlation matrix (informative only)
+         corr_m = cov_m/np.dot(np.transpose(stds),stds)
+         
+         # Define portfolio optimization parameters
+         n_portfolios = 50000
+         results_array = np.zeros((3+context.nassets,n_portfolios))
+         for p in xrange(n_portfolios):
+             weights = np.random.random(context.nassets)
+             weights /= np.sum(weights)
+             w = np.asmatrix(weights)
+             p_r = np.sum(np.dot(w,np.transpose(m)))*365
+             p_std = np.sqrt(np.dot(np.dot(w,cov_m),np.transpose(w)))*np.sqrt(365)
+             
+             #store results in results array
+             results_array[0,p] = p_r
+             results_array[1,p] = p_std
+             #store Sharpe Ratio (return / volatility) - risk free rate element 
+             #excluded for simplicity
+             results_array[2,p] = results_array[0,p] / results_array[1,p]
+             i = 0
+             for iw in weights:
+                 results_array[3+i,p] = weights[i]
+                 i += 1
+         
+         #convert results array to Pandas DataFrame
+         results_frame = pd.DataFrame(np.transpose(results_array),
+                            columns=['r','stdev','sharpe']+context.assets)
+         #locate position of portfolio with highest Sharpe Ratio
+         max_sharpe_port = results_frame.iloc[results_frame['sharpe'].idxmax()]
+         #locate positon of portfolio with minimum standard deviation
+         min_vol_port = results_frame.iloc[results_frame['stdev'].idxmin()]
+         
+         #order optimal weights for each asset
+         for asset in context.assets:
+             if data.can_trade(asset):
+                 order_target_percent(asset, max_sharpe_port[asset])
+         
+         #create scatter plot coloured by Sharpe Ratio
+         plt.scatter(results_frame.stdev,results_frame.r,c=results_frame.sharpe,cmap='RdYlGn')
+         plt.xlabel('Volatility')
+         plt.ylabel('Returns')
+         plt.colorbar()
+         #plot red star to highlight position of portfolio with highest Sharpe Ratio
+         plt.scatter(max_sharpe_port[1],max_sharpe_port[0],marker='o',color='b',s=200)
+         #plot green star to highlight position of minimum variance portfolio
+         plt.show()
+         print(max_sharpe_port)
+         record(pr=pr,r=r, m=m, stds=stds ,max_sharpe_port=max_sharpe_port, corr_m=corr_m)
+     context.i += 1
+     
+         
+  def analyze(context=None, results=None):
+     # Form DataFrame with selected data
+     data = results[['pr','r','m','stds','max_sharpe_port','corr_m','portfolio_value']]
+     
+     # Save results in CSV file
+     filename = os.path.splitext(os.path.basename(__file__))[0]
+     data.to_csv(filename + '.csv')
+
+
+  # Bitcoin data is available from 2015-3-2. Dates vary for other tokens.    
+  start = datetime(2017, 1, 1, 0, 0, 0, 0, pytz.utc)
+  end = datetime(2017, 8, 16, 0, 0, 0, 0, pytz.utc) 
+  results = run_algorithm(initialize=initialize,
+                          handle_data=handle_data,
+                          analyze=analyze,
+                          start=start,
+                          end=end,
+                          exchange_name='poloniex',
+                          capital_base=100000, )
+
+.. image:: https://cdn-images-1.medium.com/max/1600/0*EjjiKZHlYF3sn7yQ.
+   :align: center
+
 
 

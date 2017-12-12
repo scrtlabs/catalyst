@@ -14,6 +14,7 @@ import six
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
+from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import (
@@ -29,16 +30,17 @@ from catalyst.protocol import Account
 
 # Trying to account for REST api instability
 # https://stackoverflow.com/questions/15431044/can-i-set-max-retries-for-requests-request
+from catalyst.utils.deprecate import deprecated
+
 requests.adapters.DEFAULT_RETRIES = 20
 
 BITFINEX_URL = 'https://api.bitfinex.com'
-
-from catalyst.constants import LOG_LEVEL
 
 log = Logger('Bitfinex', level=LOG_LEVEL)
 warning_logger = Logger('AlgoWarning')
 
 
+@deprecated
 class Bitfinex(Exchange):
     def __init__(self, key, secret, base_currency, portfolio=None):
         self.url = BITFINEX_URL
@@ -172,7 +174,8 @@ class Bitfinex(Exchange):
 
         executed_price = float(order_status['avg_execution_price'])
 
-        # TODO: bitfinex does not specify comission. I could calculate it but not sure if it's worth it.
+        # TODO: bitfinex does not specify comission.
+        # I could calculate it but not sure if it's worth it.
         commission = None
 
         date = pd.Timestamp.utcfromtimestamp(float(order_status['timestamp']))
@@ -599,17 +602,17 @@ class Bitfinex(Exchange):
             else:
                 try:
                     start_date = cached_symbols[symbol]['start_date']
-                except KeyError as e:
+                except KeyError:
                     start_date = time.strftime('%Y-%m-%d')
 
             try:
                 end_daily = cached_symbols[symbol]['end_daily']
-            except KeyError as e:
+            except KeyError:
                 end_daily = 'N/A'
 
             try:
                 end_minute = cached_symbols[symbol]['end_minute']
-            except KeyError as e:
+            except KeyError:
                 end_minute = 'N/A'
 
             symbol_map[symbol] = dict(
@@ -660,15 +663,16 @@ class Bitfinex(Exchange):
 
         """
             Query again with daily resolution setting the start and end around
-            the startmonth we got above. Avoid end dates greater than now: time.time()
+            the startmonth we got above. Avoid end dates greater than
+            now: time.time()
         """
-        url = '{url}/v2/candles/trade:1D:{symbol}/hist?start={start}&end={end}'.format(
+        url = ('{url}/v2/candles/trade:1D:{symbol}/hist?start={start}'
+               '&end={end}').format(
             url=self.url,
             symbol=symbol_v2,
             start=startmonth - 3600 * 24 * 31 * 1000,
             end=min(startmonth + 3600 * 24 * 31 * 1000,
-                    int(time.time() * 1000))
-        )
+                    int(time.time() * 1000)))
 
         try:
             self.ask_request()

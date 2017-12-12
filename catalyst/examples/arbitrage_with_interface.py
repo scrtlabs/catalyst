@@ -83,15 +83,15 @@ def place_orders(context, amount, buying_price, selling_price, action):
     else:
         raise ValueError('invalid order action')
 
-    base_currency = enter_exchange.base_currency
-    base_currency_amount = enter_exchange.portfolio.cash
+    quote_currency = enter_exchange.quote_currency
+    quote_currency_amount = enter_exchange.portfolio.cash
 
     exit_balances = exit_exchange.get_balances()
     exit_currency = context.trading_pairs[
-        context.selling_exchange].market_currency
+        context.selling_exchange].quote_currency
 
     if exit_currency in exit_balances:
-        market_currency_amount = exit_balances[exit_currency]
+        quote_currency_amount = exit_balances[exit_currency]
     else:
         log.warn(
             'the selling exchange {exchange_name} does not hold '
@@ -102,25 +102,25 @@ def place_orders(context, amount, buying_price, selling_price, action):
         )
         return
 
-    if base_currency_amount < (amount * entry_price):
-        adj_amount = base_currency_amount / entry_price
+    if quote_currency_amount < (amount * entry_price):
+        adj_amount = quote_currency_amount / entry_price
         log.warn(
-            'not enough {base_currency} ({base_currency_amount}) to buy '
+            'not enough {quote_currency} ({quote_currency_amount}) to buy '
             '{amount}, adjusting the amount to {adj_amount}'.format(
-                base_currency=base_currency,
-                base_currency_amount=base_currency_amount,
+                quote_currency=quote_currency,
+                quote_currency_amount=quote_currency_amount,
                 amount=amount,
                 adj_amount=adj_amount
             )
         )
         amount = adj_amount
 
-    elif market_currency_amount < amount:
+    elif quote_currency_amount < amount:
         log.warn(
             'not enough {currency} ({currency_amount}) to sell '
             '{amount}, aborting'.format(
                 currency=exit_currency,
-                currency_amount=market_currency_amount,
+                currency_amount=quote_currency_amount,
                 amount=amount
             )
         )
@@ -263,13 +263,20 @@ def analyze(context, stats):
     pass
 
 
-run_algorithm(
-    initialize=initialize,
-    handle_data=handle_data,
-    analyze=analyze,
-    exchange_name='poloniex,bitfinex',
-    live=True,
-    algo_namespace=algo_namespace,
-    base_currency='btc',
-    live_graph=False
-)
+if __name__ == '__main__':
+    # The execution mode: backtest or live
+    MODE = 'live'
+    if MODE == 'live':
+        run_algorithm(
+            capital_base=0.1,
+            initialize=initialize,
+            handle_data=handle_data,
+            analyze=analyze,
+            exchange_name='poloniex,bitfinex',
+            live=True,
+            algo_namespace=algo_namespace,
+            base_currency='btc',
+            live_graph=False,
+            simulate_orders=True,
+            stats_output=None,
+        )

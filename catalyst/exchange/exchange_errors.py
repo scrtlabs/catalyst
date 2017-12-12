@@ -143,7 +143,8 @@ class OrphanOrderError(ZiplineError):
 
 class OrphanOrderReverseError(ZiplineError):
     msg = (
-        'Order {order_id} tracked by algorithm, but not found in exchange {exchange}.'
+        'Order {order_id} tracked by algorithm, but not found in exchange '
+        '{exchange}.'
     ).strip()
 
 
@@ -206,8 +207,9 @@ class EmptyValuesInBundleError(ZiplineError):
 
 class PricingDataBeforeTradingError(ZiplineError):
     msg = ('Pricing data for trading pairs {symbols} on exchange {exchange} '
-           'starts on {first_trading_day}, but you are either trying to trade or '
-           'retrieve pricing data on {dt}. Adjust your dates accordingly.').strip()
+           'starts on {first_trading_day}, but you are either trying to trade '
+           'or retrieve pricing data on {dt}. Adjust your dates accordingly.'
+           ).strip()
 
 
 class PricingDataNotLoadedError(ZiplineError):
@@ -216,6 +218,7 @@ class PricingDataNotLoadedError(ZiplineError):
            '\nPlease run: `catalyst ingest-exchange -x {exchange} -f '
            '{data_frequency} -i {symbol_list}`. See catalyst documentation '
            'for details.').strip()
+
 
 class PricingDataValueError(ZiplineError):
     msg = ('Unable to retrieve pricing data for {exchange} {symbol} '
@@ -237,6 +240,32 @@ class ApiCandlesError(ZiplineError):
 
 class NoDataAvailableOnExchange(ZiplineError):
     msg = (
-        'Requested data for trading pair {symbol} is not available on exchange {exchange} '
+        'Requested data for trading pair {symbol} is not available on '
+        'exchange {exchange} '
         'in `{data_frequency}` frequency at this time. '
-        'Check `http://enigma.co/catalyst/status` for market coverage.').strip()
+        'Check `http://enigma.co/catalyst/status` for market coverage.'
+    ).strip()
+
+
+class NoValueForField(ZiplineError):
+    msg = ('Value not found for field: {field}.').strip()
+
+
+class OrderTypeNotSupported(ZiplineError):
+    msg = (
+        'Order type `{order_type}` not currencly supported by Catalyst. '
+        'Please use `limit` or `market` orders only.').strip()
+
+
+class NotEnoughCapitalError(ZiplineError):
+    msg = (
+        'Not enough capital on exchange {exchange} for trading. Each '
+        'exchange should contain at least as much {base_currency} '
+        'as the specified `capital_base`. The current balance {balance} is '
+        'lower than the `capital_base`: {capital_base}').strip()
+
+class LastCandleTooEarlyError(ZiplineError):
+    msg = (
+        'The trade date of the last candle {last_traded} is before the '
+        'specified end date minus one candle {end_dt}. Please verify how '
+        '{exchange} calculates the start date of OHLCV candles.').strip()

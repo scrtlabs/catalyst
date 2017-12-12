@@ -8,6 +8,7 @@ from datetime import date, datetime
 
 import pandas as pd
 from catalyst.assets._assets import TradingPair
+from six import string_types
 from six.moves.urllib import request
 
 from catalyst.constants import DATE_FORMAT, SYMBOLS_URL
@@ -100,6 +101,20 @@ def download_exchange_symbols(exchange_name, environ=None):
     return response
 
 
+def symbols_parser(asset_def):
+    for key, value in asset_def.items():
+        match = isinstance(value, string_types) \
+                and re.search(r'(\d{4}-\d{2}-\d{2})', value)
+
+        if match:
+            try:
+                asset_def[key] = pd.to_datetime(value, utc=True)
+            except ValueError:
+                pass
+
+    return asset_def
+
+
 def get_exchange_symbols(exchange_name, is_local=False, environ=None):
     """
     The de-serialized content of the exchange's symbols.json.
@@ -119,13 +134,13 @@ def get_exchange_symbols(exchange_name, is_local=False, environ=None):
 
     if not is_local and (not os.path.isfile(filename) or pd.Timedelta(
                 pd.Timestamp('now', tz='UTC') - last_modified_time(
-                filename)).days > 1):
+                    filename)).days > 1):
         download_exchange_symbols(exchange_name, environ)
 
     if os.path.isfile(filename):
         with open(filename) as data_file:
             try:
-                data = json.load(data_file)
+                data = json.load(data_file, object_hook=symbols_parser)
                 return data
 
             except ValueError:
@@ -281,7 +296,7 @@ def get_algo_object(algo_name, key, environ=None, rel_path=None):
         try:
             with open(filename, 'rb') as handle:
                 return pickle.load(handle)
-        except Exception as e:
+        except Exception:
             return None
     else:
         return None
@@ -571,3 +586,63 @@ def resample_history_df(df, freq, field):
 
     resampled_df = df.resample(freq).agg(agg)
     return resampled_df
+
+
+def mixin_market_params(exchange_name, params, market):
+    """
+    Applies a CCXT market dict to parameters of TradingPair init.
+
+    Parameters
+    ----------
+    params: dict[Object]
+    market: dict[Object]
+
+    Returns
+    -------
+
+    """
+    # TODO: make this more externalized / configurable
+    if 'lot' in market:
+        params['min_trade_size'] = market['lot']
+        params['lot'] = market['lot']
+
+    if exchange_name == 'bitfinex':
+        params['maker'] = 0.001
+        params['taker'] = 0.002
+
+    elif 'maker' in market and 'taker' in market \
+            and market['maker'] is not None and market['taker'] is not None:
+        params['maker'] = market['maker']
+        params['taker'] = market['taker']
+
+    else:
+        # TODO: default commission, make configurable
+        params['maker'] = 0.0015
+        params['taker'] = 0.0025
+
+    info = market['info'] if 'info' in market else None
+    if info:
+        if 'minimum_order_size' in info:
+            params['min_trade_size'] = float(info['minimum_order_size'])
+
+            if 'lot' not in params:
+                params['lot'] = params['min_trade_size']
+
+
+def from_ms_timestamp(ms):
+    return pd.to_datetime(ms, unit='ms', utc=True)
+
+
+def get_epoch():
+    return pd.to_datetime('1970-1-1', utc=True)
+
+
+def group_assets_by_exchange(assets):
+    exchange_assets = dict()
+    for asset in assets:
+        if asset.exchange not in exchange_assets:
+            exchange_assets[asset.exchange] = list()
+
+        exchange_assets[asset.exchange].append(asset)
+
+    return exchange_assets

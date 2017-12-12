@@ -1,5 +1,61 @@
+Features
+========
+
+This page describes the features that Catalyst provides in the current version,
+and what is planned for future releases.
+
+Current Functionality
+~~~~~~~~~~~~~~~~~~~~~
+
+* Backtesting and live-trading modes to run your trading algorithms, with a 
+  seamless transition between the two.
+* Paper trading simulates order in live-trading mode.
+* Support for 3 exchanges: Bitfinex, Bittrex and Poloniex in both modes 
+  (backtesting and live-trading). Historical data for backtesting is provided 
+  with daily resolution for all three exchanges, and minute resolution for 
+  Bitfinex and Poloniex. No minute-resolution data is currently available for 
+  Bittrex. Refer to 
+  `Catalyst Market Coverage <https://www.enigma.co/catalyst/status>`_ for 
+  details.
+* Interface with over 90 exchanges available in live and paper trading modes.
+* Granular commission models which closely simulates each exchange fee
+  structure in backtesting and paper trading.
+* Standardized naming convention for all asset pairs trading on any exchange in 
+  the form ``{market_currency}_{base_currency}``. See 
+  :ref:`naming`.
+* Output of performance statistics based on Pandas DataFrames to integrate 
+  nicely into the existing PyData ecosystem.
+* Support for accessing multiple exchanges per algorithm, which opens the door
+  to cross-exchange arbitrage opportunities.
+* Support for running multiple algorithms on the same exchange independently of
+  one another. Catalyst performance tracker stores just enough data to allow 
+  algorithms to run independently while still sharing critical data through 
+  exchanges.
+* Benchmark defaults to Bitcoin price (btc_usdt in Poloniex exchange) for the 
+  purpose of comparing performance across trading algorithms. A custom benchmark
+  can be specified through ``set_benchmark()`` (but see 
+  `issue #86 <https://github.com/enigmampc/catalyst/issues/86>`_). 
+* Support for MacOS, Linux and Windows installations.
+* Support for Python2 and Python3.
+
+For additional details on the functionality added on recent releases, see the
+:doc:`Release Notes<releases>`.
+
+Upcoming features
+~~~~~~~~~~~~~~~~~
+
+* Additional datasets beyond pricing data (Dec. 2017)
+* API documentation (Jan. 2017)
+* Support for decentralized exchanges (Jan. 2017)
+* Support for data ingestion of community-contributed data sets (Jan. 2017)
+* Pipeline support (Jan. 2018)
+* Web UI (Q2 2018)
+
+
+ .. _naming:
+
 Naming Convention
-=================
+~~~~~~~~~~~~~~~~~
 
 Catalyst introduces a standardized naming convention for all asset pairs 
 trading on any exchange in the following form:

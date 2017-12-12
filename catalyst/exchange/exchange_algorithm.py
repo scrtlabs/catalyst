@@ -13,7 +13,6 @@
 import pickle
 import signal
 import sys
-from collections import deque
 from datetime import timedelta
 from os import listdir
 from os.path import isfile, join
@@ -21,34 +20,32 @@ from time import sleep
 
 import logbook
 import pandas as pd
-from catalyst.assets._assets import TradingPair
 
 import catalyst.protocol as zp
 from catalyst.algorithm import TradingAlgorithm
 from catalyst.constants import LOG_LEVEL
-from catalyst.errors import OrderInBeforeTradingStart
 from catalyst.exchange.exchange_blotter import ExchangeBlotter
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     ExchangePortfolioDataError,
-    ExchangeTransactionError,
-    OrphanOrderError)
-from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
-    ExchangeLimitOrder, ExchangeStopOrder
-from catalyst.exchange.exchange_utils import save_algo_object, get_algo_object, \
-    get_algo_folder, get_algo_df, \
-    save_algo_df
+    OrderTypeNotSupported, )
+from catalyst.exchange.exchange_execution import ExchangeLimitOrder
+from catalyst.exchange.exchange_utils import (
+    save_algo_object,
+    get_algo_object,
+    get_algo_folder,
+    get_algo_df,
+    save_algo_df,
+    group_assets_by_exchange, )
 from catalyst.exchange.live_graph_clock import LiveGraphClock
 from catalyst.exchange.simple_clock import SimpleClock
-from catalyst.exchange.stats_utils import get_pretty_stats
+from catalyst.exchange.stats_utils import get_pretty_stats, stats_to_s3, \
+    stats_to_algo_folder
 from catalyst.finance.execution import MarketOrder
 from catalyst.finance.performance.period import calc_period_stats
 from catalyst.gens.tradesimulation import AlgorithmSimulator
-from catalyst.utils.api_support import (
-    api_method,
-    disallowed_in_before_trading_start)
-from catalyst.utils.input_validation import error_keywords, ensure_upper_case, \
-    expect_types
+from catalyst.utils.api_support import api_method
+from catalyst.utils.input_validation import error_keywords, ensure_upper_case
 from catalyst.utils.math_utils import round_nearest
 from catalyst.utils.preprocess import preprocess
 
@@ -63,8 +60,89 @@ class ExchangeAlgorithmExecutor(AlgorithmSimulator):
 class ExchangeTradingAlgorithmBase(TradingAlgorithm):
     def __init__(self, *args, **kwargs):
         self.exchanges = kwargs.pop('exchanges', None)
+        self.simulate_orders = kwargs.pop('simulate_orders', None)
 
         super(ExchangeTradingAlgorithmBase, self).__init__(*args, **kwargs)
+
+        self.current_day = None
+
+        if self.simulate_orders is None \
+                and self.sim_params.arena == 'backtest':
+            self.simulate_orders = True
+
+        self.blotter = ExchangeBlotter(
+            data_frequency=self.data_frequency,
+            # Default to NeverCancel in catalyst
+            cancel_policy=self.cancel_policy,
+            simulate_orders=self.simulate_orders,
+            exchanges=self.exchanges
+        )
+
+    @staticmethod
+    def __convert_order_params_for_blotter(limit_price, stop_price, style):
+        """
+        Helper method for converting deprecated limit_price and stop_price
+        arguments into ExecutionStyle instances.
+
+        This function assumes that either style == None or (limit_price,
+        stop_price) == (None, None).
+        """
+        if stop_price:
+            raise OrderTypeNotSupported(order_type='stop')
+
+        if style:
+            if limit_price is not None:
+                raise ValueError(
+                    'An order style and a limit price was included in the '
+                    'order. Please pick one to avoid any possible conflict.'
+                )
+
+            # Currently limiting order types or limit and market to
+            # be in-line with CXXT and many exchanges. We'll consider
+            # adding more order types in the future.
+            if not isinstance(style, ExchangeLimitOrder) or \
+                    not isinstance(style, MarketOrder):
+                raise OrderTypeNotSupported(
+                    order_type=style.__class__.__name__
+                )
+
+            return style
+
+        if limit_price:
+            return ExchangeLimitOrder(limit_price)
+        else:
+            return MarketOrder()
+
+    @api_method
+    def set_commission(self, maker=None, taker=None):
+        key = self.blotter.commission_models.keys()[0]
+        if maker is not None:
+            self.blotter.commission_models[key].maker = maker
+
+        if taker is not None:
+            self.blotter.commission_models[key].taker = taker
+
+    @api_method
+    def set_slippage(self, spread=None):
+        key = self.blotter.slippage_models.keys()[0]
+        if spread is not None:
+            self.blotter.slippage_models[key].spread = spread
+
+    def _calculate_order(self, asset, amount,
+                         limit_price=None, stop_price=None, style=None):
+        # Raises a ZiplineError if invalid parameters are detected.
+        self.validate_order_params(asset,
+                                   amount,
+                                   limit_price,
+                                   stop_price,
+                                   style)
+
+        # Convert deprecated limit_price and stop_price parameters to use
+        # ExecutionStyle objects.
+        style = self.__convert_order_params_for_blotter(limit_price,
+                                                        stop_price,
+                                                        style)
+        return amount, style
 
     def round_order(self, amount, asset):
         """
@@ -204,49 +282,7 @@ class ExchangeTradingAlgorithmBacktest(ExchangeTradingAlgorithmBase):
         super(ExchangeTradingAlgorithmBacktest, self).__init__(*args, **kwargs)
 
         self.frame_stats = list()
-        self.blotter = ExchangeBlotter(
-            data_frequency=self.data_frequency,
-            # Default to NeverCancel in catalyst
-            cancel_policy=self.cancel_policy,
-        )
         log.info('initialized trading algorithm in backtest mode')
-
-    def _calculate_order(self, asset, amount,
-                         limit_price=None, stop_price=None, style=None):
-        # Raises a ZiplineError if invalid parameters are detected.
-        self.validate_order_params(asset,
-                                   amount,
-                                   limit_price,
-                                   stop_price,
-                                   style)
-
-        # Convert deprecated limit_price and stop_price parameters to use
-        # ExecutionStyle objects.
-        style = self.__convert_order_params_for_blotter(limit_price,
-                                                        stop_price,
-                                                        style)
-        return amount, style
-
-    @staticmethod
-    def __convert_order_params_for_blotter(limit_price, stop_price, style):
-        """
-        Helper method for converting deprecated limit_price and stop_price
-        arguments into ExecutionStyle instances.
-
-        This function assumes that either style == None or (limit_price,
-        stop_price) == (None, None).
-        """
-        if style:
-            assert (limit_price, stop_price) == (None, None)
-            return style
-        if limit_price and stop_price:
-            return ExchangeStopLimitOrder(limit_price, stop_price)
-        if limit_price:
-            return ExchangeLimitOrder(limit_price)
-        if stop_price:
-            return ExchangeStopOrder(stop_price)
-        else:
-            return MarketOrder()
 
     def is_last_frame_of_day(self, data):
         # TODO: adjust here to support more intervals
@@ -264,6 +300,8 @@ class ExchangeTradingAlgorithmBacktest(ExchangeTradingAlgorithmBase):
                 data.current_dt, data.current_dt + timedelta(minutes=1)
             )
             self.frame_stats.append(frame_stats)
+
+        self.current_day = data.current_dt.floor('1D')
 
     def _create_stats_df(self):
         stats = pd.DataFrame(self.frame_stats)
@@ -289,9 +327,10 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
     def __init__(self, *args, **kwargs):
         self.algo_namespace = kwargs.pop('algo_namespace', None)
         self.live_graph = kwargs.pop('live_graph', None)
+        self.stats_output = kwargs.pop('stats_output', None)
 
         self._clock = None
-        self.frame_stats = deque(maxlen=60)
+        self.frame_stats = list()
 
         self.pnl_stats = get_algo_df(self.algo_namespace, 'pnl_stats')
 
@@ -309,7 +348,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         self.retry_order = 2
         self.retry_delay = 5
 
-        self.stats_minutes = 5
+        self.stats_minutes = 10
 
         super(ExchangeTradingAlgorithmLive, self).__init__(*args, **kwargs)
 
@@ -377,7 +416,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
 
         # This method is taken from TradingAlgorithm.
         # The clock has been replaced to use RealtimeClock
-        # TODO: should we apply a time skew? not sure to understand the utility.
+        # TODO: should we apply time skew? not sure to understand the utility.
 
         log.debug('creating clock')
         if self.live_graph:
@@ -415,74 +454,86 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         return self.trading_client.transform()
 
     def updated_portfolio(self):
-        """
-        We skip the entire performance tracker business and update the
-        portfolio directly.
-
-        Returns
-        -------
-        ExchangePortfolio
-
-        """
-        # TODO: build cumulative portfolio
         return self.perf_tracker.get_portfolio(False)
 
     def updated_account(self):
         return self.perf_tracker.get_account(False)
 
-    def _synchronize_portfolio(self, attempt_index=0):
+    def synchronize_portfolio(self, attempt_index=0):
+        """
+        Synchronizes the portfolio tracked by the algorithm to refresh
+        its current value.
+
+        This includes updating the last_sale_price of all tracked
+        positions, returning the available cash, and raising error
+        if the data goes out of sync.
+
+        Parameters
+        ----------
+        attempt_index: int
+
+        Returns
+        -------
+        float
+            The amount of base currency available for trading.
+
+        float
+            The total value of all tracked positions.
+
+        """
+        tracker = self.perf_tracker.position_tracker
+        total_cash = 0.0
+        total_positions_value = 0.0
+
         try:
+            # Position keys correspond to assets
+            positions = self.portfolio.positions
+            assets = list(positions)
+            exchange_assets = group_assets_by_exchange(assets)
             for exchange_name in self.exchanges:
-                exchange = self.exchanges[exchange_name]
+                assets = exchange_assets[exchange_name] \
+                    if exchange_name in exchange_assets else []
 
-                exchange.synchronize_portfolio()
+                exchange_positions = \
+                    [positions[asset] for asset in assets]
 
-                # Applying the updated last_sales_price to the positions
-                # in the performance tracker. This seems a bit redundant
-                # but it will make sense when we have multiple exchange portfolios
-                # feeding into the same performance tracker.
-                tracker = self.perf_tracker.todays_performance.position_tracker
-                for asset in exchange.portfolio.positions:
-                    position = exchange.portfolio.positions[asset]
+                check_cash = (not self.simulate_orders)
+
+                exchange = self.exchanges[exchange_name]  # Type: Exchange
+                cash, positions_value = exchange.calculate_totals(
+                    positions=exchange_positions,
+                    check_cash=check_cash,
+                )
+                total_positions_value += positions_value
+
+                if cash is not None:
+                    total_cash += cash
+
+                for position in exchange_positions:
                     tracker.update_position(
-                        asset=asset,
+                        asset=position.asset,
                         last_sale_date=position.last_sale_date,
                         last_sale_price=position.last_sale_price
                     )
+
+            if cash is None:
+                total_cash = self.portfolio.cash
+
+            elif total_cash < self.portfolio.cash:
+                raise ValueError('Cash on exchanges is lower than the algo.')
+
+            return total_cash, total_positions_value
+
         except ExchangeRequestError as e:
             log.warn(
                 'update portfolio attempt {}: {}'.format(attempt_index, e)
             )
             if attempt_index < self.retry_synchronize_portfolio:
                 sleep(self.retry_delay)
-                self._synchronize_portfolio(attempt_index + 1)
+                return self.synchronize_portfolio(attempt_index + 1)
             else:
                 raise ExchangePortfolioDataError(
                     data_type='update-portfolio',
-                    attempts=attempt_index,
-                    error=e
-                )
-
-    def _check_open_orders(self, attempt_index=0):
-        try:
-            orders = list()
-            for exchange_name in self.exchanges:
-                exchange = self.exchanges[exchange_name]
-                exchange_orders = exchange.check_open_orders()
-
-                orders += exchange_orders
-
-            return orders
-        except ExchangeRequestError as e:
-            log.warn(
-                'check open orders attempt {}: {}'.format(attempt_index, e)
-            )
-            if attempt_index < self.retry_check_open_orders:
-                sleep(self.retry_delay)
-                return self._check_open_orders(attempt_index + 1)
-            else:
-                raise ExchangePortfolioDataError(
-                    data_type='order-status',
                     attempts=attempt_index,
                     error=e
                 )
@@ -576,15 +627,23 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         if not self.is_running:
             return
 
-        self._synchronize_portfolio()
+        # Resetting the frame stats every day to minimize memory footprint
+        today = data.current_dt.floor('1D')
+        if self.current_day is not None and today > self.current_day:
+            self.frame_stats = list()
 
-        transactions = self._check_open_orders()
-        if len(transactions) > 0:
-            for transaction in transactions:
-                self.perf_tracker.process_transaction(transaction)
+        new_transactions, new_commissions, closed_orders = \
+            self.blotter.get_transactions(data)
 
+        if len(new_transactions) > 0:
             self.perf_tracker.update_performance()
 
+        cash, positions_value = self.synchronize_portfolio()
+        log.info(
+            'got totals from exchanges, cash: {} positions: {}'.format(
+                cash, positions_value
+            )
+        )
         if self._handle_data:
             self._handle_data(self, data)
 
@@ -594,48 +653,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         self.validate_account_controls()
 
         try:
-            # Since the clock runs 24/7, I trying to disable the daily
-            # Performance tracker and keep only minute and cumulative
-            self.perf_tracker.update_performance()
-
-            frame_stats = self.prepare_period_stats(
-                data.current_dt, data.current_dt + timedelta(minutes=1))
-
-            # Saving the last hour in memory
-            self.frame_stats.append(frame_stats)
-
-            self.add_pnl_stats(frame_stats)
-            if self.recorded_vars:
-                self.add_custom_signals_stats(frame_stats)
-                recorded_cols = list(self.recorded_vars.keys())
-            else:
-                recorded_cols = None
-
-            self.add_exposure_stats(frame_stats)
-
-            print_df = pd.DataFrame(list(self.frame_stats))
-            log.info(
-                'statistics for the last {stats_minutes} minutes:\n{stats}'.format(
-                    stats_minutes=self.stats_minutes,
-                    stats=get_pretty_stats(
-                        stats_df=print_df,
-                        recorded_cols=recorded_cols,
-                        num_rows=self.stats_minutes
-                    )
-                ))
-
-            today = pd.to_datetime('today', utc=True)
-            daily_stats = self.prepare_period_stats(
-                start_dt=today,
-                end_dt=pd.Timestamp.utcnow()
-            )
-            save_algo_object(
-                algo_name=self.algo_namespace,
-                key=today.strftime('%Y-%m-%d'),
-                obj=daily_stats,
-                rel_path='daily_perf'
-            )
-
+            self._save_stats_csv(self._process_stats(data))
         except Exception as e:
             log.warn('unable to calculate performance: {}'.format(e))
 
@@ -649,93 +667,85 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         except Exception as e:
             log.warn('unable to save minute perfs to disk: {}'.format(e))
 
-        try:
-            for exchange_name in self.exchanges:
-                exchange = self.exchanges[exchange_name]
-                save_algo_object(
-                    algo_name=self.algo_namespace,
-                    key='portfolio_{}'.format(exchange_name),
-                    obj=exchange.portfolio
-                )
-        except Exception as e:
-            log.warn('unable to save portfolio to disk: {}'.format(e))
+        self.current_day = data.current_dt.floor('1D')
 
-    def _order(self,
-               asset,
-               amount,
-               limit_price=None,
-               stop_price=None,
-               style=None,
-               attempt_index=0):
-        try:
-            exchange = self.exchanges[asset.exchange]
-            return exchange.order(asset, amount, limit_price,
-                                  stop_price,
-                                  style)
-        except ExchangeRequestError as e:
-            log.warn(
-                'order attempt {}: {}'.format(attempt_index, e)
-            )
-            if attempt_index < self.retry_order:
-                sleep(self.retry_delay)
-                return self._order(
-                    asset, amount, limit_price, stop_price, style,
-                    attempt_index + 1)
-            else:
-                raise ExchangeTransactionError(
-                    transaction_type='order',
-                    attempts=attempt_index,
-                    error=e
-                )
+    def _process_stats(self, data):
+        today = data.current_dt.floor('1D')
 
-    @api_method
-    @disallowed_in_before_trading_start(OrderInBeforeTradingStart())
-    @expect_types(asset=TradingPair)
-    def order(self,
-              asset,
-              amount,
-              limit_price=None,
-              stop_price=None,
-              style=None):
-        """
-        We use the exchange specific portfolio to place orders.
-        The cumulative portfolio does not contain open orders but exchange
-        portfolios do.
+        # Since the clock runs 24/7, I trying to disable the daily
+        # Performance tracker and keep only minute and cumulative
+        self.perf_tracker.update_performance()
 
-        Parameters
-        ----------
-        asset: TradingPair
-        amount: float
-        limit_price: float
-        stop_price: float
-        style: Style
-        order: Order
-            The catalyst order object or None
-        """
-        amount, style = self._calculate_order(asset, amount,
-                                              limit_price, stop_price,
-                                              style)
+        frame_stats = self.prepare_period_stats(
+            data.current_dt, data.current_dt + timedelta(minutes=1))
 
-        order_id = self._order(asset, amount, limit_price, stop_price, style)
+        # Saving the last hour in memory
+        self.frame_stats.append(frame_stats)
 
-        exchange = self.exchanges[asset.exchange]
-        exchange_portfolio = exchange.portfolio
-        if order_id is not None:
+        self.add_pnl_stats(frame_stats)
+        if self.recorded_vars:
+            self.add_custom_signals_stats(frame_stats)
+            recorded_cols = list(self.recorded_vars.keys())
 
-            if order_id in exchange_portfolio.open_orders:
-                order = exchange_portfolio.open_orders[order_id]
-                self.perf_tracker.process_order(order)
-                return order
-
-            else:
-                raise OrphanOrderError(
-                    order_id=order_id,
-                    exchange=exchange.name
-                )
         else:
-            log.warn('unable to order {} {} on exchange {}'.format(
-                amount, asset.symbol, asset.exchange))
-            return None
+            recorded_cols = None
+
+        self.add_exposure_stats(frame_stats)
+
+        log.info(
+            'statistics for the last {stats_minutes} minutes:\n'
+            '{stats}'.format(
+                stats_minutes=self.stats_minutes,
+                stats=get_pretty_stats(
+                    stats=self.frame_stats,
+                    recorded_cols=recorded_cols,
+                    num_rows=self.stats_minutes
+                )
+            ))
+
+        # Saving the daily stats in a format usable for performance
+        # analysis.
+        daily_stats = self.prepare_period_stats(
+            start_dt=today,
+            end_dt=data.current_dt
+        )
+        save_algo_object(
+            algo_name=self.algo_namespace,
+            key=today.strftime('%Y-%m-%d'),
+            obj=daily_stats,
+            rel_path='daily_perf'
+        )
+
+        return recorded_cols
+
+    def _save_stats_csv(self, recorded_cols):
+        # Writing the stats output
+        csv_bytes = None
+        try:
+            csv_bytes = stats_to_algo_folder(
+                stats=self.frame_stats,
+                algo_namespace=self.algo_namespace,
+                recorded_cols=recorded_cols,
+            )
+        except Exception as e:
+            log.warn('unable save stats locally: {}'.format(e))
+
+        try:
+            if self.stats_output is not None:
+                if 's3://' in self.stats_output:
+                    stats_to_s3(
+                        uri=self.stats_output,
+                        stats=self.frame_stats,
+                        algo_namespace=self.algo_namespace,
+                        recorded_cols=recorded_cols,
+                        bytes_to_write=csv_bytes
+                    )
+                else:
+                    raise ValueError(
+                        'Only S3 stats output is supported for now.'
+                    )
+        except Exception as e:
+            log.warn('unable save stats externally: {}'.format(e))
 
     @api_method
     def batch_market_order(self, share_counts):

@@ -4,12 +4,13 @@ from logbook import Logger
 import matplotlib.pyplot as plt
 
 from catalyst import run_algorithm
-from catalyst.api import (order, record, symbol, order_target_percent,
-        get_open_orders)
+from catalyst.api import (record, symbol, order_target_percent,
+                          get_open_orders)
 from catalyst.exchange.stats_utils import extract_transactions
 
 NAMESPACE = 'dual_moving_average'
 log = Logger(NAMESPACE)
+
 
 def initialize(context):
     context.i = 0
@@ -25,16 +26,22 @@ def handle_data(context, data):
     # Skip as many bars as long_window to properly compute the average
     context.i += 1
     if context.i < long_window:
-       return
+        return
 
     # Compute moving averages calling data.history() for each
     # moving average with the appropriate parameters. We choose to use
     # minute bars for this simulation -> freq="1m"
     # Returns a pandas dataframe.
-    short_mavg = data.history(context.asset, 'price',
-                        bar_count=short_window, frequency="1m").mean()
-    long_mavg = data.history(context.asset, 'price',
-                        bar_count=long_window, frequency="1m").mean()
+    short_mavg = data.history(context.asset,
+                              'price',
+                              bar_count=short_window,
+                              frequency="1m",
+                              ).mean()
+    long_mavg = data.history(context.asset,
+                             'price',
+                             bar_count=long_window,
+                             frequency="1m",
+                             ).mean()
 
     # Let's keep the price of our asset in a more handy variable
     price = data.current(context.asset, 'price')
@@ -67,11 +74,11 @@ def handle_data(context, data):
 
     # Trading logic
     if short_mavg > long_mavg and pos_amount == 0:
-       # we buy 100% of our portfolio for this asset
-       order_target_percent(context.asset, 1)
+        # we buy 100% of our portfolio for this asset
+        order_target_percent(context.asset, 1)
     elif short_mavg < long_mavg and pos_amount > 0:
-       # we sell all our positions for this asset
-       order_target_percent(context.asset, 0)
+        # we sell all our positions for this asset
+        order_target_percent(context.asset, 0)
 
 
 def analyze(context, perf):
@@ -89,11 +96,13 @@ def analyze(context, perf):
 
     # Second chart: Plot asset price, moving averages and buys/sells
     ax2 = plt.subplot(412, sharex=ax1)
-    perf.loc[:, ['price','short_mavg','long_mavg']].plot(ax=ax2, label='Price')
+    perf.loc[:, ['price', 'short_mavg', 'long_mavg']].plot(
+        ax=ax2,
+        label='Price')
     ax2.legend_.remove()
     ax2.set_ylabel('{asset}\n({base})'.format(
-        asset = context.asset.symbol,
-        base = base_currency
+        asset=context.asset.symbol,
+        base=base_currency
         ))
     start, end = ax2.get_ylim()
     ax2.yaxis.set_ticks(np.arange(start, end, (end-start)/5))

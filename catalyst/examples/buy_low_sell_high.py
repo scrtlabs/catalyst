@@ -1,17 +1,19 @@
 '''
-This algorithm requires an additional library (ta-lib) beyond those required by catalyst.
-Install it first by running: 
+This algorithm requires an additional library (ta-lib) beyond those
+required by catalyst. Install it first by running:
 $ pip install TA-Lib
 
-If you get build errors like "fatal error: ta-lib/ta_libc.h: No such file or directory"
-it typically means that it can't find the underlying TA-Lib library and needs to be installed.
-See https://mrjbq7.github.io/ta-lib/install.html for instructions on how to install 
-the required dependencies.
+If you get build errors like:
+    "fatal error: ta-lib/ta_libc.h: No such file or directory"
+it typically means that it can't find the underlying TA-Lib library and it
+needs to be installed. See https://mrjbq7.github.io/ta-lib/install.html for
+instructions on how to install the required dependencies.
 '''
 
 import talib
 from logbook import Logger
 
+from catalyst import run_algorithm
 from catalyst.api import (
     order,
     order_target_percent,
@@ -20,6 +22,7 @@ from catalyst.api import (
     get_open_orders,
 )
 from catalyst.exchange.stats_utils import get_pretty_stats
+import pandas as pd
 
 algo_namespace = 'buy_low_sell_high_xrp'
 log = Logger(algo_namespace)
@@ -100,8 +103,8 @@ def _handle_data(context, data):
 
         if price < cost_basis:
             is_buy = True
-        elif position.amount > 0 and \
-                        price > cost_basis * (1 + context.PROFIT_TARGET):
+        elif (position.amount > 0
+              and price > cost_basis * (1 + context.PROFIT_TARGET)):
             profit = (price * position.amount) - (cost_basis * position.amount)
             log.info('closing position, taking profit: {}'.format(profit))
             order_target_percent(
@@ -156,3 +159,18 @@ def handle_data(context, data):
 def analyze(context, stats):
     log.info('the daily stats:\n{}'.format(get_pretty_stats(stats)))
     pass
+
+
+if __name__ == '__main__':
+    run_algorithm(
+        capital_base=10000,
+        data_frequency='daily',
+        initialize=initialize,
+        handle_data=handle_data,
+        analyze=analyze,
+        exchange_name='poloniex',
+        algo_namespace='buy_and_hodl',
+        base_currency='usd',
+        start=pd.to_datetime('2015-03-01', utc=True),
+        end=pd.to_datetime('2017-10-31', utc=True),
+    )

@@ -5,7 +5,6 @@ from time import sleep
 
 import numpy as np
 import pandas as pd
-from catalyst.assets._assets import TradingPair
 from logbook import Logger
 
 from catalyst.constants import LOG_LEVEL
@@ -14,16 +13,11 @@ from catalyst.exchange.bundle_utils import get_start_dt, \
     get_delta, get_periods, get_periods_range
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
-    InvalidOrderStyle, BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
+    BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
     PricingDataNotLoadedError, \
-    NoDataAvailableOnExchange, ExchangeSymbolsNotFound
-from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
-    ExchangeLimitOrder, ExchangeStopOrder
-from catalyst.exchange.exchange_portfolio import ExchangePortfolio
+    NoDataAvailableOnExchange, NoValueForField, LastCandleTooEarlyError
 from catalyst.exchange.exchange_utils import get_exchange_symbols, \
     get_frequency, resample_history_df
-from catalyst.finance.order import ORDER_STATUS
-from catalyst.finance.transaction import Transaction
 
 log = Logger('Exchange', level=LOG_LEVEL)
 
@@ -33,9 +27,8 @@ class Exchange:
 
     def __init__(self):
         self.name = None
-        self.assets = dict()
-        self.local_assets = dict()
-        self._portfolio = None
+        self.assets = []
+        self._symbol_maps = [None, None]
         self.minute_writer = None
         self.minute_reader = None
         self.base_currency = None
@@ -44,27 +37,6 @@ class Exchange:
         self.max_requests_per_minute = None
         self.request_cpt = None
         self.bundle = ExchangeBundle(self.name)
-
-    @property
-    def positions(self):
-        return self.portfolio.positions
-
-    @property
-    def portfolio(self):
-        """
-        The exchange portfolio
-
-        Returns
-        -------
-        ExchangePortfolio
-        """
-        if self._portfolio is None:
-            self._portfolio = ExchangePortfolio(
-                start_date=pd.Timestamp.utcnow()
-            )
-            self.synchronize_portfolio()
-
-        return self._portfolio
 
     @abstractproperty
     def account(self):
@@ -145,9 +117,9 @@ class Exchange:
         """
         symbol = None
 
-        for key in self.assets:
-            if not symbol and self.assets[key].symbol == asset.symbol:
-                symbol = key
+        for a in self.assets:
+            if not symbol and a.symbol == asset.symbol:
+                symbol = a.symbol
 
         if not symbol:
             raise ValueError('Currency %s not supported by exchange %s' %
@@ -174,73 +146,112 @@ class Exchange:
 
         return symbols
 
-    def get_assets(self, symbols=None, data_frequency=None):
+    def get_assets(self, symbols=None, data_frequency=None,
+                   is_exchange_symbol=False,
+                   is_local=None):
         """
         The list of markets for the specified symbols.
 
         Parameters
         ----------
         symbols: list[str]
+        data_frequency: str
+        is_exchange_symbol: bool
+        is_local: bool
 
         Returns
         -------
         list[TradingPair]
+            A list of asset objects.
+
+        Notes
+        -----
+        See get_asset for details of each parameter.
 
         """
+        if symbols is None:
+            # Make a distinct list of all symbols
+            symbols = list(set([asset.symbol for asset in self.assets]))
+            is_exchange_symbol = False
+
         assets = []
-
-        if symbols is not None:
-            for symbol in symbols:
-                asset = self.get_asset(symbol, data_frequency)
+        for symbol in symbols:
+            try:
+                asset = self.get_asset(
+                    symbol, data_frequency, is_exchange_symbol, is_local
+                )
                 assets.append(asset)
-        else:
-            for key in self.assets:
-                assets.append(self.assets[key])
 
+            except SymbolNotFoundOnExchange:
+                log.debug(
+                    'skipping non-existent market {} {}'.format(
+                        self.name, symbol
+                    )
+                )
         return assets
 
-    def _find_asset(self, asset, symbol, data_frequency, is_local=False):
-        assets = self.assets if not is_local else self.local_assets
-
-        for key in assets:
-            has_data = (data_frequency == 'minute'
-                        and assets[key].end_minute is not None) \
-                       or (data_frequency == 'daily'
-                           and assets[key].end_daily is not None)
-            if not asset and assets[key].symbol.lower() == symbol.lower() \
-                    and (not data_frequency or has_data):
-                asset = assets[key]
-
-        return asset
-
-    def get_asset(self, symbol, data_frequency=None):
+    def get_asset(self, symbol, data_frequency=None, is_exchange_symbol=False,
+                  is_local=None):
         """
         The market for the specified symbol.
 
         Parameters
         ----------
         symbol: str
+            The Catalyst or exchange symbol.
+
+        data_frequency: str
+            Check for asset corresponding to the specified data_frequency.
+            The same asset might exist in the Catalyst repository or
+            locally (following a CSV ingestion). Filtering by
+            data_frequency picks the right asset.
+
+        is_exchange_symbol: bool
+            Whether the symbol uses the Catalyst or exchange convention.
+
+        is_local: bool
+            For the local or Catalyst asset.
 
         Returns
         -------
         TradingPair
+            The asset object.
 
         """
         asset = None
 
-        log.debug('searching asset {} on the server'.format(symbol))
-        asset = self._find_asset(asset, symbol, data_frequency, False)
+        log.debug(
+            'searching assets for: {} {}'.format(
+                self.name, symbol
+            )
+        )
+        for a in self.assets:
+            if asset is not None:
+                break
 
-        log.debug('asset {} not found on the server, searching local '
-                  'assets'.format(symbol))
-        asset = self._find_asset(asset, symbol, data_frequency, True)
+            if is_local is not None:
+                data_source = 'local' if is_local else 'catalyst'
+                applies = (a.data_source == data_source)
 
-        if not asset:
-            all_values = list(self.assets.values()) + \
-                         list(self.local_assets.values())
-            supported_symbols = sorted([
-                asset.symbol for asset in all_values
-            ])
+            elif data_frequency is not None:
+                applies = (
+                        (
+                                data_frequency == 'minute' and a.end_minute is not None)
+                        or (
+                                data_frequency == 'daily' and a.end_daily is not None)
+                )
+
+            else:
+                applies = True
+
+            # The symbol provided may use the Catalyst or the exchange
+            # convention
+            key = a.exchange_symbol if is_exchange_symbol else a.symbol
+            if not asset and key.lower() == symbol.lower() and applies:
+                asset = a
+
+        if asset is None:
+            supported_symbols = sorted([a.symbol for a in self.assets])
 
             raise SymbolNotFoundOnExchange(
                 symbol=symbol,
@@ -248,11 +259,20 @@ class Exchange:
                 supported_symbols=supported_symbols
             )
 
+        log.debug('found asset: {}'.format(asset))
         return asset
 
     def fetch_symbol_map(self, is_local=False):
-        return get_exchange_symbols(self.name, is_local)
+        index = 1 if is_local else 0
+        if self._symbol_maps[index] is not None:
+            return self._symbol_maps[index]
 
+        else:
+            symbol_map = get_exchange_symbols(self.name, is_local)
+            self._symbol_maps[index] = symbol_map
+            return symbol_map
+
+    @abstractmethod
     def load_assets(self, is_local=False):
         """
         Populate the 'assets' attribute with a dictionary of Assets.
@@ -270,112 +290,7 @@ class Exchange:
         via its api.
 
         """
-        try:
-            symbol_map = self.fetch_symbol_map(is_local)
-        except ExchangeSymbolsNotFound:
-            return None
-
-        for exchange_symbol in symbol_map:
-            asset = symbol_map[exchange_symbol]
-
-            if 'start_date' in asset:
-                start_date = pd.to_datetime(asset['start_date'], utc=True)
-            else:
-                start_date = None
-
-            if 'end_date' in asset:
-                end_date = pd.to_datetime(asset['end_date'], utc=True)
-            else:
-                end_date = None
-
-            if 'leverage' in asset:
-                leverage = asset['leverage']
-            else:
-                leverage = 1.0
-
-            if 'asset_name' in asset:
-                asset_name = asset['asset_name']
-            else:
-                asset_name = None
-
-            if 'min_trade_size' in asset:
-                min_trade_size = asset['min_trade_size']
-            else:
-                min_trade_size = 0.0000001
-
-            if 'end_daily' in asset and asset['end_daily'] != 'N/A':
-                end_daily = pd.to_datetime(asset['end_daily'], utc=True)
-            else:
-                end_daily = None
-
-            if 'end_minute' in asset and asset['end_minute'] != 'N/A':
-                end_minute = pd.to_datetime(asset['end_minute'], utc=True)
-            else:
-                end_minute = None
-
-            trading_pair = TradingPair(
-                symbol=asset['symbol'],
-                exchange=self.name,
-                start_date=start_date,
-                end_date=end_date,
-                leverage=leverage,
-                asset_name=asset_name,
-                min_trade_size=min_trade_size,
-                end_daily=end_daily,
-                end_minute=end_minute,
-                exchange_symbol=exchange_symbol
-            )
-
-            if is_local:
-                self.local_assets[exchange_symbol] = trading_pair
-            else:
-                self.assets[exchange_symbol] = trading_pair
-
-    def check_open_orders(self):
-        """
-        Loop through the list of open orders in the Portfolio object.
-        For each executed order found, create a transaction and apply to the
-        Portfolio.
-
-        Returns
-        -------
-        list[Transaction]
-
-        """
-        transactions = list()
-        if self.portfolio.open_orders:
-            for order_id in list(self.portfolio.open_orders):
-                log.debug('found open order: {}'.format(order_id))
-
-                order, executed_price = self.get_order(order_id)
-                log.debug('got updated order {} {}'.format(
-                    order, executed_price))
-
-                if order.status == ORDER_STATUS.FILLED:
-                    transaction = Transaction(
-                        asset=order.asset,
-                        amount=order.amount,
-                        dt=pd.Timestamp.utcnow(),
-                        price=executed_price,
-                        order_id=order.id,
-                        commission=order.commission
-                    )
-                    transactions.append(transaction)
-
-                    self.portfolio.execute_order(order, transaction)
-
-                elif order.status == ORDER_STATUS.CANCELLED:
-                    self.portfolio.remove_order(order)
-
-                else:
-                    delta = pd.Timestamp.utcnow() - order.dt
-                    log.info(
-                        'order {order_id} still open after {delta}'.format(
-                            order_id=order_id,
-                            delta=delta
-                        )
-                    )
-        return transactions
+        pass
 
     def get_spot_value(self, assets, field, dt=None, data_frequency='minute'):
         """
@@ -412,12 +327,15 @@ class Exchange:
         if field not in BASE_FIELDS:
             raise KeyError('Invalid column: {}'.format(field))
 
-        values = []
-        for asset in assets:
-            value = self.get_single_spot_value(asset, field, data_frequency)
-            values.append(value)
+        tickers = self.tickers(assets)
+        if field == 'close' or field == 'price':
+            return [tickers[asset]['last'] for asset in tickers]
 
-        return values
+        elif field == 'volume':
+            return [tickers[asset]['volume'] for asset in tickers]
+
+        else:
+            raise NoValueForField(field=field)
 
     def get_single_spot_value(self, asset, field, data_frequency):
         """
@@ -491,7 +409,7 @@ class Exchange:
             method='ffill',
             fill_value=previous_value,
         )
-
+        series.sort_index(inplace=True)
         return series
 
     def get_history_window(self,
@@ -501,7 +419,7 @@ class Exchange:
                            frequency,
                            field,
                            data_frequency=None,
-                           ffill=True):
+                           is_current=False):
 
         """
         Public API method that returns a dataframe containing the requested
@@ -528,10 +446,15 @@ class Exchange:
             The frequency of the data to query; i.e. whether the data is
             'daily' or 'minute' bars.
 
-        # TODO: fill how?
-        ffill: boolean
-            Forward-fill missing values. Only has effect if field
-            is 'price'.
+        is_current: bool
+            Skip date filters when current data is requested (last few bars
+            until now).
+
+        Notes
+        -----
+        Catalysts requires an end data with bar count both CCXT wants a
+        start data with bar count. Since we have to make calculations here,
+        we ensure that the last candle match the end_dt parameter.
 
         Returns
         -------
@@ -543,6 +466,7 @@ class Exchange:
             frequency, data_frequency
         )
         adj_bar_count = candle_size * bar_count
+
         start_dt = get_start_dt(end_dt, adj_bar_count, data_frequency)
 
         # The get_history method supports multiple asset
@@ -550,8 +474,8 @@ class Exchange:
             freq=freq,
             assets=assets,
             bar_count=bar_count,
-            start_dt=start_dt,
-            end_dt=end_dt
+            start_dt=start_dt if not is_current else None,
+            end_dt=end_dt if not is_current else None,
         )
 
         series = dict()
@@ -563,6 +487,17 @@ class Exchange:
                 data_frequency=frequency,
                 field=field,
             )
+            if end_dt is not None:
+                delta = get_delta(candle_size, data_frequency)
+                adj_end_dt = end_dt - delta
+                last_traded = asset_series.index[-1]
+
+                if last_traded < adj_end_dt:
+                    raise LastCandleTooEarlyError(
+                        last_traded=last_traded,
+                        end_dt=adj_end_dt,
+                        exchange=self.name,
+                    )
             series[asset] = asset_series
 
         df = pd.DataFrame(series)
@@ -620,6 +555,7 @@ class Exchange:
             frequency, data_frequency
         )
         adj_bar_count = candle_size * bar_count
+
         try:
             series = self.bundle.get_history_window_series_and_load(
                 assets=assets,
@@ -629,6 +565,7 @@ class Exchange:
                 data_frequency=data_frequency,
                 force_auto_ingest=force_auto_ingest
             )
+
         except (PricingDataNotLoadedError, NoDataAvailableOnExchange):
             series = dict()
 
@@ -682,50 +619,48 @@ class Exchange:
 
         return df
 
-    def synchronize_portfolio(self):
+    def calculate_totals(self, check_cash=False, positions=None):
         """
         Update the portfolio cash and position balances based on the
         latest ticker prices.
 
         """
         log.debug('synchronizing portfolio with exchange {}'.format(self.name))
-        balances = self.get_balances()
 
-        base_position_available = balances[self.base_currency] \
-            if self.base_currency in balances else None
+        cash = None
+        if check_cash:
+            balances = self.get_balances()
 
-        if base_position_available is None:
-            raise BaseCurrencyNotFoundError(
-                base_currency=self.base_currency,
-                exchange=self.name.title()
-            )
+            cash = balances[self.base_currency]['free'] \
+                if self.base_currency in balances else None
 
-        portfolio = self._portfolio
-        portfolio.cash = base_position_available
-        log.debug('found base currency balance: {}'.format(portfolio.cash))
+            if cash is None:
+                raise BaseCurrencyNotFoundError(
+                    base_currency=self.base_currency,
+                    exchange=self.name
+                )
+            log.debug('found base currency balance: {}'.format(cash))
 
-        if portfolio.starting_cash is None:
-            portfolio.starting_cash = portfolio.cash
-
-        if portfolio.positions:
-            assets = list(portfolio.positions.keys())
+        positions_value = 0.0
+        if positions:
+            assets = set([position.asset for position in positions])
             tickers = self.tickers(assets)
+            log.debug('got tickers for positions: {}'.format(tickers))
 
-            portfolio.positions_value = 0.0
             for asset in tickers:
-                # TODO: convert if the position is not in the base currency
                 ticker = tickers[asset]
-                position = portfolio.positions[asset]
-                position.last_sale_price = ticker['last_price']
-                position.last_sale_date = ticker['timestamp']
+                positions = [p for p in positions if p.asset == asset]
 
-                portfolio.positions_value += \
-                    position.amount * position.last_sale_price
-                portfolio.portfolio_value = \
-                    portfolio.positions_value + portfolio.cash
+                for position in positions:
+                    position.last_sale_price = ticker['last_price']
+                    position.last_sale_date = ticker['last_traded']
 
-    def order(self, asset, amount, limit_price=None, stop_price=None,
-              style=None):
+                    positions_value += \
+                        position.amount * position.last_sale_price
+
+        return cash, positions_value
+
+    def order(self, asset, amount, style):
         """Place an order.
 
         Parameters
@@ -774,45 +709,30 @@ class Exchange:
             log.warn('skipping order amount of 0')
             return None
 
-        if asset.base_currency != self.base_currency.lower():
+        if self.base_currency is None:
+            raise ValueError('no base_currency defined for this exchange')
+
+        if asset.quote_currency != self.base_currency.lower():
             raise MismatchingBaseCurrencies(
-                base_currency=asset.base_currency,
+                base_currency=asset.quote_currency,
                 algo_currency=self.base_currency
             )
 
         is_buy = (amount > 0)
+        display_price = style.get_limit_price(is_buy)
 
-        if limit_price is not None and stop_price is not None:
-            style = ExchangeStopLimitOrder(limit_price, stop_price,
-                                           exchange=self.name)
-        elif limit_price is not None:
-            style = ExchangeLimitOrder(limit_price, exchange=self.name)
-
-        elif stop_price is not None:
-            style = ExchangeStopOrder(stop_price, exchange=self.name)
-
-        elif style is not None:
-            raise InvalidOrderStyle(exchange=self.name.title(),
-                                    style=style.__class__.__name__)
-        else:
-            raise ValueError('Incomplete order data.')
-
-        display_price = limit_price if limit_price is not None else stop_price
         log.debug(
-            'issuing {side} order of {amount} {symbol} for {type}: {price}'.format(
+            'issuing {side} order of {amount} {symbol} for {type}:'
+            ' {price}'.format(
                 side='buy' if is_buy else 'sell',
                 amount=amount,
                 symbol=asset.symbol,
                 type=style.__class__.__name__,
-                price='{}{}'.format(display_price, asset.base_currency)
+                price='{}{}'.format(display_price, asset.quote_currency)
             )
         )
-        order = self.create_order(asset, amount, is_buy, style)
-        if order:
-            self._portfolio.create_order(order)
-            return order.id
-        else:
-            return None
+
+        return self.create_order(asset, amount, is_buy, style)
 
     # The methods below must be implemented for each exchange.
     @abstractmethod
@@ -875,7 +795,7 @@ class Exchange:
         pass
 
     @abstractmethod
-    def get_order(self, order_id):
+    def get_order(self, order_id, symbol_or_asset=None):
         """Lookup an order based on the order id returned from one of the
         order functions.
 
@@ -883,6 +803,8 @@ class Exchange:
         ----------
         order_id : str
             The unique identifier for the order.
+        symbol_or_asset: str|TradingPair
+            The catalyst symbol, some exchanges need this
 
         Returns
         -------
@@ -894,13 +816,15 @@ class Exchange:
         pass
 
     @abstractmethod
-    def cancel_order(self, order_param):
+    def cancel_order(self, order_param, symbol_or_asset=None):
         """Cancel an open order.
 
         Parameters
         ----------
         order_param : str or Order
             The order_id or order object to cancel.
+        symbol_or_asset: str|TradingPair
+            The catalyst symbol, some exchanges need this
         """
         pass
 

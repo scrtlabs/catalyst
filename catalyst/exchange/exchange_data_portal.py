@@ -13,7 +13,8 @@ from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     ExchangeBarDataError,
     PricingDataNotLoadedError)
-from catalyst.exchange.exchange_utils import get_frequency, resample_history_df
+from catalyst.exchange.exchange_utils import get_frequency, \
+    resample_history_df, group_assets_by_exchange
 
 log = Logger('DataPortalExchange', level=LOG_LEVEL)
 
@@ -38,13 +39,7 @@ class DataPortalExchangeBase(DataPortal):
                             ffill=True,
                             attempt_index=0):
         try:
-            exchange_assets = dict()
-            for asset in assets:
-                if asset.exchange not in exchange_assets:
-                    exchange_assets[asset.exchange] = list()
-
-                exchange_assets[asset.exchange].append(asset)
-
+            exchange_assets = group_assets_by_exchange(assets)
             if len(exchange_assets) > 1:
                 df_list = []
                 for exchange_name in exchange_assets:
@@ -242,6 +237,7 @@ class DataPortalExchangeLive(DataPortalExchangeBase):
 
         """
         exchange = self.exchanges[exchange_name]
+
         df = exchange.get_history_window(
             assets,
             end_dt,
@@ -249,7 +245,7 @@ class DataPortalExchangeLive(DataPortalExchangeBase):
             frequency,
             field,
             data_frequency,
-            ffill)
+            False)
         return df
 
     def get_exchange_spot_value(self, exchange_name, assets, field, dt,

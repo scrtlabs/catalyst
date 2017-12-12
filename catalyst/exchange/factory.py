@@ -1,38 +1,29 @@
-from catalyst.exchange.bitfinex.bitfinex import Bitfinex
-from catalyst.exchange.bittrex.bittrex import Bittrex
-from catalyst.exchange.exchange_errors import ExchangeNotFoundError
-from catalyst.exchange.exchange_utils import get_exchange_auth
-from catalyst.exchange.poloniex.poloniex import Poloniex
+import os
+
+from catalyst.exchange.ccxt.ccxt_exchange import CCXT
+from catalyst.exchange.exchange_errors import ExchangeAuthEmpty
+from catalyst.exchange.exchange_utils import get_exchange_auth, \
+    get_exchange_folder
 
 
-def get_exchange(exchange_name, base_currency=None):
+def get_exchange(exchange_name, base_currency=None, must_authenticate=False):
     exchange_auth = get_exchange_auth(exchange_name)
-    if exchange_name == 'bitfinex':
-        return Bitfinex(
-            key=exchange_auth['key'],
-            secret=exchange_auth['secret'],
-            base_currency=base_currency,
-            portfolio=None
+
+    has_auth = (exchange_auth['key'] != '' and exchange_auth['secret'] != '')
+    if must_authenticate and not has_auth:
+        raise ExchangeAuthEmpty(
+            exchange=exchange_name.title(),
+            filename=os.path.join(
+                get_exchange_folder(exchange_name), 'auth.json'
+            )
         )
 
-    elif exchange_name == 'bittrex':
-        return Bittrex(
-            key=exchange_auth['key'],
-            secret=exchange_auth['secret'],
-            base_currency=base_currency,
-            portfolio=None
-        )
-
-    elif exchange_name == 'poloniex':
-        return Poloniex(
-            key=exchange_auth['key'],
-            secret=exchange_auth['secret'],
-            base_currency=base_currency,
-            portfolio=None
-        )
-
-    else:
-        raise ExchangeNotFoundError(exchange_name=exchange_name)
+    return CCXT(
+        exchange_name=exchange_name,
+        key=exchange_auth['key'],
+        secret=exchange_auth['secret'],
+        base_currency=base_currency,
+    )
 
 
 def get_exchanges(exchange_names):

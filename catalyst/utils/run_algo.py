@@ -8,12 +8,11 @@ from time import sleep
 
 import click
 import pandas as pd
+from logbook import Logger
 
 from catalyst.data.bundles import load
 from catalyst.data.data_portal import DataPortal
-from catalyst.exchange.bittrex.bittrex import Bittrex
-from catalyst.exchange.bitfinex.bitfinex import Bitfinex
-from catalyst.exchange.poloniex.poloniex import Poloniex
+from catalyst.exchange.factory import get_exchange
 
 try:
     from pygments import highlight
@@ -32,19 +31,16 @@ from catalyst.utils.factory import create_simulation_parameters
 from catalyst.data.loader import load_crypto_market_data
 import catalyst.utils.paths as pth
 
-from catalyst.exchange.exchange_algorithm import ExchangeTradingAlgorithmLive, \
-    ExchangeTradingAlgorithmBacktest
+from catalyst.exchange.exchange_algorithm import (
+    ExchangeTradingAlgorithmLive,
+    ExchangeTradingAlgorithmBacktest,
+)
 from catalyst.exchange.exchange_data_portal import DataPortalExchangeLive, \
     DataPortalExchangeBacktest
 from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
-from catalyst.exchange.exchange_portfolio import ExchangePortfolio
 from catalyst.exchange.exchange_errors import (
-    ExchangeRequestError, ExchangeAuthEmpty,
-    ExchangeRequestErrorTooManyAttempts,
-    BaseCurrencyNotFoundError, ExchangeNotFoundError)
-from catalyst.exchange.exchange_utils import get_exchange_auth, \
-    get_algo_object, get_exchange_folder
-from logbook import Logger
+    ExchangeRequestError, ExchangeRequestErrorTooManyAttempts,
+    BaseCurrencyNotFoundError, NotEnoughCapitalError)
 
 from catalyst.constants import LOG_LEVEL
 
@@ -94,7 +90,9 @@ def _run(handle_data,
          exchange,
          algo_namespace,
          base_currency,
-         live_graph):
+         live_graph,
+         simulate_orders,
+         stats_output):
     """Run a backtest for the given algorithm.
 
     This is shared between the cli and :func:`catalyst.run_algo`.
@@ -143,7 +141,8 @@ def _run(handle_data,
         else:
             click.echo(algotext)
 
-    mode = 'live' if live else 'backtest'
+    mode = 'paper-trading' if simulate_orders else 'live-trading' \
+        if live else 'backtest'
     log.info('running algo in {mode} mode'.format(mode=mode))
 
     exchange_name = exchange
@@ -154,52 +153,11 @@ def _run(handle_data,
 
     exchanges = dict()
     for exchange_name in exchange_list:
-
-        # Looking for the portfolio from the cache first
-        portfolio = get_algo_object(
-            algo_name=algo_namespace,
-            key='portfolio_{}'.format(exchange_name),
-            environ=environ
+        exchanges[exchange_name] = get_exchange(
+            exchange_name=exchange_name,
+            base_currency=base_currency,
+            must_authenticate=(live and not simulate_orders),
         )
-
-        if portfolio is None:
-            portfolio = ExchangePortfolio(
-                start_date=pd.Timestamp.utcnow()
-            )
-
-        # This corresponds to the json file containing api token info
-        exchange_auth = get_exchange_auth(exchange_name)
-
-        if live and (exchange_auth['key'] == '' \
-                             or exchange_auth['secret'] == ''):
-            raise ExchangeAuthEmpty(
-                exchange=exchange_name.title(),
-                filename=os.path.join(
-                    get_exchange_folder(exchange_name, environ), 'auth.json'))
-
-        if exchange_name == 'bitfinex':
-            exchanges[exchange_name] = Bitfinex(
-                key=exchange_auth['key'],
-                secret=exchange_auth['secret'],
-                base_currency=base_currency,
-                portfolio=portfolio
-            )
-        elif exchange_name == 'bittrex':
-            exchanges[exchange_name] = Bittrex(
-                key=exchange_auth['key'],
-                secret=exchange_auth['secret'],
-                base_currency=base_currency,
-                portfolio=portfolio
-            )
-        elif exchange_name == 'poloniex':
-            exchanges[exchange_name] = Poloniex(
-                key=exchange_auth['key'],
-                secret=exchange_auth['secret'],
-                base_currency=base_currency,
-                portfolio=portfolio
-            )
-        else:
-            raise ExchangeNotFoundError(exchange_name=exchange_name)
 
     open_calendar = get_calendar('OPEN')
 
@@ -215,7 +173,7 @@ def _run(handle_data,
         asset_db_path=None  # We don't need an asset db, we have exchanges
     )
     env.asset_finder = AssetFinderExchange()
-    choose_loader = None  # TODO: use the DataPortal for in the algorithm class for this
+    choose_loader = None  # TODO: use the DataPortal in the algo class for this
 
     if live:
         start = pd.Timestamp.utcnow()
@@ -263,35 +221,32 @@ def _run(handle_data,
                     )
 
             if base_currency in balances:
-                base_currency_available = balances[base_currency]
+                base_currency_available = balances[base_currency]['free']
                 log.info(
                     'base currency available in the account: {} {}'.format(
                         base_currency_available, base_currency
                     )
                 )
 
-                if capital_base is not None \
-                        and capital_base < base_currency_available:
-                    log.info(
-                        'using capital base limit: {} {}'.format(
-                            capital_base, base_currency
-                        )
-                    )
-                    amount = capital_base
-                else:
-                    amount = base_currency_available
-
-                return amount
+                return base_currency_available
             else:
                 raise BaseCurrencyNotFoundError(
                     base_currency=base_currency,
                     exchange=exchange_name
                 )
 
-        combined_capital_base = 0
-        for exchange_name in exchanges:
-            exchange = exchanges[exchange_name]
-            combined_capital_base += fetch_capital_base(exchange)
+        if not simulate_orders:
+            for exchange_name in exchanges:
+                exchange = exchanges[exchange_name]
+                balance = fetch_capital_base(exchange)
+
+                if balance < capital_base:
+                    raise NotEnoughCapitalError(
+                        exchange=exchange_name,
+                        base_currency=base_currency,
+                        balance=balance,
+                        capital_base=capital_base,
+                    )
 
         sim_params = create_simulation_parameters(
             start=start,
@@ -308,7 +263,9 @@ def _run(handle_data,
             ExchangeTradingAlgorithmLive,
             exchanges=exchanges,
             algo_namespace=algo_namespace,
-            live_graph=live_graph
+            live_graph=live_graph,
+            simulate_orders=simulate_orders,
+            stats_output=stats_output,
         )
     elif exchanges:
         # Removed the existing Poloniex fork to keep things simple
@@ -470,6 +427,8 @@ def run_algorithm(initialize,
                   base_currency=None,
                   algo_namespace=None,
                   live_graph=False,
+                  simulate_orders=True,
+                  stats_output=None,
                   output=os.devnull):
     """Run a trading algorithm.
 
@@ -544,6 +503,14 @@ def run_algorithm(initialize,
         default_extension, extensions, strict_extensions, environ
     )
 
+    if capital_base is None:
+        raise ValueError(
+            'Please specify a `capital_base` parameter which is the maximum '
+            'amount of base currency available for trading. For example, '
+            'if the `capital_base` is 5ETH, the '
+            '`order_target_percent(asset, 1)` command will order 5ETH worth '
+            'of the specified asset.'
+        )
     # I'm not sure that we need this since the modified DataPortal
     # does not require extensions to be explicitly loaded.
 
@@ -591,5 +558,7 @@ def run_algorithm(initialize,
         exchange=exchange_name,
         algo_namespace=algo_namespace,
         base_currency=base_currency,
-        live_graph=live_graph
+        live_graph=live_graph,
+        simulate_orders=simulate_orders,
+        stats_output=stats_output
     )

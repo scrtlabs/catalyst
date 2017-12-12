@@ -180,4 +180,3 @@ class DataFrameLoader(PipelineLoader):
     @property
     def columns(self):
         return self._columns
-

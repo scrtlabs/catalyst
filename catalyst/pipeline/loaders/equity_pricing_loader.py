@@ -38,9 +38,11 @@ class USEquityPricingLoader(PipelineLoader):
 
     def __init__(self, bundle, data_frequency, dataset):
 
-        if data_frequency == 'daily':
-            reader = bundle.daily_bar_reader
-        elif daily_bar_reader == 'minute':
+        # TODO: This is currently broken, No Pipeline support for Catalyst
+        # if data_frequency == 'daily':
+        #    reader = bundle.daily_bar_reader
+        # elif daily_bar_reader == 'minute':
+        if data_frequency == 'minute':
             reader = bundle.minute_bar_reader
         else:
             raise ValueError(
@@ -51,7 +53,9 @@ class USEquityPricingLoader(PipelineLoader):
 
         if data_frequency == 'daily':
             all_sessions = cal.all_sessions
-        elif daily_bar_reader == 'minute':
+        # TODO: this cannot be right, but no pipeline support at the moment
+        # elif daily_bar_reader == 'minute':
+        elif data_frequency == 'minute':
             reader = bundle.minute_bar_reader
             all_sessions = cal.all_minutes
 

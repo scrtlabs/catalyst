@@ -32,7 +32,9 @@ Where things don't:
 Backtesting a Strategy
 ----------------------
 
-This algorithm is based on a simple momentum strategy. When the cryptoasset
+This is the first video of a two-part series on using Catalyst for algorithmic 
+trading. This video implements a simple momentum strategy based on 
+`mean reversion <example-algos.html#mean-reversion>`_: when the cryptoasset
 goes up quickly, we’re going to buy; when it goes down quickly, we’re going to 
 sell. Hopefully, we’ll ride the waves.
 
@@ -40,3 +42,17 @@ sell. Hopefully, we’ll ride the waves.
 
    <iframe width="560" height="315" src="https://www.youtube.com/embed/JOBRwst9jUY" frameborder="0" allowfullscreen></iframe>
 
+|
+|
+Live Trading a Strategy
+-----------------------
+
+This is the second part of the two-part series on using Catalyst for algorithmic
+trading. Having backtested `our strategy <example-algos.html#mean-reversion>`_ 
+in the previous video, we now take it to trade live against the Bittrex exchange.
+
+.. raw:: html
+
+	<iframe width="560" height="315" src="https://www.youtube.com/embed/NupiE-Xuglw" frameborder="0" allowfullscreen></iframe>
+|
+|
