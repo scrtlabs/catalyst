@@ -23,7 +23,7 @@ def handle_data(context, data):
         context.asset,
         fields='price',
         bar_count=20,
-        frequency='5T'
+        frequency='30T'
     )
     last_traded = prices.index[-1]
     print('last candle date: {}'.format(last_traded))
@@ -127,7 +127,7 @@ run_algorithm(
     initialize=initialize,
     handle_data=handle_data,
     analyze=None,
-    exchange_name='binance',
+    exchange_name='gdax',
     live=True,
     algo_namespace='simple_loop',
     base_currency='eth',

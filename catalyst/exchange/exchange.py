@@ -409,7 +409,7 @@ class Exchange:
             method='ffill',
             fill_value=previous_value,
         )
-
+        series.sort_index(inplace=True)
         return series
 
     def get_history_window(self,
@@ -419,7 +419,7 @@ class Exchange:
                            frequency,
                            field,
                            data_frequency=None,
-                           ffill=True):
+                           is_current=False):
 
         """
         Public API method that returns a dataframe containing the requested
@@ -446,10 +446,9 @@ class Exchange:
             The frequency of the data to query; i.e. whether the data is
             'daily' or 'minute' bars.
 
-        # TODO: fill how?
-        ffill: boolean
-            Forward-fill missing values. Only has effect if field
-            is 'price'.
+        is_current: bool
+            Skip date filters when current data is requested (last few bars
+            until now).
 
         Notes
         -----
@@ -475,24 +474,12 @@ class Exchange:
             freq=freq,
             assets=assets,
             bar_count=bar_count,
-            start_dt=start_dt,
-            end_dt=end_dt,
+            start_dt=start_dt if not is_current else None,
+            end_dt=end_dt if not is_current else None,
         )
 
         series = dict()
         for asset in candles:
-            if end_dt is not None and candles[asset]:
-                delta = get_delta(candle_size, data_frequency)
-                adj_end_dt = end_dt - delta
-                last_candle = candles[asset][-1]
-
-                if last_candle['last_traded'] < adj_end_dt:
-                    raise LastCandleTooEarlyError(
-                        last_traded=last_candle['last_traded'],
-                        end_dt=adj_end_dt,
-                        exchange=self.name,
-                    )
-
             asset_series = self.get_series_from_candles(
                 candles=candles[asset],
                 start_dt=start_dt,
@@ -500,6 +487,17 @@ class Exchange:
                 data_frequency=frequency,
                 field=field,
             )
+            if end_dt is not None:
+                delta = get_delta(candle_size, data_frequency)
+                adj_end_dt = end_dt - delta
+                last_traded = asset_series.index[-1]
+
+                if last_traded < adj_end_dt:
+                    raise LastCandleTooEarlyError(
+                        last_traded=last_traded,
+                        end_dt=adj_end_dt,
+                        exchange=self.name,
+                    )
             series[asset] = asset_series
 
         df = pd.DataFrame(series)
