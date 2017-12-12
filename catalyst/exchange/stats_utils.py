@@ -338,11 +338,13 @@ def stats_to_s3(uri, stats, algo_namespace, recorded_cols=None,
     if bytes_to_write is None:
         bytes_to_write = get_csv_stats(stats, recorded_cols=recorded_cols)
 
-    timestr = time.strftime('%Y%m%d')
+    now = pd.Timestamp.utcnow()
+    timestr = now.strftime('%Y%m%d')
+    pid = os.getpid()
 
     parts = uri.split('//')
-    obj = s3.Object(parts[1], '{}/{}-{}.csv'.format(
-        folder, timestr, algo_namespace
+    obj = s3.Object(parts[1], '{}/{}-{}-{}.csv'.format(
+        folder, timestr, algo_namespace, pid
     ))
     obj.put(Body=bytes_to_write)
 
