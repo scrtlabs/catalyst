@@ -498,12 +498,17 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                 exchange_positions = \
                     [positions[asset] for asset in assets]
 
-                exchange = self.exchanges[exchange_name]  # Type: Exchange
-                cash, positions_value = \
-                    exchange.calculate_totals(exchange_positions)
+                check_cash = (not self.simulate_orders)
 
-                total_cash += cash
+                exchange = self.exchanges[exchange_name]  # Type: Exchange
+                cash, positions_value = exchange.calculate_totals(
+                    positions=exchange_positions,
+                    check_cash=check_cash,
+                )
                 total_positions_value += positions_value
+
+                if cash is not None:
+                    total_cash += cash
 
                 for position in exchange_positions:
                     tracker.update_position(
@@ -512,7 +517,10 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                         last_sale_price=position.last_sale_price
                     )
 
-            if total_cash < self.portfolio.cash:
+            if cash is None:
+                total_cash = self.portfolio.cash
+
+            elif total_cash < self.portfolio.cash:
                 raise ValueError('Cash on exchanges is lower than the algo.')
 
             return total_cash, total_positions_value

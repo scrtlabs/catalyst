@@ -15,7 +15,7 @@ from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
     PricingDataNotLoadedError, \
-    NoDataAvailableOnExchange, NoValueForField
+    NoDataAvailableOnExchange, NoValueForField, LastCandleTooEarlyError
 from catalyst.exchange.exchange_utils import get_exchange_symbols, \
     get_frequency, resample_history_df
 
@@ -176,10 +176,18 @@ class Exchange:
 
         assets = []
         for symbol in symbols:
-            asset = self.get_asset(
-                symbol, data_frequency, is_exchange_symbol, is_local
-            )
-            assets.append(asset)
+            try:
+                asset = self.get_asset(
+                    symbol, data_frequency, is_exchange_symbol, is_local
+                )
+                assets.append(asset)
+
+            except SymbolNotFoundOnExchange:
+                log.debug(
+                    'skipping non-existent market {} {}'.format(
+                        self.name, symbol
+                    )
+                )
         return assets
 
     def get_asset(self, symbol, data_frequency=None, is_exchange_symbol=False,
@@ -227,8 +235,10 @@ class Exchange:
 
             elif data_frequency is not None:
                 applies = (
-                    (data_frequency == 'minute' and a.end_minute is not None)
-                    or (data_frequency == 'daily' and a.end_daily is not None)
+                        (
+                                data_frequency == 'minute' and a.end_minute is not None)
+                        or (
+                                data_frequency == 'daily' and a.end_daily is not None)
                 )
 
             else:
@@ -441,6 +451,12 @@ class Exchange:
             Forward-fill missing values. Only has effect if field
             is 'price'.
 
+        Notes
+        -----
+        Catalysts requires an end data with bar count both CCXT wants a
+        start data with bar count. Since we have to make calculations here,
+        we ensure that the last candle match the end_dt parameter.
+
         Returns
         -------
         DataFrame
@@ -451,6 +467,7 @@ class Exchange:
             frequency, data_frequency
         )
         adj_bar_count = candle_size * bar_count
+
         start_dt = get_start_dt(end_dt, adj_bar_count, data_frequency)
 
         # The get_history method supports multiple asset
@@ -459,11 +476,23 @@ class Exchange:
             assets=assets,
             bar_count=bar_count,
             start_dt=start_dt,
-            end_dt=end_dt
+            end_dt=end_dt,
         )
 
         series = dict()
         for asset in candles:
+            if end_dt is not None and candles[asset]:
+                delta = get_delta(candle_size, data_frequency)
+                adj_end_dt = end_dt - delta
+                last_candle = candles[asset][-1]
+
+                if last_candle['last_traded'] < adj_end_dt:
+                    raise LastCandleTooEarlyError(
+                        last_traded=last_candle['last_traded'],
+                        end_dt=adj_end_dt,
+                        exchange=self.name,
+                    )
+
             asset_series = self.get_series_from_candles(
                 candles=candles[asset],
                 start_dt=start_dt,
@@ -528,6 +557,7 @@ class Exchange:
             frequency, data_frequency
         )
         adj_bar_count = candle_size * bar_count
+
         try:
             series = self.bundle.get_history_window_series_and_load(
                 assets=assets,
@@ -537,6 +567,7 @@ class Exchange:
                 data_frequency=data_frequency,
                 force_auto_ingest=force_auto_ingest
             )
+
         except (PricingDataNotLoadedError, NoDataAvailableOnExchange):
             series = dict()
 
@@ -548,7 +579,7 @@ class Exchange:
                 start_dt = get_start_dt(end_dt, adj_bar_count, data_frequency)
                 trailing_dt = \
                     series[asset].index[-1] + get_delta(1, data_frequency) \
-                    if asset in series else start_dt
+                        if asset in series else start_dt
 
                 # The get_history method supports multiple asset
                 # Use the original frequency to let each api optimize
@@ -590,24 +621,27 @@ class Exchange:
 
         return df
 
-    def calculate_totals(self, positions=None):
+    def calculate_totals(self, check_cash=False, positions=None):
         """
         Update the portfolio cash and position balances based on the
         latest ticker prices.
 
         """
         log.debug('synchronizing portfolio with exchange {}'.format(self.name))
-        balances = self.get_balances()
 
-        cash = balances[self.base_currency]['free'] \
-            if self.base_currency in balances else None
+        cash = None
+        if check_cash:
+            balances = self.get_balances()
 
-        if cash is None:
-            raise BaseCurrencyNotFoundError(
-                base_currency=self.base_currency,
-                exchange=self.name
-            )
-        log.debug('found base currency balance: {}'.format(cash))
+            cash = balances[self.base_currency]['free'] \
+                if self.base_currency in balances else None
+
+            if cash is None:
+                raise BaseCurrencyNotFoundError(
+                    base_currency=self.base_currency,
+                    exchange=self.name
+                )
+            log.debug('found base currency balance: {}'.format(cash))
 
         positions_value = 0.0
         if positions:

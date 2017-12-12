@@ -237,6 +237,7 @@ class DataPortalExchangeLive(DataPortalExchangeBase):
 
         """
         exchange = self.exchanges[exchange_name]
+
         df = exchange.get_history_window(
             assets,
             end_dt,

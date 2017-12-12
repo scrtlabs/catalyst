@@ -9,7 +9,7 @@ from catalyst.exchange.stats_utils import get_pretty_stats, \
 
 def initialize(context):
     print('initializing')
-    context.asset = symbol('neo_eth')
+    context.asset = symbol('eth_btc')
     context.base_price = None
 
 
@@ -23,8 +23,11 @@ def handle_data(context, data):
         context.asset,
         fields='price',
         bar_count=20,
-        frequency='15T'
+        frequency='5T'
     )
+    last_traded = prices.index[-1]
+    print('last candle date: {}'.format(last_traded))
+
     rsi = talib.RSI(prices.values, timeperiod=14)[-1]
     print('got rsi: {}'.format(rsi))
 
@@ -107,25 +110,27 @@ def analyze(context, perf):
     pass
 
 
-run_algorithm(
-    capital_base=250,
-    start=pd.to_datetime('2017-11-9 0:00', utc=True),
-    end=pd.to_datetime('2017-11-10 23:59', utc=True),
-    data_frequency='minute',
-    initialize=initialize,
-    handle_data=handle_data,
-    analyze=analyze,
-    exchange_name='bitfinex',
-    algo_namespace='simple_loop',
-    base_currency='usd'
-)
 # run_algorithm(
+#     capital_base=250,
+#     start=pd.to_datetime('2017-11-9 0:00', utc=True),
+#     end=pd.to_datetime('2017-11-10 23:59', utc=True),
+#     data_frequency='minute',
 #     initialize=initialize,
 #     handle_data=handle_data,
-#     analyze=None,
-#     exchange_name='binance',
-#     live=True,
+#     analyze=analyze,
+#     exchange_name='bitfinex',
 #     algo_namespace='simple_loop',
-#     base_currency='eth',
-#     live_graph=False,
+#     base_currency='usd'
 # )
+run_algorithm(
+    capital_base=1,
+    initialize=initialize,
+    handle_data=handle_data,
+    analyze=None,
+    exchange_name='binance',
+    live=True,
+    algo_namespace='simple_loop',
+    base_currency='eth',
+    live_graph=False,
+    simulate_orders=True
+)

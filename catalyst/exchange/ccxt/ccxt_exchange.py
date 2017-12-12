@@ -4,12 +4,12 @@ from collections import defaultdict
 import ccxt
 import pandas as pd
 import six
-from catalyst.assets._assets import TradingPair
 from ccxt import ExchangeNotAvailable, InvalidOrder
 from logbook import Logger
 from six import string_types
 
 from catalyst.algorithm import MarketOrder
+from catalyst.assets._assets import TradingPair
 from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.exchange_bundle import ExchangeBundle
@@ -58,8 +58,12 @@ class CCXT(Exchange):
 
         self._symbol_maps = [None, None]
 
-        markets_symbols = self.api.load_markets()
-        log.debug('the markets:\n{}'.format(markets_symbols))
+        try:
+            markets_symbols = self.api.load_markets()
+            log.debug('the markets:\n{}'.format(markets_symbols))
+
+        except ExchangeNotAvailable as e:
+            raise ExchangeRequestError(error=e)
 
         self.name = exchange_name
 
@@ -185,10 +189,12 @@ class CCXT(Exchange):
             assets = [assets]
 
         symbols = self.get_symbols(assets)
-
         timeframe = self.get_timeframe(freq)
-        delta = start_dt - get_epoch()
-        ms = int(delta.total_seconds()) * 1000
+
+        ms = None
+        if start_dt is not None:
+            delta = start_dt - get_epoch()
+            ms = int(delta.total_seconds()) * 1000
 
         candles = dict()
         for asset in assets:

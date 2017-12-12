@@ -263,3 +263,9 @@ class NotEnoughCapitalError(ZiplineError):
         'exchange should contain at least as much {base_currency} '
         'as the specified `capital_base`. The current balance {balance} is '
         'lower than the `capital_base`: {capital_base}').strip()
+
+class LastCandleTooEarlyError(ZiplineError):
+    msg = (
+        'The trade date of the last candle {last_traded} is before the '
+        'specified end date minus one candle {end_dt}. Please verify how '
+        '{exchange} calculates the start date of OHLCV candles.').strip()

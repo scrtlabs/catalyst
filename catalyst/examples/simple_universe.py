@@ -163,7 +163,7 @@ if __name__ == '__main__':
                                 initialize=initialize,
                                 handle_data=handle_data,
                                 analyze=analyze,
-                                exchange_name='bitfinex',
+                                exchange_name='poloniex',
                                 data_frequency='minute',
                                 base_currency='btc',
                                 live=False,

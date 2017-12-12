@@ -155,7 +155,7 @@ def _run(handle_data,
         exchanges[exchange_name] = get_exchange(
             exchange_name=exchange_name,
             base_currency=base_currency,
-            must_authenticate=live,
+            must_authenticate=(live and not simulate_orders),
         )
 
     open_calendar = get_calendar('OPEN')
