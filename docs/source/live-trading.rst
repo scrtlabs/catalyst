@@ -106,6 +106,10 @@ What differs are the arguments provided to the catalyst client or
 Here is the breakdown of the new arguments:
 
 - ``live``: Boolean flag which enables live trading.
+- ``capital_base``: The amount of base_currency assigned to the strategy.
+  It has to be lower or equal to the amount of base currency available for
+  trading on the exchange. For illustration, order_target_percent(asset, 1)
+  will order the capital_base amount specified here of the specified asset.
 - ``exchange_name``: The name of the targeted exchange
   (supported values: *bitfinex*, *bittrex*).
 - ``algo_namespace``: A arbitrary label assigned to your algorithm for
@@ -113,6 +117,8 @@ Here is the breakdown of the new arguments:
 - ``base_currency``: The base currency used to calculate the
   statistics of your algorithm. Currently, the base currency of all
   trading pairs of your algorithm must match this value.
+- ``simulate_orders``: Enables the paper trading mode, in which orders are
+  simulated in Catalyst instead of processed on the exchange.
 
 Here is a complete algorithm for reference:
 `Buy Low and Sell High <https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/buy_low_sell_high_live.py>`_
