@@ -3,6 +3,7 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 from datetime import timedelta
 from time import sleep
 
+import ccxt
 import numpy as np
 import pandas as pd
 from logbook import Logger
@@ -247,8 +248,16 @@ class Exchange:
             # The symbol provided may use the Catalyst or the exchange
             # convention
             key = a.exchange_symbol if is_exchange_symbol else a.symbol
-            if not asset and key.lower() == symbol.lower() and applies:
-                asset = a
+            if not asset and key.lower() == symbol.lower():
+                if applies:
+                    asset = a
+
+                else:
+                    raise NoDataAvailableOnExchange(
+                        symbol=key,
+                        exchange=self.name,
+                        data_frequency=data_frequency,
+                    )
 
         if asset is None:
             supported_symbols = sorted([a.symbol for a in self.assets])

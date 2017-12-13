@@ -1,7 +1,9 @@
+import json
 import re
 from collections import defaultdict
 
 import ccxt
+import os
 import pandas as pd
 import six
 from ccxt import ExchangeNotAvailable, InvalidOrder
@@ -18,7 +20,7 @@ from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
     ExchangeNotFoundError, CreateOrderError
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.exchange_utils import mixin_market_params, \
-    from_ms_timestamp, get_epoch
+    from_ms_timestamp, get_epoch, get_exchange_folder
 from catalyst.finance.order import Order, ORDER_STATUS
 
 log = Logger('CCXT', level=LOG_LEVEL)
@@ -58,17 +60,7 @@ class CCXT(Exchange):
 
         self._symbol_maps = [None, None]
 
-        try:
-            markets_symbols = self.api.load_markets()
-            log.debug('the markets:\n{}'.format(markets_symbols))
-
-        except ExchangeNotAvailable as e:
-            raise ExchangeRequestError(error=e)
-
         self.name = exchange_name
-
-        self.markets = self.api.fetch_markets()
-        self.load_assets()
 
         self.base_currency = base_currency
         self.transactions = defaultdict(list)
@@ -78,6 +70,72 @@ class CCXT(Exchange):
         self.request_cpt = dict()
 
         self.bundle = ExchangeBundle(self.name)
+        self.markets = None
+
+    def init(self):
+        exchange_folder = get_exchange_folder(self.name)
+        filename = os.path.join(exchange_folder, 'cctx_markets.json')
+
+        if os.path.exists(filename):
+            timestamp = os.path.getmtime(filename)
+            dt = pd.to_datetime(timestamp, unit='s', utc=True)
+
+            if dt >= pd.Timestamp.utcnow().floor('1D'):
+                with open(filename) as f:
+                    self.markets = json.load(f)
+
+                log.debug('loaded markets for {}'.format(self.name))
+
+        if self.markets is None:
+            try:
+                markets_symbols = self.api.load_markets()
+                log.debug(
+                    'fetching {} markets:\n{}'.format(
+                        self.name, markets_symbols
+                    )
+                )
+
+                self.markets = self.api.fetch_markets()
+                with open(filename, 'w+') as f:
+                    json.dump(self.markets, f)
+
+            except ExchangeNotAvailable as e:
+                raise ExchangeRequestError(error=e)
+
+        self.load_assets()
+
+    @staticmethod
+    def find_exchanges(features=None):
+        exchange_names = []
+        for exchange_name in ccxt.exchanges:
+            log.debug('loading exchange: {}'.format(exchange_name))
+            exchange = getattr(ccxt, exchange_name)()
+
+            if features is None:
+                has_feature = True
+
+            else:
+                try:
+                    has_feature = all(
+                        [exchange.has[feature] for feature in features]
+                    )
+
+                except Exception:
+                    has_feature = False
+
+            if has_feature:
+                try:
+                    log.info('initializing {}'.format(exchange_name))
+                    exchange_names.append(exchange_name)
+
+                except Exception as e:
+                    log.warn(
+                        'unable to initialize exchange {}: {}'.format(
+                            exchange_name, e
+                        )
+                    )
+
+        return exchange_names
 
     def account(self):
         return None
@@ -346,6 +404,7 @@ class CCXT(Exchange):
         return TradingPair(**params)
 
     def load_assets(self):
+        log.debug('loading assets for {}'.format(self.name))
         self.assets = []
 
         for market in self.markets:
