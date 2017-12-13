@@ -410,7 +410,12 @@ class CCXT(Exchange):
             status = ORDER_STATUS.OPEN
 
         else:
-            raise ValueError('invalid state for order')
+            log.warn(
+                'invalid state {} for order {}'.format(
+                    order_status['status'], order_status['id']
+                )
+            )
+            status = ORDER_STATUS.OPEN
 
         amount = order_status['amount']
         filled = order_status['filled']
