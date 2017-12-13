@@ -66,7 +66,7 @@ Assert:
 
 
 Algo Stats
-~~~~~~~~~~
+----------
 Sample:
     - 2 sample algorithms with built-in stats calculator
     - 2 KPIs both calculated by each algo and by Catalyst
@@ -77,7 +77,7 @@ Assert:
     - Matching stats
 
 CSV Ingestion
-~~~~~~~~~~~~~
+-------------
 Sample:
     3 random CSV files containing price data
 Test:
