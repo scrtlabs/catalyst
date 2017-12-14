@@ -32,7 +32,7 @@ Test:
     Fetch historical data for each market using the selected frequency
 Assert:
     - No error and not blank
-    - Date of each candle is consistent with the Catalyst desired pattern:
+    - Date of each candle is consistent with the Catalyst desired pattern,
         - All candle start at fix intervals
         - Last candle partial and forward looking from the end date
 

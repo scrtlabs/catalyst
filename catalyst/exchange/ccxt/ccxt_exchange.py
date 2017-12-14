@@ -71,8 +71,12 @@ class CCXT(Exchange):
 
         self.bundle = ExchangeBundle(self.name)
         self.markets = None
+        self._is_init = False
 
     def init(self):
+        if self._is_init:
+            return
+
         exchange_folder = get_exchange_folder(self.name)
         filename = os.path.join(exchange_folder, 'cctx_markets.json')
 
@@ -97,12 +101,13 @@ class CCXT(Exchange):
 
                 self.markets = self.api.fetch_markets()
                 with open(filename, 'w+') as f:
-                    json.dump(self.markets, f)
+                    json.dump(self.markets, f, indent=4)
 
             except ExchangeNotAvailable as e:
                 raise ExchangeRequestError(error=e)
 
         self.load_assets()
+        self._is_init = True
 
     @staticmethod
     def find_exchanges(features=None):
@@ -408,6 +413,10 @@ class CCXT(Exchange):
         self.assets = []
 
         for market in self.markets:
+            if 'id' not in market:
+                log.warn('invalid market: {}'.format(market))
+                continue
+
             asset_defs = self.get_asset_defs(market)
 
             asset = None
