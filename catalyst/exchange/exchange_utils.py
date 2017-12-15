@@ -62,6 +62,13 @@ def get_exchange_folder(exchange_name, environ=None):
     return exchange_folder
 
 
+def is_blacklist(exchange_name, environ=None):
+    exchange_folder = get_exchange_folder(exchange_name, environ)
+    filename = os.path.join(exchange_folder, 'blacklist.txt')
+
+    return os.path.exists(filename)
+
+
 def get_exchange_symbols_filename(exchange_name, is_local=False, environ=None):
     """
     The absolute path of the exchange's symbol.json file.
@@ -133,8 +140,8 @@ def get_exchange_symbols(exchange_name, is_local=False, environ=None):
     filename = get_exchange_symbols_filename(exchange_name, is_local)
 
     if not is_local and (not os.path.isfile(filename) or pd.Timedelta(
-                pd.Timestamp('now', tz='UTC') - last_modified_time(
-                    filename)).days > 1):
+            pd.Timestamp('now', tz='UTC') - last_modified_time(
+                filename)).days > 1):
         download_exchange_symbols(exchange_name, environ)
 
     if os.path.isfile(filename):
@@ -646,3 +653,25 @@ def group_assets_by_exchange(assets):
         exchange_assets[asset.exchange].append(asset)
 
     return exchange_assets
+
+def get_catalyst_symbol(market_or_symbol):
+    """
+    The Catalyst symbol.
+
+    Parameters
+    ----------
+    market_or_symbol
+
+    Returns
+    -------
+
+    """
+    if isinstance(market_or_symbol, string_types):
+        parts = market_or_symbol.split('/')
+        return '{}_{}'.format(parts[0].lower(), parts[1].lower())
+
+    else:
+        return '{}_{}'.format(
+            market_or_symbol['base'].lower(),
+            market_or_symbol['quote'].lower(),
+        )

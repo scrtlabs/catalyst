@@ -8,7 +8,7 @@ from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.ccxt.ccxt_exchange import CCXT
 from catalyst.exchange.exchange_errors import ExchangeAuthEmpty
 from catalyst.exchange.exchange_utils import get_exchange_auth, \
-    get_exchange_folder
+    get_exchange_folder, is_blacklist
 
 log = Logger('factory', level=LOG_LEVEL)
 
@@ -47,7 +47,7 @@ def get_exchanges(exchange_names):
     return exchanges
 
 
-def find_exchanges(features=None):
+def find_exchanges(features=None, skip_blacklist=True):
     """
     Find exchanges filtered by a list of feature.
 
@@ -65,6 +65,9 @@ def find_exchanges(features=None):
 
     exchanges = []
     for exchange_name in exchange_names:
+        if skip_blacklist and is_blacklist(exchange_name):
+            continue
+
         exchanges.append(get_exchange(exchange_name, skip_init=True))
 
     return exchanges

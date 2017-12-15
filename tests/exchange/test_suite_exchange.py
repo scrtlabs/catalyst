@@ -30,24 +30,17 @@ def handle_exchange_error(exchange, e):
         is_blacklist = True
 
     if is_blacklist:
-        root = data_root()
-        filename = os.path.join(root, 'exchanges', 'blacklist.json')
+        try:
+            message = '{}: {}'.format(
+                e.__class__, e.message.decode('ascii', 'ignore')
+            )
+        except Exception:
+            message = 'unexpected error'
 
-        if os.path.isfile(filename):
-            with open(filename) as handle:
-                try:
-                    bl_data = json.load(handle)
-
-                except ValueError:
-                    bl_data = dict()
-
-        else:
-            bl_data = dict()
-
-        if exchange.name not in bl_data:
-            bl_data[exchange.name] = '{}: {}'.format(e.__class__, e.message)
-            with open(filename, 'wt') as handle:
-                json.dump(bl_data, handle, indent=4)
+        folder = get_exchange_folder(exchange.name)
+        filename = os.path.join(folder, 'blacklist.txt')
+        with open(filename, 'wt') as handle:
+            handle.write(message)
 
 
 def select_random_exchanges(population=3, features=None):
@@ -62,8 +55,7 @@ def select_random_exchanges(population=3, features=None):
     return exchanges
 
 
-def select_random_assets(exchange, population=3):
-    all_assets = exchange.assets
+def select_random_assets(all_assets, population=3):
     assets = random.sample(all_assets, population)
     return assets
 
@@ -93,6 +85,11 @@ class TestSuiteExchange(unittest.TestCase):
                 handle_exchange_error(exchange, e)
 
             else:
+                print(
+                    're-trying an exchange request {} {}'.format(
+                        exchange.name, attempts
+                    )
+                )
                 self._test_markets_exchange(exchange, attempts + 1)
 
         except Exception as e:
@@ -101,17 +98,18 @@ class TestSuiteExchange(unittest.TestCase):
         return assets
 
     def test_markets(self):
-        population = None
+        population = 3
         results = dict()
 
         exchanges = select_random_exchanges(population)  # Type: list[Exchange]
         for exchange in exchanges:
             assets = self._test_markets_exchange(exchange)
+
             if assets is not None:
                 results[exchange.name] = len(assets)
 
                 folder = get_exchange_folder(exchange.name)
-                filename = os.path.join(folder, 'supported_assets.json')
+                filename = os.path.join(folder, 'whitelist.json')
 
                 symbols = [asset.symbol for asset in assets]
                 with open(filename, 'wt') as handle:
@@ -125,13 +123,29 @@ class TestSuiteExchange(unittest.TestCase):
 
         pass
 
-    def test_ticker(self):
-        exchanges = select_random_exchanges(3)  # Type: list[Exchange]
+    def test_tickers(self):
+        exchange_population = 3
+        asset_population = 3
+
+        exchanges = select_random_exchanges(
+            exchange_population
+        )  # Type: list[Exchange]
         for exchange in exchanges:
             exchange.init()
 
-            assets = select_random_assets(exchange, 3)
-            exchange.tickers()
+            if exchange.assets and len(exchange.assets) >= asset_population:
+                assets = select_random_assets(
+                    exchange.assets, asset_population
+                )
+                tickers = exchange.tickers(assets)
+
+                assert len(tickers) == asset_population
+
+            else:
+                print(
+                    'skipping exchange without assets {}'.format(exchange.name)
+                )
+                exchange_population -= 1
         pass
 
     def test_candles(self):

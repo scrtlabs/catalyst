@@ -29,7 +29,7 @@ from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
     NoDataAvailableOnExchange, \
     PricingDataNotLoadedError, DataCorruptionError, PricingDataValueError
 from catalyst.exchange.exchange_utils import get_exchange_folder, \
-    save_exchange_symbols, mixin_market_params
+    save_exchange_symbols, mixin_market_params, get_catalyst_symbol
 from catalyst.utils.cli import maybe_show_progress
 from catalyst.utils.paths import ensure_directory
 
@@ -730,7 +730,7 @@ class ExchangeBundle:
                     if data_frequency == 'minute' else asset_def['end_minute']
 
             else:
-                params['symbol'] = self.exchange.get_catalyst_symbol(market)
+                params['symbol'] = get_catalyst_symbol(market)
 
                 params['end_daily'] = end_dt \
                     if data_frequency == 'daily' else 'N/A'

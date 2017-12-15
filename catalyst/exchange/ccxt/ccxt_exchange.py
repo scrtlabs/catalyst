@@ -20,7 +20,7 @@ from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
     ExchangeNotFoundError, CreateOrderError
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.exchange_utils import mixin_market_params, \
-    from_ms_timestamp, get_epoch, get_exchange_folder
+    from_ms_timestamp, get_epoch, get_exchange_folder, get_catalyst_symbol
 from catalyst.finance.order import Order, ORDER_STATUS
 
 log = Logger('CCXT', level=LOG_LEVEL)
@@ -187,28 +187,6 @@ class CCXT(Exchange):
 
         parts = symbol.split('_')
         return '{}/{}'.format(parts[0].upper(), parts[1].upper())
-
-    def get_catalyst_symbol(self, market_or_symbol):
-        """
-        The Catalyst symbol.
-
-        Parameters
-        ----------
-        market_or_symbol
-
-        Returns
-        -------
-
-        """
-        if isinstance(market_or_symbol, string_types):
-            parts = market_or_symbol.split('/')
-            return '{}_{}'.format(parts[0].lower(), parts[1].lower())
-
-        else:
-            return '{}_{}'.format(
-                market_or_symbol['base'].lower(),
-                market_or_symbol['quote'].lower(),
-            )
 
     def get_timeframe(self, freq):
         """
@@ -402,7 +380,7 @@ class CCXT(Exchange):
                    and asset_def['end_minute'] != 'N/A' else None
 
         else:
-            params['symbol'] = self.get_catalyst_symbol(market)
+            params['symbol'] = get_catalyst_symbol(market)
             # TODO: add as an optional column
             params['leverage'] = 1.0
 
@@ -656,30 +634,46 @@ class CCXT(Exchange):
 
         """
         tickers = dict()
-        for asset in assets:
-            try:
-                ccxt_symbol = self.get_symbol(asset)
-                ticker = self.api.fetch_ticker(ccxt_symbol)
+        try:
+            symbols = [self.get_symbol(asset) for asset in assets]
+            ccxt_tickers = self.api.fetch_tickers(symbols)
 
+            for asset in assets:
+                symbol = self.get_symbol(asset)
+                if symbol not in ccxt_tickers:
+                    log.warn('ticker not found for {} {}'.format(
+                        self.name, symbol
+                    ))
+                    continue
+
+                ticker = ccxt_tickers[symbol]
                 ticker['last_traded'] = from_ms_timestamp(ticker['timestamp'])
 
                 if 'last_price' not in ticker:
                     # TODO: any more exceptions?
                     ticker['last_price'] = ticker['last']
 
-                # Using the volume represented in the base currency
-                ticker['volume'] = ticker['baseVolume'] \
-                    if 'baseVolume' in ticker else 0
+                if 'baseVolume' in ticker and ticker['baseVolume'] is not None:
+                    # Using the volume represented in the base currency
+                    ticker['volume'] = ticker['baseVolume']
+
+                elif 'info' in ticker and 'bidQty' in ticker['info'] \
+                        and 'askQty' in ticker['info']:
+                    ticker['volume'] = float(ticker['info']['bidQty']) + \
+                                       float(ticker['info']['askQty'])
+
+                else:
+                    ticker['volume'] = 0
 
                 tickers[asset] = ticker
 
-            except ExchangeNotAvailable as e:
-                log.warn(
-                    'unable to fetch ticker: {} {}'.format(
-                        self.name, asset.symbol
-                    )
+        except ExchangeNotAvailable as e:
+            log.warn(
+                'unable to fetch ticker: {} {}'.format(
+                    self.name, asset.symbol
                 )
-                raise ExchangeRequestError(error=e)
+            )
+            raise ExchangeRequestError(error=e)
 
         return tickers
 
