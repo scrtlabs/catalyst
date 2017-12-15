@@ -17,7 +17,7 @@ from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
     ExchangeSymbolsNotFound, ExchangeRequestError, InvalidOrderStyle, \
-    ExchangeNotFoundError, CreateOrderError
+    ExchangeNotFoundError, CreateOrderError, InvalidHistoryTimeframeError
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.exchange_utils import mixin_market_params, \
     from_ms_timestamp, get_epoch, get_exchange_folder, get_catalyst_symbol
@@ -148,6 +148,23 @@ class CCXT(Exchange):
     def time_skew(self):
         return None
 
+    def get_candle_frequencies(self):
+        frequencies = []
+        try:
+            for timeframe in self.api.timeframes:
+                frequencies.append(
+                    CCXT.get_frequency(timeframe, raise_error=False)
+                )
+
+        except Exception:
+            log.warn(
+                'candle frequencies not available for exchange {}'.format(
+                    self.name
+                )
+            )
+
+        return frequencies
+
     def get_market(self, symbol):
         """
         The CCXT market.
@@ -188,7 +205,8 @@ class CCXT(Exchange):
         parts = symbol.split('_')
         return '{}/{}'.format(parts[0].upper(), parts[1].upper())
 
-    def get_timeframe(self, freq):
+    @staticmethod
+    def get_timeframe(freq, raise_error=True):
         """
         The CCXT timeframe from the Catalyst frequency.
 
@@ -221,7 +239,55 @@ class CCXT(Exchange):
         elif unit.lower() == 'h' or unit == 'T':
             timeframe = '{}h'.format(candle_size)
 
+        elif raise_error:
+            raise InvalidHistoryFrequencyError(frequency=freq)
+
         return timeframe
+
+    @staticmethod
+    def get_frequency(timeframe, raise_error=True):
+        """
+        Test Catalyst frequency from the CCXT timeframe
+
+        Catalyst uses the Pandas offset alias convention:
+        http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
+
+        Parameters
+        ----------
+        timeframe
+
+        Returns
+        -------
+
+        """
+        timeframe_match = re.match(
+            r'([0-9].*)?(m|M|d|h|w|y)', timeframe, re.M | re.I
+        )
+        if timeframe_match:
+            candle_size = int(timeframe_match.group(1)) \
+                if timeframe_match.group(1) else 1
+
+            unit = timeframe_match.group(2)
+
+        else:
+            raise InvalidHistoryTimeframeError(timeframe=timeframe)
+
+        if unit.lower() == 'd':
+            freq = '{}D'.format(candle_size)
+
+        elif unit.lower() == 'm':
+            freq = '{}T'.format(candle_size)
+
+        elif unit.lower() == 'h':
+            freq = '{}H'.format(candle_size)
+
+        elif unit.lower() == 'w':
+            freq = '{}D'.format(candle_size * 7)
+
+        elif raise_error:
+            raise InvalidHistoryTimeframeError(timeframe=timeframe)
+
+        return freq
 
     def get_candles(self, freq, assets, bar_count=None, start_dt=None,
                     end_dt=None):
@@ -230,7 +296,7 @@ class CCXT(Exchange):
             assets = [assets]
 
         symbols = self.get_symbols(assets)
-        timeframe = self.get_timeframe(freq)
+        timeframe = CCXT.get_timeframe(freq)
 
         ms = None
         if start_dt is not None:

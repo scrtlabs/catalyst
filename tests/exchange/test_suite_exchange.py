@@ -11,7 +11,6 @@ from ccxt import AuthenticationError
 from catalyst.exchange.exchange_errors import ExchangeRequestError
 from catalyst.exchange.exchange_utils import get_exchange_folder
 from catalyst.exchange.factory import find_exchanges
-from catalyst.utils.paths import data_root
 
 log = Logger('TestSuiteExchange')
 
@@ -128,7 +127,8 @@ class TestSuiteExchange(unittest.TestCase):
         asset_population = 3
 
         exchanges = select_random_exchanges(
-            exchange_population
+            exchange_population,
+            features=['fetchTickers'],
         )  # Type: list[Exchange]
         for exchange in exchanges:
             exchange.init()
@@ -149,6 +149,44 @@ class TestSuiteExchange(unittest.TestCase):
         pass
 
     def test_candles(self):
+        exchange_population = 3
+        asset_population = 3
+
+        exchanges = select_random_exchanges(
+            exchange_population,
+            features=['fetchOHLCV'],
+        )  # Type: list[Exchange]
+        for exchange in exchanges:
+            exchange.init()
+
+            if exchange.assets and len(exchange.assets) >= asset_population:
+                frequencies = exchange.get_candle_frequencies()
+                freq = random.sample(frequencies, 1)[0]
+
+                bar_count = random.randint(1, 10)
+                end_dt = pd.Timestamp.utcnow().floor('1T')
+                dt_range = pd.date_range(
+                    end=end_dt, periods=bar_count, freq=freq
+                )
+                assets = select_random_assets(
+                    exchange.assets, asset_population
+                )
+
+                candles = exchange.get_candles(
+                    freq=freq,
+                    assets=assets,
+                    bar_count=bar_count,
+                    start_dt=dt_range[0],
+                    end_dt=dt_range[-1],
+                )
+
+                assert len(candles) == asset_population
+
+            else:
+                print(
+                    'skipping exchange without assets {}'.format(exchange.name)
+                )
+                exchange_population -= 1
         pass
 
     def test_orders(self):
