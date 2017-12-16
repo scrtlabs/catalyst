@@ -654,6 +654,7 @@ def group_assets_by_exchange(assets):
 
     return exchange_assets
 
+
 def get_catalyst_symbol(market_or_symbol):
     """
     The Catalyst symbol.
@@ -675,3 +676,19 @@ def get_catalyst_symbol(market_or_symbol):
             market_or_symbol['base'].lower(),
             market_or_symbol['quote'].lower(),
         )
+
+
+def save_asset_data(folder, df):
+    symbols = df.index.get_level_values('symbol')
+    for symbol in symbols:
+        symbol_df = df.loc[(symbols == symbol)]  # Type: pd.DataFrame
+
+        filename = os.path.join(folder, '{}.csv'.format(symbol))
+        if os.path.exists(filename):
+            print_headers = False
+
+        else:
+            print_headers = True
+
+        with open(filename, 'a') as f:
+            symbol_df.to_csv(f, header=print_headers)
