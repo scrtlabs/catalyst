@@ -701,18 +701,19 @@ class CCXT(Exchange):
         """
         tickers = dict()
         try:
-            symbols = [self.get_symbol(asset) for asset in assets]
-            ccxt_tickers = self.api.fetch_tickers(symbols)
-
             for asset in assets:
                 symbol = self.get_symbol(asset)
-                if symbol not in ccxt_tickers:
+                # TODO: use fetch_tickers() for efficiency
+                # I tried using fetch_tickers() but noticed some
+                # inconsistencies, see issue:
+                # https://github.com/ccxt/ccxt/issues/870
+                ticker = self.api.fetch_ticker(symbol=symbol)
+                if not ticker:
                     log.warn('ticker not found for {} {}'.format(
                         self.name, symbol
                     ))
                     continue
 
-                ticker = ccxt_tickers[symbol]
                 ticker['last_traded'] = from_ms_timestamp(ticker['timestamp'])
 
                 if 'last_price' not in ticker:

@@ -678,7 +678,7 @@ def get_catalyst_symbol(market_or_symbol):
         )
 
 
-def save_asset_data(folder, df):
+def save_asset_data(folder, df, decimals=8):
     symbols = df.index.get_level_values('symbol')
     for symbol in symbols:
         symbol_df = df.loc[(symbols == symbol)]  # Type: pd.DataFrame
@@ -691,4 +691,8 @@ def save_asset_data(folder, df):
             print_headers = True
 
         with open(filename, 'a') as f:
-            symbol_df.to_csv(f, header=print_headers)
+            symbol_df.to_csv(
+                path_or_buf=f,
+                header=print_headers,
+                float_format='%.{}f'.format(decimals),
+            )

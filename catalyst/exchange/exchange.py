@@ -236,10 +236,10 @@ class Exchange:
 
             elif data_frequency is not None:
                 applies = (
-                        (
-                                data_frequency == 'minute' and a.end_minute is not None)
-                        or (
-                                data_frequency == 'daily' and a.end_daily is not None)
+                    (
+                        data_frequency == 'minute' and a.end_minute is not None)
+                    or (
+                        data_frequency == 'daily' and a.end_daily is not None)
                 )
 
             else:
@@ -280,6 +280,16 @@ class Exchange:
             symbol_map = get_exchange_symbols(self.name, is_local)
             self._symbol_maps[index] = symbol_map
             return symbol_map
+
+    @abstractmethod
+    def init(self):
+        """
+        Load the asset list from the network.
+
+        Returns
+        -------
+
+        """
 
     @abstractmethod
     def load_assets(self, is_local=False):

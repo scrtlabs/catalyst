@@ -12,15 +12,15 @@ log = Logger('test_ccxt')
 class TestCCXT(BaseExchangeTestCase):
     @classmethod
     def setup(self):
-        exchange_name = 'gdax'
+        exchange_name = 'binance'
         auth = get_exchange_auth(exchange_name)
         self.exchange = CCXT(
             exchange_name=exchange_name,
             key=auth['key'],
             secret=auth['secret'],
             base_currency='eth',
-            portfolio=None
         )
+        self.exchange.init()
 
     def test_order(self):
         log.info('creating order')
@@ -68,9 +68,10 @@ class TestCCXT(BaseExchangeTestCase):
 
     def test_tickers(self):
         log.info('retrieving tickers')
-        tickers = self.exchange.tickers([
-            self.exchange.get_asset('eth_btc'),
-        ])
+        assets = [
+            self.exchange.get_asset('eng_eth'),
+        ]
+        tickers = self.exchange.tickers(assets)
         assert len(tickers) == 1
         pass
 
