@@ -156,7 +156,7 @@ class CCXT(Exchange):
                     CCXT.get_frequency(timeframe, raise_error=False)
                 )
 
-        except Exception:
+        except Exception as e:
             log.warn(
                 'candle frequencies not available for exchange {}'.format(
                     self.name
@@ -206,6 +206,90 @@ class CCXT(Exchange):
         return '{}/{}'.format(parts[0].upper(), parts[1].upper())
 
     @staticmethod
+    def map_frequency(value, source='ccxt', raise_error=True):
+        """
+        Map a frequency value between CCXT and Catalyst
+
+        Parameters
+        ----------
+        value: str
+        source: str
+        raise_error: bool
+
+        Returns
+        -------
+
+        Notes
+        -----
+        The Pandas offset aliases supported by Catalyst:
+        Alias	Description
+        W	weekly frequency
+        M	month end frequency
+        D	calendar day frequency
+        H	hourly frequency
+        T, min	minutely frequency
+
+        The CCXT timeframes:
+        '1m': '1minute',
+        '1h': '1hour',
+        '1d': '1day',
+        '1w': '1week',
+        '1M': '1month',
+        '1y': '1year',
+        """
+        match = re.match(
+            r'([0-9].*)?(m|M|d|D|h|H|T|w|W|min)', value, re.M | re.I
+        )
+        if match:
+            candle_size = int(match.group(1)) \
+                if match.group(1) else 1
+
+            unit = match.group(2)
+
+        else:
+            raise ValueError('Unable to parse frequency or timeframe')
+
+        if source == 'ccxt':
+            if unit == 'd':
+                result = '{}D'.format(candle_size)
+
+            elif unit == 'm':
+                result = '{}T'.format(candle_size)
+
+            elif unit == 'h':
+                result = '{}H'.format(candle_size)
+
+            elif unit == 'w':
+                result = '{}W'.format(candle_size)
+
+            elif unit == 'M':
+                result = '{}M'.format(candle_size)
+
+            elif raise_error:
+                raise InvalidHistoryTimeframeError(timeframe=value)
+
+        else:
+            if unit == 'D':
+                result = '{}d'.format(candle_size)
+
+            elif unit == 'min' or unit == 'T':
+                result = '{}m'.format(candle_size)
+
+            elif unit == 'H':
+                result = '{}h'.format(candle_size)
+
+            elif unit == 'W':
+                result = '{}w'.format(candle_size)
+
+            elif unit == 'M':
+                result = '{}M'.format(candle_size)
+
+            elif raise_error:
+                raise InvalidHistoryFrequencyError(frequency=value)
+
+        return result
+
+    @staticmethod
     def get_timeframe(freq, raise_error=True):
         """
         The CCXT timeframe from the Catalyst frequency.
@@ -220,29 +304,9 @@ class CCXT(Exchange):
         str
 
         """
-        freq_match = re.match(r'([0-9].*)?(m|M|d|D|h|H|T)', freq, re.M | re.I)
-        if freq_match:
-            candle_size = int(freq_match.group(1)) \
-                if freq_match.group(1) else 1
-
-            unit = freq_match.group(2)
-
-        else:
-            raise InvalidHistoryFrequencyError(frequency=freq)
-
-        if unit.lower() == 'd':
-            timeframe = '{}d'.format(candle_size)
-
-        elif unit.lower() == 'm' or unit == 'T':
-            timeframe = '{}m'.format(candle_size)
-
-        elif unit.lower() == 'h' or unit == 'T':
-            timeframe = '{}h'.format(candle_size)
-
-        elif raise_error:
-            raise InvalidHistoryFrequencyError(frequency=freq)
-
-        return timeframe
+        return CCXT.map_frequency(
+            freq, source='catalyst', raise_error=raise_error
+        )
 
     @staticmethod
     def get_frequency(timeframe, raise_error=True):
@@ -260,34 +324,9 @@ class CCXT(Exchange):
         -------
 
         """
-        timeframe_match = re.match(
-            r'([0-9].*)?(m|M|d|h|w|y)', timeframe, re.M | re.I
+        return CCXT.map_frequency(
+            timeframe, source='ccxt', raise_error=raise_error
         )
-        if timeframe_match:
-            candle_size = int(timeframe_match.group(1)) \
-                if timeframe_match.group(1) else 1
-
-            unit = timeframe_match.group(2)
-
-        else:
-            raise InvalidHistoryTimeframeError(timeframe=timeframe)
-
-        if unit.lower() == 'd':
-            freq = '{}D'.format(candle_size)
-
-        elif unit.lower() == 'm':
-            freq = '{}T'.format(candle_size)
-
-        elif unit.lower() == 'h':
-            freq = '{}H'.format(candle_size)
-
-        elif unit.lower() == 'w':
-            freq = '{}D'.format(candle_size * 7)
-
-        elif raise_error:
-            raise InvalidHistoryTimeframeError(timeframe=timeframe)
-
-        return freq
 
     def get_candles(self, freq, assets, bar_count=None, start_dt=None,
                     end_dt=None):
@@ -305,30 +344,30 @@ class CCXT(Exchange):
 
         candles = dict()
         for asset in assets:
-            try:
-                ohlcvs = self.api.fetch_ohlcv(
-                    symbol=symbols[0],
-                    timeframe=timeframe,
-                    since=ms,
-                    limit=bar_count,
-                    params={}
-                )
+            # try:
+            ohlcvs = self.api.fetch_ohlcv(
+                symbol=symbols[0],
+                timeframe=timeframe,
+                since=ms,
+                limit=bar_count,
+                params={}
+            )
 
-                candles[asset] = []
-                for ohlcv in ohlcvs:
-                    candles[asset].append(dict(
-                        last_traded=pd.to_datetime(
-                            ohlcv[0], unit='ms', utc=True
-                        ),
-                        open=ohlcv[1],
-                        high=ohlcv[2],
-                        low=ohlcv[3],
-                        close=ohlcv[4],
-                        volume=ohlcv[5]
-                    ))
+            candles[asset] = []
+            for ohlcv in ohlcvs:
+                candles[asset].append(dict(
+                    last_traded=pd.to_datetime(
+                        ohlcv[0], unit='ms', utc=True
+                    ),
+                    open=ohlcv[1],
+                    high=ohlcv[2],
+                    low=ohlcv[3],
+                    close=ohlcv[4],
+                    volume=ohlcv[5]
+                ))
 
-            except Exception as e:
-                raise ExchangeRequestError(error=e)
+                # except Exception as e:
+                #     raise ExchangeRequestError(error=e)
 
         if is_single:
             return six.next(six.itervalues(candles))

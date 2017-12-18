@@ -60,7 +60,7 @@ def select_random_assets(all_assets, population=3):
 
 
 # TODO: convert to Nosetest
-class TestSuiteExchange(unittest.TestCase):
+class TestSuiteExchange:
     def _test_markets_exchange(self, exchange, attempts=0):
         assets = None
         try:
