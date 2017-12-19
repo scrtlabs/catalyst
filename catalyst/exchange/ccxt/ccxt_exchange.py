@@ -20,7 +20,8 @@ from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
     ExchangeNotFoundError, CreateOrderError, InvalidHistoryTimeframeError
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.exchange_utils import mixin_market_params, \
-    from_ms_timestamp, get_epoch, get_exchange_folder, get_catalyst_symbol
+    from_ms_timestamp, get_epoch, get_exchange_folder, get_catalyst_symbol, \
+    get_exchange_auth
 from catalyst.finance.order import Order, ORDER_STATUS
 
 log = Logger('CCXT', level=LOG_LEVEL)
@@ -110,9 +111,18 @@ class CCXT(Exchange):
         self._is_init = True
 
     @staticmethod
-    def find_exchanges(features=None):
+    def find_exchanges(features=None, is_authenticated=False):
         exchange_names = []
         for exchange_name in ccxt.exchanges:
+            if is_authenticated:
+                exchange_auth = get_exchange_auth(exchange_name)
+
+                has_auth = (exchange_auth['key'] != ''
+                            and exchange_auth['secret'] != '')
+
+                if not has_auth:
+                    continue
+
             log.debug('loading exchange: {}'.format(exchange_name))
             exchange = getattr(ccxt, exchange_name)()
 
@@ -186,7 +196,7 @@ class CCXT(Exchange):
         )
         return market
 
-    def get_symbol(self, asset_or_symbol):
+    def get_symbol(self, asset_or_symbol, source='catalyst'):
         """
         The CCXT symbol.
 
@@ -198,12 +208,22 @@ class CCXT(Exchange):
         -------
 
         """
-        symbol = asset_or_symbol if isinstance(
-            asset_or_symbol, string_types
-        ) else asset_or_symbol.symbol
 
-        parts = symbol.split('_')
-        return '{}/{}'.format(parts[0].upper(), parts[1].upper())
+        if source == 'ccxt':
+            if isinstance(asset_or_symbol, string_types):
+                parts = asset_or_symbol.split('/')
+                return '{}_{}'.format(parts[0].lower(), parts[1].lower())
+
+            else:
+                return asset_or_symbol.symbol
+
+        else:
+            symbol = asset_or_symbol if isinstance(
+                asset_or_symbol, string_types
+            ) else asset_or_symbol.symbol
+
+            parts = symbol.split('_')
+            return '{}/{}'.format(parts[0].upper(), parts[1].upper())
 
     @staticmethod
     def map_frequency(value, source='ccxt', raise_error=True):
@@ -588,14 +608,10 @@ class CCXT(Exchange):
         # order_id = str(order_status['info']['clientOrderId'])
         order_id = order_status['id']
 
-        # TODO: this won't work, redo the packages with a different key.
-        symbol = order_status['info']['symbol'] \
-            if 'symbol' in order_status['info'] \
-            else order_status['info']['Exchange']
-
+        symbol = self.get_symbol(order_status['symbol'], source='ccxt')
         order = Order(
             dt=date,
-            asset=self.get_asset(symbol, is_exchange_symbol=True),
+            asset=self.get_asset(symbol),
             amount=amount,
             stop=stop_price,
             limit=limit_price,
