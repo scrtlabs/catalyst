@@ -15,6 +15,9 @@ as an alternative installation method for MacOS and Linux, you can install
 Catalyst directly with ``pip`` (we recommend in combination with a virtual 
 environemnt). See :ref:`Installing with pip <pip>`.
 
+Alternatively you can install Catalyst using ``pipenv`` which is a mix of pip
+and virtualenv. See :ref:`Installing with pipenv <pipenv>`.
+
 Regardless of the method, each operating system (OS), has its own 
 prerequisites, make sure to review the corresponding sections for your system:
 :ref:`Linux <linux>`, :ref:`MacOS <macos>` and :ref:`Windows <windows>`.
@@ -293,6 +296,38 @@ Troubleshooting ``pip`` Install
 
       sudo apt-get install python-dev
 
+.. _pipenv:
+
+Installing with ``pipenv``
+-------------------------
+
+Installing Catalyst via ``pipenv`` is perhaps easier that installing it via
+``pip`` itself but you need to install ``pipenv`` first via ``pip``.
+Python package.
+
+.. code-block:: bash
+
+   $ pip install pipenv
+
+Once ``pipenv`` is installed you can proceed
+
+.. code-block:: bash
+
+   $ mkdir project
+   $ cd project
+   $ pipenv install enigma-catalyst matplotlib
+
+Until now the workflow compared to ``pip`` is almost identical, the difference
+is that you don't need to load manually any virtualenv however you need to use
+the `pipenv run` prefix to run the `catalyst` command as follows:
+
+.. code-block:: bash
+
+   $ pipenv run catalyst --version
+
+If you want to know more about ``pipenv`` go to the `pipenv github repo`_
+
+.. _`pipenv github repo`: https://github.com/pypa/pipenv
 
 .. _linux:
 
