@@ -193,7 +193,8 @@ class PoloniexCurator(object):
                    for this currencyPair
         '''
         try:
-            if('end_file' in locals() and end_file + 3600 < end):
+            if(temp is not None
+                    or ('end_file' in locals() and end_file + 3600 < end)):
                 if (temp is None):
                     temp = os.tmpfile()
                 tempcsv = csv.writer(temp)
