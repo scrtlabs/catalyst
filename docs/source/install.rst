@@ -315,6 +315,7 @@ installing Catalyst on that project automagically as follows:
 
    $ mkdir project
    $ cd project
+   $ pipenv --two
    $ pipenv install enigma-catalyst matplotlib
 
 Until now the workflow compared to ``pip`` is almost identical, the difference
