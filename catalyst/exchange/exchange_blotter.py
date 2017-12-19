@@ -60,10 +60,12 @@ class TradingPairFeeSchedule(CommissionModel):
         maker = self.maker if self.maker is not None else asset.maker
         taker = self.taker if self.taker is not None else asset.taker
 
-        multiplier = maker \
-            if ((order.amount > 0 and order.limit < transaction.price)
-                or (order.amount < 0 and order.limit > transaction.price)) \
-               and order.limit_reached else taker
+        multiplier = taker
+        if order.limit is not None:
+            multiplier = maker \
+                if ((order.amount > 0 and order.limit < transaction.price)
+                    or (order.amount < 0 and order.limit > transaction.price)) \
+                   and order.limit_reached else taker
 
         # Assuming just the taker fee for now
         fee = cost * multiplier
