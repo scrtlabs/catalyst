@@ -181,8 +181,9 @@ class PoloniexCurator(object):
                    our existing TradeHistory until the first transaction 
                    for this currencyPair
         '''
-        try: 
-            if( 'end_file' in locals() and end_file + 3600 < end):
+        try:
+            if(temp is not None
+                    or ('end_file' in locals() and end_file + 3600 < end)):
                 if (temp is None):
                     temp = os.tmpfile()
                 tempcsv = csv.writer(temp)
