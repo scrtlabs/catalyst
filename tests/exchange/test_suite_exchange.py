@@ -1,7 +1,6 @@
 import json
 import os
 import random
-import unittest
 from logging import Logger
 from time import sleep
 
@@ -9,6 +8,7 @@ import pandas as pd
 from ccxt import AuthenticationError
 
 from catalyst.exchange.exchange_errors import ExchangeRequestError
+from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.exchange_utils import get_exchange_folder
 from catalyst.exchange.factory import find_exchanges
 
@@ -42,10 +42,18 @@ def handle_exchange_error(exchange, e):
             handle.write(message)
 
 
-def select_random_exchanges(population=3, features=None):
-    all_exchanges = find_exchanges(features)
+def select_random_exchanges(population=3, features=None,
+                            is_authenticated=False, base_currency=None):
+    all_exchanges = find_exchanges(
+        features=features,
+        is_authenticated=is_authenticated,
+        base_currency=base_currency,
+    )
 
     if population is not None:
+        if len(all_exchanges) < population:
+            population = len(all_exchanges)
+
         exchanges = random.sample(all_exchanges, population)
 
     else:
@@ -153,7 +161,7 @@ class TestSuiteExchange:
         asset_population = 3
 
         exchanges = select_random_exchanges(
-            exchange_population,
+            population=exchange_population,
             features=['fetchOHLCV'],
         )  # Type: list[Exchange]
         for exchange in exchanges:
@@ -190,4 +198,45 @@ class TestSuiteExchange:
         pass
 
     def test_orders(self):
+        population = 3
+        quote_currency = 'eth'
+        order_amount = 0.1
+
+        exchanges = select_random_exchanges(
+            population=population,
+            features=['fetchOrder'],
+            is_authenticated=True,
+            base_currency=quote_currency,
+        )  # Type: list[Exchange]
+
+        for exchange in exchanges:
+            exchange.init()
+
+            assets = exchange.get_assets(quote_currency=quote_currency)
+            asset = select_random_assets(assets, 1)[0]
+            assert asset
+
+            tickers = exchange.tickers([asset])
+            price = tickers[asset]['last_price']
+
+            amount = order_amount / price
+
+            limit_price = price * 0.8
+            style = ExchangeLimitOrder(limit_price=limit_price)
+
+            order = exchange.order(
+                asset=asset,
+                amount=amount,
+                style=style,
+            )
+            sleep(1)
+
+            open_order, _ = exchange.get_order(order.id, asset)
+            assert open_order.status == 0
+
+            exchange.cancel_order(open_order, asset)
+            sleep(1)
+
+            canceled_order, _ = exchange.get_order(open_order.id, asset)
+            assert canceled_order.status == 2
         pass

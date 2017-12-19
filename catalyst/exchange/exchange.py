@@ -149,7 +149,7 @@ class Exchange:
 
     def get_assets(self, symbols=None, data_frequency=None,
                    is_exchange_symbol=False,
-                   is_local=None):
+                   is_local=None, quote_currency=None):
         """
         The list of markets for the specified symbols.
 
@@ -173,6 +173,14 @@ class Exchange:
         if symbols is None:
             # Make a distinct list of all symbols
             symbols = list(set([asset.symbol for asset in self.assets]))
+
+            if quote_currency is not None:
+                for symbol in symbols[:]:
+                    suffix = '_{}'.format(quote_currency.lower())
+
+                    if not symbol.endswith(suffix):
+                        symbols.remove(symbol)
+
             is_exchange_symbol = False
 
         assets = []

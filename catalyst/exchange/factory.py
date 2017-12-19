@@ -47,7 +47,8 @@ def get_exchanges(exchange_names):
     return exchanges
 
 
-def find_exchanges(features=None, skip_blacklist=True):
+def find_exchanges(features=None, skip_blacklist=True, is_authenticated=False,
+                   base_currency=None):
     """
     Find exchanges filtered by a list of feature.
 
@@ -61,13 +62,18 @@ def find_exchanges(features=None, skip_blacklist=True):
     list[Exchange]
 
     """
-    exchange_names = CCXT.find_exchanges(features)
+    exchange_names = CCXT.find_exchanges(features, is_authenticated)
 
     exchanges = []
     for exchange_name in exchange_names:
         if skip_blacklist and is_blacklist(exchange_name):
             continue
 
-        exchanges.append(get_exchange(exchange_name, skip_init=True))
+        exchange = get_exchange(
+            exchange_name=exchange_name,
+            skip_init=True,
+            base_currency=base_currency,
+        )
+        exchanges.append(exchange)
 
     return exchanges

@@ -570,7 +570,9 @@ class CCXT(Exchange):
             The Catalyst order object
 
         """
-        if order_status['status'] == 'canceled':
+        if order_status['status'] == 'canceled' \
+                or (order_status['status'] == 'closed'
+                    and order_status['filled'] == 0):
             status = ORDER_STATUS.CANCELLED
 
         elif order_status['status'] == 'closed' and order_status['filled'] > 0:
