@@ -140,7 +140,7 @@ def get_exchange_symbols(exchange_name, is_local=False, environ=None):
     filename = get_exchange_symbols_filename(exchange_name, is_local)
 
     if not is_local and (not os.path.isfile(filename) or pd.Timedelta(
-            pd.Timestamp('now', tz='UTC') - last_modified_time(
+                pd.Timestamp('now', tz='UTC') - last_modified_time(
                 filename)).days > 1):
         download_exchange_symbols(exchange_name, environ)
 
@@ -433,6 +433,15 @@ def get_exchange_bundles_folder(exchange_name, environ=None):
     ensure_directory(temp_bundles)
 
     return temp_bundles
+
+
+def has_bundle(exchange_name, data_frequency, environ=None):
+    exchange_folder = get_exchange_folder(exchange_name, environ)
+
+    folder_name = '{}_bundle'.format(data_frequency.lower())
+    folder = os.path.join(exchange_folder, folder_name)
+
+    return os.path.isdir(folder)
 
 
 def symbols_serial(obj):

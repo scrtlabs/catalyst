@@ -18,7 +18,7 @@ from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     PricingDataNotLoadedError, \
     NoDataAvailableOnExchange, NoValueForField, LastCandleTooEarlyError
 from catalyst.exchange.exchange_utils import get_exchange_symbols, \
-    get_frequency, resample_history_df
+    get_frequency, resample_history_df, has_bundle
 
 log = Logger('Exchange', level=LOG_LEVEL)
 
@@ -46,6 +46,9 @@ class Exchange:
     @abstractproperty
     def time_skew(self):
         pass
+
+    def has_bundle(self, data_frequency):
+        return has_bundle(self.name, data_frequency)
 
     def is_open(self, dt):
         """

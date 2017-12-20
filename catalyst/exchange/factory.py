@@ -1,11 +1,10 @@
 import os
 
-import ccxt
 from logbook import Logger
 
 from catalyst.constants import LOG_LEVEL
-from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.ccxt.ccxt_exchange import CCXT
+from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.exchange_errors import ExchangeAuthEmpty
 from catalyst.exchange.exchange_utils import get_exchange_auth, \
     get_exchange_folder, is_blacklist
@@ -57,6 +56,10 @@ def find_exchanges(features=None, skip_blacklist=True, is_authenticated=False,
     features: str
         The list of features.
 
+    skip_blacklist: bool
+    is_authenticated: bool
+    base_currency: bool
+
     Returns
     -------
     list[Exchange]
@@ -74,6 +77,15 @@ def find_exchanges(features=None, skip_blacklist=True, is_authenticated=False,
             skip_init=True,
             base_currency=base_currency,
         )
+
+        if 'dailyBundle' in features \
+                and not exchange.has_bundle('daily'):
+            continue
+
+        elif 'minuteBundle' in features \
+                and not exchange.has_bundle('minute'):
+            continue
+
         exchanges.append(exchange)
 
     return exchanges

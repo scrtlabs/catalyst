@@ -112,6 +112,11 @@ class CCXT(Exchange):
 
     @staticmethod
     def find_exchanges(features=None, is_authenticated=False):
+        ccxt_features = []
+        for feature in features:
+            if not feature.endswith('Bundle'):
+                ccxt_features.append(feature)
+
         exchange_names = []
         for exchange_name in ccxt.exchanges:
             if is_authenticated:
@@ -126,13 +131,13 @@ class CCXT(Exchange):
             log.debug('loading exchange: {}'.format(exchange_name))
             exchange = getattr(ccxt, exchange_name)()
 
-            if features is None:
+            if ccxt_features is None:
                 has_feature = True
 
             else:
                 try:
                     has_feature = all(
-                        [exchange.has[feature] for feature in features]
+                        [exchange.has[feature] for feature in ccxt_features]
                     )
 
                 except Exception:
@@ -158,13 +163,20 @@ class CCXT(Exchange):
     def time_skew(self):
         return None
 
-    def get_candle_frequencies(self):
+    def get_candle_frequencies(self, data_frequency=None):
         frequencies = []
         try:
             for timeframe in self.api.timeframes:
-                frequencies.append(
-                    CCXT.get_frequency(timeframe, raise_error=False)
-                )
+                freq = CCXT.get_frequency(timeframe, raise_error=False)
+
+                # TODO: support all frequencies
+                if data_frequency == 'minute' and not freq.endswith('T'):
+                    continue
+
+                elif data_frequency == 'daily' and not freq.endswith('D'):
+                    continue
+
+                frequencies.append(freq)
 
         except Exception as e:
             log.warn(

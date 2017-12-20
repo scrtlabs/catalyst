@@ -5,69 +5,16 @@ from logging import Logger
 from time import sleep
 
 import pandas as pd
-from ccxt import AuthenticationError
 
 from catalyst.exchange.exchange_errors import ExchangeRequestError
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.exchange_utils import get_exchange_folder
-from catalyst.exchange.factory import find_exchanges
+from catalyst.exchange.test_utils import select_random_exchanges, \
+    handle_exchange_error, select_random_assets
 
 log = Logger('TestSuiteExchange')
 
 
-def handle_exchange_error(exchange, e):
-    is_blacklist = False
-
-    if isinstance(e, AuthenticationError):
-        is_blacklist = True
-
-    elif isinstance(e, ValueError) or isinstance(e, ExchangeRequestError):
-        is_blacklist = True
-
-    else:
-        log.warn('unexpected error: {}'.format(e))
-        is_blacklist = True
-
-    if is_blacklist:
-        try:
-            message = '{}: {}'.format(
-                e.__class__, e.message.decode('ascii', 'ignore')
-            )
-        except Exception:
-            message = 'unexpected error'
-
-        folder = get_exchange_folder(exchange.name)
-        filename = os.path.join(folder, 'blacklist.txt')
-        with open(filename, 'wt') as handle:
-            handle.write(message)
-
-
-def select_random_exchanges(population=3, features=None,
-                            is_authenticated=False, base_currency=None):
-    all_exchanges = find_exchanges(
-        features=features,
-        is_authenticated=is_authenticated,
-        base_currency=base_currency,
-    )
-
-    if population is not None:
-        if len(all_exchanges) < population:
-            population = len(all_exchanges)
-
-        exchanges = random.sample(all_exchanges, population)
-
-    else:
-        exchanges = all_exchanges
-
-    return exchanges
-
-
-def select_random_assets(all_assets, population=3):
-    assets = random.sample(all_assets, population)
-    return assets
-
-
-# TODO: convert to Nosetest
 class TestSuiteExchange:
     def _test_markets_exchange(self, exchange, attempts=0):
         assets = None
