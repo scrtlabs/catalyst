@@ -1,4 +1,5 @@
 import random
+from datetime import timedelta
 
 from logbook import Logger
 from pandas.util.testing import assert_frame_equal
@@ -8,10 +9,17 @@ import pandas as pd
 from catalyst import get_calendar
 from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
 from catalyst.exchange.exchange_data_portal import DataPortalExchangeBacktest
+from catalyst.exchange.exchange_utils import get_candles_df
+from catalyst.exchange.factory import get_exchange
 from catalyst.exchange.test_utils import select_random_exchanges, output_df, \
     select_random_assets
 
 log = Logger('TestSuiteExchange')
+
+pd.set_option('display.expand_frame_repr', False)
+pd.set_option('precision', 8)
+pd.set_option('display.width', 1000)
+pd.set_option('display.max_colwidth', 1000)
 
 
 class TestSuiteBundle:
@@ -29,7 +37,7 @@ class TestSuiteBundle:
         return data_portal
 
     def compare_bundle_with_exchange(self, exchange, assets, end_dt, bar_count,
-                                     freq, data_portal):
+                                     freq, data_frequency, data_portal):
         """
         Creates DataFrames from the bundle and exchange for the specified
         data set.
@@ -46,18 +54,19 @@ class TestSuiteBundle:
         -------
 
         """
+        data = dict()
+
         log.info('creating data sample from bundle')
-        df1 = data_portal.get_history_window(
+        data['bundle'] = data_portal.get_history_window(
             assets=assets,
             end_dt=end_dt,
             bar_count=bar_count,
             frequency=freq,
             field='close',
-            data_frequency='minute'
+            data_frequency=data_frequency,
         )
-        path = output_df(df1, assets, '{}_resampled'.format(freq))
-        log.info('saved resampled bundle candles: {}\n{}'.format(
-            path, df1.tail(10))
+        log.info('bundle data:\n{}'.format(
+            data['bundle'].tail(10))
         )
 
         log.info('creating data sample from exchange api')
@@ -65,28 +74,29 @@ class TestSuiteBundle:
             end_dt=end_dt,
             freq=freq,
             assets=assets,
-            bar_count=bar_count
+            bar_count=bar_count,
         )
-
-        series = dict()
-        for asset in assets:
-            series[asset] = pd.Series(
-                data=[candle['close'] for candle in candles[asset]],
-                index=[candle['last_traded'] for candle in candles[asset]]
-            )
-
-        df2 = pd.DataFrame(series)
-        path = output_df(df2, assets, '{}_api'.format(freq))
-        log.info('saved exchange api candles: {}\n{}'.format(
-            path, df2.tail(10))
+        data['exchange'] = get_candles_df(
+            candles=candles,
+            field='close',
+            freq=freq,
+            bar_count=bar_count,
+            end_dt=end_dt,
         )
+        log.info('exchange data:\n{}'.format(
+            data['exchange'].tail(10))
+        )
+        for source in data:
+            df = data[source]
+            path = output_df(df, assets, '{}_{}'.format(freq, source))
+            log.info('saved {}:\n{}'.format(source, path))
 
-        try:
-            assert_frame_equal(df1, df2)
-            return True
-        except:
-            log.warn('differences found in dataframes')
-            return False
+        assert_frame_equal(
+            right=data['bundle'],
+            left=data['exchange'],
+            check_less_precise=True
+        )
+        pass
 
     def test_validate_bundles(self):
         exchange_population = 3
@@ -94,10 +104,11 @@ class TestSuiteBundle:
         data_frequency = random.choice(['minute', 'daily'])
 
         bundle = 'dailyBundle' if data_frequency == 'daily' else 'minuteBundle'
-        exchanges = select_random_exchanges(
-            population=exchange_population,
-            features=[bundle],
-        )  # Type: list[Exchange]
+        # exchanges = select_random_exchanges(
+        #     population=exchange_population,
+        #     features=[bundle],
+        # )  # Type: list[Exchange]
+        exchanges = [get_exchange('bitfinex', skip_init=True)]
 
         data_portal = TestSuiteBundle.get_data_portal(
             [exchange.name for exchange in exchanges]
@@ -109,12 +120,20 @@ class TestSuiteBundle:
             freq = random.sample(frequencies, 1)[0]
 
             bar_count = random.randint(1, 10)
-            end_dt = pd.Timestamp.utcnow().floor('1T')
-            dt_range = pd.date_range(
-                end=end_dt, periods=bar_count, freq=freq
-            )
+
             assets = select_random_assets(
                 exchange.assets, asset_population
+            )
+            end_dt = None
+            for asset in assets:
+                attribute = 'end_{}'.format(data_frequency)
+                asset_end_dt = getattr(asset, attribute)
+
+                if end_dt is None or asset_end_dt < end_dt:
+                    end_dt = asset_end_dt
+
+            dt_range = pd.date_range(
+                end=end_dt, periods=bar_count, freq=freq
             )
             self.compare_bundle_with_exchange(
                 exchange=exchange,
@@ -122,5 +141,6 @@ class TestSuiteBundle:
                 end_dt=dt_range[-1],
                 bar_count=bar_count,
                 freq=freq,
+                data_frequency=data_frequency,
                 data_portal=data_portal,
             )

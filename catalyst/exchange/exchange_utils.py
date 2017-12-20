@@ -705,3 +705,27 @@ def save_asset_data(folder, df, decimals=8):
                 header=print_headers,
                 float_format='%.{}f'.format(decimals),
             )
+
+
+def get_candles_df(candles, field, freq, bar_count, end_dt,
+                   previous_value=None):
+    all_series = dict()
+    for asset in candles:
+        periods = pd.date_range(end=end_dt, periods=bar_count, freq=freq)
+
+        dates = [candle['last_traded'] for candle in candles[asset]]
+        values = [candle[field] for candle in candles[asset]]
+        series = pd.Series(values, index=dates)
+
+        series = series.reindex(
+            periods,
+            method='ffill',
+            fill_value=previous_value,
+        )
+        series.sort_index(inplace=True)
+        all_series[asset] = series
+
+    df = pd.DataFrame(all_series)
+    df.dropna(inplace=True)
+
+    return df

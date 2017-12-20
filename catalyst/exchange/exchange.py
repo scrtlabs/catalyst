@@ -19,6 +19,7 @@ from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     NoDataAvailableOnExchange, NoValueForField, LastCandleTooEarlyError
 from catalyst.exchange.exchange_utils import get_exchange_symbols, \
     get_frequency, resample_history_df, has_bundle
+from catalyst.utils.deprecate import deprecated
 
 log = Logger('Exchange', level=LOG_LEVEL)
 
@@ -407,6 +408,7 @@ class Exchange:
 
         return value
 
+    @deprecated
     def get_series_from_candles(self, candles, start_dt, end_dt,
                                 data_frequency, field, previous_value=None):
         """
