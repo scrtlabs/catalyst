@@ -154,6 +154,7 @@ class ExchangeBlotter(Blotter):
 
         self.retry_delay = 5
         self.retry_check_open_orders = 5
+        self.retry_order = 5
 
     def exchange_order(self, asset, amount, style=None, attempt_index=0):
         try:
