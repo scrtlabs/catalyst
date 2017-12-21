@@ -408,7 +408,7 @@ class Exchange:
 
         return value
 
-    @deprecated
+    # TODO: replace with catalyst.exchange.exchange_utils.get_candles_df
     def get_series_from_candles(self, candles, start_dt, end_dt,
                                 data_frequency, field, previous_value=None):
         """
