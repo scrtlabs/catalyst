@@ -1,18 +1,16 @@
+import copy
 import csv
 import numbers
-
-import copy
-import numpy as np
 import os
-import pandas as pd
-import boto3
 import time
 
+import numpy as np
+import pandas as pd
 from catalyst.assets._assets import TradingPair
 
 from catalyst.exchange.exchange_utils import get_algo_folder
 
-s3 = boto3.resource('s3')
+s3_conn = []
 
 
 def trend_direction(series):
@@ -278,21 +276,16 @@ def get_pretty_stats(stats, recorded_cols=None, num_rows=10):
     if isinstance(stats, pd.DataFrame):
         stats = stats.T.to_dict().values()
 
-    df, columns = prepare_stats(stats, recorded_cols=recorded_cols)
+    df, columns = prepare_stats(
+        stats[-num_rows:], recorded_cols=recorded_cols
+    )
 
     pd.set_option('display.expand_frame_repr', False)
     pd.set_option('precision', 8)
     pd.set_option('display.width', 1000)
     pd.set_option('display.max_colwidth', 1000)
 
-    formatters = {
-        'returns': lambda returns: "{0:.4f}".format(returns),
-    }
-
-    return df.tail(num_rows).to_string(
-        columns=columns,
-        formatters=formatters
-    )
+    return df.to_string(columns=columns)
 
 
 def get_csv_stats(stats, recorded_cols=None):
@@ -338,6 +331,12 @@ def stats_to_s3(uri, stats, algo_namespace, recorded_cols=None,
     -------
 
     """
+    if not s3_conn:
+        import boto3
+        s3_conn.append(boto3.resource('s3'))
+
+    s3 = s3_conn[0]
+
     if bytes_to_write is None:
         bytes_to_write = get_csv_stats(stats, recorded_cols=recorded_cols)
 
