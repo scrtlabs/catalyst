@@ -12,7 +12,11 @@ from logbook import Logger
 
 from catalyst.data.bundles import load
 from catalyst.data.data_portal import DataPortal
+from catalyst.exchange.exchange_pricing_loader import ExchangePricingLoader, \
+    TradingPairPricing
 from catalyst.exchange.factory import get_exchange
+from catalyst.pipeline import USEquityPricingLoader
+from catalyst.pipeline.data import USEquityPricing
 
 try:
     from pygments import highlight
@@ -173,7 +177,14 @@ def _run(handle_data,
         asset_db_path=None  # We don't need an asset db, we have exchanges
     )
     env.asset_finder = AssetFinderExchange()
-    choose_loader = None  # TODO: use the DataPortal in the algo class for this
+
+    def choose_loader(column):
+        bound_cols = TradingPairPricing.columns
+        if column in bound_cols:
+            return ExchangePricingLoader(data_frequency)
+        raise ValueError(
+            "No PipelineLoader registered for column %s." % column
+        )
 
     if live:
         start = pd.Timestamp.utcnow()

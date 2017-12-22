@@ -1,17 +1,15 @@
 import random
-from datetime import timedelta
-
-from logbook import Logger
-from pandas.util.testing import assert_frame_equal
 
 import pandas as pd
+from logbook import Logger
+from pandas.util.testing import assert_frame_equal
 
 from catalyst import get_calendar
 from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
 from catalyst.exchange.exchange_data_portal import DataPortalExchangeBacktest
 from catalyst.exchange.exchange_utils import get_candles_df
 from catalyst.exchange.factory import get_exchange
-from catalyst.exchange.test_utils import select_random_exchanges, output_df, \
+from catalyst.exchange.test_utils import output_df, \
     select_random_assets
 
 log = Logger('TestSuiteExchange')
@@ -94,9 +92,8 @@ class TestSuiteBundle:
         assert_frame_equal(
             right=data['bundle'],
             left=data['exchange'],
-            check_less_precise=True
+            check_less_precise=True,
         )
-        pass
 
     def test_validate_bundles(self):
         exchange_population = 3
@@ -144,3 +141,4 @@ class TestSuiteBundle:
                 data_frequency=data_frequency,
                 data_portal=data_portal,
             )
+        pass

@@ -1,5 +1,6 @@
 import copy
 import csv
+import json
 import numbers
 import os
 import time
@@ -9,8 +10,10 @@ import pandas as pd
 from catalyst.assets._assets import TradingPair
 
 from catalyst.exchange.exchange_utils import get_algo_folder
+from catalyst.utils.paths import data_root
 
 s3_conn = []
+mailgun = []
 
 
 def trend_direction(series):
@@ -349,6 +352,35 @@ def stats_to_s3(uri, stats, algo_namespace, recorded_cols=None,
         folder, timestr, algo_namespace, pid
     ))
     obj.put(Body=bytes_to_write)
+
+
+def email_error(algo_name, dt, e, environ=None):
+    import requests
+    import traceback
+
+    if not mailgun:
+        root = data_root(environ)
+        filename = os.path.join(root, 'mailgun.json')
+        if not os.path.exists(filename):
+            raise ValueError(
+                'mailgun.json not found in the catalyst data folder'
+            )
+
+        with open(filename) as data_file:
+            mailgun.append(json.load(data_file))
+
+    mg = mailgun[0]
+
+    return requests.post(
+        mg['url'],
+        auth=("api", mg['api']),
+        data={
+            "from": mg['from'],
+            "to": mg['to'],
+            "subject": 'Error: {}'.format(algo_name),
+            "text": '{}\n\n{}\n{}'.format(
+                dt, e, traceback.format_exc()
+            )})
 
 
 def stats_to_algo_folder(stats, algo_namespace, recorded_cols=None):
