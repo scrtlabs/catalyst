@@ -1,6 +1,9 @@
 from logbook import Logger
 
 from catalyst.constants import LOG_LEVEL
+from catalyst.exchange.factory import find_exchanges
+
+import pandas as pd
 
 log = Logger('AssetFinderExchange', level=LOG_LEVEL)
 
@@ -97,3 +100,66 @@ class AssetFinderExchange(object):
             asset = exchange.get_asset(symbol, data_frequency)
             self._asset_cache[key] = asset
             return asset
+
+    def lifetimes(self, dates, include_start_date):
+        """
+        Compute a DataFrame representing asset lifetimes for the specified date
+        range.
+
+        Parameters
+        ----------
+        dates : pd.DatetimeIndex
+            The dates for which to compute lifetimes.
+        include_start_date : bool
+            Whether or not to count the asset as alive on its start_date.
+
+            This is useful in a backtesting context where `lifetimes` is being
+            used to signify "do I have data for this asset as of the morning of
+            this date?"  For many financial metrics, (e.g. daily close), data
+            isn't available for an asset until the end of the asset's first
+            day.
+
+        Returns
+        -------
+        lifetimes : pd.DataFrame
+            A frame of dtype bool with `dates` as index and an Int64Index of
+            assets as columns.  The value at `lifetimes.loc[date, asset]` will
+            be True iff `asset` existed on `date`.  If `include_start_date` is
+            False, then lifetimes.loc[date, asset] will be false when date ==
+            asset.start_date.
+
+        See Also
+        --------
+        numpy.putmask
+        catalyst.pipeline.engine.SimplePipelineEngine._compute_root_mask
+        """
+        exchanges = find_exchanges(features=['minuteBundle'])
+        if not exchanges:
+            raise ValueError('exchange with minute bundles not found')
+
+        # TODO: find a way to support multiple exchanges
+        exchange = exchanges[0]
+        # Using a single exchange for now because are not unique for the
+        # same asset in different exchanges. I'd like to avoid binding
+        # pipeline to a single exchange.
+        exchange.init()
+
+        data = []
+        for dt in dates:
+            exists = []
+
+            for asset in exchange.assets:
+                if include_start_date:
+                    condition = (asset.start_date <= dt < asset.end_minute)
+
+                else:
+                    condition = (asset.start_date < dt < asset.end_minute)
+
+                exists.append(condition)
+
+            data.append(exists)
+
+        sids = [asset.sid for asset in exchange.assets]
+        df = pd.DataFrame(data, index=dates, columns=sids)
+
+        return df

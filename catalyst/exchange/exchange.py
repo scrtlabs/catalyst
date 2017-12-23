@@ -3,6 +3,7 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 from datetime import timedelta
 from time import sleep
 
+import ccxt
 import numpy as np
 import pandas as pd
 from logbook import Logger
@@ -17,7 +18,8 @@ from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     PricingDataNotLoadedError, \
     NoDataAvailableOnExchange, NoValueForField, LastCandleTooEarlyError
 from catalyst.exchange.exchange_utils import get_exchange_symbols, \
-    get_frequency, resample_history_df
+    get_frequency, resample_history_df, has_bundle
+from catalyst.utils.deprecate import deprecated
 
 log = Logger('Exchange', level=LOG_LEVEL)
 
@@ -45,6 +47,9 @@ class Exchange:
     @abstractproperty
     def time_skew(self):
         pass
+
+    def has_bundle(self, data_frequency):
+        return has_bundle(self.name, data_frequency)
 
     def is_open(self, dt):
         """
@@ -148,7 +153,7 @@ class Exchange:
 
     def get_assets(self, symbols=None, data_frequency=None,
                    is_exchange_symbol=False,
-                   is_local=None):
+                   is_local=None, quote_currency=None):
         """
         The list of markets for the specified symbols.
 
@@ -172,6 +177,14 @@ class Exchange:
         if symbols is None:
             # Make a distinct list of all symbols
             symbols = list(set([asset.symbol for asset in self.assets]))
+
+            if quote_currency is not None:
+                for symbol in symbols[:]:
+                    suffix = '_{}'.format(quote_currency.lower())
+
+                    if not symbol.endswith(suffix):
+                        symbols.remove(symbol)
+
             is_exchange_symbol = False
 
         assets = []
@@ -235,10 +248,10 @@ class Exchange:
 
             elif data_frequency is not None:
                 applies = (
-                        (
-                                data_frequency == 'minute' and a.end_minute is not None)
-                        or (
-                                data_frequency == 'daily' and a.end_daily is not None)
+                    (
+                        data_frequency == 'minute' and a.end_minute is not None)
+                    or (
+                        data_frequency == 'daily' and a.end_daily is not None)
                 )
 
             else:
@@ -247,8 +260,16 @@ class Exchange:
             # The symbol provided may use the Catalyst or the exchange
             # convention
             key = a.exchange_symbol if is_exchange_symbol else a.symbol
-            if not asset and key.lower() == symbol.lower() and applies:
-                asset = a
+            if not asset and key.lower() == symbol.lower():
+                if applies:
+                    asset = a
+
+                else:
+                    raise NoDataAvailableOnExchange(
+                        symbol=key,
+                        exchange=self.name,
+                        data_frequency=data_frequency,
+                    )
 
         if asset is None:
             supported_symbols = sorted([a.symbol for a in self.assets])
@@ -271,6 +292,16 @@ class Exchange:
             symbol_map = get_exchange_symbols(self.name, is_local)
             self._symbol_maps[index] = symbol_map
             return symbol_map
+
+    @abstractmethod
+    def init(self):
+        """
+        Load the asset list from the network.
+
+        Returns
+        -------
+
+        """
 
     @abstractmethod
     def load_assets(self, is_local=False):
@@ -377,6 +408,7 @@ class Exchange:
 
         return value
 
+    # TODO: replace with catalyst.exchange.exchange_utils.get_candles_df
     def get_series_from_candles(self, candles, start_dt, end_dt,
                                 data_frequency, field, previous_value=None):
         """

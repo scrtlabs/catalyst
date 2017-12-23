@@ -677,7 +677,8 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         self.perf_tracker.update_performance()
 
         frame_stats = self.prepare_period_stats(
-            data.current_dt, data.current_dt + timedelta(minutes=1))
+            data.current_dt, data.current_dt + timedelta(minutes=1)
+        )
 
         # Saving the last hour in memory
         self.frame_stats.append(frame_stats)

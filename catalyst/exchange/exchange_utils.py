@@ -62,6 +62,13 @@ def get_exchange_folder(exchange_name, environ=None):
     return exchange_folder
 
 
+def is_blacklist(exchange_name, environ=None):
+    exchange_folder = get_exchange_folder(exchange_name, environ)
+    filename = os.path.join(exchange_folder, 'blacklist.txt')
+
+    return os.path.exists(filename)
+
+
 def get_exchange_symbols_filename(exchange_name, is_local=False, environ=None):
     """
     The absolute path of the exchange's symbol.json file.
@@ -134,7 +141,7 @@ def get_exchange_symbols(exchange_name, is_local=False, environ=None):
 
     if not is_local and (not os.path.isfile(filename) or pd.Timedelta(
                 pd.Timestamp('now', tz='UTC') - last_modified_time(
-                    filename)).days > 1):
+                filename)).days > 1):
         download_exchange_symbols(exchange_name, environ)
 
     if os.path.isfile(filename):
@@ -428,6 +435,15 @@ def get_exchange_bundles_folder(exchange_name, environ=None):
     return temp_bundles
 
 
+def has_bundle(exchange_name, data_frequency, environ=None):
+    exchange_folder = get_exchange_folder(exchange_name, environ)
+
+    folder_name = '{}_bundle'.format(data_frequency.lower())
+    folder = os.path.join(exchange_folder, folder_name)
+
+    return os.path.isdir(folder)
+
+
 def symbols_serial(obj):
     """
     JSON serializer for objects not serializable by default json code
@@ -646,3 +662,70 @@ def group_assets_by_exchange(assets):
         exchange_assets[asset.exchange].append(asset)
 
     return exchange_assets
+
+
+def get_catalyst_symbol(market_or_symbol):
+    """
+    The Catalyst symbol.
+
+    Parameters
+    ----------
+    market_or_symbol
+
+    Returns
+    -------
+
+    """
+    if isinstance(market_or_symbol, string_types):
+        parts = market_or_symbol.split('/')
+        return '{}_{}'.format(parts[0].lower(), parts[1].lower())
+
+    else:
+        return '{}_{}'.format(
+            market_or_symbol['base'].lower(),
+            market_or_symbol['quote'].lower(),
+        )
+
+
+def save_asset_data(folder, df, decimals=8):
+    symbols = df.index.get_level_values('symbol')
+    for symbol in symbols:
+        symbol_df = df.loc[(symbols == symbol)]  # Type: pd.DataFrame
+
+        filename = os.path.join(folder, '{}.csv'.format(symbol))
+        if os.path.exists(filename):
+            print_headers = False
+
+        else:
+            print_headers = True
+
+        with open(filename, 'a') as f:
+            symbol_df.to_csv(
+                path_or_buf=f,
+                header=print_headers,
+                float_format='%.{}f'.format(decimals),
+            )
+
+
+def get_candles_df(candles, field, freq, bar_count, end_dt,
+                   previous_value=None):
+    all_series = dict()
+    for asset in candles:
+        periods = pd.date_range(end=end_dt, periods=bar_count, freq=freq)
+
+        dates = [candle['last_traded'] for candle in candles[asset]]
+        values = [candle[field] for candle in candles[asset]]
+        series = pd.Series(values, index=dates)
+
+        series = series.reindex(
+            periods,
+            method='ffill',
+            fill_value=previous_value,
+        )
+        series.sort_index(inplace=True)
+        all_series[asset] = series
+
+    df = pd.DataFrame(all_series)
+    df.dropna(inplace=True)
+
+    return df

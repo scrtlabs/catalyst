@@ -1,7 +1,9 @@
+import json
 import re
 from collections import defaultdict
 
 import ccxt
+import os
 import pandas as pd
 import six
 from ccxt import ExchangeNotAvailable, InvalidOrder
@@ -15,10 +17,11 @@ from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
     ExchangeSymbolsNotFound, ExchangeRequestError, InvalidOrderStyle, \
-    ExchangeNotFoundError, CreateOrderError
+    ExchangeNotFoundError, CreateOrderError, InvalidHistoryTimeframeError
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.exchange_utils import mixin_market_params, \
-    from_ms_timestamp, get_epoch
+    from_ms_timestamp, get_epoch, get_exchange_folder, get_catalyst_symbol, \
+    get_exchange_auth
 from catalyst.finance.order import Order, ORDER_STATUS
 
 log = Logger('CCXT', level=LOG_LEVEL)
@@ -58,17 +61,7 @@ class CCXT(Exchange):
 
         self._symbol_maps = [None, None]
 
-        try:
-            markets_symbols = self.api.load_markets()
-            log.debug('the markets:\n{}'.format(markets_symbols))
-
-        except ExchangeNotAvailable as e:
-            raise ExchangeRequestError(error=e)
-
         self.name = exchange_name
-
-        self.markets = self.api.fetch_markets()
-        self.load_assets()
 
         self.base_currency = base_currency
         self.transactions = defaultdict(list)
@@ -78,12 +71,121 @@ class CCXT(Exchange):
         self.request_cpt = dict()
 
         self.bundle = ExchangeBundle(self.name)
+        self.markets = None
+        self._is_init = False
+
+    def init(self):
+        if self._is_init:
+            return
+
+        exchange_folder = get_exchange_folder(self.name)
+        filename = os.path.join(exchange_folder, 'cctx_markets.json')
+
+        if os.path.exists(filename):
+            timestamp = os.path.getmtime(filename)
+            dt = pd.to_datetime(timestamp, unit='s', utc=True)
+
+            if dt >= pd.Timestamp.utcnow().floor('1D'):
+                with open(filename) as f:
+                    self.markets = json.load(f)
+
+                log.debug('loaded markets for {}'.format(self.name))
+
+        if self.markets is None:
+            try:
+                markets_symbols = self.api.load_markets()
+                log.debug(
+                    'fetching {} markets:\n{}'.format(
+                        self.name, markets_symbols
+                    )
+                )
+
+                self.markets = self.api.fetch_markets()
+                with open(filename, 'w+') as f:
+                    json.dump(self.markets, f, indent=4)
+
+            except ExchangeNotAvailable as e:
+                raise ExchangeRequestError(error=e)
+
+        self.load_assets()
+        self._is_init = True
+
+    @staticmethod
+    def find_exchanges(features=None, is_authenticated=False):
+        ccxt_features = []
+        for feature in features:
+            if not feature.endswith('Bundle'):
+                ccxt_features.append(feature)
+
+        exchange_names = []
+        for exchange_name in ccxt.exchanges:
+            if is_authenticated:
+                exchange_auth = get_exchange_auth(exchange_name)
+
+                has_auth = (exchange_auth['key'] != ''
+                            and exchange_auth['secret'] != '')
+
+                if not has_auth:
+                    continue
+
+            log.debug('loading exchange: {}'.format(exchange_name))
+            exchange = getattr(ccxt, exchange_name)()
+
+            if ccxt_features is None:
+                has_feature = True
+
+            else:
+                try:
+                    has_feature = all(
+                        [exchange.has[feature] for feature in ccxt_features]
+                    )
+
+                except Exception:
+                    has_feature = False
+
+            if has_feature:
+                try:
+                    log.info('initializing {}'.format(exchange_name))
+                    exchange_names.append(exchange_name)
+
+                except Exception as e:
+                    log.warn(
+                        'unable to initialize exchange {}: {}'.format(
+                            exchange_name, e
+                        )
+                    )
+
+        return exchange_names
 
     def account(self):
         return None
 
     def time_skew(self):
         return None
+
+    def get_candle_frequencies(self, data_frequency=None):
+        frequencies = []
+        try:
+            for timeframe in self.api.timeframes:
+                freq = CCXT.get_frequency(timeframe, raise_error=False)
+
+                # TODO: support all frequencies
+                if data_frequency == 'minute' and not freq.endswith('T'):
+                    continue
+
+                elif data_frequency == 'daily' and not freq.endswith('D'):
+                    continue
+
+                frequencies.append(freq)
+
+        except Exception as e:
+            log.warn(
+                'candle frequencies not available for exchange {}'.format(
+                    self.name
+                )
+            )
+
+        return frequencies
 
     def get_market(self, symbol):
         """
@@ -106,7 +208,7 @@ class CCXT(Exchange):
         )
         return market
 
-    def get_symbol(self, asset_or_symbol):
+    def get_symbol(self, asset_or_symbol, source='catalyst'):
         """
         The CCXT symbol.
 
@@ -118,36 +220,109 @@ class CCXT(Exchange):
         -------
 
         """
-        symbol = asset_or_symbol if isinstance(
-            asset_or_symbol, string_types
-        ) else asset_or_symbol.symbol
 
-        parts = symbol.split('_')
-        return '{}/{}'.format(parts[0].upper(), parts[1].upper())
+        if source == 'ccxt':
+            if isinstance(asset_or_symbol, string_types):
+                parts = asset_or_symbol.split('/')
+                return '{}_{}'.format(parts[0].lower(), parts[1].lower())
 
-    def get_catalyst_symbol(self, market_or_symbol):
+            else:
+                return asset_or_symbol.symbol
+
+        else:
+            symbol = asset_or_symbol if isinstance(
+                asset_or_symbol, string_types
+            ) else asset_or_symbol.symbol
+
+            parts = symbol.split('_')
+            return '{}/{}'.format(parts[0].upper(), parts[1].upper())
+
+    @staticmethod
+    def map_frequency(value, source='ccxt', raise_error=True):
         """
-        The Catalyst symbol.
+        Map a frequency value between CCXT and Catalyst
 
         Parameters
         ----------
-        market_or_symbol
+        value: str
+        source: str
+        raise_error: bool
 
         Returns
         -------
 
+        Notes
+        -----
+        The Pandas offset aliases supported by Catalyst:
+        Alias	Description
+        W	weekly frequency
+        M	month end frequency
+        D	calendar day frequency
+        H	hourly frequency
+        T, min	minutely frequency
+
+        The CCXT timeframes:
+        '1m': '1minute',
+        '1h': '1hour',
+        '1d': '1day',
+        '1w': '1week',
+        '1M': '1month',
+        '1y': '1year',
         """
-        if isinstance(market_or_symbol, string_types):
-            parts = market_or_symbol.split('/')
-            return '{}_{}'.format(parts[0].lower(), parts[1].lower())
+        match = re.match(
+            r'([0-9].*)?(m|M|d|D|h|H|T|w|W|min)', value, re.M | re.I
+        )
+        if match:
+            candle_size = int(match.group(1)) \
+                if match.group(1) else 1
+
+            unit = match.group(2)
 
         else:
-            return '{}_{}'.format(
-                market_or_symbol['base'].lower(),
-                market_or_symbol['quote'].lower(),
-            )
+            raise ValueError('Unable to parse frequency or timeframe')
 
-    def get_timeframe(self, freq):
+        if source == 'ccxt':
+            if unit == 'd':
+                result = '{}D'.format(candle_size)
+
+            elif unit == 'm':
+                result = '{}T'.format(candle_size)
+
+            elif unit == 'h':
+                result = '{}H'.format(candle_size)
+
+            elif unit == 'w':
+                result = '{}W'.format(candle_size)
+
+            elif unit == 'M':
+                result = '{}M'.format(candle_size)
+
+            elif raise_error:
+                raise InvalidHistoryTimeframeError(timeframe=value)
+
+        else:
+            if unit == 'D':
+                result = '{}d'.format(candle_size)
+
+            elif unit == 'min' or unit == 'T':
+                result = '{}m'.format(candle_size)
+
+            elif unit == 'H':
+                result = '{}h'.format(candle_size)
+
+            elif unit == 'W':
+                result = '{}w'.format(candle_size)
+
+            elif unit == 'M':
+                result = '{}M'.format(candle_size)
+
+            elif raise_error:
+                raise InvalidHistoryFrequencyError(frequency=value)
+
+        return result
+
+    @staticmethod
+    def get_timeframe(freq, raise_error=True):
         """
         The CCXT timeframe from the Catalyst frequency.
 
@@ -161,26 +336,29 @@ class CCXT(Exchange):
         str
 
         """
-        freq_match = re.match(r'([0-9].*)?(m|M|d|D|h|H|T)', freq, re.M | re.I)
-        if freq_match:
-            candle_size = int(freq_match.group(1)) \
-                if freq_match.group(1) else 1
+        return CCXT.map_frequency(
+            freq, source='catalyst', raise_error=raise_error
+        )
 
-            unit = freq_match.group(2)
+    @staticmethod
+    def get_frequency(timeframe, raise_error=True):
+        """
+        Test Catalyst frequency from the CCXT timeframe
 
-        else:
-            raise InvalidHistoryFrequencyError(frequency=freq)
+        Catalyst uses the Pandas offset alias convention:
+        http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
 
-        if unit.lower() == 'd':
-            timeframe = '{}d'.format(candle_size)
+        Parameters
+        ----------
+        timeframe
 
-        elif unit.lower() == 'm' or unit == 'T':
-            timeframe = '{}m'.format(candle_size)
+        Returns
+        -------
 
-        elif unit.lower() == 'h' or unit == 'T':
-            timeframe = '{}h'.format(candle_size)
-
-        return timeframe
+        """
+        return CCXT.map_frequency(
+            timeframe, source='ccxt', raise_error=raise_error
+        )
 
     def get_candles(self, freq, assets, bar_count=None, start_dt=None,
                     end_dt=None):
@@ -189,7 +367,7 @@ class CCXT(Exchange):
             assets = [assets]
 
         symbols = self.get_symbols(assets)
-        timeframe = self.get_timeframe(freq)
+        timeframe = CCXT.get_timeframe(freq)
 
         ms = None
         if start_dt is not None:
@@ -198,30 +376,30 @@ class CCXT(Exchange):
 
         candles = dict()
         for asset in assets:
-            try:
-                ohlcvs = self.api.fetch_ohlcv(
-                    symbol=symbols[0],
-                    timeframe=timeframe,
-                    since=ms,
-                    limit=bar_count,
-                    params={}
-                )
+            # try:
+            ohlcvs = self.api.fetch_ohlcv(
+                symbol=symbols[0],
+                timeframe=timeframe,
+                since=ms,
+                limit=bar_count,
+                params={}
+            )
 
-                candles[asset] = []
-                for ohlcv in ohlcvs:
-                    candles[asset].append(dict(
-                        last_traded=pd.to_datetime(
-                            ohlcv[0], unit='ms', utc=True
-                        ),
-                        open=ohlcv[1],
-                        high=ohlcv[2],
-                        low=ohlcv[3],
-                        close=ohlcv[4],
-                        volume=ohlcv[5]
-                    ))
+            candles[asset] = []
+            for ohlcv in ohlcvs:
+                candles[asset].append(dict(
+                    last_traded=pd.to_datetime(
+                        ohlcv[0], unit='ms', utc=True
+                    ),
+                    open=ohlcv[1],
+                    high=ohlcv[2],
+                    low=ohlcv[3],
+                    close=ohlcv[4],
+                    volume=ohlcv[5]
+                ))
 
-            except Exception as e:
-                raise ExchangeRequestError(error=e)
+                # except Exception as e:
+                #     raise ExchangeRequestError(error=e)
 
         if is_single:
             return six.next(six.itervalues(candles))
@@ -339,16 +517,21 @@ class CCXT(Exchange):
                    and asset_def['end_minute'] != 'N/A' else None
 
         else:
-            params['symbol'] = self.get_catalyst_symbol(market)
+            params['symbol'] = get_catalyst_symbol(market)
             # TODO: add as an optional column
             params['leverage'] = 1.0
 
         return TradingPair(**params)
 
     def load_assets(self):
+        log.debug('loading assets for {}'.format(self.name))
         self.assets = []
 
         for market in self.markets:
+            if 'id' not in market:
+                log.warn('invalid market: {}'.format(market))
+                continue
+
             asset_defs = self.get_asset_defs(market)
 
             asset = None
@@ -399,7 +582,9 @@ class CCXT(Exchange):
             The Catalyst order object
 
         """
-        if order_status['status'] == 'canceled':
+        if order_status['status'] == 'canceled' \
+                or (order_status['status'] == 'closed'
+                    and order_status['filled'] == 0):
             status = ORDER_STATUS.CANCELLED
 
         elif order_status['status'] == 'closed' and order_status['filled'] > 0:
@@ -410,7 +595,12 @@ class CCXT(Exchange):
             status = ORDER_STATUS.OPEN
 
         else:
-            raise ValueError('invalid state for order')
+            log.warn(
+                'invalid state {} for order {}'.format(
+                    order_status['status'], order_status['id']
+                )
+            )
+            status = ORDER_STATUS.OPEN
 
         amount = order_status['amount']
         filled = order_status['filled']
@@ -432,14 +622,10 @@ class CCXT(Exchange):
         # order_id = str(order_status['info']['clientOrderId'])
         order_id = order_status['id']
 
-        # TODO: this won't work, redo the packages with a different key.
-        symbol = order_status['info']['symbol'] \
-            if 'symbol' in order_status['info'] \
-            else order_status['info']['Exchange']
-
+        symbol = self.get_symbol(order_status['symbol'], source='ccxt')
         order = Order(
             dt=date,
-            asset=self.get_asset(symbol, is_exchange_symbol=True),
+            asset=self.get_asset(symbol),
             amount=amount,
             stop=stop_price,
             limit=limit_price,
@@ -583,10 +769,19 @@ class CCXT(Exchange):
 
         """
         tickers = dict()
-        for asset in assets:
-            try:
-                ccxt_symbol = self.get_symbol(asset)
-                ticker = self.api.fetch_ticker(ccxt_symbol)
+        try:
+            for asset in assets:
+                symbol = self.get_symbol(asset)
+                # TODO: use fetch_tickers() for efficiency
+                # I tried using fetch_tickers() but noticed some
+                # inconsistencies, see issue:
+                # https://github.com/ccxt/ccxt/issues/870
+                ticker = self.api.fetch_ticker(symbol=symbol)
+                if not ticker:
+                    log.warn('ticker not found for {} {}'.format(
+                        self.name, symbol
+                    ))
+                    continue
 
                 ticker['last_traded'] = from_ms_timestamp(ticker['timestamp'])
 
@@ -594,19 +789,27 @@ class CCXT(Exchange):
                     # TODO: any more exceptions?
                     ticker['last_price'] = ticker['last']
 
-                # Using the volume represented in the base currency
-                ticker['volume'] = ticker['baseVolume'] \
-                    if 'baseVolume' in ticker else 0
+                if 'baseVolume' in ticker and ticker['baseVolume'] is not None:
+                    # Using the volume represented in the base currency
+                    ticker['volume'] = ticker['baseVolume']
+
+                elif 'info' in ticker and 'bidQty' in ticker['info'] \
+                        and 'askQty' in ticker['info']:
+                    ticker['volume'] = float(ticker['info']['bidQty']) + \
+                                       float(ticker['info']['askQty'])
+
+                else:
+                    ticker['volume'] = 0
 
                 tickers[asset] = ticker
 
-            except ExchangeNotAvailable as e:
-                log.warn(
-                    'unable to fetch ticker: {} {}'.format(
-                        self.name, asset.symbol
-                    )
+        except ExchangeNotAvailable as e:
+            log.warn(
+                'unable to fetch ticker: {} {}'.format(
+                    self.name, asset.symbol
                 )
-                raise ExchangeRequestError(error=e)
+            )
+            raise ExchangeRequestError(error=e)
 
         return tickers
 

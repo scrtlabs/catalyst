@@ -9,7 +9,7 @@ from catalyst.exchange.exchange_errors import ExchangeRequestError, \
     ExchangePortfolioDataError, ExchangeTransactionError
 from catalyst.finance.blotter import Blotter
 from catalyst.finance.commission import CommissionModel
-from catalyst.finance.order import ORDER_STATUS, Order
+from catalyst.finance.order import ORDER_STATUS
 from catalyst.finance.slippage import SlippageModel
 from catalyst.finance.transaction import create_transaction, Transaction
 from catalyst.utils.input_validation import expect_types
@@ -60,12 +60,13 @@ class TradingPairFeeSchedule(CommissionModel):
         maker = self.maker if self.maker is not None else asset.maker
         taker = self.taker if self.taker is not None else asset.taker
 
-        multiplier = maker \
-            if ((order.amount > 0 and order.limit < transaction.price)
-                or (order.amount < 0 and order.limit > transaction.price)) \
-               and order.limit_reached else taker
+        multiplier = taker
+        if order.limit is not None:
+            multiplier = maker \
+                if ((order.amount > 0 and order.limit < transaction.price)
+                    or (order.amount < 0 and order.limit > transaction.price)) \
+                   and order.limit_reached else taker
 
-        # Assuming just the taker fee for now
         fee = cost * multiplier
         return fee
 
@@ -153,6 +154,7 @@ class ExchangeBlotter(Blotter):
 
         self.retry_delay = 5
         self.retry_check_open_orders = 5
+        self.retry_order = 5
 
     def exchange_order(self, asset, amount, style=None, attempt_index=0):
         try:

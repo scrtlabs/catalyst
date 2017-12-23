@@ -33,7 +33,6 @@ from catalyst.utils.sharedoc import copydoc
 
 
 class PipelineEngine(with_metaclass(ABCMeta)):
-
     @abstractmethod
     def run_pipeline(self, pipeline, start_date, end_date):
         """
@@ -118,6 +117,7 @@ class ExplodingPipelineEngine(PipelineEngine):
     """
     A PipelineEngine that doesn't do anything.
     """
+
     def run_pipeline(self, pipeline, start_date, end_date):
         raise NoEngineRegistered(
             "Attempted to run a pipeline but no pipeline "
@@ -484,8 +484,9 @@ class SimplePipelineEngine(PipelineEngine):
             )
 
             if isinstance(term, LoadableTerm):
+                term_key = loader_group_key(term)
                 to_load = sorted(
-                    loader_groups[loader_group_key(term)],
+                    loader_groups[term_key],
                     key=lambda t: t.dataset
                 )
                 loader = get_loader(term)

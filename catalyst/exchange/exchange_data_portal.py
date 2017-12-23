@@ -339,7 +339,7 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
             field=field,
             data_frequency=adj_data_frequency,
             algo_end_dt=self._last_available_session,
-            trailing_bar_count=trailing_bar_count
+            trailing_bar_count=trailing_bar_count,
         )
 
         df = resample_history_df(pd.DataFrame(series), freq, field)

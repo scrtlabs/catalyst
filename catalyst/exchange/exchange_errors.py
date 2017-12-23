@@ -33,22 +33,22 @@ class ExchangeRequestErrorTooManyAttempts(ZiplineError):
 
 class ExchangeBarDataError(ZiplineError):
     msg = (
-        'Unable to retrieve bar data: {data_type}, ' +
-        'giving up after {attempts} attempts: {error}'
+            'Unable to retrieve bar data: {data_type}, ' +
+            'giving up after {attempts} attempts: {error}'
     ).strip()
 
 
 class ExchangePortfolioDataError(ZiplineError):
     msg = (
-        'Unable to retrieve portfolio data: {data_type}, ' +
-        'giving up after {attempts} attempts: {error}'
+            'Unable to retrieve portfolio data: {data_type}, ' +
+            'giving up after {attempts} attempts: {error}'
     ).strip()
 
 
 class ExchangeTransactionError(ZiplineError):
     msg = (
-        'Unable to execute transaction: {transaction_type}, ' +
-        'giving up after {attempts} attempts: {error}'
+            'Unable to execute transaction: {transaction_type}, ' +
+            'giving up after {attempts} attempts: {error}'
     ).strip()
 
 
@@ -97,6 +97,12 @@ class InvalidHistoryFrequencyAlias(ZiplineError):
 class InvalidHistoryFrequencyError(ZiplineError):
     msg = (
         'Frequency {frequency} not supported by the exchange.'
+    ).strip()
+
+
+class InvalidHistoryTimeframeError(ZiplineError):
+    msg = (
+        'CCXT timeframe {timeframe} not supported by the exchange.'
     ).strip()
 
 
@@ -263,6 +269,7 @@ class NotEnoughCapitalError(ZiplineError):
         'exchange should contain at least as much {base_currency} '
         'as the specified `capital_base`. The current balance {balance} is '
         'lower than the `capital_base`: {capital_base}').strip()
+
 
 class LastCandleTooEarlyError(ZiplineError):
     msg = (
