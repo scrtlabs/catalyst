@@ -10,10 +10,15 @@ from catalyst.exchange.exchange_utils import get_exchange_auth, \
     get_exchange_folder, is_blacklist
 
 log = Logger('factory', level=LOG_LEVEL)
+exchange_cache = dict()
 
 
 def get_exchange(exchange_name, base_currency=None, must_authenticate=False,
                  skip_init=False):
+    key = (exchange_name, base_currency)
+    if key in exchange_cache:
+        return exchange_cache[key]
+
     exchange_auth = get_exchange_auth(exchange_name)
 
     has_auth = (exchange_auth['key'] != '' and exchange_auth['secret'] != '')
@@ -31,6 +36,7 @@ def get_exchange(exchange_name, base_currency=None, must_authenticate=False,
         secret=exchange_auth['secret'],
         base_currency=base_currency,
     )
+    exchange_cache[key] = exchange
 
     if not skip_init:
         exchange.init()

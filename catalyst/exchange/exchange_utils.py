@@ -309,7 +309,8 @@ def get_algo_object(algo_name, key, environ=None, rel_path=None):
         return None
 
 
-def save_algo_object(algo_name, key, obj, environ=None, rel_path=None):
+def save_algo_object(algo_name, key, obj, environ=None, rel_path=None,
+                     how='pickle'):
     """
     Serialize and save an object by algo name and key.
 
@@ -328,10 +329,15 @@ def save_algo_object(algo_name, key, obj, environ=None, rel_path=None):
         folder = os.path.join(folder, rel_path)
         ensure_directory(folder)
 
-    filename = os.path.join(folder, key + '.p')
+    if how == 'json':
+        filename = os.path.join(folder, '{}.json'.format(key))
+        with open(filename, 'wt') as handle:
+            json.dump(obj, handle, indent=4, default=symbols_serial)
 
-    with open(filename, 'wb') as handle:
-        pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    else:
+        filename = os.path.join(folder, '{}.p'.format(key))
+        with open(filename, 'wb') as handle:
+            pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def get_algo_df(algo_name, key, environ=None, rel_path=None):

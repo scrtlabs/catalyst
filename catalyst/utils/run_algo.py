@@ -15,8 +15,6 @@ from catalyst.data.data_portal import DataPortal
 from catalyst.exchange.exchange_pricing_loader import ExchangePricingLoader, \
     TradingPairPricing
 from catalyst.exchange.factory import get_exchange
-from catalyst.pipeline import USEquityPricingLoader
-from catalyst.pipeline.data import USEquityPricing
 
 try:
     from pygments import highlight
@@ -41,7 +39,7 @@ from catalyst.exchange.exchange_algorithm import (
 )
 from catalyst.exchange.exchange_data_portal import DataPortalExchangeLive, \
     DataPortalExchangeBacktest
-from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
+from catalyst.exchange.exchange_asset_finder import ExchangeAssetFinder
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError, ExchangeRequestErrorTooManyAttempts,
     BaseCurrencyNotFoundError, NotEnoughCapitalError)
@@ -161,6 +159,7 @@ def _run(handle_data,
             exchange_name=exchange_name,
             base_currency=base_currency,
             must_authenticate=(live and not simulate_orders),
+            skip_init=True,
         )
 
     open_calendar = get_calendar('OPEN')
@@ -176,7 +175,7 @@ def _run(handle_data,
         exchange_tz='UTC',
         asset_db_path=None  # We don't need an asset db, we have exchanges
     )
-    env.asset_finder = AssetFinderExchange()
+    env.asset_finder = ExchangeAssetFinder(exchanges=exchanges)
 
     def choose_loader(column):
         bound_cols = TradingPairPricing.columns

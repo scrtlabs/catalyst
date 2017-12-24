@@ -42,6 +42,7 @@ from catalyst.exchange.simple_clock import SimpleClock
 from catalyst.exchange.stats_utils import get_pretty_stats, stats_to_s3, \
     stats_to_algo_folder
 from catalyst.finance.execution import MarketOrder
+from catalyst.finance.performance import PerformanceTracker
 from catalyst.finance.performance.period import calc_period_stats
 from catalyst.gens.tradesimulation import AlgorithmSimulator
 from catalyst.utils.api_support import api_method
@@ -433,24 +434,37 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
 
     def _create_generator(self, sim_params):
         if self.perf_tracker is None:
-            self.perf_tracker = get_algo_object(
-                algo_name=self.algo_namespace,
-                key='perf_tracker'
+            self.perf_tracker = PerformanceTracker(
+                sim_params=self.sim_params,
+                trading_calendar=self.trading_calendar,
+                env=self.trading_environment,
             )
+
+            # Unpacking the perf_tracker and positions if available
+            perf = get_algo_object(
+                algo_name=self.algo_namespace,
+                key='perf_tracker',
+            )
+            if perf is not None:
+                positions = get_algo_object(
+                    algo_name=self.algo_namespace,
+                    key='positions',
+                )
+                self.perf_tracker.period_start = perf['period_start']
+                self.perf_tracker.position_tracker.positions = positions
 
         # Call the simulation trading algorithm for side-effects:
         # it creates the perf tracker
         TradingAlgorithm._create_generator(self, sim_params)
         self.trading_client = ExchangeAlgorithmExecutor(
-            self,
-            sim_params,
-            self.data_portal,
-            self.clock,
-            self._create_benchmark_source(),
-            self.restrictions,
+            algo=self,
+            sim_params=sim_params,
+            data_portal=self.data_portal,
+            clock=self.clock,
+            benchmark_source=self._create_benchmark_source(),
+            restrictions=self.restrictions,
             universe_func=self._calculate_universe
         )
-
         return self.trading_client.transform()
 
     def updated_portfolio(self):
@@ -658,14 +672,19 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             log.warn('unable to calculate performance: {}'.format(e))
 
         # TODO: pickle does not seem to work in python 3
-        try:
-            save_algo_object(
-                algo_name=self.algo_namespace,
-                key='perf_tracker',
-                obj=self.perf_tracker
-            )
-        except Exception as e:
-            log.warn('unable to save minute perfs to disk: {}'.format(e))
+        # try:
+        save_algo_object(
+            algo_name=self.algo_namespace,
+            key='perf_tracker',
+            obj=self.perf_tracker.to_dict(emission_type=self.data_frequency),
+        )
+        save_algo_object(
+            algo_name=self.algo_namespace,
+            key='positions',
+            obj=self.perf_tracker.position_tracker.positions,
+        )
+        # except Exception as e:
+        #     log.warn('unable to save perf_tracker to disk: {}'.format(e))
 
         self.current_day = data.current_dt.floor('1D')
 

@@ -5,7 +5,7 @@ from logbook import Logger
 from pandas.util.testing import assert_frame_equal
 
 from catalyst import get_calendar
-from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
+from catalyst.exchange.exchange_asset_finder import ExchangeAssetFinder
 from catalyst.exchange.exchange_data_portal import DataPortalExchangeBacktest
 from catalyst.exchange.exchange_utils import get_candles_df
 from catalyst.exchange.factory import get_exchange
@@ -24,7 +24,7 @@ class TestSuiteBundle:
     @staticmethod
     def get_data_portal(exchange_names):
         open_calendar = get_calendar('OPEN')
-        asset_finder = AssetFinderExchange()
+        asset_finder = ExchangeAssetFinder()
 
         data_portal = DataPortalExchangeBacktest(
             exchange_names=exchange_names,

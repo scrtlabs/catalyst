@@ -7,6 +7,7 @@ from abc import (
 )
 from uuid import uuid4
 
+import six
 from six import (
     iteritems,
     with_metaclass,
@@ -485,8 +486,9 @@ class SimplePipelineEngine(PipelineEngine):
 
             if isinstance(term, LoadableTerm):
                 term_key = loader_group_key(term)
+                # TODO: temp workaround
                 to_load = sorted(
-                    loader_groups[term_key],
+                    six.next(six.itervalues(loader_groups)),
                     key=lambda t: t.dataset
                 )
                 loader = get_loader(term)

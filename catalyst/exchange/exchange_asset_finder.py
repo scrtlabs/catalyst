@@ -1,16 +1,17 @@
 from logbook import Logger
 
 from catalyst.constants import LOG_LEVEL
+from catalyst.errors import SidsNotFound
 from catalyst.exchange.factory import find_exchanges
 
 import pandas as pd
 
-log = Logger('AssetFinderExchange', level=LOG_LEVEL)
+log = Logger('ExchangeAssetFinder', level=LOG_LEVEL)
 
 
-class AssetFinderExchange(object):
-    def __init__(self):
-        self._asset_cache = {}
+class ExchangeAssetFinder(object):
+    def __init__(self, exchanges):
+        self.exchanges = exchanges
 
     @property
     def sids(self):
@@ -19,7 +20,33 @@ class AssetFinderExchange(object):
         I don't think that we need this for live-trading.
         Leaving the list empty.
         """
-        return list()
+        all_sids = []
+        for exchange_name in self.exchanges:
+            # This is what initializes each exchanges at the beginning
+            # of an algo
+            exchange = self.exchanges[exchange_name]
+            exchange.init()
+
+            all_sids += [asset.sid for asset in exchange.assets]
+
+        sids = list(set(all_sids))
+        return sids
+
+    def retrieve_asset(self, sid, default_none=False):
+        """
+        Retrieve the first Asset found for a given sid.
+        """
+        asset = None
+        for exchange_name in self.exchanges:
+            if asset is not None:
+                break
+
+            exchange = self.exchanges[exchange_name]
+            assets = [asset for asset in exchange.assets if asset.sid == sid]
+            if assets:
+                asset = assets[0]
+
+        return asset
 
     def retrieve_all(self, sids, default_none=False):
         """
@@ -44,12 +71,13 @@ class AssetFinderExchange(object):
         SidsNotFound
             When a requested sid is not found and default_none=False.
         """
-        # for sid in sids:
-        #     if sid in self._asset_cache:
-        #         log.debug('got asset from cache: {}'.format(sid))
-        #     else:
-        #         log.debug('fetching asset: {}'.format(sid))
-        return list()
+        assets = []
+        for exchange_name in self.exchanges:
+            exchange = self.exchanges[exchange_name]
+            xas = [asset for asset in exchange.assets if asset.sid in sids]
+            assets += xas
+
+        return assets
 
     def lookup_symbol(self, symbol, exchange, data_frequency=None,
                       as_of_date=None, fuzzy=False):
@@ -88,18 +116,7 @@ class AssetFinderExchange(object):
         """
         log.debug('looking up symbol: {} {}'.format(symbol, exchange.name))
 
-        if data_frequency is not None:
-            key = ','.join([exchange.name, symbol, data_frequency])
-
-        else:
-            key = ','.join([exchange.name, symbol])
-
-        if key in self._asset_cache:
-            return self._asset_cache[key]
-        else:
-            asset = exchange.get_asset(symbol, data_frequency)
-            self._asset_cache[key] = asset
-            return asset
+        return exchange.get_asset(symbol, data_frequency)
 
     def lifetimes(self, dates, include_start_date):
         """
@@ -160,6 +177,6 @@ class AssetFinderExchange(object):
             data.append(exists)
 
         sids = [asset.sid for asset in exchange.assets]
-        df = pd.DataFrame(data, index=dates, columns=sids)
+        df = pd.DataFrame(data, index=dates, columns=exchange.assets)
 
         return df

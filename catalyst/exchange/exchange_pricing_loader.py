@@ -11,12 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from logbook import Logger
 from numpy import (
     iinfo,
     uint32,
 )
 
+from catalyst.constants import LOG_LEVEL
 from catalyst.data.us_equity_pricing import BcolzDailyBarReader
+from catalyst.exchange.factory import get_exchange
 from catalyst.lib.adjusted_array import AdjustedArray
 from catalyst.errors import NoFurtherDataError
 from catalyst.pipeline.data import DataSet, Column
@@ -25,6 +28,8 @@ from catalyst.utils.calendars import get_calendar
 from catalyst.utils.numpy_utils import float64_dtype
 
 UINT32_MAX = iinfo(uint32).max
+
+log = Logger('ExchangePriceLoader', level=LOG_LEVEL)
 
 
 class TradingPairPricing(DataSet):
@@ -62,6 +67,7 @@ class ExchangePricingLoader(PipelineLoader):
                 'Invalid data frequency: {}'.format(data_frequency)
             )
 
+        self.data_frequency = data_frequency
         self.raw_price_loader = reader
         self._columns = TradingPairPricing.columns
         self._all_sessions = all_sessions
@@ -91,7 +97,21 @@ class ExchangePricingLoader(PipelineLoader):
             self._all_sessions, dates[0], dates[-1], shift=1,
         )
         colnames = [c.name for c in columns]
-        raw_arrays = self.raw_price_loader.load_raw_arrays(
+
+        if len(assets) == 0:
+            raise ValueError(
+                'Pipeline cannot load data with eligible assets.'
+            )
+
+        exchange_names = []
+        for asset in assets:
+            if asset.exchange not in exchange_names:
+                exchange_names.append(asset.exchange)
+
+        exchange = get_exchange(exchange_names[0])
+        reader = exchange.bundle.get_reader(self.data_frequency)
+
+        raw_arrays = reader.load_raw_arrays(
             colnames,
             start_date,
             end_date,
