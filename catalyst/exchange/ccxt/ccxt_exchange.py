@@ -68,6 +68,7 @@ class CCXT(Exchange):
 
         self.num_candles_limit = 2000
         self.max_requests_per_minute = 60
+        self.low_balance_threshold = 0.1
         self.request_cpt = dict()
 
         self.bundle = ExchangeBundle(self.name)

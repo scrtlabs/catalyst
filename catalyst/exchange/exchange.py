@@ -16,7 +16,8 @@ from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
     PricingDataNotLoadedError, \
-    NoDataAvailableOnExchange, NoValueForField, LastCandleTooEarlyError
+    NoDataAvailableOnExchange, NoValueForField, LastCandleTooEarlyError, \
+    TickerNotFoundError, BalanceNotFoundError, BalanceTooLowError
 from catalyst.exchange.exchange_utils import get_exchange_symbols, \
     get_frequency, resample_history_df, has_bundle
 from catalyst.utils.deprecate import deprecated
@@ -39,6 +40,8 @@ class Exchange:
         self.max_requests_per_minute = None
         self.request_cpt = None
         self.bundle = ExchangeBundle(self.name)
+
+        self.low_balance_threshold = None
 
     @abstractproperty
     def account(self):
@@ -651,16 +654,56 @@ class Exchange:
 
         return df
 
-    def calculate_totals(self, check_cash=False, positions=None):
+    def _check_low_balance(self, currency, balances, amount):
+        free = balances[currency]['free'] \
+            if currency in balances else None
+
+        if free is None or free == 0:
+            raise BalanceNotFoundError(
+                currency=currency,
+                exchange=self.name,
+                balances=balances,
+            )
+
+        if free < amount:
+            limit = amount * (1 - self.low_balance_threshold)
+            if free < limit:
+                raise BalanceTooLowError(
+                    currency=currency,
+                    exchange=self.name,
+                    free=free,
+                    amount=amount,
+                )
+
+            log.debug(
+                'detected lower balance for {} on {}: {} < {}, '
+                'updating position amount'.format(
+                    currency, self.name, free, amount
+                )
+            )
+            return free, True
+
+        else:
+            return free, False
+
+    def sync_positions(self, positions, check_balances=False):
         """
         Update the portfolio cash and position balances based on the
         latest ticker prices.
+
+        Parameters
+        ----------
+        positions:
+            The positions to synchronize.
+
+        check_balances:
+            Check balances amounts against the exchange.
 
         """
         log.debug('synchronizing portfolio with exchange {}'.format(self.name))
 
         cash = None
-        if check_cash:
+        if check_balances:
             balances = self.get_balances()
 
             cash = balances[self.base_currency]['free'] \
@@ -669,26 +712,51 @@ class Exchange:
             if cash is None:
                 raise BaseCurrencyNotFoundError(
                     base_currency=self.base_currency,
-                    exchange=self.name
+                    exchange=self.name,
+                    balances=balances,
                 )
             log.debug('found base currency balance: {}'.format(cash))
 
         positions_value = 0.0
-        if positions:
+        if positions is not None:
             assets = set([position.asset for position in positions])
             tickers = self.tickers(assets)
-            log.debug('got tickers for positions: {}'.format(tickers))
 
-            for asset in tickers:
+            for position in positions:
+                asset = position.asset
+                if asset not in tickers:
+                    raise TickerNotFoundError(
+                        symbol=asset.symbol,
+                        exchange=self.name,
+                    )
+
                 ticker = tickers[asset]
-                positions = [p for p in positions if p.asset == asset]
+                log.debug(
+                    'updating {} position with ticker: {}'.format(
+                        asset.symbol, ticker
+                    )
+                )
+                position.last_sale_price = ticker['last_price']
+                position.last_sale_date = ticker['last_traded']
 
-                for position in positions:
-                    position.last_sale_price = ticker['last_price']
-                    position.last_sale_date = ticker['last_traded']
+                positions_value += \
+                    position.amount * position.last_sale_price
 
-                    positions_value += \
-                        position.amount * position.last_sale_price
+                if check_balances:
+                    free, is_lower = self._check_low_balance(
+                        currency=asset.base_currency,
+                        balances=balances,
+                        amount=position.amount,
+                    )
+
+                    if is_lower:
+                        log.debug(
+                            'detected lower balance for {} on {}: {} < {}, '
+                            'updating position amount'.format(
+                                asset.symbol, self.name, free, position.amount
+                            )
+                        )
+                        position.amount = free
 
         return cash, positions_value
 

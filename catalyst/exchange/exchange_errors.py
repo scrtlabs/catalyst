@@ -33,22 +33,22 @@ class ExchangeRequestErrorTooManyAttempts(ZiplineError):
 
 class ExchangeBarDataError(ZiplineError):
     msg = (
-            'Unable to retrieve bar data: {data_type}, ' +
-            'giving up after {attempts} attempts: {error}'
+        'Unable to retrieve bar data: {data_type}, ' +
+        'giving up after {attempts} attempts: {error}'
     ).strip()
 
 
 class ExchangePortfolioDataError(ZiplineError):
     msg = (
-            'Unable to retrieve portfolio data: {data_type}, ' +
-            'giving up after {attempts} attempts: {error}'
+        'Unable to retrieve portfolio data: {data_type}, ' +
+        'giving up after {attempts} attempts: {error}'
     ).strip()
 
 
 class ExchangeTransactionError(ZiplineError):
     msg = (
-            'Unable to execute transaction: {transaction_type}, ' +
-            'giving up after {attempts} attempts: {error}'
+        'Unable to execute transaction: {transaction_type}, ' +
+        'giving up after {attempts} attempts: {error}'
     ).strip()
 
 
@@ -168,8 +168,8 @@ class SidHashError(ZiplineError):
 
 class BaseCurrencyNotFoundError(ZiplineError):
     msg = (
-        'Algorithm base currency {base_currency} not found in exchange '
-        '{exchange}.'
+        'Algorithm base currency {base_currency} not found in account '
+        'balances on {exchange}: {balances}'
     ).strip()
 
 
@@ -232,16 +232,20 @@ class PricingDataValueError(ZiplineError):
 
 
 class DataCorruptionError(ZiplineError):
-    msg = ('Unable to validate data for {exchange} {symbols} in date range '
-           '[{start_dt} - {end_dt}]. The data is either corrupted or '
-           'unavailable. Please try deleting this bundle:'
-           '\n`catalyst clean-exchange -x {exchange}\n'
-           'Then, ingest the data again. Please contact the Catalyst team if '
-           'the issue persists.').strip()
+    msg = (
+        'Unable to validate data for {exchange} {symbols} in date range '
+        '[{start_dt} - {end_dt}]. The data is either corrupted or '
+        'unavailable. Please try deleting this bundle:'
+        '\n`catalyst clean-exchange -x {exchange}\n'
+        'Then, ingest the data again. Please contact the Catalyst team if '
+        'the issue persists.'
+    ).strip()
 
 
 class ApiCandlesError(ZiplineError):
-    msg = ('Unable to fetch candles from the remote API: {error}.').strip()
+    msg = (
+        'Unable to fetch candles from the remote API: {error}.'
+    ).strip()
 
 
 class NoDataAvailableOnExchange(ZiplineError):
@@ -254,13 +258,16 @@ class NoDataAvailableOnExchange(ZiplineError):
 
 
 class NoValueForField(ZiplineError):
-    msg = ('Value not found for field: {field}.').strip()
+    msg = (
+        'Value not found for field: {field}.'
+    ).strip()
 
 
 class OrderTypeNotSupported(ZiplineError):
     msg = (
-        'Order type `{order_type}` not currencly supported by Catalyst. '
-        'Please use `limit` or `market` orders only.').strip()
+        'Order type `{order_type}` not currency supported by Catalyst. '
+        'Please use `limit` or `market` orders only.'
+    ).strip()
 
 
 class NotEnoughCapitalError(ZiplineError):
@@ -268,11 +275,43 @@ class NotEnoughCapitalError(ZiplineError):
         'Not enough capital on exchange {exchange} for trading. Each '
         'exchange should contain at least as much {base_currency} '
         'as the specified `capital_base`. The current balance {balance} is '
-        'lower than the `capital_base`: {capital_base}').strip()
+        'lower than the `capital_base`: {capital_base}'
+    ).strip()
 
 
 class LastCandleTooEarlyError(ZiplineError):
     msg = (
         'The trade date of the last candle {last_traded} is before the '
         'specified end date minus one candle {end_dt}. Please verify how '
-        '{exchange} calculates the start date of OHLCV candles.').strip()
+        '{exchange} calculates the start date of OHLCV candles.'
+    ).strip()
+
+
+class TickerNotFoundError(ZiplineError):
+    msg = (
+        'Unable to fetch ticker for {symbol} on {exchange}.'
+    ).strip()
+
+
+class BalanceNotFoundError(ZiplineError):
+    msg = (
+        '{currency} not found in account balance on {exchange}: {balances}.'
+    ).strip()
+
+
+class BalanceTooLowError(ZiplineError):
+    msg = (
+        'Balance for {currency} on {exchange} too low: {free} < {amount}. '
+        'Positions have likely been sold outside of this algorithm. Please '
+        'add positions to hold a free amount greater than {amount}, or clean '
+        'the state of this algo and restart.'
+    ).strip()
+
+
+class CashTooLowError(ZiplineError):
+    msg = (
+        'Total {currency} amount on exchanges is lower than the cash reserved '
+        'for this algo: {free} < {cash}. While trades can be made on the '
+        'exchange accounts outside of the algo, they must not compromise '
+        'the required amount of free {currency}.'
+    ).strip()

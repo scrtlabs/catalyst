@@ -18,6 +18,7 @@ from os import listdir
 from os.path import isfile, join
 from time import sleep
 
+import copy
 import logbook
 import pandas as pd
 
@@ -28,7 +29,7 @@ from catalyst.exchange.exchange_blotter import ExchangeBlotter
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     ExchangePortfolioDataError,
-    OrderTypeNotSupported, )
+    OrderTypeNotSupported, CashTooLowError)
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.exchange_utils import (
     save_algo_object,
@@ -495,6 +496,8 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             The total value of all tracked positions.
 
         """
+        check_balances = (not self.simulate_orders)
+        base_currency = None
         tracker = self.perf_tracker.position_tracker
         total_cash = 0.0
         total_positions_value = 0.0
@@ -508,33 +511,42 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                 assets = exchange_assets[exchange_name] \
                     if exchange_name in exchange_assets else []
 
-                exchange_positions = \
+                exchange_positions = copy.deepcopy(
                     [positions[asset] for asset in assets]
-
-                check_cash = (not self.simulate_orders)
+                )
 
                 exchange = self.exchanges[exchange_name]  # Type: Exchange
-                cash, positions_value = exchange.calculate_totals(
-                    positions=exchange_positions,
-                    check_cash=check_cash,
-                )
-                total_positions_value += positions_value
 
+                if base_currency is None:
+                    base_currency = exchange.base_currency
+
+                cash, positions_value = exchange.sync_positions(
+                    positions=exchange_positions,
+                    check_balances=check_balances,
+                )
                 if cash is not None:
                     total_cash += cash
 
+                total_positions_value += positions_value
+
+                # Applying modifications to the original positions
                 for position in exchange_positions:
                     tracker.update_position(
                         asset=position.asset,
+                        amount=position.amount,
                         last_sale_date=position.last_sale_date,
-                        last_sale_price=position.last_sale_price
+                        last_sale_price=position.last_sale_price,
                     )
 
-            if cash is None:
+            if not check_balances:
                 total_cash = self.portfolio.cash
 
             elif total_cash < self.portfolio.cash:
-                raise ValueError('Cash on exchanges is lower than the algo.')
+                raise CashTooLowError(
+                    currency=self.exchanges[0].base_currency,
+                    free=total_cash,
+                    cash=self.portfolio.cash,
+                )
 
             return total_cash, total_positions_value
 
