@@ -553,6 +553,11 @@ def get_frequency(freq, data_frequency):
         else:
             raise InvalidHistoryFrequencyError(frequency=freq)
 
+    # TODO: some exchanges support H and W frequencies but not bundles
+    # Find a way to pass-through these parameters to exchanges
+    # but resample from minute or daily in backtest mode
+    # see catalyst/exchange/ccxt/ccxt_exchange.py:242 for mapping between
+    # Pandas offet aliases (used by Catalyst) and the CCXT timeframes
     if unit.lower() == 'd':
         alias = '{}D'.format(candle_size)
 
