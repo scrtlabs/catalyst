@@ -279,6 +279,15 @@ class NotEnoughCapitalError(ZiplineError):
     ).strip()
 
 
+class NotEnoughCashError(ZiplineError):
+    msg = (
+        'Total {currency} amount on {exchange} is lower than the cash '
+        'reserved for this algo: {free} < {cash}. While trades can be made on '
+        'the exchange accounts outside of the algo, exchange must have enough '
+        'free {currency} to cover the algo cash.'
+    ).strip()
+
+
 class LastCandleTooEarlyError(ZiplineError):
     msg = (
         'The trade date of the last candle {last_traded} is before the '
@@ -305,13 +314,4 @@ class BalanceTooLowError(ZiplineError):
         'Positions have likely been sold outside of this algorithm. Please '
         'add positions to hold a free amount greater than {amount}, or clean '
         'the state of this algo and restart.'
-    ).strip()
-
-
-class CashTooLowError(ZiplineError):
-    msg = (
-        'Total {currency} amount on exchanges is lower than the cash reserved '
-        'for this algo: {free} < {cash}. While trades can be made on the '
-        'exchange accounts outside of the algo, they must not compromise '
-        'the required amount of free {currency}.'
     ).strip()

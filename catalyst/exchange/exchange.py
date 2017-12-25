@@ -3,7 +3,6 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 from datetime import timedelta
 from time import sleep
 
-import ccxt
 import numpy as np
 import pandas as pd
 from logbook import Logger
@@ -14,13 +13,12 @@ from catalyst.exchange.bundle_utils import get_start_dt, \
     get_delta, get_periods, get_periods_range
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
-    BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
+    SymbolNotFoundOnExchange, \
     PricingDataNotLoadedError, \
     NoDataAvailableOnExchange, NoValueForField, LastCandleTooEarlyError, \
-    TickerNotFoundError, BalanceNotFoundError, BalanceTooLowError
+    TickerNotFoundError, BalanceNotFoundError, NotEnoughCashError
 from catalyst.exchange.exchange_utils import get_exchange_symbols, \
     get_frequency, resample_history_df, has_bundle
-from catalyst.utils.deprecate import deprecated
 
 log = Logger('Exchange', level=LOG_LEVEL)
 
@@ -666,27 +664,12 @@ class Exchange:
             )
 
         if free < amount:
-            limit = amount * (1 - self.low_balance_threshold)
-            if free < limit:
-                raise BalanceTooLowError(
-                    currency=currency,
-                    exchange=self.name,
-                    free=free,
-                    amount=amount,
-                )
-
-            log.debug(
-                'detected lower balance for {} on {}: {} < {}, '
-                'updating position amount'.format(
-                    currency, self.name, free, amount
-                )
-            )
             return free, True
 
         else:
             return free, False
 
-    def sync_positions(self, positions, check_balances=False):
+    def sync_positions(self, positions, cash=None, check_balances=False):
         """
         Update the portfolio cash and position balances based on the
         latest ticker prices.
@@ -702,20 +685,23 @@ class Exchange:
         """
         log.debug('synchronizing portfolio with exchange {}'.format(self.name))
 
-        cash = None
+        free_cash = 0.0
         if check_balances:
             balances = self.get_balances()
 
-            cash = balances[self.base_currency]['free'] \
-                if self.base_currency in balances else None
-
-            if cash is None:
-                raise BaseCurrencyNotFoundError(
-                    base_currency=self.base_currency,
-                    exchange=self.name,
+            if cash is not None:
+                free_cash, is_lower = self._check_low_balance(
+                    currency=self.base_currency,
                     balances=balances,
+                    amount=cash,
                 )
-            log.debug('found base currency balance: {}'.format(cash))
+                if is_lower:
+                    raise NotEnoughCashError(
+                        currency=self.base_currency,
+                        exchange=self.name,
+                        free=free_cash,
+                        cash=cash,
+                    )
 
         positions_value = 0.0
         if positions is not None:
@@ -750,7 +736,7 @@ class Exchange:
                     )
 
                     if is_lower:
-                        log.debug(
+                        log.warn(
                             'detected lower balance for {} on {}: {} < {}, '
                             'updating position amount'.format(
                                 asset.symbol, self.name, free, position.amount
@@ -758,7 +744,7 @@ class Exchange:
                         )
                         position.amount = free
 
-        return cash, positions_value
+        return free_cash, positions_value
 
     def order(self, asset, amount, style):
         """Place an order.

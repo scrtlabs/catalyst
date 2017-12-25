@@ -10,6 +10,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import copy
 import pickle
 import signal
 import sys
@@ -18,7 +19,6 @@ from os import listdir
 from os.path import isfile, join
 from time import sleep
 
-import copy
 import logbook
 import pandas as pd
 
@@ -29,7 +29,7 @@ from catalyst.exchange.exchange_blotter import ExchangeBlotter
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     ExchangePortfolioDataError,
-    OrderTypeNotSupported, CashTooLowError)
+    OrderTypeNotSupported)
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.exchange_utils import (
     save_algo_object,
@@ -523,10 +523,9 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                 cash, positions_value = exchange.sync_positions(
                     positions=exchange_positions,
                     check_balances=check_balances,
+                    cash=self.portfolio.cash,
                 )
-                if cash is not None:
-                    total_cash += cash
-
+                total_cash += cash
                 total_positions_value += positions_value
 
                 # Applying modifications to the original positions
@@ -540,13 +539,6 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
 
             if not check_balances:
                 total_cash = self.portfolio.cash
-
-            elif total_cash < self.portfolio.cash:
-                raise CashTooLowError(
-                    currency=self.exchanges[0].base_currency,
-                    free=total_cash,
-                    cash=self.portfolio.cash,
-                )
 
             return total_cash, total_positions_value
 
