@@ -568,9 +568,10 @@ class SimplePipelineEngine(PipelineEngine):
                 index=MultiIndex.from_arrays([empty_dates, empty_assets]),
             )
 
-        resolved_assets = array(self._finder.retrieve_all(assets))
+        # TODO: not sure what's wrong with the resolved_assets
+        # resolved_assets = array(self._finder.retrieve_all(assets))
         dates_kept = repeat_last_axis(dates.values, len(assets))[mask]
-        assets_kept = repeat_first_axis(resolved_assets, len(dates))[mask]
+        assets_kept = repeat_first_axis(assets, len(dates))[mask]
 
         final_columns = {}
         for name in data:
