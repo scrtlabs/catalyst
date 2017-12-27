@@ -14,6 +14,8 @@ from six.moves.urllib import request
 from catalyst.constants import DATE_FORMAT, SYMBOLS_URL
 from catalyst.exchange.exchange_errors import ExchangeSymbolsNotFound, \
     InvalidHistoryFrequencyError, InvalidHistoryFrequencyAlias
+from catalyst.exchange.utils.serialization import ExchangeJSONEncoder, \
+    ExchangeJSONDecoder
 from catalyst.utils.paths import data_root, ensure_directory, \
     last_modified_time
 
@@ -108,20 +110,6 @@ def download_exchange_symbols(exchange_name, environ=None):
     return response
 
 
-def symbols_parser(asset_def):
-    for key, value in asset_def.items():
-        match = isinstance(value, string_types) \
-                and re.search(r'(\d{4}-\d{2}-\d{2})', value)
-
-        if match:
-            try:
-                asset_def[key] = pd.to_datetime(value, utc=True)
-            except ValueError:
-                pass
-
-    return asset_def
-
-
 def get_exchange_symbols(exchange_name, is_local=False, environ=None):
     """
     The de-serialized content of the exchange's symbols.json.
@@ -147,7 +135,7 @@ def get_exchange_symbols(exchange_name, is_local=False, environ=None):
     if os.path.isfile(filename):
         with open(filename) as data_file:
             try:
-                data = json.load(data_file, object_hook=symbols_parser)
+                data = json.load(data_file, cls=ExchangeJSONDecoder)
                 return data
 
             except ValueError:
@@ -273,7 +261,7 @@ def get_algo_folder(algo_name, environ=None):
     return algo_folder
 
 
-def get_algo_object(algo_name, key, environ=None, rel_path=None):
+def get_algo_object(algo_name, key, environ=None, rel_path=None, how='pickle'):
     """
     The de-serialized object of the algo name and key.
 
@@ -297,14 +285,19 @@ def get_algo_object(algo_name, key, environ=None, rel_path=None):
     if rel_path is not None:
         folder = os.path.join(folder, rel_path)
 
-    filename = os.path.join(folder, key + '.p')
+    name = '{}.p'.format(key) if how == 'pickle' else '{}.json'.format(key)
+    filename = os.path.join(folder, name)
 
     if os.path.isfile(filename):
-        try:
+        if how == 'pickle':
             with open(filename, 'rb') as handle:
                 return pickle.load(handle)
-        except Exception:
-            return None
+
+        else:
+            with open(filename) as data_file:
+                data = json.load(data_file, cls=ExchangeJSONDecoder)
+                return data
+
     else:
         return None
 
@@ -332,7 +325,7 @@ def save_algo_object(algo_name, key, obj, environ=None, rel_path=None,
     if how == 'json':
         filename = os.path.join(folder, '{}.json'.format(key))
         with open(filename, 'wt') as handle:
-            json.dump(obj, handle, indent=4, default=symbols_serial)
+            json.dump(obj, handle, indent=4, cls=ExchangeJSONEncoder)
 
     else:
         filename = os.path.join(folder, '{}.p'.format(key))

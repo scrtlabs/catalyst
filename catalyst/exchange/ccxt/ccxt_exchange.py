@@ -583,28 +583,61 @@ class CCXT(Exchange):
             The Catalyst order object
 
         """
-        if order_status['status'] == 'canceled' \
-                or (order_status['status'] == 'closed'
-                    and order_status['filled'] == 0):
+        order_id = order_status['id']
+        symbol = self.get_symbol(order_status['symbol'], source='ccxt')
+        asset = self.get_asset(symbol)
+
+        s = order_status['status']
+        amount = order_status['amount']
+        filled = order_status['filled']
+
+        if s == 'canceled' or (s == 'closed' and filled == 0):
             status = ORDER_STATUS.CANCELLED
 
-        elif order_status['status'] == 'closed' and order_status['filled'] > 0:
-            log.debug('found executed order {}'.format(order_status))
+        elif s == 'closed' and filled > 0:
+            if filled < amount:
+                log.warn(
+                    'order {id} is executed but only partially filled:'
+                    ' {filled} {symbol} out of {amount}'.format(
+                        id=order_status['status'],
+                        filled=order_status['filled'],
+                        symbol=asset.symbol,
+                        amount=order_status['amount'],
+                    )
+                )
+            else:
+                log.info(
+                    'order {id} executed in full: {filled} {symbol}'.format(
+                        id=order_id,
+                        filled=filled,
+                        symbol=asset.symbol,
+                    )
+                )
+
             status = ORDER_STATUS.FILLED
 
-        elif order_status['status'] == 'open':
+        elif s == 'open':
+            status = ORDER_STATUS.OPEN
+
+        elif filled > 0:
+            log.info(
+                'order {id} partially filled: {filled} {symbol} out of '
+                '{amount}, waiting for complete execution'.format(
+                    id=order_id,
+                    filled=filled,
+                    symbol=asset.symbol,
+                    amount=amount,
+                )
+            )
             status = ORDER_STATUS.OPEN
 
         else:
             log.warn(
                 'invalid state {} for order {}'.format(
-                    order_status['status'], order_status['id']
+                    s, order_id
                 )
             )
             status = ORDER_STATUS.OPEN
-
-        amount = order_status['amount']
-        filled = order_status['filled']
 
         if order_status['side'] == 'sell':
             amount = -amount
@@ -614,21 +647,16 @@ class CCXT(Exchange):
         order_type = order_status['type']
 
         limit_price = price if order_type == 'limit' else None
-        stop_price = None  # TODO: add support
 
         executed_price = order_status['cost'] / order_status['amount']
         commission = order_status['fee']
         date = from_ms_timestamp(order_status['timestamp'])
 
-        # order_id = str(order_status['info']['clientOrderId'])
-        order_id = order_status['id']
-
-        symbol = self.get_symbol(order_status['symbol'], source='ccxt')
         order = Order(
             dt=date,
-            asset=self.get_asset(symbol),
+            asset=asset,
             amount=amount,
-            stop=stop_price,
+            stop=None,
             limit=limit_price,
             filled=filled,
             id=order_id,

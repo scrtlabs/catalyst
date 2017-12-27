@@ -653,15 +653,7 @@ class Exchange:
         return df
 
     def _check_low_balance(self, currency, balances, amount):
-        free = balances[currency]['free'] \
-            if currency in balances else None
-
-        if free is None or free == 0:
-            raise BalanceNotFoundError(
-                currency=currency,
-                exchange=self.name,
-                balances=balances,
-            )
+        free = balances[currency]['free'] if currency in balances else 0.0
 
         if free < amount:
             return free, True
@@ -683,12 +675,15 @@ class Exchange:
             Check balances amounts against the exchange.
 
         """
-        log.debug('synchronizing portfolio with exchange {}'.format(self.name))
-
         free_cash = 0.0
         if check_balances:
+            log.debug('fetching {} balances'.format(self.name))
             balances = self.get_balances()
-
+            log.debug(
+                'got free balances for {} currencies'.format(
+                    len(balances)
+                )
+            )
             if cash is not None:
                 free_cash, is_lower = self._check_low_balance(
                     currency=self.base_currency,
@@ -718,8 +713,12 @@ class Exchange:
 
                 ticker = tickers[asset]
                 log.debug(
-                    'updating {} position with ticker: {}'.format(
-                        asset.symbol, ticker
+                    'updating {symbol} position, last traded on {dt} for '
+                    '{price}{currency}'.format(
+                        symbol=asset.symbol,
+                        dt=ticker['last_traded'],
+                        price=ticker['last_price'],
+                        currency=asset.quote_currency,
                     )
                 )
                 position.last_sale_price = ticker['last_price']

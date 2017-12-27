@@ -42,14 +42,17 @@ from catalyst.exchange.live_graph_clock import LiveGraphClock
 from catalyst.exchange.simple_clock import SimpleClock
 from catalyst.exchange.stats_utils import get_pretty_stats, stats_to_s3, \
     stats_to_algo_folder
+from catalyst.exchange.utils.serialization import portfolio_to_dict
 from catalyst.finance.execution import MarketOrder
 from catalyst.finance.performance import PerformanceTracker
 from catalyst.finance.performance.period import calc_period_stats
+from catalyst.protocol import Positions, Position
 from catalyst.gens.tradesimulation import AlgorithmSimulator
 from catalyst.utils.api_support import api_method
 from catalyst.utils.input_validation import error_keywords, ensure_upper_case
 from catalyst.utils.math_utils import round_nearest
 from catalyst.utils.preprocess import preprocess
+from catalyst.protocol import Portfolio
 
 log = logbook.Logger('exchange_algorithm', level=LOG_LEVEL)
 
@@ -435,24 +438,47 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
 
     def _create_generator(self, sim_params):
         if self.perf_tracker is None:
-            self.perf_tracker = PerformanceTracker(
+            tracker = self.perf_tracker = PerformanceTracker(
                 sim_params=self.sim_params,
                 trading_calendar=self.trading_calendar,
                 env=self.trading_environment,
             )
-
             # Unpacking the perf_tracker and positions if available
             perf = get_algo_object(
                 algo_name=self.algo_namespace,
                 key='perf_tracker',
             )
             if perf is not None:
-                positions = get_algo_object(
+                # Unpack the position and converting dict or object
+                p = get_algo_object(
                     algo_name=self.algo_namespace,
-                    key='positions',
+                    key='portfolio',
+                    how='json',
                 )
-                self.perf_tracker.period_start = perf['period_start']
-                self.perf_tracker.position_tracker.positions = positions
+                portfolio = Portfolio()
+                portfolio.capital_used = p['capital_used']
+                portfolio.starting_cash = p['starting_cash']
+                portfolio.portfolio_value = p['portfolio_value']
+                portfolio.pnl = p['pnl']
+                portfolio.returns = p['returns']
+                portfolio.cash = p['cash']
+                portfolio.start_date = p['start_date']
+                portfolio.positions_value = p['positions_value']
+
+                portfolio.positions = positions = Positions()
+                for p in p['positions']:
+                    exchange = self.exchanges[p['exchange']]
+                    asset = exchange.get_asset(p['symbol'])
+                    positions[asset] = Position(
+                        asset=asset,
+                        amount=p['amount'],
+                        cost_basis=p['cost_basis'],
+                        last_sale_price=p['last_sale_price'],
+                        last_sale_date=None,
+                    )
+
+                tracker.period_start = perf['period_start']
+                tracker.position_tracker.positions = portfolio.positions
 
         # Call the simulation trading algorithm for side-effects:
         # it creates the perf tracker
@@ -675,20 +701,18 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         except Exception as e:
             log.warn('unable to calculate performance: {}'.format(e))
 
-        # TODO: pickle does not seem to work in python 3
-        # try:
         save_algo_object(
             algo_name=self.algo_namespace,
             key='perf_tracker',
             obj=self.perf_tracker.to_dict(emission_type=self.data_frequency),
         )
+        portfolio = portfolio_to_dict(self.portfolio)
         save_algo_object(
             algo_name=self.algo_namespace,
-            key='positions',
-            obj=self.perf_tracker.position_tracker.positions,
+            key='portfolio',
+            obj=portfolio,
+            how='json',
         )
-        # except Exception as e:
-        #     log.warn('unable to save perf_tracker to disk: {}'.format(e))
 
         self.current_day = data.current_dt.floor('1D')
 
