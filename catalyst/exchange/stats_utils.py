@@ -10,7 +10,7 @@ import pandas as pd
 from catalyst.assets._assets import TradingPair
 
 from catalyst.exchange.exchange_utils import get_algo_folder
-from catalyst.utils.paths import data_root
+from catalyst.utils.paths import data_root, ensure_directory
 
 s3_conn = []
 mailgun = []
@@ -403,7 +403,10 @@ def stats_to_algo_folder(stats, algo_namespace, recorded_cols=None):
     timestr = time.strftime('%Y%m%d')
     folder = get_algo_folder(algo_namespace)
 
-    filename = os.path.join(folder, '{}-{}.csv'.format(timestr, 'frames'))
+    stats_folder = os.path.join(folder, 'stats')
+    ensure_directory(stats_folder)
+
+    filename = os.path.join(stats_folder, '{}.csv'.format(timestr))
 
     with open(filename, 'wb') as handle:
         handle.write(bytes_to_write)

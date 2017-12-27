@@ -46,20 +46,23 @@ class ExchangeJSONDecoder(json.JSONDecoder):
 
 
 def portfolio_to_dict(portfolio):
-    positions = portfolio.positions
+    positions = []
     for asset in portfolio.positions:
-        position = portfolio.positions[asset].to_dict()
+        p = portfolio.positions[asset]  # Type: Position
 
-        position['symbol'] = asset.symbol
-        position['exchange'] = asset.exchange
-        del position['sid']
-
+        position = dict(
+            symbol=asset.symbol,
+            exchange=asset.exchange,
+            amount=p.amount,
+            cost_basis=p.cost_basis,
+            last_sale_price=p.last_sale_price,
+            last_sale_date=p.last_sale_date,
+        )
         positions.append(position)
 
     portfolio_dict = vars(portfolio)
-    del portfolio_dict['positions']
-
     portfolio_dict['positions'] = positions
+
     return portfolio_dict
 
 
