@@ -9,15 +9,15 @@ from logbook import Logger
 
 from catalyst.constants import LOG_LEVEL
 from catalyst.data.data_portal import BASE_FIELDS
-from catalyst.exchange.bundle_utils import get_start_dt, \
-    get_delta, get_periods, get_periods_range
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     SymbolNotFoundOnExchange, \
     PricingDataNotLoadedError, \
     NoDataAvailableOnExchange, NoValueForField, LastCandleTooEarlyError, \
-    TickerNotFoundError, BalanceNotFoundError, NotEnoughCashError
-from catalyst.exchange.exchange_utils import get_exchange_symbols, \
+    TickerNotFoundError, NotEnoughCashError
+from catalyst.exchange.utils.bundle_utils import get_start_dt, \
+    get_delta, get_periods, get_periods_range
+from catalyst.exchange.utils.exchange_utils import get_exchange_symbols, \
     get_frequency, resample_history_df, has_bundle
 
 log = Logger('Exchange', level=LOG_LEVEL)

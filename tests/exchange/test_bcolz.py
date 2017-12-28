@@ -1,15 +1,14 @@
-import shutil
 import random
+import shutil
 import tempfile
-import pandas as pd
 
-from catalyst.exchange.exchange_bundle import ExchangeBundle
+import pandas as pd
+from nose.tools import assert_equals
+
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarWriter, \
     BcolzExchangeBarReader
-
-from catalyst.exchange.bundle_utils import get_df_from_arrays
-
-from nose.tools import assert_equals
+from catalyst.exchange.exchange_bundle import ExchangeBundle
+from catalyst.exchange.utils.bundle_utils import get_df_from_arrays
 
 
 class TestBcolzWriter(object):

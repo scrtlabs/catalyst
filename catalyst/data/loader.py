@@ -22,6 +22,7 @@ from pandas_datareader.data import DataReader
 from six import iteritems
 from six.moves.urllib_error import HTTPError
 
+from catalyst.constants import LOG_LEVEL
 from catalyst.utils.calendars import get_calendar
 from . import treasuries, treasuries_can
 from .benchmarks import get_benchmark_returns
@@ -30,8 +31,6 @@ from ..utils.paths import (
     cache_root,
     data_root,
 )
-
-from catalyst.constants import LOG_LEVEL
 
 logger = logbook.Logger('Loader', level=LOG_LEVEL)
 
@@ -143,7 +142,7 @@ def load_crypto_market_data(trading_day=None, trading_days=None,
     if exchange is None:
         # This is exceptional, since placing the import at the module scope
         #  breaks things and it's only needed here
-        from catalyst.exchange.factory import get_exchange
+        from catalyst.exchange.utils.factory import get_exchange
         exchange = get_exchange(
             exchange_name='poloniex', base_currency='usdt'
         )

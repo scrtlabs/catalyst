@@ -1,10 +1,10 @@
 import pandas as pd
 from logbook import Logger
-from base import BaseExchangeTestCase
 
+from base import BaseExchangeTestCase
 from catalyst.exchange.ccxt.ccxt_exchange import CCXT
+from catalyst.exchange.utils.exchange_utils import get_exchange_auth
 from catalyst.finance.order import Order
-from catalyst.exchange.exchange_utils import get_exchange_auth
 
 log = Logger('test_ccxt')
 

@@ -7,9 +7,9 @@ from pandas.util.testing import assert_frame_equal
 from catalyst import get_calendar
 from catalyst.exchange.exchange_asset_finder import ExchangeAssetFinder
 from catalyst.exchange.exchange_data_portal import DataPortalExchangeBacktest
-from catalyst.exchange.exchange_utils import get_candles_df
-from catalyst.exchange.factory import get_exchange
-from catalyst.exchange.test_utils import output_df, \
+from catalyst.exchange.utils.exchange_utils import get_candles_df
+from catalyst.exchange.utils.factory import get_exchange
+from catalyst.exchange.utils.test_utils import output_df, \
     select_random_assets
 
 log = Logger('TestSuiteExchange')

@@ -31,28 +31,25 @@ from catalyst.exchange.exchange_errors import (
     ExchangePortfolioDataError,
     OrderTypeNotSupported)
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
-from catalyst.exchange.exchange_utils import (
+from catalyst.exchange.live_graph_clock import LiveGraphClock
+from catalyst.exchange.simple_clock import SimpleClock
+from catalyst.exchange.utils.exchange_utils import (
     save_algo_object,
     get_algo_object,
     get_algo_folder,
     get_algo_df,
     save_algo_df,
     group_assets_by_exchange, )
-from catalyst.exchange.live_graph_clock import LiveGraphClock
-from catalyst.exchange.simple_clock import SimpleClock
-from catalyst.exchange.stats_utils import get_pretty_stats, stats_to_s3, \
+from catalyst.exchange.utils.stats_utils import get_pretty_stats, stats_to_s3, \
     stats_to_algo_folder
-from catalyst.exchange.utils.serialization import portfolio_to_dict
 from catalyst.finance.execution import MarketOrder
-from catalyst.finance.performance import PerformanceTracker, Position
+from catalyst.finance.performance import PerformanceTracker
 from catalyst.finance.performance.period import calc_period_stats
-from catalyst.finance.performance.position import positiondict
 from catalyst.gens.tradesimulation import AlgorithmSimulator
 from catalyst.utils.api_support import api_method
 from catalyst.utils.input_validation import error_keywords, ensure_upper_case
 from catalyst.utils.math_utils import round_nearest
 from catalyst.utils.preprocess import preprocess
-from catalyst.protocol import Portfolio
 
 log = logbook.Logger('exchange_algorithm', level=LOG_LEVEL)
 

@@ -8,8 +8,8 @@ import pandas as pd
 
 from catalyst.exchange.exchange_errors import ExchangeRequestError
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
-from catalyst.exchange.exchange_utils import get_exchange_folder
-from catalyst.exchange.test_utils import select_random_exchanges, \
+from catalyst.exchange.utils.exchange_utils import get_exchange_folder
+from catalyst.exchange.utils.test_utils import select_random_exchanges, \
     handle_exchange_error, select_random_assets
 
 log = Logger('TestSuiteExchange')

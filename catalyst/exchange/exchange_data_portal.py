@@ -13,7 +13,7 @@ from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     ExchangeBarDataError,
     PricingDataNotLoadedError)
-from catalyst.exchange.exchange_utils import get_frequency, \
+from catalyst.exchange.utils.exchange_utils import get_frequency, \
     resample_history_df, group_assets_by_exchange
 
 log = Logger('DataPortalExchange', level=LOG_LEVEL)

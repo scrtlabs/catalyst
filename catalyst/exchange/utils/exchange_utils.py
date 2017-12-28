@@ -14,7 +14,7 @@ from six.moves.urllib import request
 from catalyst.constants import DATE_FORMAT, SYMBOLS_URL
 from catalyst.exchange.exchange_errors import ExchangeSymbolsNotFound, \
     InvalidHistoryFrequencyError, InvalidHistoryFrequencyAlias
-from catalyst.exchange.utils.serialization import ExchangeJSONEncoder, \
+from catalyst.exchange.utils.serialization_utils import ExchangeJSONEncoder, \
     ExchangeJSONDecoder
 from catalyst.utils.paths import data_root, ensure_directory, \
     last_modified_time

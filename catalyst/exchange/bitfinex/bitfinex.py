@@ -23,11 +23,11 @@ from catalyst.exchange.exchange_errors import (
     InvalidOrderStyle, OrderCancelError)
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder, \
     ExchangeStopLimitOrder, ExchangeStopOrder
-from catalyst.exchange.exchange_utils import get_exchange_symbols_filename, \
+from catalyst.exchange.utils.exchange_utils import \
+    get_exchange_symbols_filename, \
     download_exchange_symbols, get_symbols_string
 from catalyst.finance.order import Order, ORDER_STATUS
 from catalyst.protocol import Account
-
 # Trying to account for REST api instability
 # https://stackoverflow.com/questions/15431044/can-i-set-max-retries-for-requests-request
 from catalyst.utils.deprecate import deprecated

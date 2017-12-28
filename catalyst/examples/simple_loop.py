@@ -1,10 +1,10 @@
-import talib
 import pandas as pd
+import talib
 from logbook import Logger, INFO
 
 from catalyst import run_algorithm
 from catalyst.api import symbol, record
-from catalyst.exchange.stats_utils import get_pretty_stats, \
+from catalyst.exchange.utils.stats_utils import get_pretty_stats, \
     extract_transactions
 
 log = Logger('simple_loop', level=INFO)

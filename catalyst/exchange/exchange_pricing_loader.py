@@ -19,9 +19,9 @@ from numpy import (
 
 from catalyst.constants import LOG_LEVEL
 from catalyst.data.us_equity_pricing import BcolzDailyBarReader
-from catalyst.exchange.factory import get_exchange
-from catalyst.lib.adjusted_array import AdjustedArray
 from catalyst.errors import NoFurtherDataError
+from catalyst.exchange.utils.factory import get_exchange
+from catalyst.lib.adjusted_array import AdjustedArray
 from catalyst.pipeline.data import DataSet, Column
 from catalyst.pipeline.loaders.base import PipelineLoader
 from catalyst.utils.calendars import get_calendar

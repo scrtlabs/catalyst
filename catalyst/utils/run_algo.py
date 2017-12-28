@@ -14,7 +14,7 @@ from catalyst.data.bundles import load
 from catalyst.data.data_portal import DataPortal
 from catalyst.exchange.exchange_pricing_loader import ExchangePricingLoader, \
     TradingPairPricing
-from catalyst.exchange.factory import get_exchange
+from catalyst.exchange.utils.factory import get_exchange
 
 try:
     from pygments import highlight

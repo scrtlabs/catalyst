@@ -7,8 +7,8 @@ from catalyst.exchange.exchange_data_portal import (
     DataPortalExchangeBacktest,
     DataPortalExchangeLive
 )
-from catalyst.exchange.exchange_utils import get_common_assets
-from catalyst.exchange.factory import get_exchanges
+from catalyst.exchange.utils.exchange_utils import get_common_assets
+from catalyst.exchange.utils.factory import get_exchanges
 from test_utils import rnd_history_date_days, rnd_bar_count
 
 log = Logger('test_bitfinex')

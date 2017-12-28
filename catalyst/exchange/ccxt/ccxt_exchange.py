@@ -1,17 +1,17 @@
 import json
+import os
 import re
 from collections import defaultdict
 
 import ccxt
-import os
 import pandas as pd
 import six
+from catalyst.assets._assets import TradingPair
 from ccxt import ExchangeNotAvailable, InvalidOrder
 from logbook import Logger
 from six import string_types
 
 from catalyst.algorithm import MarketOrder
-from catalyst.assets._assets import TradingPair
 from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.exchange_bundle import ExchangeBundle
@@ -19,7 +19,7 @@ from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
     ExchangeSymbolsNotFound, ExchangeRequestError, InvalidOrderStyle, \
     ExchangeNotFoundError, CreateOrderError, InvalidHistoryTimeframeError
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
-from catalyst.exchange.exchange_utils import mixin_market_params, \
+from catalyst.exchange.utils.exchange_utils import mixin_market_params, \
     from_ms_timestamp, get_epoch, get_exchange_folder, get_catalyst_symbol, \
     get_exchange_auth
 from catalyst.finance.order import Order, ORDER_STATUS

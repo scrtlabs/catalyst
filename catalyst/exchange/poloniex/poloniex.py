@@ -22,9 +22,10 @@ from catalyst.exchange.exchange_errors import (
     OrphanOrderReverseError)
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder, \
     ExchangeStopLimitOrder
-from catalyst.exchange.exchange_utils import get_exchange_symbols_filename, \
-    download_exchange_symbols, get_symbols_string
 from catalyst.exchange.poloniex.poloniex_api import Poloniex_api
+from catalyst.exchange.utils.exchange_utils import \
+    get_exchange_symbols_filename, \
+    download_exchange_symbols, get_symbols_string
 from catalyst.finance.order import Order, ORDER_STATUS
 from catalyst.finance.transaction import Transaction
 from catalyst.protocol import Account

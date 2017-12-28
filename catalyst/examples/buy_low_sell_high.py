@@ -10,6 +10,7 @@ needs to be installed. See https://mrjbq7.github.io/ta-lib/install.html for
 instructions on how to install the required dependencies.
 '''
 
+import pandas as pd
 import talib
 from logbook import Logger
 
@@ -21,8 +22,7 @@ from catalyst.api import (
     record,
     get_open_orders,
 )
-from catalyst.exchange.stats_utils import get_pretty_stats
-import pandas as pd
+from catalyst.exchange.utils.stats_utils import get_pretty_stats
 
 algo_namespace = 'buy_low_sell_high_xrp'
 log = Logger(algo_namespace)

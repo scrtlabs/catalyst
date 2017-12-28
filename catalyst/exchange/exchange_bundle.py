@@ -18,17 +18,17 @@ from catalyst.constants import DATE_TIME_FORMAT, AUTO_INGEST
 from catalyst.constants import LOG_LEVEL
 from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
     BcolzMinuteBarMetadata
-from catalyst.exchange.bundle_utils import range_in_bundle, \
-    get_bcolz_chunk, get_month_start_end, \
-    get_year_start_end, get_df_from_arrays, get_start_dt, get_period_label, \
-    get_delta, get_assets
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
 from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
     TempBundleNotFoundError, \
     NoDataAvailableOnExchange, \
     PricingDataNotLoadedError, DataCorruptionError, PricingDataValueError
-from catalyst.exchange.exchange_utils import get_exchange_folder, \
+from catalyst.exchange.utils.bundle_utils import range_in_bundle, \
+    get_bcolz_chunk, get_month_start_end, \
+    get_year_start_end, get_df_from_arrays, get_start_dt, get_period_label, \
+    get_delta, get_assets
+from catalyst.exchange.utils.exchange_utils import get_exchange_folder, \
     save_exchange_symbols, mixin_market_params, get_catalyst_symbol
 from catalyst.utils.cli import maybe_show_progress
 from catalyst.utils.paths import ensure_directory
@@ -668,7 +668,7 @@ class ExchangeBundle:
 
         if self.exchange is None:
             # Avoid circular dependencies
-            from catalyst.exchange.factory import get_exchange
+            from catalyst.exchange.utils.factory import get_exchange
             self.exchange = get_exchange(self.exchange_name)
 
         problems = []
@@ -805,7 +805,7 @@ class ExchangeBundle:
         else:
             if self.exchange is None:
                 # Avoid circular dependencies
-                from catalyst.exchange.factory import get_exchange
+                from catalyst.exchange.utils.factory import get_exchange
                 self.exchange = get_exchange(self.exchange_name)
 
             assets = get_assets(

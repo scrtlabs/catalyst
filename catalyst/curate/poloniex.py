@@ -1,16 +1,16 @@
-import os
-import time
-import shutil
-import json
 import csv
+import json
+import os
+import shutil
+import time
 from datetime import datetime
 
+import logbook
 import pandas as pd
 import requests
-import logbook
 
-from catalyst.exchange.exchange_utils import get_exchange_symbols_filename
-
+from catalyst.exchange.utils.exchange_utils import \
+    get_exchange_symbols_filename
 
 DT_START = int(time.mktime(datetime(2010, 1, 1, 0, 0).timetuple()))
 DT_END = pd.to_datetime('today').value // 10 ** 9

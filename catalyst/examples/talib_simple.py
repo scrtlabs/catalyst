@@ -23,7 +23,7 @@ from catalyst.api import (
     order_target_percent,
     symbol,
 )
-from catalyst.exchange.stats_utils import get_pretty_stats
+from catalyst.exchange.utils.stats_utils import get_pretty_stats
 
 algo_namespace = 'talib_sample'
 log = Logger(algo_namespace)

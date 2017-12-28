@@ -1,7 +1,6 @@
 import talib
 from logbook import Logger
 
-import pandas as pd
 from catalyst.api import (
     order,
     order_target_percent,
@@ -9,7 +8,7 @@ from catalyst.api import (
     record,
     get_open_orders,
 )
-from catalyst.exchange.stats_utils import get_pretty_stats
+from catalyst.exchange.utils.stats_utils import get_pretty_stats
 from catalyst.utils.run_algo import run_algorithm
 
 algo_namespace = 'buy_the_dip_live'
