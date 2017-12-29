@@ -79,6 +79,8 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
             get_order_attempts=5,
             get_open_orders_attempts=5,
             cancel_order_attempts=5,
+            get_stop_value_attempts=5,
+            get_history_window_attempts=5,
             retry_sleeptime=5,
         )
 
@@ -288,6 +290,12 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
                     stats['orders'].append(orders[order].to_dict())
 
         return stats
+
+    def run(self, data=None, overwrite_sim_params=True):
+        data.attempts = self.attempts
+        return super(ExchangeTradingAlgorithmBase, self).run(
+            data, overwrite_sim_params
+        )
 
 
 class ExchangeTradingAlgorithmBacktest(ExchangeTradingAlgorithmBase):
