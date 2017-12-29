@@ -79,7 +79,7 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
             get_order_attempts=5,
             get_open_orders_attempts=5,
             cancel_order_attempts=5,
-            get_stop_value_attempts=5,
+            get_spot_value_attempts=5,
             get_history_window_attempts=5,
             retry_sleeptime=5,
         )

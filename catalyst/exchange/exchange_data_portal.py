@@ -1,5 +1,4 @@
 import abc
-from time import sleep
 
 import numpy as np
 import pandas as pd
@@ -12,7 +11,6 @@ from catalyst.data.data_portal import DataPortal
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
-    ExchangeBarDataError,
     PricingDataNotLoadedError)
 from catalyst.exchange.utils.exchange_utils import get_frequency, \
     resample_history_df, group_assets_by_exchange
@@ -29,7 +27,7 @@ class DataPortalExchangeBase(DataPortal):
         self.retry_delay = 5
 
         self.attempts = dict(
-            get_stop_value_attempts=5,
+            get_spot_value_attempts=5,
             get_history_window_attempts=5,
             retry_sleeptime=5,
         )
@@ -165,7 +163,7 @@ class DataPortalExchangeBase(DataPortal):
 
         return retry(
             action=self._get_spot_value,
-            attempts=self.attempts['get_stop_value_attempts'],
+            attempts=self.attempts['get_spot_value_attempts'],
             sleeptime=self.attempts['retry_sleeptime'],
             retry_exceptions=(ExchangeRequestError,),
             cleanup=lambda e: log.warn(
