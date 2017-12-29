@@ -76,7 +76,9 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
             get_transactions_attempts=5,
             order_attempts=5,
             synchronize_portfolio_attempts=5,
+            get_order_attempts=5,
             get_open_orders_attempts=5,
+            cancel_order_attempts=5,
             retry_sleeptime=5,
         )
 
@@ -821,7 +823,16 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             The execution price per share of the order
         """
         exchange = self.exchanges[exchange_name]
-        return exchange.get_order(order_id)
+        return retry(
+            action=exchange.get_order,
+            attempts=self.attempts['get_order_attempts'],
+            sleeptime=self.attempts['retry_sleeptime'],
+            retry_exceptions=(ExchangeRequestError,),
+            cleanup=lambda e: log.warn(
+                'fetching orders again: {}'.format(e)
+            ),
+            args=(order_id,)
+        )
 
     @api_method
     def cancel_order(self, order_param, exchange_name):
@@ -838,4 +849,13 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         if isinstance(order_param, zp.Order):
             order_id = order_param.id
 
-        exchange.cancel_order(order_id)
+        retry(
+            action=exchange.cancel_order,
+            attempts=self.attempts['cancel_order_attempts'],
+            sleeptime=self.attempts['retry_sleeptime'],
+            retry_exceptions=(ExchangeRequestError,),
+            cleanup=lambda e: log.warn(
+                'cancelling order again: {}'.format(e)
+            ),
+            args=(order_id,)
+        )
