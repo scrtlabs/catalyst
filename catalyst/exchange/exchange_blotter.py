@@ -3,6 +3,7 @@ from time import sleep
 import pandas as pd
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
+from redo import retry
 
 from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.exchange_errors import ExchangeRequestError, \
@@ -260,40 +261,32 @@ class ExchangeBlotter(Blotter):
                         )
                     )
 
-    def get_exchange_transactions(self, attempt_index=0):
+    def get_exchange_transactions(self):
         closed_orders = []
         transactions = []
         commissions = []
 
-        try:
-            for order, txn in self.check_open_orders():
-                order.dt = txn.dt
+        for order, txn in self.check_open_orders():
+            order.dt = txn.dt
 
-                transactions.append(txn)
+            transactions.append(txn)
 
-                if not order.open:
-                    closed_orders.append(order)
+            if not order.open:
+                closed_orders.append(order)
 
-            return transactions, commissions, closed_orders
-
-        except ExchangeRequestError as e:
-            log.warn(
-                'check open orders attempt {}: {}'.format(attempt_index, e)
-            )
-            if attempt_index < self.retry_check_open_orders:
-                sleep(self.retry_delay)
-                return self.get_exchange_transactions(attempt_index + 1)
-
-            else:
-                raise ExchangePortfolioDataError(
-                    data_type='order-status',
-                    attempts=attempt_index,
-                    error=e
-                )
+        return transactions, commissions, closed_orders
 
     def get_transactions(self, bar_data):
         if self.simulate_orders:
             return super(ExchangeBlotter, self).get_transactions(bar_data)
 
         else:
-            return self.get_exchange_transactions()
+            return retry(
+                action=self.get_exchange_transactions,
+                attempts=self.retry_check_open_orders,
+                sleeptime=self.retry_delay,
+                retry_exceptions=ExchangeRequestError,
+                cleanup=lambda e: log.warn(
+                    'fetching exchange transactions again: {}'.format(e)
+                )
+            )
