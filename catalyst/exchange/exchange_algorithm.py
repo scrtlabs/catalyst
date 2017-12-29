@@ -330,6 +330,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         self.algo_namespace = kwargs.pop('algo_namespace', None)
         self.live_graph = kwargs.pop('live_graph', None)
         self.stats_output = kwargs.pop('stats_output', None)
+        self._analyze_live = kwargs.pop('analyze_live', None)
 
         self._clock = None
         self.frame_stats = list()
@@ -421,10 +422,11 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         # TODO: should we apply time skew? not sure to understand the utility.
 
         log.debug('creating clock')
-        if self.live_graph:
+        if self.live_graph or self._analyze_live is not None:
             self._clock = LiveGraphClock(
                 self.sim_params.sessions,
-                context=self
+                context=self,
+                callback=self._analyze_live,
             )
         else:
             self._clock = SimpleClock(

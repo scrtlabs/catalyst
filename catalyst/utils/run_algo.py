@@ -93,6 +93,7 @@ def _run(handle_data,
          algo_namespace,
          base_currency,
          live_graph,
+         analyze_live,
          simulate_orders,
          stats_output):
     """Run a backtest for the given algorithm.
@@ -276,6 +277,7 @@ def _run(handle_data,
             live_graph=live_graph,
             simulate_orders=simulate_orders,
             stats_output=stats_output,
+            analyze_live=analyze_live,
         )
     elif exchanges:
         # Removed the existing Poloniex fork to keep things simple
@@ -437,6 +439,7 @@ def run_algorithm(initialize,
                   base_currency=None,
                   algo_namespace=None,
                   live_graph=False,
+                  analyze_live=None,
                   simulate_orders=True,
                   stats_output=None,
                   output=os.devnull):
@@ -569,6 +572,7 @@ def run_algorithm(initialize,
         algo_namespace=algo_namespace,
         base_currency=base_currency,
         live_graph=live_graph,
+        analyze_live=analyze_live,
         simulate_orders=simulate_orders,
         stats_output=stats_output
     )

@@ -279,8 +279,9 @@ def get_pretty_stats(stats, recorded_cols=None, num_rows=10):
     if isinstance(stats, pd.DataFrame):
         stats = stats.T.to_dict().values()
 
+    display_stats = stats[-num_rows:] if len(stats) > num_rows else stats
     df, columns = prepare_stats(
-        stats[-num_rows:], recorded_cols=recorded_cols
+        display_stats, recorded_cols=recorded_cols
     )
 
     pd.set_option('display.expand_frame_repr', False)
