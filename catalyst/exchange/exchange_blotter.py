@@ -1,13 +1,10 @@
-from time import sleep
-
 import pandas as pd
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
 from redo import retry
 
 from catalyst.constants import LOG_LEVEL
-from catalyst.exchange.exchange_errors import ExchangeRequestError, \
-    ExchangePortfolioDataError, ExchangeTransactionError
+from catalyst.exchange.exchange_errors import ExchangeRequestError
 from catalyst.finance.blotter import Blotter
 from catalyst.finance.commission import CommissionModel
 from catalyst.finance.order import ORDER_STATUS
@@ -134,6 +131,7 @@ class TradingPairFixedSlippage(SlippageModel):
 class ExchangeBlotter(Blotter):
     def __init__(self, *args, **kwargs):
         self.simulate_orders = kwargs.pop('simulate_orders', False)
+        self.attempts = kwargs.pop('attempts', False)
 
         self.exchanges = kwargs.pop('exchanges', None)
         if not self.exchanges:
@@ -153,32 +151,11 @@ class ExchangeBlotter(Blotter):
             TradingPair: TradingPairFeeSchedule()
         }
 
-        self.retry_delay = 5
-        self.retry_check_open_orders = 5
-        self.retry_order = 5
-
-    def exchange_order(self, asset, amount, style=None, attempt_index=0):
-        try:
-            exchange = self.exchanges[asset.exchange]
-            return exchange.order(
-                asset, amount, style
-            )
-        except ExchangeRequestError as e:
-            log.warn(
-                'order attempt {}: {}'.format(attempt_index, e)
-            )
-            if attempt_index < self.retry_order:
-                sleep(self.retry_delay)
-
-                return self.exchange_order(
-                    asset, amount, style, attempt_index + 1
-                )
-            else:
-                raise ExchangeTransactionError(
-                    transaction_type='order',
-                    attempts=attempt_index,
-                    error=e
-                )
+    def exchange_order(self, asset, amount, style=None):
+        exchange = self.exchanges[asset.exchange]
+        return exchange.order(
+            asset, amount, style
+        )
 
     @expect_types(asset=TradingPair)
     def order(self, asset, amount, style, order_id=None):
@@ -193,8 +170,15 @@ class ExchangeBlotter(Blotter):
             )
 
         else:
-            order = self.exchange_order(
-                asset, amount, style
+            order = retry(
+                action=self.get_exchange_transactions,
+                attempts=self.attempts['order_attempts'],
+                sleeptime=self.attempts['retry_sleeptime'],
+                retry_exceptions=(ExchangeRequestError,),
+                cleanup=lambda e: log.warn(
+                    'ordering again: {}'.format(e)
+                ),
+                args=(asset, amount, style),
             )
 
             self.open_orders[order.asset].append(order)
@@ -283,10 +267,10 @@ class ExchangeBlotter(Blotter):
         else:
             return retry(
                 action=self.get_exchange_transactions,
-                attempts=self.retry_check_open_orders,
-                sleeptime=self.retry_delay,
-                retry_exceptions=ExchangeRequestError,
+                attempts=self.attempts['get_transactions_attempts'],
+                sleeptime=self.retry_sleeptime,
+                retry_exceptions=(ExchangeRequestError,),
                 cleanup=lambda e: log.warn(
                     'fetching exchange transactions again: {}'.format(e)
-                )
+                ),
             )

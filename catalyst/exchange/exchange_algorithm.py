@@ -17,10 +17,10 @@ import sys
 from datetime import timedelta
 from os import listdir
 from os.path import isfile, join
-from time import sleep
 
 import logbook
 import pandas as pd
+from redo import retry
 
 import catalyst.protocol as zp
 from catalyst.algorithm import TradingAlgorithm
@@ -28,7 +28,6 @@ from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.exchange_blotter import ExchangeBlotter
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
-    ExchangePortfolioDataError,
     OrderTypeNotSupported)
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.live_graph_clock import LiveGraphClock
@@ -72,12 +71,22 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
                 and self.sim_params.arena == 'backtest':
             self.simulate_orders = True
 
+        # Operations with retry features
+        self.attempts = dict(
+            get_transactions_attempts=5,
+            order_attempts=5,
+            synchronize_portfolio_attempts=5,
+            get_open_orders_attempts=5,
+            retry_sleeptime=5,
+        )
+
         self.blotter = ExchangeBlotter(
             data_frequency=self.data_frequency,
             # Default to NeverCancel in catalyst
             cancel_policy=self.cancel_policy,
             simulate_orders=self.simulate_orders,
-            exchanges=self.exchanges
+            exchanges=self.exchanges,
+            attempts=self.attempts,
         )
 
     @staticmethod
@@ -345,12 +354,6 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
 
         self.is_running = True
 
-        self.retry_check_open_orders = 5
-        self.retry_synchronize_portfolio = 5
-        self.retry_get_open_orders = 5
-        self.retry_order = 2
-        self.retry_delay = 5
-
         self.stats_minutes = 1
 
         super(ExchangeTradingAlgorithmLive, self).__init__(*args, **kwargs)
@@ -470,7 +473,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
     def updated_account(self):
         return self.perf_tracker.get_account(False)
 
-    def synchronize_portfolio(self, attempt_index=0):
+    def synchronize_portfolio(self):
         """
         Synchronizes the portfolio tracked by the algorithm to refresh
         its current value.
@@ -498,59 +501,44 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         total_cash = 0.0
         total_positions_value = 0.0
 
-        try:
-            # Position keys correspond to assets
-            positions = self.portfolio.positions
-            assets = list(positions)
-            exchange_assets = group_assets_by_exchange(assets)
-            for exchange_name in self.exchanges:
-                assets = exchange_assets[exchange_name] \
-                    if exchange_name in exchange_assets else []
+        # Position keys correspond to assets
+        positions = self.portfolio.positions
+        assets = list(positions)
+        exchange_assets = group_assets_by_exchange(assets)
+        for exchange_name in self.exchanges:
+            assets = exchange_assets[exchange_name] \
+                if exchange_name in exchange_assets else []
 
-                exchange_positions = copy.deepcopy(
-                    [positions[asset] for asset in assets]
-                )
-
-                exchange = self.exchanges[exchange_name]  # Type: Exchange
-
-                if base_currency is None:
-                    base_currency = exchange.base_currency
-
-                cash, positions_value = exchange.sync_positions(
-                    positions=exchange_positions,
-                    check_balances=check_balances,
-                    cash=self.portfolio.cash,
-                )
-                total_cash += cash
-                total_positions_value += positions_value
-
-                # Applying modifications to the original positions
-                for position in exchange_positions:
-                    tracker.update_position(
-                        asset=position.asset,
-                        amount=position.amount,
-                        last_sale_date=position.last_sale_date,
-                        last_sale_price=position.last_sale_price,
-                    )
-
-            if not check_balances:
-                total_cash = self.portfolio.cash
-
-            return total_cash, total_positions_value
-
-        except ExchangeRequestError as e:
-            log.warn(
-                'update portfolio attempt {}: {}'.format(attempt_index, e)
+            exchange_positions = copy.deepcopy(
+                [positions[asset] for asset in assets]
             )
-            if attempt_index < self.retry_synchronize_portfolio:
-                sleep(self.retry_delay)
-                return self.synchronize_portfolio(attempt_index + 1)
-            else:
-                raise ExchangePortfolioDataError(
-                    data_type='update-portfolio',
-                    attempts=attempt_index,
-                    error=e
+
+            exchange = self.exchanges[exchange_name]  # Type: Exchange
+
+            if base_currency is None:
+                base_currency = exchange.base_currency
+
+            cash, positions_value = exchange.sync_positions(
+                positions=exchange_positions,
+                check_balances=check_balances,
+                cash=self.portfolio.cash,
+            )
+            total_cash += cash
+            total_positions_value += positions_value
+
+            # Applying modifications to the original positions
+            for position in exchange_positions:
+                tracker.update_position(
+                    asset=position.asset,
+                    amount=position.amount,
+                    last_sale_date=position.last_sale_date,
+                    last_sale_price=position.last_sale_price,
                 )
+
+        if not check_balances:
+            total_cash = self.portfolio.cash
+
+        return total_cash, total_positions_value
 
     def add_pnl_stats(self, period_stats):
         """
@@ -652,7 +640,15 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         if len(new_transactions) > 0:
             self.perf_tracker.update_performance()
 
-        cash, positions_value = self.synchronize_portfolio()
+        cash, positions_value = retry(
+            action=self.synchronize_portfolio,
+            attempts=self.attempts['synchronize_portfolio_attempts'],
+            sleeptime=self.attempts['retry_sleeptime'],
+            retry_exceptions=(ExchangeRequestError,),
+            cleanup=lambda e: log.warn(
+                'ordering again: {}'.format(e)
+            ),
+        )
         log.info(
             'got totals from exchanges, cash: {} positions: {}'.format(
                 cash, positions_value
@@ -762,33 +758,19 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
     def batch_market_order(self, share_counts):
         raise NotImplementedError()
 
-    def _get_open_orders(self, asset=None, attempt_index=0):
-        try:
-            if asset:
-                exchange = self.exchanges[asset.exchange]
-                return exchange.get_open_orders(asset)
+    def _get_open_orders(self, asset=None):
+        if asset:
+            exchange = self.exchanges[asset.exchange]
+            return exchange.get_open_orders(asset)
 
-            else:
-                open_orders = []
-                for exchange_name in self.exchanges:
-                    exchange = self.exchanges[exchange_name]
-                    exchange_orders = exchange.get_open_orders()
-                    open_orders.append(exchange_orders)
+        else:
+            open_orders = []
+            for exchange_name in self.exchanges:
+                exchange = self.exchanges[exchange_name]
+                exchange_orders = exchange.get_open_orders()
+                open_orders.append(exchange_orders)
 
-                return open_orders
-        except ExchangeRequestError as e:
-            log.warn(
-                'open orders attempt {}: {}'.format(attempt_index, e)
-            )
-            if attempt_index < self.retry_get_open_orders:
-                sleep(self.retry_delay)
-                return self._get_open_orders(asset, attempt_index + 1)
-            else:
-                raise ExchangePortfolioDataError(
-                    data_type='open-orders',
-                    attempts=attempt_index,
-                    error=e
-                )
+            return open_orders
 
     @error_keywords(sid='Keyword argument `sid` is no longer supported for '
                         'get_open_orders. Use `asset` instead.')
@@ -810,7 +792,16 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             If an asset is passed then this will return a list of the open
             orders for this asset.
         """
-        return self._get_open_orders(asset)
+        return retry(
+            action=self._get_open_orders,
+            attempts=self.attempts['get_open_orders_attempts'],
+            sleeptime=self.attempts['retry_sleeptime'],
+            retry_exceptions=(ExchangeRequestError,),
+            cleanup=lambda e: log.warn(
+                'fetching open orders again: {}'.format(e)
+            ),
+            args=(asset,)
+        )
 
     @api_method
     def get_order(self, order_id, exchange_name):

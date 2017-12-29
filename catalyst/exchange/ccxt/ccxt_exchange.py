@@ -377,7 +377,6 @@ class CCXT(Exchange):
 
         candles = dict()
         for asset in assets:
-            # try:
             ohlcvs = self.api.fetch_ohlcv(
                 symbol=symbols[0],
                 timeframe=timeframe,
@@ -398,9 +397,6 @@ class CCXT(Exchange):
                     close=ohlcv[4],
                     volume=ohlcv[5]
                 ))
-
-                # except Exception as e:
-                #     raise ExchangeRequestError(error=e)
 
         if is_single:
             return six.next(six.itervalues(candles))

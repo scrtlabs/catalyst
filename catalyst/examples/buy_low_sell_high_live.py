@@ -24,10 +24,6 @@ def initialize(context):
     context.PROFIT_TARGET = 0.1
     context.SLIPPAGE_ALLOWED = 0.02
 
-    context.retry_check_open_orders = 10
-    context.retry_update_portfolio = 10
-    context.retry_order = 5
-
     context.errors = []
     pass
 
