@@ -1,7 +1,8 @@
-from catalyst.exchange.exchange_errors import \
-    MismatchingBaseCurrenciesExchanges
 import matplotlib.dates as mdates
 import pandas as pd
+
+from catalyst.exchange.exchange_errors import \
+    MismatchingBaseCurrenciesExchanges
 
 fmt = mdates.DateFormatter('%Y-%m-%d %H:%M')
 

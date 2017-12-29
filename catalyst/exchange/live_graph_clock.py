@@ -4,6 +4,7 @@ from catalyst.gens.sim_engine import (
     SESSION_START
 )
 from logbook import Logger
+
 from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.utils.stats_utils import prepare_stats
 

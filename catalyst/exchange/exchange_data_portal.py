@@ -20,12 +20,6 @@ log = Logger('DataPortalExchange', level=LOG_LEVEL)
 
 class DataPortalExchangeBase(DataPortal):
     def __init__(self, *args, **kwargs):
-
-        # TODO: put somewhere accessible by each algo
-        self.retry_get_history_window = 5
-        self.retry_get_spot_value = 5
-        self.retry_delay = 5
-
         self.attempts = dict(
             get_spot_value_attempts=5,
             get_history_window_attempts=5,

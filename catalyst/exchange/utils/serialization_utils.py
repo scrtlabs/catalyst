@@ -1,9 +1,8 @@
 import json
+import re
 from json import JSONEncoder
 
 import pandas as pd
-import re
-
 from six import string_types
 
 from catalyst.constants import DATE_TIME_FORMAT
