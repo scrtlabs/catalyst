@@ -260,6 +260,77 @@ def _bundle_trading_environment(bundle_data, environ):
     return TradingEnvironment(asset_db_path=connstr, environ=environ)
 
 
+def _build_live_algo_and_data(sim_params, exchanges, env, open_calendar,
+                              simulate_orders, algo_namespace, capital_base,
+                              live_graph, stats_output, analyze_live,
+                              base_currency, namespace, choose_loader,
+                              algorithm_class_kwargs):
+    sim_params._arena = 'live'  # TODO: use the constructor instead
+
+    data = _data_for_live_trading(
+        exchanges, env, open_calendar, simulate_orders,
+        algo_namespace, capital_base)
+
+    algorithm_class = _algorithm_class_for_live(
+        algo_namespace, live_graph, stats_output, analyze_live,
+        base_currency, simulate_orders, exchanges, capital_base)
+
+    return data, algorithm_class(
+        namespace=namespace,
+        env=env,
+        get_pipeline_loader=choose_loader,
+        sim_params=sim_params,
+        **algorithm_class_kwargs)
+
+
+def _build_backtest_algo_and_data(
+        exchanges, bundle, environ, bundle_timestamp, open_calendar, start,
+        end, namespace, choose_loader, sim_params, algorithm_class_kwargs):
+    if exchanges:
+        # Removed the existing Poloniex fork to keep things simple
+        # We can add back the complexity if required.
+
+        # I don't think that we should have arbitrary price data bundles
+        # Instead, we should center this data around exchanges.
+        # We still need to support bundles for other misc data, but we
+        # can handle this later.
+
+        data = DataPortalExchangeBacktest(
+            exchange_names=[exchange_name for exchange_name in exchanges],
+            asset_finder=None,
+            trading_calendar=open_calendar,
+            first_trading_day=start,
+            last_available_session=end)
+
+        algorithm_class = partial(
+            ExchangeTradingAlgorithmBacktest,
+            exchanges=exchanges)
+    elif bundle is not None:
+        # TODO This branch should probably be removed or fixed: it doesn't even
+        # build `algorithm_class`, so it will break when trying to instantiate
+        # it.
+        bundle_data = load(bundle, environ, bundle_timestamp)
+
+        env = _bundle_trading_environment(bundle_data, environ)
+
+        first_trading_day = \
+            bundle_data.equity_minute_bar_reader.first_trading_day
+
+        data = DataPortal(
+            env.asset_finder, open_calendar,
+            first_trading_day=first_trading_day,
+            equity_minute_reader=bundle_data.equity_minute_bar_reader,
+            equity_daily_reader=bundle_data.equity_daily_bar_reader,
+            adjustment_reader=bundle_data.adjustment_reader)
+
+    return data, algorithm_class(
+        namespace=namespace,
+        env=env,
+        get_pipeline_loader=choose_loader,
+        sim_params=sim_params,
+        **algorithm_class_kwargs)
+
+
 def _build_algo_and_data(handle_data, initialize, before_trading_start,
                          analyze, algofile, algotext, defines, data_frequency,
                          capital_base, data, bundle, bundle_timestamp, start,
@@ -295,8 +366,7 @@ def _build_algo_and_data(handle_data, initialize, before_trading_start,
 
     if live:
         start, end = _get_live_time_range()
-        # TODO double check if this is the desired behavior
-        data_frequency = 'minute'
+        data_frequency = 'minute'  # TODO double check if this is the desired behavior
 
     sim_params = create_simulation_parameters(
         start=start,
@@ -304,54 +374,6 @@ def _build_algo_and_data(handle_data, initialize, before_trading_start,
         capital_base=capital_base,
         emission_rate=data_frequency,
         data_frequency=data_frequency)
-
-    if live:
-        # TODO: use the constructor instead
-        sim_params._arena = 'live'
-
-        data = _data_for_live_trading(
-            exchanges, env, open_calendar, simulate_orders,
-            algo_namespace, capital_base)
-
-        algorithm_class = _algorithm_class_for_live(
-            algo_namespace, live_graph, stats_output, analyze_live,
-            base_currency, simulate_orders, exchanges, capital_base)
-    elif exchanges:
-        # Removed the existing Poloniex fork to keep things simple
-        # We can add back the complexity if required.
-
-        # I don't think that we should have arbitrary price data bundles
-        # Instead, we should center this data around exchanges.
-        # We still need to support bundles for other misc data, but we
-        # can handle this later.
-
-        data = DataPortalExchangeBacktest(
-            exchange_names=[exchange_name for exchange_name in exchanges],
-            asset_finder=None,
-            trading_calendar=open_calendar,
-            first_trading_day=start,
-            last_available_session=end)
-
-        algorithm_class = partial(
-            ExchangeTradingAlgorithmBacktest,
-            exchanges=exchanges)
-    elif bundle is not None:
-        # TODO This branch should probably be removed or fixed: it doesn't even
-        # build `algorithm_class`, so it will break when trying to instantiate
-        # it.
-        bundle_data = load(bundle, environ, bundle_timestamp)
-
-        env = _bundle_trading_environment(bundle_data, environ)
-
-        first_trading_day = \
-            bundle_data.equity_minute_bar_reader.first_trading_day
-
-        data = DataPortal(
-            env.asset_finder, open_calendar,
-            first_trading_day=first_trading_day,
-            equity_minute_reader=bundle_data.equity_minute_bar_reader,
-            equity_daily_reader=bundle_data.equity_daily_bar_reader,
-            adjustment_reader=bundle_data.adjustment_reader,)
 
     if algotext is None:
         algorithm_class_kwargs = {'initialize': initialize,
@@ -362,12 +384,17 @@ def _build_algo_and_data(handle_data, initialize, before_trading_start,
         algorithm_class_kwargs = {'algo_filename': getattr(algofile, 'name',
                                                            '<algorithm>'),
                                   'script': algotext}
-    return data, algorithm_class(
-        namespace=namespace,
-        env=env,
-        get_pipeline_loader=choose_loader,
-        sim_params=sim_params,
-        **algorithm_class_kwargs)
+
+    if live:
+        return _build_live_algo_and_data(
+            sim_params, exchanges, env, open_calendar, simulate_orders,
+            algo_namespace, capital_base, live_graph, stats_output,
+            analyze_live, base_currency, namespace, choose_loader,
+            algorithm_class_kwargs)
+    else:
+        return _build_backtest_algo_and_data(
+            exchanges, bundle, environ, bundle_timestamp, open_calendar, start,
+            end, namespace, choose_loader, sim_params, algorithm_class_kwargs)
 
 
 def _run(handle_data, initialize, before_trading_start, analyze, algofile,
