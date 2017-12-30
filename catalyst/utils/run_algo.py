@@ -84,21 +84,18 @@ def _build_namespace(algotext, local_namespace, defines):
             except ValueError:
                 raise ValueError(
                     'invalid define %r, should be of the form name=value' %
-                    assign,
-                )
+                    assign)
             try:
                 # evaluate in the same namespace so names may refer to
                 # eachother
                 namespace[name] = eval(value, namespace)
             except Exception as e:
                 raise ValueError(
-                    'failed to execute definition for name %r: %s' % (name, e),
-                )
+                    'failed to execute definition for name %r: %s' % (name, e))
     elif defines:
         raise _RunAlgoError(
             'cannot pass define without `algotext`',
-            "cannot pass '-D' / '--define' without '-t' / '--algotext'",
-        )
+            "cannot pass '-D' / '--define' without '-t' / '--algotext'")
     else:
         namespace = {}
 
@@ -137,8 +134,7 @@ def _pretty_print_code(algotext):
             algotext,
             PythonLexer(),
             TerminalFormatter(),
-            outfile=sys.stdout,
-        )
+            outfile=sys.stdout)
     else:
         click.echo(algotext)
 
@@ -148,8 +144,7 @@ def _choose_loader(data_frequency, column):
     if column in bound_cols:
         return ExchangePricingLoader(data_frequency)
     raise ValueError(
-        "No PipelineLoader registered for column %s." % column
-    )
+        "No PipelineLoader registered for column %s." % column)
 
 
 def _get_live_time_range():
@@ -191,9 +186,7 @@ def _fetch_capital_base(base_currency, exchange_name, exchange,
         if attempt_index < 20:
             log.warn(
                 'could not retrieve balances on {}: {}'.format(
-                    exchange.name, e
-                )
-            )
+                    exchange.name, e))
             sleep(5)
             return _fetch_capital_base(base_currency, exchange_name, exchange,
                                        attempt_index + 1)
@@ -239,8 +232,7 @@ def _algorithm_class_for_live(algo_namespace, live_graph, stats_output,
         live_graph=live_graph,
         simulate_orders=simulate_orders,
         stats_output=stats_output,
-        analyze_live=analyze_live,
-    )
+        analyze_live=analyze_live,)
 
     return algorithm_class
 
@@ -249,13 +241,11 @@ def _bundle_trading_environment(bundle_data, environ):
     prefix, connstr = re.split(
         r'sqlite:///',
         str(bundle_data.asset_finder.engine.url),
-        maxsplit=1,
-    )
+        maxsplit=1)
     if prefix:
         raise ValueError(
             "invalid url %r, must begin with 'sqlite:///'" %
-            str(bundle_data.asset_finder.engine.url),
-        )
+            str(bundle_data.asset_finder.engine.url))
 
     return TradingEnvironment(asset_db_path=connstr, environ=environ)
 
@@ -358,8 +348,8 @@ def _build_algo_and_data(handle_data, initialize, before_trading_start,
                      end_dt=end),
         environ=environ,
         exchange_tz='UTC',
-        asset_db_path=None  # We don't need an asset db, we have exchanges
-    )
+        asset_db_path=None)  # We don't need an asset db, we have exchanges
+
     env.asset_finder = ExchangeAssetFinder(exchanges=exchanges)
 
     choose_loader = partial(_choose_loader, data_frequency)
@@ -416,8 +406,7 @@ def _run(handle_data, initialize, before_trading_start, analyze, algofile,
         analyze_live, simulate_orders, stats_output)
     perf = algorithm.run(
         data,
-        overwrite_sim_params=False,
-    )
+        overwrite_sim_params=False)
 
     if output == '-':
         click.echo(str(perf))
@@ -474,8 +463,7 @@ def load_extensions(default, extensions, strict, environ, reload=False):
             # without `strict` we should just log the failure
             warnings.warn(
                 'Failed to load extension: %r\n%s' % (ext, e),
-                stacklevel=2
-            )
+                stacklevel=2)
         else:
             _loaded_extensions.add(ext)
 
@@ -574,8 +562,7 @@ def run_algorithm(initialize,
     catalyst.data.bundles.bundles : The available data bundles.
     """
     load_extensions(
-        default_extension, extensions, strict_extensions, environ
-    )
+        default_extension, extensions, strict_extensions, environ)
 
     if capital_base is None:
         raise ValueError(
@@ -583,8 +570,7 @@ def run_algorithm(initialize,
             'amount of base currency available for trading. For example, '
             'if the `capital_base` is 5ETH, the '
             '`order_target_percent(asset, 1)` command will order 5ETH worth '
-            'of the specified asset.'
-        )
+            'of the specified asset.')
     # I'm not sure that we need this since the modified DataPortal
     # does not require extensions to be explicitly loaded.
 
@@ -602,13 +588,11 @@ def run_algorithm(initialize,
         elif len(non_none_data) != 1:
             raise ValueError(
                 'must specify one of `data`, `data_portal`, or `bundle`,'
-                ' got: %r' % non_none_data,
-            )
+                ' got: %r' % non_none_data)
 
         elif 'bundle' not in non_none_data and bundle_timestamp is not None:
             raise ValueError(
-                'cannot specify `bundle_timestamp` without passing `bundle`',
-            )
+                'cannot specify `bundle_timestamp` without passing `bundle`')
     return _run(
         handle_data=handle_data,
         initialize=initialize,
@@ -635,5 +619,4 @@ def run_algorithm(initialize,
         live_graph=live_graph,
         analyze_live=analyze_live,
         simulate_orders=simulate_orders,
-        stats_output=stats_output
-    )
+        stats_output=stats_output)
