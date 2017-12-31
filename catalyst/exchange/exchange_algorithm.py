@@ -368,32 +368,23 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
 
         super(ExchangeTradingAlgorithmLive, self).__init__(*args, **kwargs)
 
-        signal.signal(signal.SIGINT, self.signal_handler)
+        try:
+            signal.signal(signal.SIGINT, self.signal_handler)
+        except ValueError:
+            log.warn("Can't initialize signal handler inside another thread."
+                     "Exit should be handled by the user.")
 
         log.info('initialized trading algorithm in live mode')
 
-    def signal_handler(self, signal, frame):
-        """
-        Handles the keyboard interruption signal.
-
-        Parameters
-        ----------
-        signal
-        frame
-
-        Returns
-        -------
-
-        """
+    def interrupt_algorithm(self):
         self.is_running = False
 
         if self._analyze is None:
-            log.info('Interruption signal detected {}, exiting the '
-                     'algorithm'.format(signal))
+            log.info('Exiting the algorithm.')
 
         else:
-            log.info('Interruption signal detected {}, calling `analyze()` '
-                     'before exiting the algorithm'.format(signal))
+            log.info('Exiting the algorithm. Calling `analyze()` '
+                     'before exiting the algorithm.')
 
             algo_folder = get_algo_folder(self.algo_namespace)
             folder = join(algo_folder, 'daily_perf')
@@ -410,6 +401,23 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             self.analyze(stats)
 
         sys.exit(0)
+
+    def signal_handler(self, signal, frame):
+        """
+        Handles the keyboard interruption signal.
+
+        Parameters
+        ----------
+        signal
+        frame
+
+        Returns
+        -------
+
+        """
+        log.info('Interruption signal detected {}, exiting the '
+                 'algorithm'.format(signal))
+        self.interrupt_algorithm()
 
     @property
     def clock(self):
