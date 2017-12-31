@@ -257,9 +257,7 @@ def _build_live_algo_and_data(sim_params, exchanges, env, open_calendar,
                               algorithm_class_kwargs):
     sim_params._arena = 'live'  # TODO: use the constructor instead
 
-    data = _data_for_live_trading(
-        exchanges, env, open_calendar, simulate_orders,
-        algo_namespace, capital_base)
+    data = _data_for_live_trading(sim_params, exchanges, env, open_calendar)
 
     algorithm_class = _algorithm_class_for_live(
         algo_namespace, live_graph, stats_output, analyze_live,
