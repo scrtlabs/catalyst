@@ -271,8 +271,9 @@ def _build_live_algo_and_data(sim_params, exchanges, env, open_calendar,
 
 
 def _build_backtest_algo_and_data(
-        exchanges, bundle, environ, bundle_timestamp, open_calendar, start,
-        end, namespace, choose_loader, sim_params, algorithm_class_kwargs):
+        exchanges, bundle, env, environ, bundle_timestamp, open_calendar,
+        start, end, namespace, choose_loader, sim_params,
+        algorithm_class_kwargs):
     if exchanges:
         # Removed the existing Poloniex fork to keep things simple
         # We can add back the complexity if required.
@@ -380,8 +381,9 @@ def _build_algo_and_data(handle_data, initialize, before_trading_start,
             algorithm_class_kwargs)
     else:
         return _build_backtest_algo_and_data(
-            exchanges, bundle, environ, bundle_timestamp, open_calendar, start,
-            end, namespace, choose_loader, sim_params, algorithm_class_kwargs)
+            exchanges, bundle, env, environ, bundle_timestamp, open_calendar,
+            start, end, namespace, choose_loader, sim_params,
+            algorithm_class_kwargs)
 
 
 def _run(handle_data, initialize, before_trading_start, analyze, algofile,
