@@ -121,8 +121,7 @@ def _build_exchanges_dict(exchange, live, simulate_orders, base_currency):
     exchanges = {exchange_name: get_exchange(
                                     exchange_name=exchange_name,
                                     base_currency=base_currency,
-                                    must_authenticate=(live and not simulate_orders),
-                                    skip_init=True)
+                                    must_authenticate=(live and not simulate_orders))
                  for exchange_name in exchange_list}
 
     return exchanges
