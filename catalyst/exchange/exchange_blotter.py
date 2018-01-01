@@ -171,7 +171,7 @@ class ExchangeBlotter(Blotter):
 
         else:
             order = retry(
-                action=self.get_exchange_transactions,
+                action=self.exchange_order,
                 attempts=self.attempts['order_attempts'],
                 sleeptime=self.attempts['retry_sleeptime'],
                 retry_exceptions=(ExchangeRequestError,),
