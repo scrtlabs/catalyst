@@ -462,7 +462,7 @@ class ExchangeBundle:
                 (earliest_trade is not None and earliest_trade > start):
             start = earliest_trade
 
-        if end is None or (last_entry is not None and end > last_entry):
+        if last_entry is not None and (end is None or end > last_entry):
             end = last_entry.replace(minute=59, hour=23) \
                 if data_frequency == 'minute' else last_entry
 
