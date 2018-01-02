@@ -655,10 +655,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             attempts=self.attempts['synchronize_portfolio_attempts'],
             sleeptime=self.attempts['retry_sleeptime'],
             retry_exceptions=(ExchangeRequestError,),
-            cleanup=lambda e: log.warn(
-                'ordering again: {}'.format(e)
-            ),
-        )
+            cleanup=lambda: log.warn('Ordering again.'))
         log.info(
             'got totals from exchanges, cash: {} positions: {}'.format(
                 cash, positions_value
@@ -807,11 +804,8 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             attempts=self.attempts['get_open_orders_attempts'],
             sleeptime=self.attempts['retry_sleeptime'],
             retry_exceptions=(ExchangeRequestError,),
-            cleanup=lambda e: log.warn(
-                'fetching open orders again: {}'.format(e)
-            ),
-            args=(asset,)
-        )
+            cleanup=lambda: log.warn('Fetching open orders again.'),
+            args=(asset,))
 
     @api_method
     def get_order(self, order_id, exchange_name):
@@ -836,11 +830,8 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             attempts=self.attempts['get_order_attempts'],
             sleeptime=self.attempts['retry_sleeptime'],
             retry_exceptions=(ExchangeRequestError,),
-            cleanup=lambda e: log.warn(
-                'fetching orders again: {}'.format(e)
-            ),
-            args=(order_id,)
-        )
+            cleanup=lambda: log.warn('Fetching orders again.'),
+            args=(order_id,))
 
     @api_method
     def cancel_order(self, order_param, exchange_name):
@@ -862,8 +853,5 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             attempts=self.attempts['cancel_order_attempts'],
             sleeptime=self.attempts['retry_sleeptime'],
             retry_exceptions=(ExchangeRequestError,),
-            cleanup=lambda e: log.warn(
-                'cancelling order again: {}'.format(e)
-            ),
-            args=(order_id,)
-        )
+            cleanup=lambda: log.warn('cancelling order again.'),
+            args=(order_id,))
