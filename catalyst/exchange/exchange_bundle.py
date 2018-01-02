@@ -681,6 +681,7 @@ class ExchangeBundle:
                 last_traded=np.object_,
                 open=np.float64,
                 high=np.float64,
+                low=np.float64,
                 close=np.float64,
                 volume=np.float64
             ),
@@ -755,9 +756,10 @@ class ExchangeBundle:
         )
 
         for symbol in assets:
+            # here the symbol is the market['id']
             asset = assets[symbol]
             ohlcv_df = df.loc[
-                (df.index.get_level_values(0) == symbol)
+                (df.index.get_level_values(0) == asset.symbol)
             ]  # type: pd.DataFrame
             ohlcv_df.index = ohlcv_df.index.droplevel(0)
 
