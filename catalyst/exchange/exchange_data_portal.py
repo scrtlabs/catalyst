@@ -86,17 +86,14 @@ class DataPortalExchangeBase(DataPortal):
             attempts=self.attempts['get_history_window_attempts'],
             sleeptime=self.attempts['retry_sleeptime'],
             retry_exceptions=(ExchangeRequestError,),
-            cleanup=lambda e: log.warn(
-                'fetching history again: {}'.format(e)
-            ),
+            cleanup=lambda: log.warn('fetching history again.'),
             args=(assets,
                   end_dt,
                   bar_count,
                   frequency,
                   field,
                   data_frequency,
-                  ffill)
-        )
+                  ffill))
 
     @abc.abstractmethod
     def get_exchange_history_window(self,
@@ -160,11 +157,8 @@ class DataPortalExchangeBase(DataPortal):
             attempts=self.attempts['get_spot_value_attempts'],
             sleeptime=self.attempts['retry_sleeptime'],
             retry_exceptions=(ExchangeRequestError,),
-            cleanup=lambda e: log.warn(
-                'fetching spot value again: {}'.format(e)
-            ),
-            args=(assets, field, dt, data_frequency),
-        )
+            cleanup=lambda: log.warn('fetching spot value again.'),
+            args=(assets, field, dt, data_frequency))
 
     @abc.abstractmethod
     def get_exchange_spot_value(self, exchange_name, assets, field, dt,
