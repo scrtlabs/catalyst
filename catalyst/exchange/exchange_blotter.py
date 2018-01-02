@@ -175,9 +175,7 @@ class ExchangeBlotter(Blotter):
                 attempts=self.attempts['order_attempts'],
                 sleeptime=self.attempts['retry_sleeptime'],
                 retry_exceptions=(ExchangeRequestError,),
-                cleanup=lambda e: log.warn(
-                    'ordering again: {}'.format(e)
-                ),
+                cleanup=lambda: log.warn('Ordering again.'),
                 args=(asset, amount, style),
             )
 
@@ -270,7 +268,5 @@ class ExchangeBlotter(Blotter):
                 attempts=self.attempts['get_transactions_attempts'],
                 sleeptime=self.retry_sleeptime,
                 retry_exceptions=(ExchangeRequestError,),
-                cleanup=lambda e: log.warn(
-                    'fetching exchange transactions again: {}'.format(e)
-                ),
-            )
+                cleanup=lambda: log.warn(
+                    'Fetching exchange transactions again.'))
