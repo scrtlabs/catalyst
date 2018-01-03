@@ -269,4 +269,6 @@ class ExchangeBlotter(Blotter):
                 sleeptime=self.attempts['retry_sleeptime'],
                 retry_exceptions=(ExchangeRequestError,),
                 cleanup=lambda: log.warn(
-                    'Fetching exchange transactions again.'))
+                    'Fetching exchange transactions again.'
+                )
+            )

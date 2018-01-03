@@ -366,6 +366,8 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
 
         self.stats_minutes = 1
 
+        self._last_orders = []
+
         super(ExchangeTradingAlgorithmLive, self).__init__(*args, **kwargs)
 
         try:
@@ -528,7 +530,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                 if exchange_name in exchange_assets else []
 
             exchange_positions = copy.deepcopy(
-                [positions[asset] for asset in assets]
+                [positions[asset] for asset in assets if asset in positions]
             )
 
             exchange = self.exchanges[exchange_name]  # Type: Exchange
@@ -652,18 +654,27 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         if self.current_day is not None and today > self.current_day:
             self.frame_stats = list()
 
-        new_transactions, new_commissions, closed_orders = \
-            self.blotter.get_transactions(data)
+        self.performance_needs_update = False
+        new_orders = self.perf_tracker.todays_performance.orders_by_id.keys()
+        if new_orders != self._last_orders:
+            self.performance_needs_update = True
 
-        if len(new_transactions) > 0:
+        self._last_orders = new_orders
+
+        if self.performance_needs_update:
             self.perf_tracker.update_performance()
+            self.performance_needs_update = False
 
-        cash, positions_value = retry(
-            action=self.synchronize_portfolio,
-            attempts=self.attempts['synchronize_portfolio_attempts'],
-            sleeptime=self.attempts['retry_sleeptime'],
-            retry_exceptions=(ExchangeRequestError,),
-            cleanup=lambda: log.warn('Ordering again.'))
+        if self.portfolio_needs_update:
+            cash, positions_value = retry(
+                action=self.synchronize_portfolio,
+                attempts=self.attempts['synchronize_portfolio_attempts'],
+                sleeptime=self.attempts['retry_sleeptime'],
+                retry_exceptions=(ExchangeRequestError,),
+                cleanup=lambda: log.warn('Ordering again.')
+            )
+            self.portfolio_needs_update = False
+
         log.info(
             'got totals from exchanges, cash: {} positions: {}'.format(
                 cash, positions_value
