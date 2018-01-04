@@ -84,13 +84,14 @@ def find_exchanges(features=None, skip_blacklist=True, is_authenticated=False,
             base_currency=base_currency,
         )
 
-        if 'dailyBundle' in features \
-                and not exchange.has_bundle('daily'):
-            continue
+        if features is not None:
+            if 'dailyBundle' in features \
+                    and not exchange.has_bundle('daily'):
+                continue
 
-        elif 'minuteBundle' in features \
-                and not exchange.has_bundle('minute'):
-            continue
+            elif 'minuteBundle' in features \
+                    and not exchange.has_bundle('minute'):
+                continue
 
         exchanges.append(exchange)
 

@@ -114,9 +114,10 @@ class CCXT(Exchange):
     @staticmethod
     def find_exchanges(features=None, is_authenticated=False):
         ccxt_features = []
-        for feature in features:
-            if not feature.endswith('Bundle'):
-                ccxt_features.append(feature)
+        if features is not None:
+            for feature in features:
+                if not feature.endswith('Bundle'):
+                    ccxt_features.append(feature)
 
         exchange_names = []
         for exchange_name in ccxt.exchanges:

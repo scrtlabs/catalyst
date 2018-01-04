@@ -96,11 +96,12 @@ class TestSuiteBundle:
         )
 
     def test_validate_bundles(self):
-        exchange_population = 3
+        # exchange_population = 3
         asset_population = 3
         data_frequency = random.choice(['minute', 'daily'])
 
-        bundle = 'dailyBundle' if data_frequency == 'daily' else 'minuteBundle'
+        # bundle = 'dailyBundle' if data_frequency
+        #  == 'daily' else 'minuteBundle'
         # exchanges = select_random_exchanges(
         #     population=exchange_population,
         #     features=[bundle],
