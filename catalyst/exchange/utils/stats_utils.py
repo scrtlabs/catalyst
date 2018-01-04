@@ -196,6 +196,9 @@ def prepare_stats(stats, recorded_cols=list()):
         if recorded_cols is not None:
             for column in recorded_cols[:]:
                 value = row_data[column]
+                if isinstance(value, pd.Series):
+                    value = value.to_dict()
+
                 if type(value) is dict:
                     for asset in value:
                         if not isinstance(asset, TradingPair):
