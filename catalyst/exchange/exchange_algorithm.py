@@ -233,28 +233,28 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
 
         """
         tracker = self.perf_tracker
-        period = tracker.todays_performance
+        cum = tracker.cumulative_performance
 
-        pos_stats = period.position_tracker.stats()
-        period_stats = calc_period_stats(pos_stats, period.ending_cash)
+        pos_stats = cum.position_tracker.stats()
+        period_stats = calc_period_stats(pos_stats, cum.ending_cash)
 
         stats = dict(
             period_start=tracker.period_start,
             period_end=tracker.period_end,
             capital_base=tracker.capital_base,
             progress=tracker.progress,
-            ending_value=period.ending_value,
-            ending_exposure=period.ending_exposure,
-            capital_used=period.cash_flow,
-            starting_value=period.starting_value,
-            starting_exposure=period.starting_exposure,
-            starting_cash=period.starting_cash,
-            ending_cash=period.ending_cash,
-            portfolio_value=period.ending_cash + period.ending_value,
-            pnl=period.pnl,
-            returns=period.returns,
-            period_open=period.period_open,
-            period_close=period.period_close,
+            ending_value=cum.ending_value,
+            ending_exposure=cum.ending_exposure,
+            capital_used=cum.cash_flow,
+            starting_value=cum.starting_value,
+            starting_exposure=cum.starting_exposure,
+            starting_cash=cum.starting_cash,
+            ending_cash=cum.ending_cash,
+            portfolio_value=cum.ending_cash + cum.ending_value,
+            pnl=cum.pnl,
+            returns=cum.returns,
+            period_open=start_dt,
+            period_close=end_dt,
             gross_leverage=period_stats.gross_leverage,
             net_leverage=period_stats.net_leverage,
             short_exposure=pos_stats.short_exposure,
@@ -271,8 +271,9 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
         # Merging latest recorded variables
         stats.update(self.recorded_vars)
 
-        stats['positions'] = period.position_tracker.get_positions_list()
+        stats['positions'] = cum.position_tracker.get_positions_list()
 
+        period = tracker.todays_performance
         # we want the key to be absent, not just empty
         # Only include transactions for given dt
         stats['transactions'] = []
@@ -367,6 +368,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         self.stats_minutes = 1
 
         self._last_orders = []
+        self.trading_client = None
 
         super(ExchangeTradingAlgorithmLive, self).__init__(*args, **kwargs)
 
@@ -458,32 +460,51 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
 
         return self._clock
 
-    def _create_generator(self, sim_params):
+    def get_generator(self):
+        if self.trading_client is not None:
+            return self.trading_client.transform()
+
+        perf = None
         if self.perf_tracker is None:
             tracker = self.perf_tracker = PerformanceTracker(
                 sim_params=self.sim_params,
                 trading_calendar=self.trading_calendar,
                 env=self.trading_environment,
             )
+
+            # Set the dt initially to the period start by forcing it to change.
+            self.on_dt_changed(self.sim_params.start_session)
+
             # Unpacking the perf_tracker and positions if available
             perf = get_algo_object(
                 algo_name=self.algo_namespace,
                 key='cumulative_performance',
             )
-            if perf is not None:
-                tracker.cumulative_performance = perf
+
+        if not self.initialized:
+            self.initialize(*self.initialize_args, **self.initialize_kwargs)
+            self.initialized = True
 
         # Call the simulation trading algorithm for side-effects:
         # it creates the perf tracker
-        TradingAlgorithm._create_generator(self, sim_params)
+        # TradingAlgorithm._create_generator(self, self.sim_params)
+        if perf is not None:
+            tracker.cumulative_performance = perf
+
+            period = self.perf_tracker.todays_performance
+            period.starting_cash = perf.ending_cash
+            period.starting_exposure = perf.ending_exposure
+            period.starting_value = perf.ending_value
+            period.position_tracker = perf.position_tracker
+
         self.trading_client = ExchangeAlgorithmExecutor(
             algo=self,
-            sim_params=sim_params,
+            sim_params=self.sim_params,
             data_portal=self.data_portal,
             clock=self.clock,
             benchmark_source=self._create_benchmark_source(),
             restrictions=self.restrictions,
-            universe_func=self._calculate_universe
+            universe_func=self._calculate_universe,
         )
         return self.trading_client.transform()
 
