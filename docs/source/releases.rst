@@ -2,6 +2,24 @@
 Release Notes
 =============
 
+Version 0.4.1
+^^^^^^^^^^^^^
+**Release Date**: 2017-01-03
+
+Bug Fixes
+~~~~~~~~~
+- Fixed cash synchronization issue (:issue:`133`)
+- Fixed positions synchronization issue (:issue:`132`)
+- Patched empyrical to resolve a np.log1p issue (:issue:`126`)
+- Fixed a paper trading issue (:issue:`124`)
+- Fixed a commission issue (:issue:`104`)
+- Fixed a poloniex specific issue in live trading (:issue:`103`)
+
+Build
+~~~~~
+- Caching CCXT market info to limit round-trips (:issue:`99`)
+- Tentative support for Pipeline (:issue:`96`)
+
 Version 0.4.0
 ^^^^^^^^^^^^^
 **Release Date**: 2017-12-12
