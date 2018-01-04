@@ -244,7 +244,7 @@ def analyze(context=None, perf=None):
 
 if __name__ == '__main__':
     # The execution mode: backtest or live
-    MODE = 'live'
+    MODE = 'backtest'
 
     if MODE == 'backtest':
         folder = os.path.join(
