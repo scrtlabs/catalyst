@@ -1,16 +1,16 @@
-import os
-import time
-import shutil
-import json
 import csv
+import json
+import os
+import shutil
+import time
 from datetime import datetime
 
+import logbook
 import pandas as pd
 import requests
-import logbook
 
-from catalyst.exchange.exchange_utils import get_exchange_symbols_filename
-
+from catalyst.exchange.utils.exchange_utils import \
+    get_exchange_symbols_filename
 
 DT_START = int(time.mktime(datetime(2010, 1, 1, 0, 0).timetuple()))
 DT_END = pd.to_datetime('today').value // 10 ** 9
@@ -193,7 +193,8 @@ class PoloniexCurator(object):
                    for this currencyPair
         '''
         try:
-            if('end_file' in locals() and end_file + 3600 < end):
+            if(temp is not None
+                    or ('end_file' in locals() and end_file + 3600 < end)):
                 if (temp is None):
                     temp = os.tmpfile()
                 tempcsv = csv.writer(temp)
@@ -261,7 +262,7 @@ class PoloniexCurator(object):
         vol = df['total'].to_frame('volume')           # set Vol aside
         df.drop('total', axis=1, inplace=True)         # Drop volume data
         ohlc = df.resample('T').ohlc()                 # Resample OHLC 1min
-        ohlc.cols = ohlc.cols.map(lambda t: t[1])      # Raname cols
+        ohlc.columns = ohlc.columns.map(lambda t: t[1])  # Rename cols
         closes = ohlc['close'].fillna(method='pad')    # Pad fwd missing close
         ohlc = ohlc.apply(lambda x: x.fillna(closes))  # Fill NA w/ last close
         vol = vol.resample('T').sum().fillna(0)        # Add volumes by bin

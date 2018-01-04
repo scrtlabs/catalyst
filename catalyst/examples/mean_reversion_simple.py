@@ -12,8 +12,7 @@ from logbook import Logger
 
 from catalyst import run_algorithm
 from catalyst.api import symbol, record, order_target_percent, get_open_orders
-from catalyst.exchange.stats_utils import extract_transactions
-
+from catalyst.exchange.utils.stats_utils import extract_transactions
 # We give a name to the algorithm which Catalyst will use to persist its state.
 # In this example, Catalyst will create the `.catalyst/data/live_algos`
 # directory. If we stop and start the algorithm, Catalyst will resume its
@@ -34,12 +33,12 @@ def initialize(context):
     # parameters or values you're going to use.
 
     # In our example, we're looking at Neo in Ether.
-    context.market = symbol('neo_eth')
+    context.market = symbol('eth_btc')
     context.base_price = None
     context.current_day = None
 
-    context.RSI_OVERSOLD = 30
-    context.RSI_OVERBOUGHT = 80
+    context.RSI_OVERSOLD = 50
+    context.RSI_OVERBOUGHT = 65
     context.CANDLE_SIZE = '5T'
 
     context.start_time = time.time()
@@ -245,9 +244,24 @@ def analyze(context=None, perf=None):
 
 if __name__ == '__main__':
     # The execution mode: backtest or live
-    MODE = 'backtest'
+    live = True
 
-    if MODE == 'backtest':
+    if live:
+        run_algorithm(
+            capital_base=0.03,
+            initialize=initialize,
+            handle_data=handle_data,
+            analyze=analyze,
+            exchange_name='poloniex',
+            live=True,
+            algo_namespace=NAMESPACE,
+            base_currency='btc',
+            live_graph=False,
+            simulate_orders=False,
+            stats_output=None,
+        )
+
+    else:
         folder = os.path.join(
             tempfile.gettempdir(), 'catalyst', NAMESPACE
         )
@@ -272,18 +286,3 @@ if __name__ == '__main__':
             output=out
         )
         log.info('saved perf stats: {}'.format(out))
-
-    elif MODE == 'live':
-        run_algorithm(
-            capital_base=0.05,
-            initialize=initialize,
-            handle_data=handle_data,
-            analyze=analyze,
-            exchange_name='binance',
-            live=True,
-            algo_namespace=NAMESPACE,
-            base_currency='eth',
-            live_graph=False,
-            simulate_orders=True,
-            stats_output=None
-        )

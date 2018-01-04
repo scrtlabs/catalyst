@@ -7,6 +7,7 @@ from abc import (
 )
 from uuid import uuid4
 
+import six
 from six import (
     iteritems,
     with_metaclass,
@@ -33,7 +34,6 @@ from catalyst.utils.sharedoc import copydoc
 
 
 class PipelineEngine(with_metaclass(ABCMeta)):
-
     @abstractmethod
     def run_pipeline(self, pipeline, start_date, end_date):
         """
@@ -118,6 +118,7 @@ class ExplodingPipelineEngine(PipelineEngine):
     """
     A PipelineEngine that doesn't do anything.
     """
+
     def run_pipeline(self, pipeline, start_date, end_date):
         raise NoEngineRegistered(
             "Attempted to run a pipeline but no pipeline "
@@ -484,8 +485,10 @@ class SimplePipelineEngine(PipelineEngine):
             )
 
             if isinstance(term, LoadableTerm):
+                term_key = loader_group_key(term)
+                # TODO: temp workaround
                 to_load = sorted(
-                    loader_groups[loader_group_key(term)],
+                    six.next(six.itervalues(loader_groups)),
                     key=lambda t: t.dataset
                 )
                 loader = get_loader(term)
@@ -565,9 +568,10 @@ class SimplePipelineEngine(PipelineEngine):
                 index=MultiIndex.from_arrays([empty_dates, empty_assets]),
             )
 
-        resolved_assets = array(self._finder.retrieve_all(assets))
+        # TODO: not sure what's wrong with the resolved_assets
+        # resolved_assets = array(self._finder.retrieve_all(assets))
         dates_kept = repeat_last_axis(dates.values, len(assets))[mask]
-        assets_kept = repeat_first_axis(resolved_assets, len(dates))[mask]
+        assets_kept = repeat_first_axis(assets, len(dates))[mask]
 
         final_columns = {}
         for name in data:

@@ -1,10 +1,11 @@
 import pandas as pd
 from logbook import Logger
-from base import BaseExchangeTestCase
 
+from base import BaseExchangeTestCase
 from catalyst.exchange.ccxt.ccxt_exchange import CCXT
+from catalyst.exchange.exchange_execution import ExchangeLimitOrder
+from catalyst.exchange.utils.exchange_utils import get_exchange_auth
 from catalyst.finance.order import Order
-from catalyst.exchange.exchange_utils import get_exchange_auth
 
 log = Logger('test_ccxt')
 
@@ -12,22 +13,22 @@ log = Logger('test_ccxt')
 class TestCCXT(BaseExchangeTestCase):
     @classmethod
     def setup(self):
-        exchange_name = 'gdax'
+        exchange_name = 'binance'
         auth = get_exchange_auth(exchange_name)
         self.exchange = CCXT(
             exchange_name=exchange_name,
             key=auth['key'],
             secret=auth['secret'],
             base_currency='eth',
-            portfolio=None
         )
+        self.exchange.init()
 
     def test_order(self):
         log.info('creating order')
         asset = self.exchange.get_asset('neo_eth')
         order_id = self.exchange.order(
             asset=asset,
-            limit_price=0.07,
+            style=ExchangeLimitOrder(limit_price=0.7),
             amount=1,
         )
         log.info('order created {}'.format(order_id))
@@ -68,9 +69,10 @@ class TestCCXT(BaseExchangeTestCase):
 
     def test_tickers(self):
         log.info('retrieving tickers')
-        tickers = self.exchange.tickers([
-            self.exchange.get_asset('eth_btc'),
-        ])
+        assets = [
+            self.exchange.get_asset('eng_eth'),
+        ]
+        tickers = self.exchange.tickers(assets)
         assert len(tickers) == 1
         pass
 

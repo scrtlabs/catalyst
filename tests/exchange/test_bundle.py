@@ -5,15 +5,15 @@ from logging import getLogger
 
 import pandas as pd
 
-from catalyst.exchange.bundle_utils import get_bcolz_chunk, \
-    get_start_dt, get_df_from_arrays
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
 from catalyst.exchange.exchange_bundle import ExchangeBundle, \
     BUNDLE_NAME_TEMPLATE
-from catalyst.exchange.exchange_utils import get_exchange_folder
-from catalyst.exchange.factory import get_exchange
-from catalyst.exchange.stats_utils import df_to_string
+from catalyst.exchange.utils.bundle_utils import get_bcolz_chunk, \
+    get_start_dt, get_df_from_arrays
+from catalyst.exchange.utils.exchange_utils import get_exchange_folder
+from catalyst.exchange.utils.factory import get_exchange
+from catalyst.exchange.utils.stats_utils import df_to_string
 from catalyst.utils.paths import ensure_directory
 
 log = getLogger('test_exchange_bundle')

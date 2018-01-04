@@ -1,15 +1,13 @@
-from time import sleep
-
 import pandas as pd
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
+from redo import retry
 
 from catalyst.constants import LOG_LEVEL
-from catalyst.exchange.exchange_errors import ExchangeRequestError, \
-    ExchangePortfolioDataError, ExchangeTransactionError
+from catalyst.exchange.exchange_errors import ExchangeRequestError
 from catalyst.finance.blotter import Blotter
 from catalyst.finance.commission import CommissionModel
-from catalyst.finance.order import ORDER_STATUS, Order
+from catalyst.finance.order import ORDER_STATUS
 from catalyst.finance.slippage import SlippageModel
 from catalyst.finance.transaction import create_transaction, Transaction
 from catalyst.utils.input_validation import expect_types
@@ -60,12 +58,13 @@ class TradingPairFeeSchedule(CommissionModel):
         maker = self.maker if self.maker is not None else asset.maker
         taker = self.taker if self.taker is not None else asset.taker
 
-        multiplier = maker \
-            if ((order.amount > 0 and order.limit < transaction.price)
-                or (order.amount < 0 and order.limit > transaction.price)) \
-               and order.limit_reached else taker
+        multiplier = taker
+        if order.limit is not None:
+            multiplier = maker \
+                if ((order.amount > 0 and order.limit < transaction.price)
+                    or (order.amount < 0 and order.limit > transaction.price)) \
+                   and order.limit_reached else taker
 
-        # Assuming just the taker fee for now
         fee = cost * multiplier
         return fee
 
@@ -132,6 +131,7 @@ class TradingPairFixedSlippage(SlippageModel):
 class ExchangeBlotter(Blotter):
     def __init__(self, *args, **kwargs):
         self.simulate_orders = kwargs.pop('simulate_orders', False)
+        self.attempts = kwargs.pop('attempts', False)
 
         self.exchanges = kwargs.pop('exchanges', None)
         if not self.exchanges:
@@ -151,31 +151,11 @@ class ExchangeBlotter(Blotter):
             TradingPair: TradingPairFeeSchedule()
         }
 
-        self.retry_delay = 5
-        self.retry_check_open_orders = 5
-
-    def exchange_order(self, asset, amount, style=None, attempt_index=0):
-        try:
-            exchange = self.exchanges[asset.exchange]
-            return exchange.order(
-                asset, amount, style
-            )
-        except ExchangeRequestError as e:
-            log.warn(
-                'order attempt {}: {}'.format(attempt_index, e)
-            )
-            if attempt_index < self.retry_order:
-                sleep(self.retry_delay)
-
-                return self.exchange_order(
-                    asset, amount, style, attempt_index + 1
-                )
-            else:
-                raise ExchangeTransactionError(
-                    transaction_type='order',
-                    attempts=attempt_index,
-                    error=e
-                )
+    def exchange_order(self, asset, amount, style=None):
+        exchange = self.exchanges[asset.exchange]
+        return exchange.order(
+            asset, amount, style
+        )
 
     @expect_types(asset=TradingPair)
     def order(self, asset, amount, style, order_id=None):
@@ -190,8 +170,13 @@ class ExchangeBlotter(Blotter):
             )
 
         else:
-            order = self.exchange_order(
-                asset, amount, style
+            order = retry(
+                action=self.exchange_order,
+                attempts=self.attempts['order_attempts'],
+                sleeptime=self.attempts['retry_sleeptime'],
+                retry_exceptions=(ExchangeRequestError,),
+                cleanup=lambda: log.warn('Ordering again.'),
+                args=(asset, amount, style),
             )
 
             self.open_orders[order.asset].append(order)
@@ -258,40 +243,32 @@ class ExchangeBlotter(Blotter):
                         )
                     )
 
-    def get_exchange_transactions(self, attempt_index=0):
+    def get_exchange_transactions(self):
         closed_orders = []
         transactions = []
         commissions = []
 
-        try:
-            for order, txn in self.check_open_orders():
-                order.dt = txn.dt
+        for order, txn in self.check_open_orders():
+            order.dt = txn.dt
 
-                transactions.append(txn)
+            transactions.append(txn)
 
-                if not order.open:
-                    closed_orders.append(order)
+            if not order.open:
+                closed_orders.append(order)
 
-            return transactions, commissions, closed_orders
-
-        except ExchangeRequestError as e:
-            log.warn(
-                'check open orders attempt {}: {}'.format(attempt_index, e)
-            )
-            if attempt_index < self.retry_check_open_orders:
-                sleep(self.retry_delay)
-                return self.get_exchange_transactions(attempt_index + 1)
-
-            else:
-                raise ExchangePortfolioDataError(
-                    data_type='order-status',
-                    attempts=attempt_index,
-                    error=e
-                )
+        return transactions, commissions, closed_orders
 
     def get_transactions(self, bar_data):
         if self.simulate_orders:
             return super(ExchangeBlotter, self).get_transactions(bar_data)
 
         else:
-            return self.get_exchange_transactions()
+            return retry(
+                action=self.get_exchange_transactions,
+                attempts=self.attempts['get_transactions_attempts'],
+                sleeptime=self.attempts['retry_sleeptime'],
+                retry_exceptions=(ExchangeRequestError,),
+                cleanup=lambda: log.warn(
+                    'Fetching exchange transactions again.'
+                )
+            )

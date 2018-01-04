@@ -1,18 +1,19 @@
-import csv
-import numbers
-
 import copy
-import numpy as np
+import csv
+import json
+import numbers
 import os
-import pandas as pd
-import boto3
 import time
 
+import numpy as np
+import pandas as pd
 from catalyst.assets._assets import TradingPair
 
-from catalyst.exchange.exchange_utils import get_algo_folder
+from catalyst.exchange.utils.exchange_utils import get_algo_folder
+from catalyst.utils.paths import data_root, ensure_directory
 
-s3 = boto3.resource('s3')
+s3_conn = []
+mailgun = []
 
 
 def trend_direction(series):
@@ -195,6 +196,9 @@ def prepare_stats(stats, recorded_cols=list()):
         if recorded_cols is not None:
             for column in recorded_cols[:]:
                 value = row_data[column]
+                if isinstance(value, pd.Series):
+                    value = value.to_dict()
+
                 if type(value) is dict:
                     for asset in value:
                         if not isinstance(asset, TradingPair):
@@ -278,21 +282,17 @@ def get_pretty_stats(stats, recorded_cols=None, num_rows=10):
     if isinstance(stats, pd.DataFrame):
         stats = stats.T.to_dict().values()
 
-    df, columns = prepare_stats(stats, recorded_cols=recorded_cols)
+    display_stats = stats[-num_rows:] if len(stats) > num_rows else stats
+    df, columns = prepare_stats(
+        display_stats, recorded_cols=recorded_cols
+    )
 
     pd.set_option('display.expand_frame_repr', False)
     pd.set_option('precision', 8)
     pd.set_option('display.width', 1000)
     pd.set_option('display.max_colwidth', 1000)
 
-    formatters = {
-        'returns': lambda returns: "{0:.4f}".format(returns),
-    }
-
-    return df.tail(num_rows).to_string(
-        columns=columns,
-        formatters=formatters
-    )
+    return df.to_string(columns=columns)
 
 
 def get_csv_stats(stats, recorded_cols=None):
@@ -338,6 +338,12 @@ def stats_to_s3(uri, stats, algo_namespace, recorded_cols=None,
     -------
 
     """
+    if not s3_conn:
+        import boto3
+        s3_conn.append(boto3.resource('s3'))
+
+    s3 = s3_conn[0]
+
     if bytes_to_write is None:
         bytes_to_write = get_csv_stats(stats, recorded_cols=recorded_cols)
 
@@ -350,6 +356,35 @@ def stats_to_s3(uri, stats, algo_namespace, recorded_cols=None,
         folder, timestr, algo_namespace, pid
     ))
     obj.put(Body=bytes_to_write)
+
+
+def email_error(algo_name, dt, e, environ=None):
+    import requests
+    import traceback
+
+    if not mailgun:
+        root = data_root(environ)
+        filename = os.path.join(root, 'mailgun.json')
+        if not os.path.exists(filename):
+            raise ValueError(
+                'mailgun.json not found in the catalyst data folder'
+            )
+
+        with open(filename) as data_file:
+            mailgun.append(json.load(data_file))
+
+    mg = mailgun[0]
+
+    return requests.post(
+        mg['url'],
+        auth=("api", mg['api']),
+        data={
+            "from": mg['from'],
+            "to": mg['to'],
+            "subject": 'Error: {}'.format(algo_name),
+            "text": '{}\n\n{}\n{}'.format(
+                dt, e, traceback.format_exc()
+            )})
 
 
 def stats_to_algo_folder(stats, algo_namespace, recorded_cols=None):
@@ -372,7 +407,10 @@ def stats_to_algo_folder(stats, algo_namespace, recorded_cols=None):
     timestr = time.strftime('%Y%m%d')
     folder = get_algo_folder(algo_namespace)
 
-    filename = os.path.join(folder, '{}-{}.csv'.format(timestr, 'frames'))
+    stats_folder = os.path.join(folder, 'stats')
+    ensure_directory(stats_folder)
+
+    filename = os.path.join(stats_folder, '{}.csv'.format(timestr))
 
     with open(filename, 'wb') as handle:
         handle.write(bytes_to_write)

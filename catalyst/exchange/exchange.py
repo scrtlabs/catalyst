@@ -9,15 +9,16 @@ from logbook import Logger
 
 from catalyst.constants import LOG_LEVEL
 from catalyst.data.data_portal import BASE_FIELDS
-from catalyst.exchange.bundle_utils import get_start_dt, \
-    get_delta, get_periods, get_periods_range
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
-    BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
+    SymbolNotFoundOnExchange, \
     PricingDataNotLoadedError, \
-    NoDataAvailableOnExchange, NoValueForField, LastCandleTooEarlyError
-from catalyst.exchange.exchange_utils import get_exchange_symbols, \
-    get_frequency, resample_history_df
+    NoDataAvailableOnExchange, NoValueForField, LastCandleTooEarlyError, \
+    TickerNotFoundError, NotEnoughCashError
+from catalyst.exchange.utils.bundle_utils import get_start_dt, \
+    get_delta, get_periods, get_periods_range
+from catalyst.exchange.utils.exchange_utils import get_exchange_symbols, \
+    get_frequency, resample_history_df, has_bundle
 
 log = Logger('Exchange', level=LOG_LEVEL)
 
@@ -38,6 +39,8 @@ class Exchange:
         self.request_cpt = None
         self.bundle = ExchangeBundle(self.name)
 
+        self.low_balance_threshold = None
+
     @abstractproperty
     def account(self):
         pass
@@ -45,6 +48,9 @@ class Exchange:
     @abstractproperty
     def time_skew(self):
         pass
+
+    def has_bundle(self, data_frequency):
+        return has_bundle(self.name, data_frequency)
 
     def is_open(self, dt):
         """
@@ -148,7 +154,7 @@ class Exchange:
 
     def get_assets(self, symbols=None, data_frequency=None,
                    is_exchange_symbol=False,
-                   is_local=None):
+                   is_local=None, quote_currency=None):
         """
         The list of markets for the specified symbols.
 
@@ -172,6 +178,14 @@ class Exchange:
         if symbols is None:
             # Make a distinct list of all symbols
             symbols = list(set([asset.symbol for asset in self.assets]))
+
+            if quote_currency is not None:
+                for symbol in symbols[:]:
+                    suffix = '_{}'.format(quote_currency.lower())
+
+                    if not symbol.endswith(suffix):
+                        symbols.remove(symbol)
+
             is_exchange_symbol = False
 
         assets = []
@@ -235,10 +249,10 @@ class Exchange:
 
             elif data_frequency is not None:
                 applies = (
-                        (
-                                data_frequency == 'minute' and a.end_minute is not None)
-                        or (
-                                data_frequency == 'daily' and a.end_daily is not None)
+                    (
+                        data_frequency == 'minute' and a.end_minute is not None)
+                    or (
+                        data_frequency == 'daily' and a.end_daily is not None)
                 )
 
             else:
@@ -247,8 +261,16 @@ class Exchange:
             # The symbol provided may use the Catalyst or the exchange
             # convention
             key = a.exchange_symbol if is_exchange_symbol else a.symbol
-            if not asset and key.lower() == symbol.lower() and applies:
-                asset = a
+            if not asset and key.lower() == symbol.lower():
+                if applies:
+                    asset = a
+
+                else:
+                    raise NoDataAvailableOnExchange(
+                        symbol=key,
+                        exchange=self.name,
+                        data_frequency=data_frequency,
+                    )
 
         if asset is None:
             supported_symbols = sorted([a.symbol for a in self.assets])
@@ -271,6 +293,16 @@ class Exchange:
             symbol_map = get_exchange_symbols(self.name, is_local)
             self._symbol_maps[index] = symbol_map
             return symbol_map
+
+    @abstractmethod
+    def init(self):
+        """
+        Load the asset list from the network.
+
+        Returns
+        -------
+
+        """
 
     @abstractmethod
     def load_assets(self, is_local=False):
@@ -377,6 +409,7 @@ class Exchange:
 
         return value
 
+    # TODO: replace with catalyst.exchange.exchange_utils.get_candles_df
     def get_series_from_candles(self, candles, start_dt, end_dt,
                                 data_frequency, field, previous_value=None):
         """
@@ -619,46 +652,98 @@ class Exchange:
 
         return df
 
-    def calculate_totals(self, check_cash=False, positions=None):
+    def _check_low_balance(self, currency, balances, amount):
+        free = balances[currency]['free'] if currency in balances else 0.0
+
+        if free < amount:
+            return free, True
+
+        else:
+            return free, False
+
+    def sync_positions(self, positions, cash=None, check_balances=False):
         """
         Update the portfolio cash and position balances based on the
         latest ticker prices.
 
+        Parameters
+        ----------
+        positions:
+            The positions to synchronize.
+
+        check_balances:
+            Check balances amounts against the exchange.
+
         """
-        log.debug('synchronizing portfolio with exchange {}'.format(self.name))
-
-        cash = None
-        if check_cash:
+        free_cash = 0.0
+        if check_balances:
+            log.debug('fetching {} balances'.format(self.name))
             balances = self.get_balances()
-
-            cash = balances[self.base_currency]['free'] \
-                if self.base_currency in balances else None
-
-            if cash is None:
-                raise BaseCurrencyNotFoundError(
-                    base_currency=self.base_currency,
-                    exchange=self.name
+            log.debug(
+                'got free balances for {} currencies'.format(
+                    len(balances)
                 )
-            log.debug('found base currency balance: {}'.format(cash))
+            )
+            if cash is not None:
+                free_cash, is_lower = self._check_low_balance(
+                    currency=self.base_currency,
+                    balances=balances,
+                    amount=cash,
+                )
+                if is_lower:
+                    raise NotEnoughCashError(
+                        currency=self.base_currency,
+                        exchange=self.name,
+                        free=free_cash,
+                        cash=cash,
+                    )
 
         positions_value = 0.0
-        if positions:
+        if positions is not None:
             assets = set([position.asset for position in positions])
             tickers = self.tickers(assets)
-            log.debug('got tickers for positions: {}'.format(tickers))
 
-            for asset in tickers:
+            for position in positions:
+                asset = position.asset
+                if asset not in tickers:
+                    raise TickerNotFoundError(
+                        symbol=asset.symbol,
+                        exchange=self.name,
+                    )
+
                 ticker = tickers[asset]
-                positions = [p for p in positions if p.asset == asset]
+                log.debug(
+                    'updating {symbol} position, last traded on {dt} for '
+                    '{price}{currency}'.format(
+                        symbol=asset.symbol,
+                        dt=ticker['last_traded'],
+                        price=ticker['last_price'],
+                        currency=asset.quote_currency,
+                    )
+                )
+                position.last_sale_price = ticker['last_price']
+                position.last_sale_date = ticker['last_traded']
 
-                for position in positions:
-                    position.last_sale_price = ticker['last_price']
-                    position.last_sale_date = ticker['last_traded']
+                positions_value += \
+                    position.amount * position.last_sale_price
 
-                    positions_value += \
-                        position.amount * position.last_sale_price
+                if check_balances:
+                    free, is_lower = self._check_low_balance(
+                        currency=asset.base_currency,
+                        balances=balances,
+                        amount=position.amount,
+                    )
 
-        return cash, positions_value
+                    if is_lower:
+                        log.warn(
+                            'detected lower balance for {} on {}: {} < {}, '
+                            'updating position amount'.format(
+                                asset.symbol, self.name, free, position.amount
+                            )
+                        )
+                        position.amount = free
+
+        return free_cash, positions_value
 
     def order(self, asset, amount, style):
         """Place an order.

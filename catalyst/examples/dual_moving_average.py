@@ -1,12 +1,12 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from logbook import Logger
-import matplotlib.pyplot as plt
 
 from catalyst import run_algorithm
 from catalyst.api import (record, symbol, order_target_percent,
                           get_open_orders)
-from catalyst.exchange.stats_utils import extract_transactions
+from catalyst.exchange.utils.stats_utils import extract_transactions
 
 NAMESPACE = 'dual_moving_average'
 log = Logger(NAMESPACE)

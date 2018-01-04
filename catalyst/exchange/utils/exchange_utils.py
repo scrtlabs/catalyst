@@ -14,6 +14,8 @@ from six.moves.urllib import request
 from catalyst.constants import DATE_FORMAT, SYMBOLS_URL
 from catalyst.exchange.exchange_errors import ExchangeSymbolsNotFound, \
     InvalidHistoryFrequencyError, InvalidHistoryFrequencyAlias
+from catalyst.exchange.utils.serialization_utils import ExchangeJSONEncoder, \
+    ExchangeJSONDecoder
 from catalyst.utils.paths import data_root, ensure_directory, \
     last_modified_time
 
@@ -62,6 +64,13 @@ def get_exchange_folder(exchange_name, environ=None):
     return exchange_folder
 
 
+def is_blacklist(exchange_name, environ=None):
+    exchange_folder = get_exchange_folder(exchange_name, environ)
+    filename = os.path.join(exchange_folder, 'blacklist.txt')
+
+    return os.path.exists(filename)
+
+
 def get_exchange_symbols_filename(exchange_name, is_local=False, environ=None):
     """
     The absolute path of the exchange's symbol.json file.
@@ -101,20 +110,6 @@ def download_exchange_symbols(exchange_name, environ=None):
     return response
 
 
-def symbols_parser(asset_def):
-    for key, value in asset_def.items():
-        match = isinstance(value, string_types) \
-                and re.search(r'(\d{4}-\d{2}-\d{2})', value)
-
-        if match:
-            try:
-                asset_def[key] = pd.to_datetime(value, utc=True)
-            except ValueError:
-                pass
-
-    return asset_def
-
-
 def get_exchange_symbols(exchange_name, is_local=False, environ=None):
     """
     The de-serialized content of the exchange's symbols.json.
@@ -134,13 +129,13 @@ def get_exchange_symbols(exchange_name, is_local=False, environ=None):
 
     if not is_local and (not os.path.isfile(filename) or pd.Timedelta(
                 pd.Timestamp('now', tz='UTC') - last_modified_time(
-                    filename)).days > 1):
+                filename)).days > 1):
         download_exchange_symbols(exchange_name, environ)
 
     if os.path.isfile(filename):
         with open(filename) as data_file:
             try:
-                data = json.load(data_file, object_hook=symbols_parser)
+                data = json.load(data_file, cls=ExchangeJSONDecoder)
                 return data
 
             except ValueError:
@@ -266,7 +261,7 @@ def get_algo_folder(algo_name, environ=None):
     return algo_folder
 
 
-def get_algo_object(algo_name, key, environ=None, rel_path=None):
+def get_algo_object(algo_name, key, environ=None, rel_path=None, how='pickle'):
     """
     The de-serialized object of the algo name and key.
 
@@ -290,19 +285,25 @@ def get_algo_object(algo_name, key, environ=None, rel_path=None):
     if rel_path is not None:
         folder = os.path.join(folder, rel_path)
 
-    filename = os.path.join(folder, key + '.p')
+    name = '{}.p'.format(key) if how == 'pickle' else '{}.json'.format(key)
+    filename = os.path.join(folder, name)
 
     if os.path.isfile(filename):
-        try:
+        if how == 'pickle':
             with open(filename, 'rb') as handle:
                 return pickle.load(handle)
-        except Exception:
-            return None
+
+        else:
+            with open(filename) as data_file:
+                data = json.load(data_file, cls=ExchangeJSONDecoder)
+                return data
+
     else:
         return None
 
 
-def save_algo_object(algo_name, key, obj, environ=None, rel_path=None):
+def save_algo_object(algo_name, key, obj, environ=None, rel_path=None,
+                     how='pickle'):
     """
     Serialize and save an object by algo name and key.
 
@@ -321,10 +322,15 @@ def save_algo_object(algo_name, key, obj, environ=None, rel_path=None):
         folder = os.path.join(folder, rel_path)
         ensure_directory(folder)
 
-    filename = os.path.join(folder, key + '.p')
+    if how == 'json':
+        filename = os.path.join(folder, '{}.json'.format(key))
+        with open(filename, 'wt') as handle:
+            json.dump(obj, handle, indent=4, cls=ExchangeJSONEncoder)
 
-    with open(filename, 'wb') as handle:
-        pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    else:
+        filename = os.path.join(folder, '{}.p'.format(key))
+        with open(filename, 'wb') as handle:
+            pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def get_algo_df(algo_name, key, environ=None, rel_path=None):
@@ -426,6 +432,15 @@ def get_exchange_bundles_folder(exchange_name, environ=None):
     ensure_directory(temp_bundles)
 
     return temp_bundles
+
+
+def has_bundle(exchange_name, data_frequency, environ=None):
+    exchange_folder = get_exchange_folder(exchange_name, environ)
+
+    folder_name = '{}_bundle'.format(data_frequency.lower())
+    folder = os.path.join(exchange_folder, folder_name)
+
+    return os.path.isdir(folder)
 
 
 def symbols_serial(obj):
@@ -531,6 +546,11 @@ def get_frequency(freq, data_frequency):
         else:
             raise InvalidHistoryFrequencyError(frequency=freq)
 
+    # TODO: some exchanges support H and W frequencies but not bundles
+    # Find a way to pass-through these parameters to exchanges
+    # but resample from minute or daily in backtest mode
+    # see catalyst/exchange/ccxt/ccxt_exchange.py:242 for mapping between
+    # Pandas offet aliases (used by Catalyst) and the CCXT timeframes
     if unit.lower() == 'd':
         alias = '{}D'.format(candle_size)
 
@@ -646,3 +666,70 @@ def group_assets_by_exchange(assets):
         exchange_assets[asset.exchange].append(asset)
 
     return exchange_assets
+
+
+def get_catalyst_symbol(market_or_symbol):
+    """
+    The Catalyst symbol.
+
+    Parameters
+    ----------
+    market_or_symbol
+
+    Returns
+    -------
+
+    """
+    if isinstance(market_or_symbol, string_types):
+        parts = market_or_symbol.split('/')
+        return '{}_{}'.format(parts[0].lower(), parts[1].lower())
+
+    else:
+        return '{}_{}'.format(
+            market_or_symbol['base'].lower(),
+            market_or_symbol['quote'].lower(),
+        )
+
+
+def save_asset_data(folder, df, decimals=8):
+    symbols = df.index.get_level_values('symbol')
+    for symbol in symbols:
+        symbol_df = df.loc[(symbols == symbol)]  # Type: pd.DataFrame
+
+        filename = os.path.join(folder, '{}.csv'.format(symbol))
+        if os.path.exists(filename):
+            print_headers = False
+
+        else:
+            print_headers = True
+
+        with open(filename, 'a') as f:
+            symbol_df.to_csv(
+                path_or_buf=f,
+                header=print_headers,
+                float_format='%.{}f'.format(decimals),
+            )
+
+
+def get_candles_df(candles, field, freq, bar_count, end_dt,
+                   previous_value=None):
+    all_series = dict()
+    for asset in candles:
+        periods = pd.date_range(end=end_dt, periods=bar_count, freq=freq)
+
+        dates = [candle['last_traded'] for candle in candles[asset]]
+        values = [candle[field] for candle in candles[asset]]
+        series = pd.Series(values, index=dates)
+
+        series = series.reindex(
+            periods,
+            method='ffill',
+            fill_value=previous_value,
+        )
+        series.sort_index(inplace=True)
+        all_series[asset] = series
+
+    df = pd.DataFrame(all_series)
+    df.dropna(inplace=True)
+
+    return df

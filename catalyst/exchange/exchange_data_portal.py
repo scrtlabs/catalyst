@@ -1,19 +1,18 @@
 import abc
-from time import sleep
 
 import numpy as np
 import pandas as pd
 from catalyst.assets._assets import TradingPair
 from logbook import Logger
+from redo import retry
 
 from catalyst.constants import LOG_LEVEL, AUTO_INGEST
 from catalyst.data.data_portal import DataPortal
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
-    ExchangeBarDataError,
     PricingDataNotLoadedError)
-from catalyst.exchange.exchange_utils import get_frequency, \
+from catalyst.exchange.utils.exchange_utils import get_frequency, \
     resample_history_df, group_assets_by_exchange
 
 log = Logger('DataPortalExchange', level=LOG_LEVEL)
@@ -21,11 +20,11 @@ log = Logger('DataPortalExchange', level=LOG_LEVEL)
 
 class DataPortalExchangeBase(DataPortal):
     def __init__(self, *args, **kwargs):
-
-        # TODO: put somewhere accessible by each algo
-        self.retry_get_history_window = 5
-        self.retry_get_spot_value = 5
-        self.retry_delay = 5
+        self.attempts = dict(
+            get_spot_value_attempts=5,
+            get_history_window_attempts=5,
+            retry_sleeptime=5,
+        )
 
         super(DataPortalExchangeBase, self).__init__(*args, **kwargs)
 
@@ -36,33 +35,14 @@ class DataPortalExchangeBase(DataPortal):
                             frequency,
                             field,
                             data_frequency,
-                            ffill=True,
-                            attempt_index=0):
-        try:
-            exchange_assets = group_assets_by_exchange(assets)
-            if len(exchange_assets) > 1:
-                df_list = []
-                for exchange_name in exchange_assets:
-                    assets = exchange_assets[exchange_name]
+                            ffill=True):
+        exchange_assets = group_assets_by_exchange(assets)
+        if len(exchange_assets) > 1:
+            df_list = []
+            for exchange_name in exchange_assets:
+                assets = exchange_assets[exchange_name]
 
-                    df_exchange = self.get_exchange_history_window(
-                        exchange_name,
-                        assets,
-                        end_dt,
-                        bar_count,
-                        frequency,
-                        field,
-                        data_frequency,
-                        ffill)
-
-                    df_list.append(df_exchange)
-
-                # Merging the values values of each exchange
-                return pd.concat(df_list)
-
-            else:
-                exchange_name = list(exchange_assets.keys())[0]
-                return self.get_exchange_history_window(
+                df_exchange = self.get_exchange_history_window(
                     exchange_name,
                     assets,
                     end_dt,
@@ -72,26 +52,22 @@ class DataPortalExchangeBase(DataPortal):
                     data_frequency,
                     ffill)
 
-        except ExchangeRequestError as e:
-            log.warn(
-                'get history attempt {}: {}'.format(attempt_index, e)
-            )
-            if attempt_index < self.retry_get_history_window:
-                sleep(self.retry_delay)
-                return self._get_history_window(assets,
-                                                end_dt,
-                                                bar_count,
-                                                frequency,
-                                                field,
-                                                data_frequency,
-                                                ffill,
-                                                attempt_index + 1)
-            else:
-                raise ExchangeBarDataError(
-                    data_type='history',
-                    attempts=attempt_index,
-                    error=e
-                )
+                df_list.append(df_exchange)
+
+            # Merging the values values of each exchange
+            return pd.concat(df_list)
+
+        else:
+            exchange_name = list(exchange_assets.keys())[0]
+            return self.get_exchange_history_window(
+                exchange_name,
+                assets,
+                end_dt,
+                bar_count,
+                frequency,
+                field,
+                data_frequency,
+                ffill)
 
     def get_history_window(self,
                            assets,
@@ -105,13 +81,19 @@ class DataPortalExchangeBase(DataPortal):
         if field == 'price':
             field = 'close'
 
-        return self._get_history_window(assets,
-                                        end_dt,
-                                        bar_count,
-                                        frequency,
-                                        field,
-                                        data_frequency,
-                                        ffill)
+        return retry(
+            action=self._get_history_window,
+            attempts=self.attempts['get_history_window_attempts'],
+            sleeptime=self.attempts['retry_sleeptime'],
+            retry_exceptions=(ExchangeRequestError,),
+            cleanup=lambda: log.warn('fetching history again.'),
+            args=(assets,
+                  end_dt,
+                  bar_count,
+                  frequency,
+                  field,
+                  data_frequency,
+                  ffill))
 
     @abc.abstractmethod
     def get_exchange_history_window(self,
@@ -125,69 +107,58 @@ class DataPortalExchangeBase(DataPortal):
                                     ffill=True):
         pass
 
-    def _get_spot_value(self, assets, field, dt, data_frequency,
-                        attempt_index=0):
-        try:
-            if isinstance(assets, TradingPair):
-                spot_values = self.get_exchange_spot_value(
-                    assets.exchange, [assets], field, dt, data_frequency)
+    def _get_spot_value(self, assets, field, dt, data_frequency):
+        if isinstance(assets, TradingPair):
+            spot_values = self.get_exchange_spot_value(
+                assets.exchange, [assets], field, dt, data_frequency)
 
-                if not spot_values:
-                    return np.nan
+            if not spot_values:
+                return np.nan
 
-                return spot_values[0]
+            return spot_values[0]
+
+        else:
+            exchange_assets = dict()
+            for asset in assets:
+                if asset.exchange not in exchange_assets:
+                    exchange_assets[asset.exchange] = list()
+
+                exchange_assets[asset.exchange].append(asset)
+
+            if len(list(exchange_assets.keys())) == 1:
+                exchange_name = list(exchange_assets.keys())[0]
+                return self.get_exchange_spot_value(
+                    exchange_name, assets, field, dt, data_frequency)
 
             else:
-                exchange_assets = dict()
-                for asset in assets:
-                    if asset.exchange not in exchange_assets:
-                        exchange_assets[asset.exchange] = list()
+                spot_values = []
+                for exchange_name in exchange_assets:
+                    assets = exchange_assets[exchange_name]
+                    exchange_spot_values = self.get_exchange_spot_value(
+                        exchange_name,
+                        assets,
+                        field,
+                        dt,
+                        data_frequency
+                    )
+                    if len(assets) == 1:
+                        spot_values.append(exchange_spot_values)
+                    else:
+                        spot_values += exchange_spot_values
 
-                    exchange_assets[asset.exchange].append(asset)
-
-                if len(list(exchange_assets.keys())) == 1:
-                    exchange_name = list(exchange_assets.keys())[0]
-                    return self.get_exchange_spot_value(
-                        exchange_name, assets, field, dt, data_frequency)
-
-                else:
-                    spot_values = []
-                    for exchange_name in exchange_assets:
-                        assets = exchange_assets[exchange_name]
-                        exchange_spot_values = self.get_exchange_spot_value(
-                            exchange_name,
-                            assets,
-                            field,
-                            dt,
-                            data_frequency
-                        )
-                        if len(assets) == 1:
-                            spot_values.append(exchange_spot_values)
-                        else:
-                            spot_values += exchange_spot_values
-
-                    return spot_values
-
-        except ExchangeRequestError as e:
-            log.warn(
-                'get spot value attempt {}: {}'.format(attempt_index, e)
-            )
-            if attempt_index < self.retry_get_spot_value:
-                sleep(self.retry_delay)
-                return self._get_spot_value(assets, field, dt, data_frequency,
-                                            attempt_index + 1)
-            else:
-                raise ExchangeBarDataError(
-                    data_type='spot',
-                    attempts=attempt_index,
-                    error=e
-                )
+                return spot_values
 
     def get_spot_value(self, assets, field, dt, data_frequency):
         if field == 'price':
             field = 'close'
 
-        return self._get_spot_value(assets, field, dt, data_frequency)
+        return retry(
+            action=self._get_spot_value,
+            attempts=self.attempts['get_spot_value_attempts'],
+            sleeptime=self.attempts['retry_sleeptime'],
+            retry_exceptions=(ExchangeRequestError,),
+            cleanup=lambda: log.warn('fetching spot value again.'),
+            args=(assets, field, dt, data_frequency))
 
     @abc.abstractmethod
     def get_exchange_spot_value(self, exchange_name, assets, field, dt,
@@ -339,7 +310,7 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
             field=field,
             data_frequency=adj_data_frequency,
             algo_end_dt=self._last_available_session,
-            trailing_bar_count=trailing_bar_count
+            trailing_bar_count=trailing_bar_count,
         )
 
         df = resample_history_df(pd.DataFrame(series), freq, field)

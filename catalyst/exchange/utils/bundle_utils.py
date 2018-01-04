@@ -8,7 +8,7 @@ import pandas as pd
 import pytz
 
 from catalyst.data.bundles.core import download_without_progress
-from catalyst.exchange.exchange_utils import get_exchange_bundles_folder
+from catalyst.exchange.utils.exchange_utils import get_exchange_bundles_folder
 
 EXCHANGE_NAMES = ['bitfinex', 'bittrex', 'poloniex']
 API_URL = 'http://data.enigma.co/api/v1'

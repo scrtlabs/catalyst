@@ -1,17 +1,18 @@
-import os
 import importlib
+import os
 
-import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.finance import candlestick2_ohlc
 # from matplotlib.finance import volume_overlay
 import matplotlib.ticker as ticker
+import pandas as pd
+from matplotlib.finance import candlestick2_ohlc
 
-from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader
-from catalyst.exchange.bundle_utils import get_df_from_arrays, get_bcolz_chunk
-from catalyst.exchange.factory import get_exchange
+from catalyst.exchange.exchange_bundle import ExchangeBundle
+from catalyst.exchange.utils.bundle_utils import get_df_from_arrays, \
+    get_bcolz_chunk
+from catalyst.exchange.utils.factory import get_exchange
 
 EXCHANGE_NAMES = ['bitfinex', 'bittrex', 'poloniex']
 exchanges = dict((e, getattr(importlib.import_module(

@@ -18,18 +18,18 @@ from catalyst.constants import DATE_TIME_FORMAT, AUTO_INGEST
 from catalyst.constants import LOG_LEVEL
 from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
     BcolzMinuteBarMetadata
-from catalyst.exchange.bundle_utils import range_in_bundle, \
-    get_bcolz_chunk, get_month_start_end, \
-    get_year_start_end, get_df_from_arrays, get_start_dt, get_period_label, \
-    get_delta, get_assets
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
     BcolzExchangeBarWriter
 from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
     TempBundleNotFoundError, \
     NoDataAvailableOnExchange, \
     PricingDataNotLoadedError, DataCorruptionError, PricingDataValueError
-from catalyst.exchange.exchange_utils import get_exchange_folder, \
-    save_exchange_symbols, mixin_market_params
+from catalyst.exchange.utils.bundle_utils import range_in_bundle, \
+    get_bcolz_chunk, get_month_start_end, \
+    get_year_start_end, get_df_from_arrays, get_start_dt, get_period_label, \
+    get_delta, get_assets
+from catalyst.exchange.utils.exchange_utils import get_exchange_folder, \
+    save_exchange_symbols, mixin_market_params, get_catalyst_symbol
 from catalyst.utils.cli import maybe_show_progress
 from catalyst.utils.paths import ensure_directory
 
@@ -462,7 +462,7 @@ class ExchangeBundle:
                 (earliest_trade is not None and earliest_trade > start):
             start = earliest_trade
 
-        if end is None or (last_entry is not None and end > last_entry):
+        if last_entry is not None and (end is None or end > last_entry):
             end = last_entry.replace(minute=59, hour=23) \
                 if data_frequency == 'minute' else last_entry
 
@@ -668,7 +668,7 @@ class ExchangeBundle:
 
         if self.exchange is None:
             # Avoid circular dependencies
-            from catalyst.exchange.factory import get_exchange
+            from catalyst.exchange.utils.factory import get_exchange
             self.exchange = get_exchange(self.exchange_name)
 
         problems = []
@@ -681,6 +681,7 @@ class ExchangeBundle:
                 last_traded=np.object_,
                 open=np.float64,
                 high=np.float64,
+                low=np.float64,
                 close=np.float64,
                 volume=np.float64
             ),
@@ -730,7 +731,7 @@ class ExchangeBundle:
                     if data_frequency == 'minute' else asset_def['end_minute']
 
             else:
-                params['symbol'] = self.exchange.get_catalyst_symbol(market)
+                params['symbol'] = get_catalyst_symbol(market)
 
                 params['end_daily'] = end_dt \
                     if data_frequency == 'daily' else 'N/A'
@@ -755,9 +756,10 @@ class ExchangeBundle:
         )
 
         for symbol in assets:
+            # here the symbol is the market['id']
             asset = assets[symbol]
             ohlcv_df = df.loc[
-                (df.index.get_level_values(0) == symbol)
+                (df.index.get_level_values(0) == asset.symbol)
             ]  # type: pd.DataFrame
             ohlcv_df.index = ohlcv_df.index.droplevel(0)
 
@@ -805,7 +807,7 @@ class ExchangeBundle:
         else:
             if self.exchange is None:
                 # Avoid circular dependencies
-                from catalyst.exchange.factory import get_exchange
+                from catalyst.exchange.utils.factory import get_exchange
                 self.exchange = get_exchange(self.exchange_name)
 
             assets = get_assets(

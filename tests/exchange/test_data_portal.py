@@ -2,13 +2,13 @@ import pandas as pd
 from logbook import Logger
 
 from catalyst import get_calendar
-from catalyst.exchange.asset_finder_exchange import AssetFinderExchange
+from catalyst.exchange.exchange_asset_finder import ExchangeAssetFinder
 from catalyst.exchange.exchange_data_portal import (
     DataPortalExchangeBacktest,
     DataPortalExchangeLive
 )
-from catalyst.exchange.exchange_utils import get_common_assets
-from catalyst.exchange.factory import get_exchanges
+from catalyst.exchange.utils.exchange_utils import get_common_assets
+from catalyst.exchange.utils.factory import get_exchanges
 from test_utils import rnd_history_date_days, rnd_bar_count
 
 log = Logger('test_bitfinex')
@@ -20,7 +20,7 @@ class TestExchangeDataPortal:
         log.info('creating bitfinex exchange')
         exchanges = get_exchanges(['bitfinex', 'bittrex', 'poloniex'])
         open_calendar = get_calendar('OPEN')
-        asset_finder = AssetFinderExchange()
+        asset_finder = ExchangeAssetFinder()
 
         self.data_portal_live = DataPortalExchangeLive(
             exchanges=exchanges,

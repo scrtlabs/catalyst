@@ -2,23 +2,31 @@
 Release Notes
 =============
 
-Version 0.3.10
+Version 0.4.1
+^^^^^^^^^^^^^
+**Release Date**: 2017-01-03
+
+Bug Fixes
+~~~~~~~~~
+- Fixed cash synchronization issue (:issue:`133`)
+- Fixed positions synchronization issue (:issue:`132`)
+- Patched empyrical to resolve a np.log1p issue (:issue:`126`)
+- Fixed a paper trading issue (:issue:`124`)
+- Fixed a commission issue (:issue:`104`)
+- Fixed a poloniex specific issue in live trading (:issue:`103`)
+
+Build
+~~~~~
+- Caching CCXT market info to limit round-trips (:issue:`99`)
+- Tentative support for Pipeline (:issue:`96`)
+
+Version 0.4.0
 ^^^^^^^^^^^^^
 **Release Date**: 2017-12-12
 
 Bug Fixes
 ~~~~~~~~~
 
-- Fixed issue with fetching assets with daily frequency
-
-Version 0.3.10
-^^^^^^^^^^^^^
-**Release Date**: 2017-11-28
-
-Bug Fixes
-~~~~~~~~~
-
-- Fixed issue with fetching assets with daily frequency
 - Changed Poloniex interface (should solve :issue:`95` and :issue:`94`)
 - Solved issue with overriding commission and slippage (:issue:`87`)
 - Fixed inefficiency with Bittrex current prices (:issue:`76`)
@@ -29,6 +37,15 @@ Build
 - Added paper trading capability (`simulate_orders=True` param in live mode)
 - More granular commissions (:issue:`82`)
 - Added market orders in live mode (:issue:`81`)
+
+Version 0.3.10
+^^^^^^^^^^^^^
+**Release Date**: 2017-11-28
+
+Bug Fixes
+~~~~~~~~~
+
+- Fixed issue with fetching assets with daily frequency
 
 Version 0.3.9
 ^^^^^^^^^^^^^

@@ -17,6 +17,7 @@
 """
 Cythonized Asset object.
 """
+
 import hashlib
 
 cimport cython
@@ -38,7 +39,7 @@ from numpy cimport int64_t
 import warnings
 cimport numpy as np
 
-from catalyst.exchange.exchange_utils import get_sid
+from catalyst.exchange.utils.exchange_utils import get_sid
 from catalyst.utils.calendars import get_calendar
 from catalyst.exchange.exchange_errors import InvalidSymbolError, SidHashError
 
