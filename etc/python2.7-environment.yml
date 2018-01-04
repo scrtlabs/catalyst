@@ -20,7 +20,7 @@ dependencies:
   - bcolz==0.12.1
   - bottleneck==1.2.1
   - chardet==3.0.4
-  - ccxt==1.10.560
+  - ccxt==1.10.283
   - click==6.7
   - contextlib2==0.5.5
   - cycler==0.10.0

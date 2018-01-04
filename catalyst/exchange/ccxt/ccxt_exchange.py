@@ -681,7 +681,6 @@ class CCXT(Exchange):
             )
 
         side = 'buy' if amount > 0 else 'sell'
-
         if hasattr(self.api, 'amount_to_lots'):
             adj_amount = self.api.amount_to_lots(
                 symbol=symbol,

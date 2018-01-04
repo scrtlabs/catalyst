@@ -3,6 +3,7 @@ from logbook import Logger
 
 from base import BaseExchangeTestCase
 from catalyst.exchange.ccxt.ccxt_exchange import CCXT
+from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.utils.exchange_utils import get_exchange_auth
 from catalyst.finance.order import Order
 
@@ -27,7 +28,7 @@ class TestCCXT(BaseExchangeTestCase):
         asset = self.exchange.get_asset('neo_eth')
         order_id = self.exchange.order(
             asset=asset,
-            limit_price=0.07,
+            style=ExchangeLimitOrder(limit_price=0.7),
             amount=1,
         )
         log.info('order created {}'.format(order_id))

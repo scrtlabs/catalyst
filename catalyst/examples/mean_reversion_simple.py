@@ -37,7 +37,7 @@ def initialize(context):
     context.base_price = None
     context.current_day = None
 
-    context.RSI_OVERSOLD = 40
+    context.RSI_OVERSOLD = 50
     context.RSI_OVERBOUGHT = 65
     context.CANDLE_SIZE = '5T'
 
@@ -244,9 +244,24 @@ def analyze(context=None, perf=None):
 
 if __name__ == '__main__':
     # The execution mode: backtest or live
-    MODE = 'backtest'
+    live = True
 
-    if MODE == 'backtest':
+    if live:
+        run_algorithm(
+            capital_base=0.03,
+            initialize=initialize,
+            handle_data=handle_data,
+            analyze=analyze,
+            exchange_name='poloniex',
+            live=True,
+            algo_namespace=NAMESPACE,
+            base_currency='btc',
+            live_graph=False,
+            simulate_orders=False,
+            stats_output=None,
+        )
+
+    else:
         folder = os.path.join(
             tempfile.gettempdir(), 'catalyst', NAMESPACE
         )
@@ -271,18 +286,3 @@ if __name__ == '__main__':
             output=out
         )
         log.info('saved perf stats: {}'.format(out))
-
-    elif MODE == 'live':
-        run_algorithm(
-            capital_base=0.03,
-            initialize=initialize,
-            handle_data=handle_data,
-            analyze=analyze,
-            exchange_name='poloniex',
-            live=True,
-            algo_namespace=NAMESPACE,
-            base_currency='btc',
-            live_graph=False,
-            simulate_orders=False,
-            stats_output=None,
-        )
