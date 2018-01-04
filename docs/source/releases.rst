@@ -39,7 +39,7 @@ Build
 - Added market orders in live mode (:issue:`81`)
 
 Version 0.3.10
-^^^^^^^^^^^^^
+~~~~~~~~~~~~~~
 **Release Date**: 2017-11-28
 
 Bug Fixes
