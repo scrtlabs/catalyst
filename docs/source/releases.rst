@@ -9,6 +9,7 @@ Version 0.4.3
 Bug Fixes
 ~~~~~~~~~
 - Fixed CLI issue (:issue:`137`)
+- Upgraded CCXT
 
 Version 0.4.2
 ^^^^^^^^^^^^^
