@@ -680,7 +680,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         if new_orders != self._last_orders:
             self.performance_needs_update = True
 
-        self._last_orders = new_orders
+        self._last_orders = copy.deepcopy(new_orders)
 
         if self.performance_needs_update:
             self.perf_tracker.update_performance()
