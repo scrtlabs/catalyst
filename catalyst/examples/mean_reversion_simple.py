@@ -37,7 +37,7 @@ def initialize(context):
     context.base_price = None
     context.current_day = None
 
-    context.RSI_OVERSOLD = 50
+    context.RSI_OVERSOLD = 55
     context.RSI_OVERBOUGHT = 65
     context.CANDLE_SIZE = '5T'
 
@@ -244,7 +244,7 @@ def analyze(context=None, perf=None):
 
 if __name__ == '__main__':
     # The execution mode: backtest or live
-    live = False
+    live = True
 
     if live:
         run_algorithm(

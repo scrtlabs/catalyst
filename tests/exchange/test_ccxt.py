@@ -19,16 +19,16 @@ class TestCCXT(BaseExchangeTestCase):
             exchange_name=exchange_name,
             key=auth['key'],
             secret=auth['secret'],
-            base_currency='eth',
+            base_currency='bnb',
         )
         self.exchange.init()
 
     def test_order(self):
         log.info('creating order')
-        asset = self.exchange.get_asset('neo_eth')
+        asset = self.exchange.get_asset('neo_bnb')
         order_id = self.exchange.order(
             asset=asset,
-            style=ExchangeLimitOrder(limit_price=0.7),
+            style=ExchangeLimitOrder(limit_price=10),
             amount=1,
         )
         log.info('order created {}'.format(order_id))

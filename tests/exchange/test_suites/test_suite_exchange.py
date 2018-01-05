@@ -1,21 +1,25 @@
 import json
 import os
 import random
-from logging import Logger
+from logging import Logger, WARNING
 from time import sleep
 
 import pandas as pd
+from catalyst.assets._assets import TradingPair
+from logbook import TestHandler
 
 from catalyst.exchange.exchange_errors import ExchangeRequestError
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.utils.exchange_utils import get_exchange_folder
 from catalyst.exchange.utils.test_utils import select_random_exchanges, \
     handle_exchange_error, select_random_assets
+from catalyst.testing import ZiplineTestCase
+from catalyst.testing.fixtures import WithLogger
 
 log = Logger('TestSuiteExchange')
 
 
-class TestSuiteExchange:
+class TestSuiteExchange(WithLogger, ZiplineTestCase):
     def _test_markets_exchange(self, exchange, attempts=0):
         assets = None
         try:
@@ -156,34 +160,47 @@ class TestSuiteExchange:
             base_currency=quote_currency,
         )  # Type: list[Exchange]
 
-        for exchange in exchanges:
-            exchange.init()
+        log_catcher = TestHandler()
+        with log_catcher:
+            for exchange in exchanges:
+                exchange.init()
 
-            assets = exchange.get_assets(quote_currency=quote_currency)
-            asset = select_random_assets(assets, 1)[0]
-            assert asset
+                assets = exchange.get_assets(quote_currency=quote_currency)
+                asset = select_random_assets(assets, 1)[0]
+                self.assertIsInstance(asset, TradingPair)
 
-            tickers = exchange.tickers([asset])
-            price = tickers[asset]['last_price']
+                tickers = exchange.tickers([asset])
+                price = tickers[asset]['last_price']
 
-            amount = order_amount / price
+                amount = order_amount / price
 
-            limit_price = price * 0.8
-            style = ExchangeLimitOrder(limit_price=limit_price)
+                limit_price = price * 0.8
+                style = ExchangeLimitOrder(limit_price=limit_price)
 
-            order = exchange.order(
-                asset=asset,
-                amount=amount,
-                style=style,
-            )
-            sleep(1)
+                order = exchange.order(
+                    asset=asset,
+                    amount=amount,
+                    style=style,
+                )
+                sleep(1)
 
-            open_order, _ = exchange.get_order(order.id, asset)
-            assert open_order.status == 0
+                open_order, _ = exchange.get_order(order.id, asset)
+                self.assertEqual(0, open_order.status)
 
-            exchange.cancel_order(open_order, asset)
-            sleep(1)
+                exchange.cancel_order(open_order, asset)
+                sleep(1)
 
-            canceled_order, _ = exchange.get_order(open_order.id, asset)
-            assert canceled_order.status == 2
+                canceled_order, _ = exchange.get_order(open_order.id, asset)
+                warnings = [record for record in log_catcher.records if
+                            record.level == WARNING]
+
+                self.assertEqual(0, len(warnings))
+                self.assertEqual(2, canceled_order.status)
+                print(
+                    'tested {exchange} / {symbol}, order: {order}'.format(
+                        exchange=exchange.name,
+                        symbol=asset.symbol,
+                        order=order.id,
+                    )
+                )
         pass

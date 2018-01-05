@@ -2,6 +2,15 @@
 Release Notes
 =============
 
+Version 0.4.3
+^^^^^^^^^^^^^
+**Release Date**: 2017-01-05
+
+Bug Fixes
+~~~~~~~~~
+- Fixed CLI issue (:issue:`137`)
+- Upgraded CCXT
+
 Version 0.4.2
 ^^^^^^^^^^^^^
 **Release Date**: 2017-01-03
@@ -39,7 +48,7 @@ Build
 - Added market orders in live mode (:issue:`81`)
 
 Version 0.3.10
-^^^^^^^^^^^^^
+~~~~~~~~~~~~~~
 **Release Date**: 2017-11-28
 
 Bug Fixes

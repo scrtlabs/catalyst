@@ -1,7 +1,7 @@
 import random
 
 import pandas as pd
-from logbook import Logger
+from logbook import TestHandler
 from pandas.util.testing import assert_frame_equal
 
 from catalyst import get_calendar
@@ -11,8 +11,7 @@ from catalyst.exchange.utils.exchange_utils import get_candles_df
 from catalyst.exchange.utils.factory import get_exchange
 from catalyst.exchange.utils.test_utils import output_df, \
     select_random_assets
-
-log = Logger('TestSuiteExchange')
+from catalyst.testing.fixtures import WithLogger, ZiplineTestCase
 
 pd.set_option('display.expand_frame_repr', False)
 pd.set_option('precision', 8)
@@ -20,7 +19,7 @@ pd.set_option('display.width', 1000)
 pd.set_option('display.max_colwidth', 1000)
 
 
-class TestSuiteBundle:
+class TestSuiteBundle(WithLogger, ZiplineTestCase):
     @staticmethod
     def get_data_portal(exchange_names):
         open_calendar = get_calendar('OPEN')
@@ -54,46 +53,46 @@ class TestSuiteBundle:
         """
         data = dict()
 
-        log.info('creating data sample from bundle')
-        data['bundle'] = data_portal.get_history_window(
-            assets=assets,
-            end_dt=end_dt,
-            bar_count=bar_count,
-            frequency=freq,
-            field='close',
-            data_frequency=data_frequency,
-        )
-        log.info('bundle data:\n{}'.format(
-            data['bundle'].tail(10))
-        )
+        log_catcher = TestHandler()
+        with log_catcher:
+            data['bundle'] = data_portal.get_history_window(
+                assets=assets,
+                end_dt=end_dt,
+                bar_count=bar_count,
+                frequency=freq,
+                field='close',
+                data_frequency=data_frequency,
+            )
+            print('bundle data:\n{}'.format(
+                data['bundle'].tail(10))
+            )
 
-        log.info('creating data sample from exchange api')
-        candles = exchange.get_candles(
-            end_dt=end_dt,
-            freq=freq,
-            assets=assets,
-            bar_count=bar_count,
-        )
-        data['exchange'] = get_candles_df(
-            candles=candles,
-            field='close',
-            freq=freq,
-            bar_count=bar_count,
-            end_dt=end_dt,
-        )
-        log.info('exchange data:\n{}'.format(
-            data['exchange'].tail(10))
-        )
-        for source in data:
-            df = data[source]
-            path = output_df(df, assets, '{}_{}'.format(freq, source))
-            log.info('saved {}:\n{}'.format(source, path))
+            candles = exchange.get_candles(
+                end_dt=end_dt,
+                freq=freq,
+                assets=assets,
+                bar_count=bar_count,
+            )
+            data['exchange'] = get_candles_df(
+                candles=candles,
+                field='close',
+                freq=freq,
+                bar_count=bar_count,
+                end_dt=end_dt,
+            )
+            print('exchange data:\n{}'.format(
+                data['exchange'].tail(10))
+            )
+            for source in data:
+                df = data[source]
+                path = output_df(df, assets, '{}_{}'.format(freq, source))
+                print('saved {}:\n{}'.format(source, path))
 
-        assert_frame_equal(
-            right=data['bundle'],
-            left=data['exchange'],
-            check_less_precise=True,
-        )
+            assert_frame_equal(
+                right=data['bundle'],
+                left=data['exchange'],
+                check_less_precise=True,
+            )
 
     def test_validate_bundles(self):
         # exchange_population = 3

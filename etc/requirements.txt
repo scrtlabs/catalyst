@@ -81,6 +81,6 @@ empyrical==0.2.1
 tables==3.3.0
 
 #Catalyst dependencies
-ccxt==1.10.283
+ccxt==1.10.565
 boto3==1.4.8
 redo==1.6
