@@ -271,9 +271,9 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
         # Merging latest recorded variables
         stats.update(self.recorded_vars)
 
-        stats['positions'] = cum.position_tracker.get_positions_list()
-
         period = tracker.todays_performance
+        stats['positions'] = period.position_tracker.get_positions_list()
+
         # we want the key to be absent, not just empty
         # Only include transactions for given dt
         stats['transactions'] = []
@@ -495,6 +495,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             period.starting_cash = perf.ending_cash
             period.starting_exposure = perf.ending_exposure
             period.starting_value = perf.ending_value
+            # This does not seem to get updated correctly
             period.position_tracker = perf.position_tracker
 
         self.trading_client = ExchangeAlgorithmExecutor(
