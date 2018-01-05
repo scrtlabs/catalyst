@@ -282,6 +282,7 @@ def run(ctx,
         exchange=exchange_name,
         algo_namespace=algo_namespace,
         base_currency=base_currency,
+        analyze_live=None,
         live_graph=False,
         simulate_orders=True,
         stats_output=None,
@@ -312,11 +313,11 @@ def catalyst_magic(line, cell=None):
                 '--algotext', cell,
                 '--output', os.devnull,  # don't write the results by default
             ] + ([
-                # these options are set when running in line magic mode
-                # set a non None algo text to use the ipython user_ns
-                '--algotext', '',
-                '--local-namespace',
-            ] if cell is None else []) + line.split(),
+                     # these options are set when running in line magic mode
+                     # set a non None algo text to use the ipython user_ns
+                     '--algotext', '',
+                     '--local-namespace',
+                 ] if cell is None else []) + line.split(),
             '%s%%catalyst' % ((cell or '') and '%'),
             # don't use system exit and propogate errors to the caller
             standalone_mode=False,
@@ -470,6 +471,7 @@ def live(ctx,
         algo_namespace=algo_namespace,
         base_currency=base_currency,
         live_graph=live_graph,
+        analyze_live=None,
         simulate_orders=simulate_orders,
         stats_output=None,
     )
