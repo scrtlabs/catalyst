@@ -2,6 +2,14 @@
 Release Notes
 =============
 
+Version 0.4.3
+^^^^^^^^^^^^^
+**Release Date**: 2017-01-05
+
+Bug Fixes
+~~~~~~~~~
+- Fixed CLI issue (:issue:`137`)
+
 Version 0.4.2
 ^^^^^^^^^^^^^
 **Release Date**: 2017-01-03
