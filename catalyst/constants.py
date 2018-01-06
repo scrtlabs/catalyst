@@ -11,7 +11,7 @@ LOG_LEVEL = int(os.environ.get('CATALYST_LOG_LEVEL', logbook.INFO))
 
 SYMBOLS_URL = 'https://s3.amazonaws.com/enigmaco/catalyst-exchanges/' \
               '{exchange}/symbols.json'
-
+EXCHANGE_CONFIG_URL = 'http://127.0.0.1:8080/exchanges/{exchange}/config.json'
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M'
 DATE_FORMAT = '%Y-%m-%d'
 
