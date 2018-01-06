@@ -4,7 +4,7 @@ Release Notes
 
 Version 0.4.3
 ^^^^^^^^^^^^^
-**Release Date**: 2017-01-05
+**Release Date**: 2018-01-05
 
 Bug Fixes
 ~~~~~~~~~
@@ -13,7 +13,7 @@ Bug Fixes
 
 Version 0.4.2
 ^^^^^^^^^^^^^
-**Release Date**: 2017-01-03
+**Release Date**: 2018-01-03
 
 Bug Fixes
 ~~~~~~~~~
