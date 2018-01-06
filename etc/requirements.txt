@@ -82,5 +82,5 @@ tables==3.3.0
 
 #Catalyst dependencies
 ccxt==1.10.565
-boto3==1.4.8
+boto3==1.5.7
 redo==1.6

@@ -1,5 +1,3 @@
-import json
-import os
 import re
 from collections import defaultdict
 
@@ -13,15 +11,17 @@ from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
     ExchangeSymbolsNotFound, ExchangeRequestError, InvalidOrderStyle, \
-    ExchangeNotFoundError, CreateOrderError, InvalidHistoryTimeframeError
+    ExchangeNotFoundError, CreateOrderError, InvalidHistoryTimeframeError, \
+    MarketsNotFoundError, InvalidMarketError
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
-from catalyst.exchange.utils.exchange_utils import mixin_market_params, \
-    from_ms_timestamp, get_epoch, get_exchange_folder, get_catalyst_symbol, \
-    get_exchange_auth
+from catalyst.exchange.utils.exchange_utils import from_ms_timestamp, \
+    get_epoch, get_catalyst_symbol, \
+    get_exchange_auth, get_exchange_config
 from catalyst.finance.order import Order, ORDER_STATUS
 from ccxt import InvalidOrder, NetworkError, \
     ExchangeError
 from logbook import Logger
+from redo import retry
 from six import string_types
 
 log = Logger('CCXT', level=LOG_LEVEL)
@@ -55,6 +55,8 @@ class CCXT(Exchange):
                 'apiKey': key,
                 'secret': secret,
             })
+            self.has = self.api.has
+            self.fees = self.api.fees
 
         except Exception:
             raise ExchangeNotFoundError(exchange_name=exchange_name)
@@ -62,6 +64,7 @@ class CCXT(Exchange):
         self._symbol_maps = [None, None]
 
         self.name = exchange_name
+        self.assets = []
 
         self.base_currency = base_currency
         self.transactions = defaultdict(list)
@@ -72,49 +75,114 @@ class CCXT(Exchange):
         self.request_cpt = dict()
 
         self.bundle = ExchangeBundle(self.name)
-        self.markets = None
         self._is_init = False
+        self._config = None
 
     def init(self):
         if self._is_init:
             return
 
-        exchange_folder = get_exchange_folder(self.name)
-        filename = os.path.join(exchange_folder, 'cctx_markets.json')
-
-        if os.path.exists(filename):
-            timestamp = os.path.getmtime(filename)
-            dt = pd.to_datetime(timestamp, unit='s', utc=True)
-
-            if dt >= pd.Timestamp.utcnow().floor('1D'):
-                with open(filename) as f:
-                    self.markets = json.load(f)
-
-                log.debug('loaded markets for {}'.format(self.name))
-
-        if self.markets is None:
-            try:
-                markets_symbols = self.api.load_markets()
-                log.debug(
-                    'fetching {} markets:\n{}'.format(
-                        self.name, markets_symbols
-                    )
+        if self._config is None:
+            self._config = get_exchange_config(self.name)
+            log.debug(
+                'got exchange config {}:\n{}'.format(
+                    self.name, self._config
                 )
-
-                self.markets = self.api.fetch_markets()
-                with open(filename, 'w+') as f:
-                    json.dump(self.markets, f, indent=4)
-
-            except (ExchangeError, NetworkError) as e:
-                log.warn(
-                    'unable to fetch markets {}: {}'.format(
-                        self.name, e
-                    )
-                )
-                raise ExchangeRequestError(error=e)
+            )
 
         self.load_assets()
         self._is_init = True
+
+    def load_assets(self):
+        if self._config is None:
+            raise ValueError('Exchange config not available.')
+
+        self.assets = []
+        for asset_dict in self._config['assets']:
+            asset = TradingPair(**asset_dict)
+            self.assets.append(asset)
+
+    def _fetch_markets(self):
+        markets_symbols = self.api.load_markets()
+        log.debug(
+            'fetching {} markets:\n{}'.format(
+                self.name, markets_symbols
+            )
+        )
+        try:
+            markets = self.api.fetch_markets()
+
+        except NetworkError as e:
+            raise ExchangeRequestError(error=e)
+
+        if not markets:
+            raise MarketsNotFoundError(
+                exchange=self.name,
+            )
+
+        for market in markets:
+            if 'id' not in market:
+                raise InvalidMarketError(
+                    exchange=self.name,
+                    market=market,
+                )
+        return markets
+
+    def create_exchange_config(self):
+        config = dict(
+            name=self.name,
+            features=[feature for feature in self.has if self.has[feature]]
+        )
+        markets = retry(
+            action=self._fetch_markets,
+            attempts=5,
+            sleeptime=5,
+            retry_exceptions=(ExchangeRequestError,),
+            cleanup=lambda: log.warn(
+                'fetching markets again for {}'.format(self.name)
+            ),
+        )
+
+        config['assets'] = []
+        for market in markets:
+            asset = self.create_trading_pair(market=market)
+            config['assets'].append(asset)
+
+        return config
+
+    def create_trading_pair(self, market, start_dt=None, end_dt=None,
+                            leverage=1, end_daily=None, end_minute=None):
+        """
+        Creating a TradingPair from market and asset data.
+
+        Parameters
+        ----------
+        market: dict[str, Object]
+        start_dt
+        end_dt
+        leverage
+        end_daily
+        end_minute
+
+        Returns
+        -------
+
+        """
+        params = dict(
+            exchange=self.name,
+            data_source='catalyst',
+            exchange_symbol=market['id'],
+            symbol=get_catalyst_symbol(market),
+            start_date=start_dt,
+            end_date=end_dt,
+            leverage=leverage,
+            asset_name=market['symbol'],
+            end_daily=end_daily,
+            end_minute=end_minute,
+        )
+        self.apply_conditional_market_params(params, market)
+
+        return TradingPair(**params)
 
     @staticmethod
     def find_exchanges(features=None, is_authenticated=False):
@@ -193,27 +261,6 @@ class CCXT(Exchange):
             )
 
         return frequencies
-
-    def get_market(self, symbol):
-        """
-        The CCXT market.
-
-        Parameters
-        ----------
-        symbol:
-            The CCXT symbol.
-
-        Returns
-        -------
-        dict[str, Object]
-
-        """
-        s = self.get_symbol(symbol)
-        market = next(
-            (market for market in self.markets if market['symbol'] == s),
-            None,
-        )
-        return market
 
     def get_symbol(self, asset_or_symbol, source='catalyst'):
         """
@@ -417,144 +464,53 @@ class CCXT(Exchange):
         except ExchangeSymbolsNotFound:
             return None
 
-    def get_asset_defs(self, market):
+    def apply_conditional_market_params(self, params, market):
         """
-        The local and Catalyst definitions of the specified market.
+        Applies a CCXT market dict to parameters of TradingPair init.
 
         Parameters
         ----------
-        market: dict[str, Object]
-            The CCXT market dicts.
+        params: dict[Object]
+        market: dict[Object]
 
         Returns
         -------
-        dict[str, Object]
-            The asset definition.
 
         """
-        asset_defs = []
-
-        for is_local in (False, True):
-            asset_def = self.get_asset_def(market, is_local)
-            asset_defs.append((asset_def, is_local))
-
-        return asset_defs
-
-    def get_asset_def(self, market, is_local=False):
-        """
-        The asset definition (in symbols.json files) corresponding
-        to the the specified market.
-
-        Parameters
-        ----------
-        market: dict[str, Object]
-            The CCXT market dict.
-        is_local
-            Whether to search in local or Catalyst asset definitions.
-
-        Returns
-        -------
-        dict[str, Object]
-            The asset definition.
-
-        """
-        exchange_symbol = market['id']
-
-        symbol_map = self._fetch_symbol_map(is_local)
-        if symbol_map is not None:
-            assets_lower = {k.lower(): v for k, v in symbol_map.items()}
-            key = exchange_symbol.lower()
-
-            asset = assets_lower[key] if key in assets_lower else None
-            if asset is not None:
-                return asset
-
-            else:
-                return None
+        # TODO: make this more externalized / configurable
+        # Consider representing in some type of JSON structure
+        if 'active' in market:
+            params['trading_state'] = 1 if market['active'] else 0
 
         else:
-            return None
+            params['trading_state'] = 1
 
-    def create_trading_pair(self, market, asset_def=None, is_local=False):
-        """
-        Creating a TradingPair from market and asset data.
+        if 'lot' in market:
+            params['min_trade_size'] = market['lot']
+            params['lot'] = market['lot']
 
-        Parameters
-        ----------
-        market: dict[str, Object]
-        asset_def: dict[str, Object]
-        is_local: bool
+        if self.name == 'bitfinex':
+            params['maker'] = 0.001
+            params['taker'] = 0.002
 
-        Returns
-        -------
-
-        """
-        data_source = 'local' if is_local else 'catalyst'
-        params = dict(
-            exchange=self.name,
-            data_source=data_source,
-            exchange_symbol=market['id'],
-        )
-        mixin_market_params(self.name, params, market)
-
-        if asset_def is not None:
-            params['symbol'] = asset_def['symbol']
-
-            params['start_date'] = asset_def['start_date'] \
-                if 'start_date' in asset_def else None
-
-            params['end_date'] = asset_def['end_date'] \
-                if 'end_date' in asset_def else None
-
-            params['leverage'] = asset_def['leverage'] \
-                if 'leverage' in asset_def else 1.0
-
-            params['asset_name'] = asset_def['asset_name'] \
-                if 'asset_name' in asset_def else None
-
-            params['end_daily'] = asset_def['end_daily'] \
-                if 'end_daily' in asset_def \
-                   and asset_def['end_daily'] != 'N/A' else None
-
-            params['end_minute'] = asset_def['end_minute'] \
-                if 'end_minute' in asset_def \
-                   and asset_def['end_minute'] != 'N/A' else None
+        elif 'maker' in market and 'taker' in market \
+                and market['maker'] is not None \
+                and market['taker'] is not None:
+            params['maker'] = market['maker']
+            params['taker'] = market['taker']
 
         else:
-            params['symbol'] = get_catalyst_symbol(market)
-            # TODO: add as an optional column
-            params['leverage'] = 1.0
+            # TODO: default commission, make configurable
+            params['maker'] = 0.0015
+            params['taker'] = 0.0025
 
-        return TradingPair(**params)
+        info = market['info'] if 'info' in market else None
+        if info:
+            if 'minimum_order_size' in info:
+                params['min_trade_size'] = float(info['minimum_order_size'])
 
-    def load_assets(self):
-        log.debug('loading assets for {}'.format(self.name))
-        self.assets = []
-
-        for market in self.markets:
-            if 'id' not in market:
-                log.warn('invalid market: {}'.format(market))
-                continue
-
-            asset_defs = self.get_asset_defs(market)
-
-            asset = None
-            for asset_def in asset_defs:
-                if asset_def[0] is not None or not asset_defs[1]:
-                    try:
-                        asset = self.create_trading_pair(
-                            market=market,
-                            asset_def=asset_def[0],
-                            is_local=asset_def[1]
-                        )
-                        self.assets.append(asset)
-
-                    except TypeError as e:
-                        log.warn('unable to add asset: {}'.format(e))
-
-            if asset is None:
-                asset = self.create_trading_pair(market=market)
-                self.assets.append(asset)
+                if 'lot' not in params:
+                    params['lot'] = params['min_trade_size']
 
     def get_balances(self):
         try:

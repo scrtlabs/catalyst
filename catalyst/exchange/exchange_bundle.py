@@ -5,6 +5,7 @@ from functools import partial
 from itertools import chain
 from operator import is_not
 
+import copy
 import numpy as np
 import pandas as pd
 import pytz
@@ -29,7 +30,7 @@ from catalyst.exchange.utils.bundle_utils import range_in_bundle, \
     get_year_start_end, get_df_from_arrays, get_start_dt, get_period_label, \
     get_delta, get_assets
 from catalyst.exchange.utils.exchange_utils import get_exchange_folder, \
-    save_exchange_symbols, mixin_market_params, get_catalyst_symbol
+    get_catalyst_symbol
 from catalyst.utils.cli import maybe_show_progress
 from catalyst.utils.paths import ensure_directory
 
@@ -233,12 +234,12 @@ class ExchangeBundle:
 
                 problem = '{name} ({start_dt} to {end_dt}) has empty ' \
                           'periods: {dates}'.format(
-                            name=asset.symbol,
-                            start_dt=asset.start_date.strftime(
-                                DATE_TIME_FORMAT),
-                            end_dt=end_dt.strftime(DATE_TIME_FORMAT),
-                            dates=[date.strftime(
-                                DATE_TIME_FORMAT) for date in dates])
+                    name=asset.symbol,
+                    start_dt=asset.start_date.strftime(
+                        DATE_TIME_FORMAT),
+                    end_dt=end_dt.strftime(DATE_TIME_FORMAT),
+                    dates=[date.strftime(
+                        DATE_TIME_FORMAT) for date in dates])
 
                 if empty_rows_behavior == 'warn':
                     log.warn(problem)
@@ -287,12 +288,12 @@ class ExchangeBundle:
 
             problem = '{name} ({start_dt} to {end_dt}) has {threshold} ' \
                       'identical close values on: {dates}'.format(
-                        name=asset.symbol,
-                        start_dt=asset.start_date.strftime(DATE_TIME_FORMAT),
-                        end_dt=end_dt.strftime(DATE_TIME_FORMAT),
-                        threshold=threshold,
-                        dates=[pd.to_datetime(date).strftime(DATE_TIME_FORMAT)
-                               for date in dates])
+                name=asset.symbol,
+                start_dt=asset.start_date.strftime(DATE_TIME_FORMAT),
+                end_dt=end_dt.strftime(DATE_TIME_FORMAT),
+                threshold=threshold,
+                dates=[pd.to_datetime(date).strftime(DATE_TIME_FORMAT)
+                       for date in dates])
 
             problems.append(problem)
 
@@ -630,8 +631,8 @@ class ExchangeBundle:
                     show_progress,
                     label='Ingesting {frequency} price data on '
                           '{exchange}'.format(
-                            exchange=self.exchange_name,
-                            frequency=data_frequency,
+                        exchange=self.exchange_name,
+                        frequency=data_frequency,
                     )) as it:
                 for chunk in it:
                     problems += self.ingest_ctable(
@@ -701,42 +702,36 @@ class ExchangeBundle:
         for symbol in symbols:
             start_dt = df.index.get_level_values(1).min()
             end_dt = df.index.get_level_values(1).max()
-            end_dt_key = 'end_{}'.format(data_frequency)
 
-            market = self.exchange.get_market(symbol)
-            if market is None:
-                raise ValueError('symbol not available in the exchange.')
+            try:
+                asset = self.exchange.get_asset(symbol, is_local=True)
+            except:
+                asset = copy.deepcopy(self.exchange.get_asset(symbol))
 
-            params = dict(
-                exchange=self.exchange.name,
-                data_source='local',
-                exchange_symbol=market['id'],
-            )
-            mixin_market_params(self.exchange_name, params, market)
+            if asset.data_source == 'local':
+                asset.start_date = asset.start_date \
+                    if asset.start_date < start_dt else start_dt
 
-            asset_def = self.exchange.get_asset_def(market, True)
-            if asset_def is not None:
-                params['symbol'] = asset_def['symbol']
+                if data_frequency == 'daily':
+                    asset.end_date = asset.end_daily = asset.end_daily \
+                        if asset.end_daily > end_dt else end_dt
 
-                params['start_date'] = asset_def['start_date'] \
-                    if asset_def['start_date'] < start_dt else start_dt
-
-                params['end_date'] = asset_def[end_dt_key] \
-                    if asset_def[end_dt_key] > end_dt else end_dt
-
-                params['end_daily'] = end_dt \
-                    if data_frequency == 'daily' else asset_def['end_daily']
-
-                params['end_minute'] = end_dt \
-                    if data_frequency == 'minute' else asset_def['end_minute']
+                else:
+                    asset.end_date = asset.end_minute = asset.end_minute \
+                        if asset.end_minute > end_dt else end_dt
 
             else:
-                params['symbol'] = get_catalyst_symbol(market)
+                asset.data_source = 'local'
+                asset.start_date = start_dt
+                asset.end_dt = end_dt
 
-                params['end_daily'] = end_dt \
-                    if data_frequency == 'daily' else 'N/A'
-                params['end_minute'] = end_dt \
-                    if data_frequency == 'minute' else 'N/A'
+                if data_frequency == 'daily':
+                    asset.end_daily = end_dt
+                    asset.end_minute = None
+
+                else:
+                    asset.end_daily = None
+                    asset.end_minute = end_dt
 
             if min_start_dt is None or start_dt < min_start_dt:
                 min_start_dt = start_dt
@@ -744,11 +739,9 @@ class ExchangeBundle:
             if max_end_dt is None or end_dt > max_end_dt:
                 max_end_dt = end_dt
 
-            asset = TradingPair(**params)
-            assets[market['id']] = asset
+            assets[symbol] = asset
 
-        save_exchange_symbols(self.exchange_name, assets, True)
-
+        # TODO: update config.json
         writer = self.get_writer(
             start_dt=min_start_dt.replace(hour=00, minute=00),
             end_dt=max_end_dt.replace(hour=23, minute=59),

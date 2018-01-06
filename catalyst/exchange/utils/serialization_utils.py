@@ -5,7 +5,30 @@ from json import JSONEncoder
 import pandas as pd
 from six import string_types
 
-from catalyst.constants import DATE_TIME_FORMAT
+from datetime import date, datetime
+from catalyst.constants import DATE_TIME_FORMAT, DATE_FORMAT
+from catalyst.assets._assets import TradingPair
+
+
+class ConfigJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        """
+        JSON serializer for objects not serializable by default json code
+
+        Parameters
+        ----------
+        obj: Object
+
+        Returns
+        -------
+        str
+
+        """
+        if isinstance(obj, (datetime, date)):
+            return obj.floor('1D').strftime(DATE_FORMAT)
+
+        elif isinstance(obj, TradingPair):
+            return obj.to_dict()
 
 
 class ExchangeJSONEncoder(json.JSONEncoder):
