@@ -626,13 +626,13 @@ class ExchangeBundle:
                 key=lambda chunk: pd.to_datetime(chunk['period'])
             )
             with maybe_show_progress(
-                all_chunks,
-                show_progress,
-                label='Ingesting {frequency} price data on '
-                      '{exchange}'.format(
-                    exchange=self.exchange_name,
-                    frequency=data_frequency,
-                )) as it:
+                    all_chunks,
+                    show_progress,
+                    label='Ingesting {frequency} price data on '
+                          '{exchange}'.format(
+                            exchange=self.exchange_name,
+                            frequency=data_frequency,
+                    )) as it:
                 for chunk in it:
                     problems += self.ingest_ctable(
                         asset=chunk['asset'],

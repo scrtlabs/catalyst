@@ -12,7 +12,8 @@ from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
     ExchangeSymbolsNotFound, ExchangeRequestError, InvalidOrderStyle, \
     UnsupportedHistoryFrequencyError, \
-    ExchangeNotFoundError, CreateOrderError, InvalidHistoryTimeframeError
+    ExchangeNotFoundError, CreateOrderError, InvalidHistoryTimeframeError, \
+    MarketsNotFoundError, InvalidMarketError
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.utils.ccxt_utils import get_exchange_config
 from catalyst.exchange.utils.datetime_utils import from_ms_timestamp, \
@@ -23,6 +24,7 @@ from catalyst.finance.transaction import Transaction
 from ccxt import InvalidOrder, NetworkError, \
     ExchangeError
 from logbook import Logger
+from redo import retry
 from six import string_types
 
 log = Logger('CCXT', level=LOG_LEVEL)
@@ -97,6 +99,97 @@ class CCXT(Exchange):
 
         self.load_assets()
         self._is_init = True
+
+    def load_assets(self):
+        if self._config is None:
+            raise ValueError('Exchange config not available.')
+
+        self.assets = []
+        for asset_dict in self._config['assets']:
+            asset = TradingPair(**asset_dict)
+            self.assets.append(asset)
+
+    def _fetch_markets(self):
+        markets_symbols = self.api.load_markets()
+        log.debug(
+            'fetching {} markets:\n{}'.format(
+                self.name, markets_symbols
+            )
+        )
+        try:
+            markets = self.api.fetch_markets()
+
+        except NetworkError as e:
+            raise ExchangeRequestError(error=e)
+
+        if not markets:
+            raise MarketsNotFoundError(
+                exchange=self.name,
+            )
+
+        for market in markets:
+            if 'id' not in market:
+                raise InvalidMarketError(
+                    exchange=self.name,
+                    market=market,
+                )
+        return markets
+
+    def create_exchange_config(self):
+        config = dict(
+            name=self.name,
+            features=[feature for feature in self.has if self.has[feature]]
+        )
+        markets = retry(
+            action=self._fetch_markets,
+            attempts=5,
+            sleeptime=5,
+            retry_exceptions=(ExchangeRequestError,),
+            cleanup=lambda: log.warn(
+                'fetching markets again for {}'.format(self.name)
+            ),
+        )
+
+        config['assets'] = []
+        for market in markets:
+            asset = self.create_trading_pair(market=market)
+            config['assets'].append(asset)
+
+        return config
+
+    def create_trading_pair(self, market, start_dt=None, end_dt=None,
+                            leverage=1, end_daily=None, end_minute=None):
+        """
+        Creating a TradingPair from market and asset data.
+
+        Parameters
+        ----------
+        market: dict[str, Object]
+        start_dt
+        end_dt
+        leverage
+        end_daily
+        end_minute
+
+        Returns
+        -------
+
+        """
+        params = dict(
+            exchange=self.name,
+            data_source='catalyst',
+            exchange_symbol=market['id'],
+            symbol=get_catalyst_symbol(market),
+            start_date=start_dt,
+            end_date=end_dt,
+            leverage=leverage,
+            asset_name=market['symbol'],
+            end_daily=end_daily,
+            end_minute=end_minute,
+        )
+        self.apply_conditional_market_params(params, market)
+
+        return TradingPair(**params)
 
     def load_assets(self):
         if self._config is None:
@@ -364,6 +457,54 @@ class CCXT(Exchange):
 
         except ExchangeSymbolsNotFound:
             return None
+
+    def apply_conditional_market_params(self, params, market):
+        """
+        Applies a CCXT market dict to parameters of TradingPair init.
+
+        Parameters
+        ----------
+        params: dict[Object]
+        market: dict[Object]
+
+        Returns
+        -------
+
+        """
+        # TODO: make this more externalized / configurable
+        # Consider representing in some type of JSON structure
+        if 'active' in market:
+            params['trading_state'] = 1 if market['active'] else 0
+
+        else:
+            params['trading_state'] = 1
+
+        if 'lot' in market:
+            params['min_trade_size'] = market['lot']
+            params['lot'] = market['lot']
+
+        if self.name == 'bitfinex':
+            params['maker'] = 0.001
+            params['taker'] = 0.002
+
+        elif 'maker' in market and 'taker' in market \
+                and market['maker'] is not None \
+                and market['taker'] is not None:
+            params['maker'] = market['maker']
+            params['taker'] = market['taker']
+
+        else:
+            # TODO: default commission, make configurable
+            params['maker'] = 0.0015
+            params['taker'] = 0.0025
+
+        info = market['info'] if 'info' in market else None
+        if info:
+            if 'minimum_order_size' in info:
+                params['min_trade_size'] = float(info['minimum_order_size'])
+
+                if 'lot' not in params:
+                    params['lot'] = params['min_trade_size']
 
     def get_balances(self):
         try:

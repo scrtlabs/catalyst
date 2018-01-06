@@ -16,7 +16,7 @@ from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
 from catalyst.exchange.utils.datetime_utils import get_delta, \
     get_periods_range, \
     get_periods, get_start_dt, get_frequency
-from catalyst.exchange.utils.exchange_utils import get_exchange_symbols, \
+from catalyst.exchange.utils.exchange_utils import \
     resample_history_df, has_bundle
 from logbook import Logger
 
@@ -290,16 +290,6 @@ class Exchange:
         log.debug('found asset: {}'.format(asset))
         return asset
 
-    def fetch_symbol_map(self, is_local=False):
-        index = 1 if is_local else 0
-        if self._symbol_maps[index] is not None:
-            return self._symbol_maps[index]
-
-        else:
-            symbol_map = get_exchange_symbols(self.name, is_local)
-            self._symbol_maps[index] = symbol_map
-            return symbol_map
-
     @abstractmethod
     def init(self):
         """
@@ -311,24 +301,13 @@ class Exchange:
         """
 
     @abstractmethod
-    def load_assets(self, is_local=False):
+    def create_exchange_config(self):
         """
-        Populate the 'assets' attribute with a dictionary of Assets.
-        The key of the resulting dictionary is the exchange specific
-        currency pair symbol. The universal symbol is contained in the
-        'symbol' attribute of each asset.
-
-        Notes
-        -----
-        The sid of each asset is calculated based on a numeric hash of the
-        universal symbol. This simple approach avoids maintaining a mapping
-        of sids.
-
-        This method can be omerridden if an exchange offers equivalent data
-        via its api.
+        Fetch the exchange market data and generate a config object
+        Returns
+        -------
 
         """
-        pass
 
     def get_spot_value(self, assets, field, dt=None, data_frequency='minute'):
         """
