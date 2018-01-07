@@ -4,18 +4,15 @@ import sys
 import warnings
 from datetime import timedelta
 from runpy import run_path
-from time import sleep
 
 import click
 import pandas as pd
-from logbook import Logger
-
 from catalyst.data.bundles import load
 from catalyst.data.data_portal import DataPortal
 from catalyst.exchange.exchange_pricing_loader import ExchangePricingLoader, \
     TradingPairPricing
 from catalyst.exchange.utils.factory import get_exchange
-from redo import retry
+from logbook import Logger
 
 try:
     from pygments import highlight
@@ -41,9 +38,6 @@ from catalyst.exchange.exchange_algorithm import (
 from catalyst.exchange.exchange_data_portal import DataPortalExchangeLive, \
     DataPortalExchangeBacktest
 from catalyst.exchange.exchange_asset_finder import ExchangeAssetFinder
-from catalyst.exchange.exchange_errors import (
-    ExchangeRequestError, ExchangeRequestErrorTooManyAttempts,
-    BaseCurrencyNotFoundError, NotEnoughCapitalError)
 
 from catalyst.constants import LOG_LEVEL
 
