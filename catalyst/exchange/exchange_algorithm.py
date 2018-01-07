@@ -551,10 +551,6 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         positions, returning the available cash, and raising error
         if the data goes out of sync.
 
-        Parameters
-        ----------
-        attempt_index: int
-
         Returns
         -------
         float

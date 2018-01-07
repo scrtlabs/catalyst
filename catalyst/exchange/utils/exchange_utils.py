@@ -733,3 +733,17 @@ def get_candles_df(candles, field, freq, bar_count, end_dt,
     df.dropna(inplace=True)
 
     return df
+
+
+def fetch_capital_base(exchange):
+    """
+    Fetch the base currency amount required to bootstrap
+    the algorithm against the exchange.
+
+    The algorithm cannot continue without this value.
+
+    :param exchange: the targeted exchange
+    :param attempt_index:
+    :return capital_base: the amount of base currency available for
+    trading
+    """

@@ -15,6 +15,7 @@ from catalyst.data.data_portal import DataPortal
 from catalyst.exchange.exchange_pricing_loader import ExchangePricingLoader, \
     TradingPairPricing
 from catalyst.exchange.utils.factory import get_exchange
+from redo import retry
 
 try:
     from pygments import highlight
@@ -198,66 +199,6 @@ def _run(handle_data,
             trading_calendar=open_calendar,
             first_trading_day=pd.to_datetime('today', utc=True)
         )
-
-        def fetch_capital_base(exchange, attempt_index=0):
-            """
-            Fetch the base currency amount required to bootstrap
-            the algorithm against the exchange.
-
-            The algorithm cannot continue without this value.
-
-            :param exchange: the targeted exchange
-            :param attempt_index:
-            :return capital_base: the amount of base currency available for
-            trading
-            """
-            try:
-                log.debug('retrieving capital base in {} to bootstrap '
-                          'exchange {}'.format(base_currency, exchange_name))
-                balances = exchange.get_balances()
-            except ExchangeRequestError as e:
-                if attempt_index < 20:
-                    log.warn(
-                        'could not retrieve balances on {}: {}'.format(
-                            exchange.name, e
-                        )
-                    )
-                    sleep(5)
-                    return fetch_capital_base(exchange, attempt_index + 1)
-
-                else:
-                    raise ExchangeRequestErrorTooManyAttempts(
-                        attempts=attempt_index,
-                        error=e
-                    )
-
-            if base_currency in balances:
-                base_currency_available = balances[base_currency]['free']
-                log.info(
-                    'base currency available in the account: {} {}'.format(
-                        base_currency_available, base_currency
-                    )
-                )
-
-                return base_currency_available
-            else:
-                raise BaseCurrencyNotFoundError(
-                    base_currency=base_currency,
-                    exchange=exchange_name
-                )
-
-        if not simulate_orders:
-            for exchange_name in exchanges:
-                exchange = exchanges[exchange_name]
-                balance = fetch_capital_base(exchange)
-
-                if balance < capital_base:
-                    raise NotEnoughCapitalError(
-                        exchange=exchange_name,
-                        base_currency=base_currency,
-                        balance=balance,
-                        capital_base=capital_base,
-                    )
 
         sim_params = create_simulation_parameters(
             start=start,
