@@ -8,9 +8,6 @@ from datetime import date, datetime
 
 import pandas as pd
 from catalyst.assets._assets import TradingPair
-from six import string_types
-from six.moves.urllib import request
-
 from catalyst.constants import DATE_FORMAT, SYMBOLS_URL
 from catalyst.exchange.exchange_errors import ExchangeSymbolsNotFound, \
     InvalidHistoryFrequencyError, InvalidHistoryFrequencyAlias
@@ -18,6 +15,8 @@ from catalyst.exchange.utils.serialization_utils import ExchangeJSONEncoder, \
     ExchangeJSONDecoder
 from catalyst.utils.paths import data_root, ensure_directory, \
     last_modified_time
+from six import string_types
+from six.moves.urllib import request
 
 
 def get_sid(symbol):
@@ -733,17 +732,3 @@ def get_candles_df(candles, field, freq, bar_count, end_dt,
     df.dropna(inplace=True)
 
     return df
-
-
-def fetch_capital_base(exchange):
-    """
-    Fetch the base currency amount required to bootstrap
-    the algorithm against the exchange.
-
-    The algorithm cannot continue without this value.
-
-    :param exchange: the targeted exchange
-    :param attempt_index:
-    :return capital_base: the amount of base currency available for
-    trading
-    """

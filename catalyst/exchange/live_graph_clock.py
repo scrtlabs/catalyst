@@ -1,12 +1,11 @@
 import pandas as pd
+from catalyst.constants import LOG_LEVEL
+from catalyst.exchange.utils.stats_utils import prepare_stats
 from catalyst.gens.sim_engine import (
     BAR,
     SESSION_START
 )
 from logbook import Logger
-
-from catalyst.constants import LOG_LEVEL
-from catalyst.exchange.utils.stats_utils import prepare_stats
 
 log = Logger('LiveGraphClock', level=LOG_LEVEL)
 

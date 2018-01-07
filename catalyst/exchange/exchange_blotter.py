@@ -1,8 +1,5 @@
 import pandas as pd
 from catalyst.assets._assets import TradingPair
-from logbook import Logger
-from redo import retry
-
 from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.exchange_errors import ExchangeRequestError
 from catalyst.finance.blotter import Blotter
@@ -11,6 +8,8 @@ from catalyst.finance.order import ORDER_STATUS
 from catalyst.finance.slippage import SlippageModel
 from catalyst.finance.transaction import create_transaction, Transaction
 from catalyst.utils.input_validation import expect_types
+from logbook import Logger
+from redo import retry
 
 log = Logger('exchange_blotter', level=LOG_LEVEL)
 

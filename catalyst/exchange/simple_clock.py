@@ -14,13 +14,12 @@
 from time import sleep
 
 import pandas as pd
+from catalyst.constants import LOG_LEVEL
 from catalyst.gens.sim_engine import (
     BAR,
     SESSION_START
 )
 from logbook import Logger
-
-from catalyst.constants import LOG_LEVEL
 
 log = Logger('ExchangeClock', level=LOG_LEVEL)
 

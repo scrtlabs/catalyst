@@ -1,8 +1,7 @@
 import pandas as pd
-from logbook import Logger
-
 from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.utils.factory import find_exchanges
+from logbook import Logger
 
 log = Logger('ExchangeAssetFinder', level=LOG_LEVEL)
 

@@ -8,7 +8,6 @@ import time
 import numpy as np
 import pandas as pd
 from catalyst.assets._assets import TradingPair
-
 from catalyst.exchange.utils.exchange_utils import get_algo_folder
 from catalyst.utils.paths import data_root, ensure_directory
 
