@@ -37,8 +37,8 @@ def initialize(context):
     context.base_price = None
     context.current_day = None
 
-    context.RSI_OVERSOLD = 55
-    context.RSI_OVERBOUGHT = 65
+    context.RSI_OVERSOLD = 35
+    context.RSI_OVERBOUGHT = 50
     context.CANDLE_SIZE = '5T'
 
     context.start_time = time.time()
@@ -248,7 +248,7 @@ if __name__ == '__main__':
 
     if live:
         run_algorithm(
-            capital_base=0.03,
+            capital_base=0.025,
             initialize=initialize,
             handle_data=handle_data,
             analyze=analyze,
