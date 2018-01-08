@@ -4,6 +4,7 @@ import sys
 import warnings
 from datetime import timedelta
 from runpy import run_path
+from time import sleep
 
 import click
 import pandas as pd
@@ -138,6 +139,14 @@ def _run(handle_data,
             )
         else:
             click.echo(algotext)
+
+    log.warn(
+        'Catalyst is currently in ALPHA. It is going through rapid '
+        'development and it is subject to errors. Please use carefully. '
+        'We encourage your to report any issue on GitHub: '
+        'https://github.com/enigmampc/catalyst/issues'
+    )
+    sleep(3)
 
     mode = 'paper-trading' if simulate_orders else 'live-trading' \
         if live else 'backtest'
