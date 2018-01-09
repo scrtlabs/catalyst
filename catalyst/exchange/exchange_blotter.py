@@ -10,7 +10,6 @@ from catalyst.finance.transaction import create_transaction, Transaction
 from catalyst.utils.input_validation import expect_types
 from logbook import Logger
 from redo import retry
-from six import iteritems
 
 log = Logger('exchange_blotter', level=LOG_LEVEL)
 

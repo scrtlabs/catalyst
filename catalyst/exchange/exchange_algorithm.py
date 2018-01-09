@@ -129,7 +129,7 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
 
     @api_method
     def set_commission(self, maker=None, taker=None):
-        key = self.blotter.commission_models.keys()[0]
+        key = list(self.blotter.commission_models.keys())[0]
         if maker is not None:
             self.blotter.commission_models[key].maker = maker
 
@@ -138,7 +138,7 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
 
     @api_method
     def set_slippage(self, spread=None):
-        key = self.blotter.slippage_models.keys()[0]
+        key = list(self.blotter.slippage_models.keys())[0]
         if spread is not None:
             self.blotter.slippage_models[key].spread = spread
 
@@ -708,7 +708,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             self.frame_stats = list()
 
         self.performance_needs_update = False
-        orders = self.perf_tracker.todays_performance.orders_by_id.keys()
+        orders = list(self.perf_tracker.todays_performance.orders_by_id.keys())
         if orders != self._last_orders:
             self.performance_needs_update = True
 
