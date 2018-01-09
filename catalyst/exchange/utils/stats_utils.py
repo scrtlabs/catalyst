@@ -10,6 +10,7 @@ import pandas as pd
 from catalyst.assets._assets import TradingPair
 from catalyst.exchange.utils.exchange_utils import get_algo_folder
 from catalyst.utils.paths import data_root, ensure_directory
+from operator import itemgetter
 
 s3_conn = []
 mailgun = []
@@ -260,7 +261,14 @@ def prepare_stats(stats, recorded_cols=list()):
     return df, columns
 
 
-def get_pretty_stats(stats, recorded_cols=None, num_rows=10):
+def set_print_settings():
+    pd.set_option('display.expand_frame_repr', False)
+    pd.set_option('precision', 8)
+    pd.set_option('display.width', 1000)
+    pd.set_option('display.max_colwidth', 1000)
+
+
+def get_pretty_stats(stats, recorded_cols=None, num_rows=10, show_tail=True):
     """
     Format and print the last few rows of a statistics DataFrame.
     See the pyfolio project for the data structure.
@@ -280,17 +288,17 @@ def get_pretty_stats(stats, recorded_cols=None, num_rows=10):
     """
     if isinstance(stats, pd.DataFrame):
         stats = stats.T.to_dict().values()
+        stats.sort(key=itemgetter('period_close'))
 
-    display_stats = stats[-num_rows:] if len(stats) > num_rows else stats
+    if len(stats) > num_rows:
+        display_stats = stats[-num_rows:] if show_tail else stats[0:num_rows]
+    else:
+        display_stats = stats
+
     df, columns = prepare_stats(
         display_stats, recorded_cols=recorded_cols
     )
-
-    pd.set_option('display.expand_frame_repr', False)
-    pd.set_option('precision', 8)
-    pd.set_option('display.width', 1000)
-    pd.set_option('display.max_colwidth', 1000)
-
+    set_print_settings()
     return df.to_string(columns=columns)
 
 
@@ -436,6 +444,17 @@ def df_to_string(df):
     pd.set_option('display.max_colwidth', 1000)
 
     return df.to_string()
+
+
+def extract_orders(perf):
+    order_list = perf.orders.values
+    all_orders = [t for sublist in order_list for t in sublist]
+    all_orders.sort(key=lambda o: o['dt'])
+
+    orders = pd.DataFrame(all_orders)
+    if not orders.empty:
+        orders.set_index('dt', inplace=True, drop=True)
+    return orders
 
 
 def extract_transactions(perf):

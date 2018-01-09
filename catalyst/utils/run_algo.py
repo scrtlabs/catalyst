@@ -143,7 +143,7 @@ def _run(handle_data,
     log.warn(
         'Catalyst is currently in ALPHA. It is going through rapid '
         'development and it is subject to errors. Please use carefully. '
-        'We encourage your to report any issue on GitHub: '
+        'We encourage you to report any issue on GitHub: '
         'https://github.com/enigmampc/catalyst/issues'
     )
     sleep(3)

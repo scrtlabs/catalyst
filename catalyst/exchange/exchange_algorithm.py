@@ -587,7 +587,8 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             orders = []
             for asset in self.blotter.open_orders:
                 asset_orders = self.blotter.open_orders[asset]
-                orders += asset_orders
+                if asset_orders:
+                    orders += asset_orders
 
             required_cash = self.portfolio.cash if not orders else None
             cash, positions_value = exchange.sync_positions(
