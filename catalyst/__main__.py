@@ -5,6 +5,7 @@ from functools import wraps
 import click
 import logbook
 import pandas as pd
+from catalyst.alt_data.marketplace import Marketplace
 from six import text_type
 
 from catalyst.data import bundles as bundles_module
@@ -571,6 +572,75 @@ def ingest_exchange(ctx, exchange_name, data_frequency, start, end,
         show_report=validate,
         csv=csv
     )
+
+
+@main.command(name='ls-data')
+@click.pass_context
+def ls_data(ctx):
+    click.echo(
+        'Listing available alternative data sources'
+    )
+    marketplace = Marketplace()
+    marketplace.list()
+    click.echo('Done')
+
+
+@main.command(name='register-data')
+@click.argument('data_source_name')
+@click.pass_context
+def register_data(ctx, data_source_name):
+    click.echo(
+        'Registering to data source: {}'.format(data_source_name)
+    )
+    marketplace = Marketplace()
+    marketplace.register(data_source_name)
+    click.echo('Done')
+
+
+@main.command(name='ingest-data')
+@click.argument('data_source_name')
+@click.option(
+    '-f',
+    '--data-frequency',
+    type=click.Choice({'daily', 'minute', 'daily,minute', 'minute,daily'}),
+    default='daily',
+    show_default=True,
+    help='The data frequency of the desired OHLCV bars.',
+)
+@click.option(
+    '-s',
+    '--start',
+    default=None,
+    type=Date(tz='utc', as_timestamp=True),
+    help='The start date of the data range. (default: one year from end date)',
+)
+@click.option(
+    '-e',
+    '--end',
+    default=None,
+    type=Date(tz='utc', as_timestamp=True),
+    help='The end date of the data range. (default: today)',
+)
+@click.pass_context
+def ingest_data(ctx, data_source_name, data_frequency, start, end):
+    click.echo(
+        'Ingesting data: {}'.format(data_source_name)
+    )
+    marketplace = Marketplace()
+    marketplace.ingest(data_source_name, data_frequency, start, end)
+    click.echo('Done')
+
+
+@main.command(name='clean-data')
+@click.argument('data_source_name')
+@click.pass_context
+def clean_data(ctx, data_source_name):
+    click.echo(
+        'Cleaning data source: {}'.format(data_source_name)
+    )
+    marketplace = Marketplace()
+    marketplace.clean(data_source_name)
+    click.echo('Done')
 
 
 @main.command(name='clean-algo')
