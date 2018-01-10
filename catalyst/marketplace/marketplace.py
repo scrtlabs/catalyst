@@ -12,7 +12,7 @@ CONTRACT_PATH = os.path.join(
     ROOT_DIR, '..', 'marketplace', 'build', 'contracts', 'Marketplace.json'
 )
 CONTRACT_ADDRESS = Web3.toChecksumAddress(
-    '0xd8672a4a1bf37d36bef74e36edb4f17845e76f4e'
+    '0xaa862ddac09f6736a61e1124040fd883a6533c19'
 )
 
 
