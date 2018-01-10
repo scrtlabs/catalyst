@@ -1,29 +1,26 @@
 import json
 import os
+import pandas as pd
 
 from web3 import Web3, HTTPProvider
 
+from catalyst.exchange.utils.stats_utils import set_print_settings
+from catalyst.constants import ROOT_DIR
+
+REMOTE_NODE = 'http://localhost:7545'
 CONTRACT_PATH = os.path.join(
-    '..', '..', 'marketplace', 'build', 'contracts', 'Marketplace.json'
+    ROOT_DIR, '..', 'marketplace', 'build', 'contracts', 'Marketplace.json'
 )
 CONTRACT_ADDRESS = Web3.toChecksumAddress(
-    '0x345ca3e014aaf5dca488057592ee47305d9b3e10'
+    '0xd8672a4a1bf37d36bef74e36edb4f17845e76f4e'
 )
-
-
-# we'll use one of our default accounts to deploy from. every write to the chain requires a
-# payment of ethereum called "gas". if we were running an actual test ethereum node locally,
-# then we'd have to go on the test net and get some free ethereum to play with. that is beyond
-# the scope of this tutorial so we're using a mini local node that has unlimited ethereum and
-# the only chain we're using is our own local one
 
 
 class Marketplace:
     def __init__(self):
         with open(CONTRACT_PATH) as handle:
             json_interface = json.load(handle)
-
-            w3 = Web3(HTTPProvider('http://localhost:7545'))
+            w3 = Web3(HTTPProvider(REMOTE_NODE))
 
             self.contract = w3.eth.contract(
                 CONTRACT_ADDRESS,
@@ -33,16 +30,86 @@ class Marketplace:
 
             pass
 
+    def get_data_sources_map(self):
+        return [
+            dict(
+                name='Marketcap',
+                desc='The marketcap value in USD.',
+                start_date=pd.to_datetime('2017-01-01'),
+                end_date=pd.to_datetime('2018-01-15'),
+            ),
+            dict(
+                name='GitHub',
+                desc='The rate of development activity on GitHub.',
+                start_date=pd.to_datetime('2017-01-01'),
+                end_date=pd.to_datetime('2018-01-15'),
+            ),
+            dict(
+                name='Influencers',
+                desc='Tweets and related sentiments by selected influencers.',
+                start_date=pd.to_datetime('2017-01-01'),
+                end_date=pd.to_datetime('2018-01-15'),
+            ),
+        ]
+
     def list(self):
         subscribers = self.contract.call(
             {'from': self.default_account}
         ).getSubscribers()
+
+        subscribed = []
+        for index, address in enumerate(subscribers):
+            if address == self.default_account:
+                subscribed.append(index)
+
+        data_sources = self.get_data_sources_map()
+
+        data = []
+        for index, data_source in enumerate(data_sources):
+            data.append(
+                dict(
+                    id=index,
+                    subscribed=index in subscribed,
+                    **data_source,
+                )
+            )
+
+        df = pd.DataFrame(data)
+        df.set_index(['id', 'name', 'desc'], drop=True, inplace=True)
+        set_print_settings()
+
+        formatters = dict(
+            subscribed=lambda s: u'\u2713' if s else '',
+        )
+        print(df.to_string(formatters=formatters))
+
         pass
 
     def register(self, data_source_name):
-        test = self.contract.transact(
-            {'from': self.default_account}
-        ).subscribe(0)
+        data_sources = self.get_data_sources_map()
+        index = next(
+            (index for (index, d) in enumerate(data_sources) if
+             d['name'].lower() == data_source_name.lower()),
+            None
+        )
+        if index is None:
+            raise ValueError(
+                'Data source not found.'
+            )
+
+        try:
+            self.contract.transact(
+                {'from': self.default_account}
+            ).subscribe(index)
+            print(
+                'Subscribed to data source {} successfully'.format(
+                    data_source_name
+                )
+            )
+
+        except Exception as e:
+            print('Unable to subscribe to data source: {}'.format(e))
+
         pass
 
     def ingest(self, data_source_name, data_frequency, start, end):

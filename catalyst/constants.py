@@ -15,4 +15,6 @@ SYMBOLS_URL = 'https://s3.amazonaws.com/enigmaco/catalyst-exchanges/' \
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M'
 DATE_FORMAT = '%Y-%m-%d'
 
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 AUTO_INGEST = False

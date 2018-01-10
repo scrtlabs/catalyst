@@ -5,7 +5,7 @@ from functools import wraps
 import click
 import logbook
 import pandas as pd
-from catalyst.alt_data.marketplace import Marketplace
+from catalyst.marketplace.marketplace import Marketplace
 from six import text_type
 
 from catalyst.data import bundles as bundles_module
@@ -578,7 +578,7 @@ def ingest_exchange(ctx, exchange_name, data_frequency, start, end,
 @click.pass_context
 def ls_data(ctx):
     click.echo(
-        'Listing available alternative data sources'
+        'The alternative data sources:'
     )
     marketplace = Marketplace()
     marketplace.list()

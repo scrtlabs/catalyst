@@ -5,7 +5,7 @@ contract Marketplace {
 
     // Adopting a pet
     function subscribe(uint dataSourceId) public returns (uint) {
-        require(dataSourceId >= 0 && dataSourceId <= 5);
+        require(dataSourceId >= 0 && dataSourceId <= 15);
 
         subscribers[dataSourceId] = msg.sender;
 

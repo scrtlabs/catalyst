@@ -9,9 +9,9 @@ contract TestMarketplace {
 
     // Testing the adopt() function
     function testUserCanSubscribe() public {
-        uint returnedId = marketplace.subscribe(0);
+        uint returnedId = marketplace.subscribe(2);
 
-        uint expected = 0;
+        uint expected = 2;
 
         Assert.equal(returnedId, expected, "Adoption of pet ID 8 should be recorded.");
     }
@@ -21,7 +21,7 @@ contract TestMarketplace {
         // Expected owner is this contract
         address expected = this;
 
-        address adopter = marketplace.subscribers(0);
+        address adopter = marketplace.subscribers(2);
 
         Assert.equal(adopter, expected, "Owner of data source ID 0 should be recorded.");
     }
@@ -34,6 +34,6 @@ contract TestMarketplace {
         // Store adopters in memory rather than contract's storage
         address[16] memory subscribers = marketplace.getSubscribers();
 
-        Assert.equal(subscribers[0], expected, "Owner of pet ID 0 should be recorded.");
+        Assert.equal(subscribers[2], expected, "Owner of pet ID 2 should be recorded.");
     }
 }
