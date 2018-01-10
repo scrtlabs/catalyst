@@ -3,9 +3,8 @@ import re
 from json import JSONEncoder
 
 import pandas as pd
-from six import string_types
-
 from catalyst.constants import DATE_TIME_FORMAT
+from six import string_types
 
 
 class ExchangeJSONEncoder(json.JSONEncoder):

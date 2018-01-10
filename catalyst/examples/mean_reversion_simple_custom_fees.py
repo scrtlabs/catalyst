@@ -37,14 +37,14 @@ def initialize(context):
     context.base_price = None
     context.current_day = None
 
-    context.RSI_OVERSOLD = 55
+    context.RSI_OVERSOLD = 50
     context.RSI_OVERBOUGHT = 60
     context.CANDLE_SIZE = '5T'
 
     context.start_time = time.time()
 
     context.set_commission(maker=0.001, taker=0.002)
-    context.set_slippage(spread=0.001)
+    # context.set_slippage(spread=0.001)
 
 
 def handle_data(context, data):
@@ -248,7 +248,7 @@ if __name__ == '__main__':
 
     if live:
         run_algorithm(
-            capital_base=0.1,
+            capital_base=0.025,
             initialize=initialize,
             handle_data=handle_data,
             analyze=analyze,
@@ -280,7 +280,7 @@ if __name__ == '__main__':
             analyze=analyze,
             exchange_name='bitfinex',
             algo_namespace=NAMESPACE,
-            base_currency='btc',
+            base_currency='eth',
             start=pd.to_datetime('2017-10-01', utc=True),
             end=pd.to_datetime('2017-11-10', utc=True),
             output=out

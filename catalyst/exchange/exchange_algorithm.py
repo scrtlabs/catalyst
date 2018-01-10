@@ -18,11 +18,9 @@ from datetime import timedelta
 from os import listdir
 from os.path import isfile, join
 
+import catalyst.protocol as zp
 import logbook
 import pandas as pd
-from redo import retry
-
-import catalyst.protocol as zp
 from catalyst.algorithm import TradingAlgorithm
 from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.exchange_blotter import ExchangeBlotter
@@ -49,6 +47,7 @@ from catalyst.utils.api_support import api_method
 from catalyst.utils.input_validation import error_keywords, ensure_upper_case
 from catalyst.utils.math_utils import round_nearest
 from catalyst.utils.preprocess import preprocess
+from redo import retry
 
 log = logbook.Logger('exchange_algorithm', level=LOG_LEVEL)
 
@@ -130,7 +129,7 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
 
     @api_method
     def set_commission(self, maker=None, taker=None):
-        key = self.blotter.commission_models.keys()[0]
+        key = list(self.blotter.commission_models.keys())[0]
         if maker is not None:
             self.blotter.commission_models[key].maker = maker
 
@@ -139,7 +138,7 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
 
     @api_method
     def set_slippage(self, spread=None):
-        key = self.blotter.slippage_models.keys()[0]
+        key = list(self.blotter.slippage_models.keys())[0]
         if spread is not None:
             self.blotter.slippage_models[key].spread = spread
 
@@ -271,9 +270,9 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
         # Merging latest recorded variables
         stats.update(self.recorded_vars)
 
-        stats['positions'] = cum.position_tracker.get_positions_list()
-
         period = tracker.todays_performance
+        stats['positions'] = period.position_tracker.get_positions_list()
+
         # we want the key to be absent, not just empty
         # Only include transactions for given dt
         stats['transactions'] = []
@@ -391,16 +390,20 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                      'before exiting the algorithm.')
 
             algo_folder = get_algo_folder(self.algo_namespace)
-            folder = join(algo_folder, 'daily_perf')
+            folder = join(algo_folder, 'daily_performance')
             files = [f for f in listdir(folder) if isfile(join(folder, f))]
 
             daily_perf_list = []
             for item in files:
                 filename = join(folder, item)
+
                 with open(filename, 'rb') as handle:
-                    daily_perf_list.append(pickle.load(handle))
+                    perf_period = pickle.load(handle)
+                    perf_period_dict = perf_period.to_dict()
+                    daily_perf_list.append(perf_period_dict)
 
             stats = pd.DataFrame(daily_perf_list)
+            stats.set_index('period_close', drop=False, inplace=True)
 
             self.analyze(stats)
 
@@ -460,42 +463,61 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
 
         return self._clock
 
-    def get_generator(self):
-        if self.trading_client is not None:
-            return self.trading_client.transform()
+    def _init_trading_client(self):
+        """
+        This replaces Ziplines `_create_generator` method. The main difference
+        is that we are restoring performance tracker objects if available.
+        This allows us to stop/start algos without loosing their state.
 
-        perf = None
+        """
         if self.perf_tracker is None:
+            # Note from the Zipline dev:
+            # HACK: When running with the `run` method, we set perf_tracker to
+            # None so that it will be overwritten here.
             tracker = self.perf_tracker = PerformanceTracker(
                 sim_params=self.sim_params,
                 trading_calendar=self.trading_calendar,
                 env=self.trading_environment,
             )
-
             # Set the dt initially to the period start by forcing it to change.
             self.on_dt_changed(self.sim_params.start_session)
 
+            new_position_tracker = tracker.position_tracker
+            tracker.position_tracker = None
+
             # Unpacking the perf_tracker and positions if available
-            perf = get_algo_object(
+            cum_perf = get_algo_object(
                 algo_name=self.algo_namespace,
                 key='cumulative_performance',
             )
+            if cum_perf is not None:
+                tracker.cumulative_performance = cum_perf
+                # Ensure single common position tracker
+                tracker.position_tracker = cum_perf.position_tracker
+
+            today = pd.Timestamp.utcnow().floor('1D')
+            todays_perf = get_algo_object(
+                algo_name=self.algo_namespace,
+                key=today.strftime('%Y-%m-%d'),
+                rel_path='daily_performance',
+            )
+            if todays_perf is not None:
+                # Ensure single common position tracker
+                if tracker.position_tracker is not None:
+                    todays_perf.position_tracker = tracker.position_tracker
+                else:
+                    tracker.position_tracker = todays_perf.position_tracker
+
+                tracker.todays_performance = todays_perf
+
+            if tracker.position_tracker is None:
+                # Use a new position_tracker if not is found in the state
+                tracker.position_tracker = new_position_tracker
 
         if not self.initialized:
+            # Calls the initialize function of the algorithm
             self.initialize(*self.initialize_args, **self.initialize_kwargs)
             self.initialized = True
-
-        # Call the simulation trading algorithm for side-effects:
-        # it creates the perf tracker
-        # TradingAlgorithm._create_generator(self, self.sim_params)
-        if perf is not None:
-            tracker.cumulative_performance = perf
-
-            period = self.perf_tracker.todays_performance
-            period.starting_cash = perf.ending_cash
-            period.starting_exposure = perf.ending_exposure
-            period.starting_value = perf.ending_value
-            period.position_tracker = perf.position_tracker
 
         self.trading_client = ExchangeAlgorithmExecutor(
             algo=self,
@@ -506,6 +528,11 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             restrictions=self.restrictions,
             universe_func=self._calculate_universe,
         )
+
+    def get_generator(self):
+        if self.trading_client is None:
+            self._init_trading_client()
+
         return self.trading_client.transform()
 
     def updated_portfolio(self):
@@ -522,10 +549,6 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         This includes updating the last_sale_price of all tracked
         positions, returning the available cash, and raising error
         if the data goes out of sync.
-
-        Parameters
-        ----------
-        attempt_index: int
 
         Returns
         -------
@@ -559,10 +582,19 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             if base_currency is None:
                 base_currency = exchange.base_currency
 
+            # Don't check the cash if there are open orders. This could
+            # results in false positives.
+            orders = []
+            for asset in self.blotter.open_orders:
+                asset_orders = self.blotter.open_orders[asset]
+                if asset_orders:
+                    orders += asset_orders
+
+            required_cash = self.portfolio.cash if not orders else None
             cash, positions_value = exchange.sync_positions(
                 positions=exchange_positions,
                 check_balances=check_balances,
-                cash=self.portfolio.cash,
+                cash=required_cash,
             )
             total_cash += cash
             total_positions_value += positions_value
@@ -676,11 +708,12 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             self.frame_stats = list()
 
         self.performance_needs_update = False
-        new_orders = self.perf_tracker.todays_performance.orders_by_id.keys()
-        if new_orders != self._last_orders:
+        orders = list(self.perf_tracker.todays_performance.orders_by_id.keys())
+        if orders != self._last_orders:
             self.performance_needs_update = True
 
-        self._last_orders = copy.deepcopy(new_orders)
+        # Saving current orders to detect changes in the next frame
+        self._last_orders = copy.deepcopy(orders)
 
         if self.performance_needs_update:
             self.perf_tracker.update_performance()
@@ -697,7 +730,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             self.portfolio_needs_update = False
 
         log.info(
-            'got totals from exchanges, cash: {} positions: {}'.format(
+            'portfolio balances, cash: {}, positions: {}'.format(
                 cash, positions_value
             )
         )
@@ -709,18 +742,29 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         # every bar no matter if the algorithm places an order or not.
         self.validate_account_controls()
 
+        self._save_algo_state(data)
+        self.current_day = data.current_dt.floor('1D')
+
+    def _save_algo_state(self, data):
+        today = data.current_dt.floor('1D')
         try:
             self._save_stats_csv(self._process_stats(data))
         except Exception as e:
             log.warn('unable to calculate performance: {}'.format(e))
 
+        log.debug('saving cumulative performance object')
         save_algo_object(
             algo_name=self.algo_namespace,
             key='cumulative_performance',
             obj=self.perf_tracker.cumulative_performance,
         )
-
-        self.current_day = data.current_dt.floor('1D')
+        log.debug('saving todays performance object')
+        save_algo_object(
+            algo_name=self.algo_namespace,
+            key=today.strftime('%Y-%m-%d'),
+            obj=self.perf_tracker.todays_performance,
+            rel_path='daily_performance'
+        )
 
     def _process_stats(self, data):
         today = data.current_dt.floor('1D')
@@ -762,12 +806,6 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         daily_stats = self.prepare_period_stats(
             start_dt=today,
             end_dt=data.current_dt
-        )
-        save_algo_object(
-            algo_name=self.algo_namespace,
-            key=today.strftime('%Y-%m-%d'),
-            obj=daily_stats,
-            rel_path='daily_perf'
         )
 
         return recorded_cols

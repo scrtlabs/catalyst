@@ -11,12 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from logbook import Logger
-from numpy import (
-    iinfo,
-    uint32,
-)
-
 from catalyst.constants import LOG_LEVEL
 from catalyst.data.us_equity_pricing import BcolzDailyBarReader
 from catalyst.errors import NoFurtherDataError
@@ -26,6 +20,11 @@ from catalyst.pipeline.data import DataSet, Column
 from catalyst.pipeline.loaders.base import PipelineLoader
 from catalyst.utils.calendars import get_calendar
 from catalyst.utils.numpy_utils import float64_dtype
+from logbook import Logger
+from numpy import (
+    iinfo,
+    uint32,
+)
 
 UINT32_MAX = iinfo(uint32).max
 

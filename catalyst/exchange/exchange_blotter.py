@@ -1,8 +1,5 @@
 import pandas as pd
 from catalyst.assets._assets import TradingPair
-from logbook import Logger
-from redo import retry
-
 from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.exchange_errors import ExchangeRequestError
 from catalyst.finance.blotter import Blotter
@@ -11,6 +8,8 @@ from catalyst.finance.order import ORDER_STATUS
 from catalyst.finance.slippage import SlippageModel
 from catalyst.finance.transaction import create_transaction, Transaction
 from catalyst.utils.input_validation import expect_types
+from logbook import Logger
+from redo import retry
 
 log = Logger('exchange_blotter', level=LOG_LEVEL)
 
@@ -42,6 +41,11 @@ class TradingPairFeeSchedule(CommissionModel):
             )
         )
 
+    def get_maker_taker(self, asset):
+        maker = self.maker if self.maker is not None else asset.maker
+        taker = self.taker if self.taker is not None else asset.taker
+        return maker, taker
+
     def calculate(self, order, transaction):
         """
         Calculate the final fee based on the order parameters.
@@ -55,8 +59,7 @@ class TradingPairFeeSchedule(CommissionModel):
         cost = abs(transaction.amount) * transaction.price
 
         asset = order.asset
-        maker = self.maker if self.maker is not None else asset.maker
-        taker = self.taker if self.taker is not None else asset.taker
+        maker, taker = self.get_maker_taker(asset)
 
         multiplier = taker
         if order.limit is not None:
@@ -251,6 +254,7 @@ class ExchangeBlotter(Blotter):
         for order, txn in self.check_open_orders():
             order.dt = txn.dt
 
+            # TODO: is the commission already on the order object?
             transactions.append(txn)
 
             if not order.open:

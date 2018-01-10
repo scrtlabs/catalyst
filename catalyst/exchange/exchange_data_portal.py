@@ -3,9 +3,6 @@ import abc
 import numpy as np
 import pandas as pd
 from catalyst.assets._assets import TradingPair
-from logbook import Logger
-from redo import retry
-
 from catalyst.constants import LOG_LEVEL, AUTO_INGEST
 from catalyst.data.data_portal import DataPortal
 from catalyst.exchange.exchange_bundle import ExchangeBundle
@@ -14,6 +11,8 @@ from catalyst.exchange.exchange_errors import (
     PricingDataNotLoadedError)
 from catalyst.exchange.utils.exchange_utils import get_frequency, \
     resample_history_df, group_assets_by_exchange
+from logbook import Logger
+from redo import retry
 
 log = Logger('DataPortalExchange', level=LOG_LEVEL)
 
