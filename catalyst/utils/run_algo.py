@@ -148,8 +148,14 @@ def _run(handle_data,
     )
     sleep(3)
 
-    mode = 'paper-trading' if simulate_orders else 'live-trading' \
-        if live else 'backtest'
+    if live:
+        if simulate_orders:
+            mode = 'paper-trading'
+        else:
+            mode = 'live-trading'
+    else:
+        mode = 'backtest'
+
     log.info('running algo in {mode} mode'.format(mode=mode))
 
     exchange_name = exchange
