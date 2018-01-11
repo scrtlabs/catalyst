@@ -180,20 +180,6 @@ use a single tool to install Python and non-Python dependencies, or if you're
 already using `Anaconda <http://continuum.io/downloads>`_ as your Python 
 distribution, refer to the :ref:`Installing with Conda <conda>` section.
 
-Once you've installed the necessary additional dependencies for your system 
-(see below for your particular platform: :ref:`Linux`, :ref:`MacOS` or 
-:ref:`Windows`), you should be able to simply run
-
-.. code-block:: bash
-
-   $ pip install enigma-catalyst matplotlib
-
-Note that in the command above we install two different packages. The second 
-one, ``matplotlib`` is a visualization library. While it's not strictly 
-required to run catalyst simulations or live trading, it comes in very handy
-to visualize the performance of your algorithms, and for this reason we 
-recommend you install it, as well.
-
 If you use Python for anything other than Catalyst, we **strongly** recommend
 that you install in a `virtualenv
 <https://virtualenv.readthedocs.org/en/latest>`_.  The `Hitchhiker's Guide to
@@ -206,7 +192,22 @@ summarized version:
    $ pip install virtualenv
    $ virtualenv catalyst-venv
    $ source ./catalyst-venv/bin/activate
+
+
+
+Once you've installed the necessary additional dependencies for your system 
+(:ref:`Linux`, :ref:`MacOS` or :ref:`Windows`) **and have activated your virtualenv**, you should be able to simply run
+
+.. code-block:: bash
+
    $ pip install enigma-catalyst matplotlib
+
+Note that in the command above we install two different packages. The second 
+one, ``matplotlib`` is a visualization library. While it's not strictly 
+required to run catalyst simulations or live trading, it comes in very handy
+to visualize the performance of your algorithms, and for this reason we 
+recommend you install it, as well.
+
 
 Troubleshooting ``pip`` Install
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
