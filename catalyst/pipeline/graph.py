@@ -142,7 +142,7 @@ class TermGraph(object):
         at the end of execution.
         """
         refcounts = self.graph.out_degree()
-        for t in self.outputs.values():
+        for t in list(self.outputs.values()):
             refcounts[t] += 1
 
         for t in initial_terms:
@@ -238,7 +238,7 @@ class ExecutionPlan(TermGraph):
                  min_extra_rows=0):
         super(ExecutionPlan, self).__init__(terms)
 
-        for term in terms.values():
+        for term in list(terms.values()):
             self.set_extra_rows(
                 term,
                 all_dates,

@@ -41,7 +41,7 @@ from catalyst.exchange.utils.exchange_utils import get_exchange_symbols
 
 def initialize(context):
     context.i = -1  # minute counter
-    context.exchange = context.exchanges.values()[0].name.lower()
+    context.exchange = list(context.exchanges.values())[0].name.lower()
     context.base_currency = context.exchanges.values()[0].base_currency.lower()
 
 
