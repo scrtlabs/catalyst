@@ -6,13 +6,14 @@ from web3 import Web3, HTTPProvider
 
 from catalyst.exchange.utils.stats_utils import set_print_settings
 from catalyst.constants import ROOT_DIR
+from catalyst.marketplace.utils.paths import get_temp_bundles_folder
 
 REMOTE_NODE = 'http://localhost:7545'
 CONTRACT_PATH = os.path.join(
     ROOT_DIR, '..', 'marketplace', 'build', 'contracts', 'Marketplace.json'
 )
 CONTRACT_ADDRESS = Web3.toChecksumAddress(
-    '0xaa862ddac09f6736a61e1124040fd883a6533c19'
+    '0xe2b6cf3863240892d59664d209a28289a73ef644'
 )
 
 
@@ -112,7 +113,9 @@ class Marketplace:
 
         pass
 
-    def ingest(self, data_source_name, data_frequency, start, end):
+    def ingest(self, data_source_name, data_frequency=None, start=None,
+               end=None):
+        temp_folder = get_temp_bundles_folder(data_source_name)
         pass
 
     def clean(self, data_source_name):

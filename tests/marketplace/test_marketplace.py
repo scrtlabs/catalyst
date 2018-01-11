@@ -1,5 +1,6 @@
 from catalyst.marketplace.marketplace import Marketplace
 from catalyst.testing.fixtures import WithLogger, ZiplineTestCase
+import pandas as pd
 
 
 class TestMarketplace(WithLogger, ZiplineTestCase):
@@ -11,4 +12,13 @@ class TestMarketplace(WithLogger, ZiplineTestCase):
     def test_register(self):
         marketplace = Marketplace()
         marketplace.register('GitHub')
+        pass
+
+    def test_ingest(self):
+        marketplace = Marketplace()
+        marketplace.ingest(
+            data_source_name='GitHub',
+            data_frequency='finest',
+            start=pd.Timestamp.utcnow(),
+        )
         pass
