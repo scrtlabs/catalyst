@@ -13,7 +13,7 @@ contract TestMarketplace {
 
         uint expected = 2;
 
-        Assert.equal(returnedId, expected, "Adoption of pet ID 8 should be recorded.");
+        Assert.equal(returnedId, expected, "Data source 2 should be recorded.");
     }
 
     // Testing retrieval of a single subscriber
@@ -23,7 +23,7 @@ contract TestMarketplace {
 
         address subscriber = marketplace.subscribers(2);
 
-        Assert.equal(subscriber, expected, "Owner of data source ID 0 should be recorded.");
+        Assert.equal(subscriber, expected, "Subscriber of data source ID 2 should be recorded.");
     }
 
     // Testing retrieval of all subscribers
