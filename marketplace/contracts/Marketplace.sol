@@ -3,7 +3,7 @@ pragma solidity ^0.4.17;
 contract Marketplace {
     address[16] public subscribers;
 
-    // Adopting a pet
+    // Subscribing to a data source
     function subscribe(uint dataSourceId) public returns (uint) {
         require(dataSourceId >= 0 && dataSourceId <= 15);
 

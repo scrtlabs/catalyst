@@ -7,7 +7,7 @@ import "../contracts/Marketplace.sol";
 contract TestMarketplace {
     Marketplace marketplace = Marketplace(DeployedAddresses.Marketplace());
 
-    // Testing the adopt() function
+    // Testing the subscribe() function
     function testUserCanSubscribe() public {
         uint returnedId = marketplace.subscribe(2);
 
@@ -16,24 +16,24 @@ contract TestMarketplace {
         Assert.equal(returnedId, expected, "Adoption of pet ID 8 should be recorded.");
     }
 
-    // Testing retrieval of a single pet's owner
+    // Testing retrieval of a single subscriber
     function testGetSubscriberAddressByDataSourceId() public {
         // Expected owner is this contract
         address expected = this;
 
-        address adopter = marketplace.subscribers(2);
+        address subscriber = marketplace.subscribers(2);
 
-        Assert.equal(adopter, expected, "Owner of data source ID 0 should be recorded.");
+        Assert.equal(subscriber, expected, "Owner of data source ID 0 should be recorded.");
     }
 
-    // Testing retrieval of all pet owners
+    // Testing retrieval of all subscribers
     function testGetSubscriberAddressByDataSourceIdInArray() public {
-        // Expected owner is this contract
+        // Expected subscriber is this contract
         address expected = this;
 
-        // Store adopters in memory rather than contract's storage
+        // Store subscribers in memory rather than contract's storage
         address[16] memory subscribers = marketplace.getSubscribers();
 
-        Assert.equal(subscribers[2], expected, "Owner of pet ID 2 should be recorded.");
+        Assert.equal(subscribers[2], expected, "Subscriber of data source 2 should be recorded.");
     }
 }
