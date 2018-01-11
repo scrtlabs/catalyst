@@ -129,7 +129,10 @@ def get_exchange_symbols(exchange_name, is_local=False, environ=None):
     if not is_local and (not os.path.isfile(filename) or pd.Timedelta(
                 pd.Timestamp('now', tz='UTC') - last_modified_time(
                 filename)).days > 1):
-        download_exchange_symbols(exchange_name, environ)
+        try:
+            download_exchange_symbols(exchange_name, environ)
+        except Exception as e:
+            pass
 
     if os.path.isfile(filename):
         with open(filename) as data_file:

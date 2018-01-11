@@ -244,7 +244,7 @@ def analyze(context=None, perf=None):
 
 if __name__ == '__main__':
     # The execution mode: backtest or live
-    live = False
+    live = True
 
     if live:
         run_algorithm(
@@ -257,7 +257,7 @@ if __name__ == '__main__':
             algo_namespace=NAMESPACE,
             base_currency='btc',
             live_graph=False,
-            simulate_orders=False,
+            simulate_orders=True,
             stats_output=None,
         )
 
