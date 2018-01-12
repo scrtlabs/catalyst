@@ -2,6 +2,16 @@
 Release Notes
 =============
 
+Version 0.4.5
+^^^^^^^^^^^^^
+**Release Date**: 2018-01-12
+
+Bug Fixes
+~~~~~~~~~
+- Improved order execution for exchanges supporting trade lists (:issue:`151`)
+- Fixed an issue where requesting history of multiple assets repeats values
+- Raising an error for order amounts smaller than exchange lots
+
 Version 0.4.4
 ^^^^^^^^^^^^^
 **Release Date**: 2018-01-09
