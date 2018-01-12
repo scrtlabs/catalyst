@@ -16,10 +16,17 @@ class TestMarketplace(WithLogger, ZiplineTestCase):
 
     def test_ingest(self):
         marketplace = Marketplace()
+        ds_def = marketplace.get_data_source_def('Marketcap')
+
         marketplace.ingest(
             data_source_name='Marketcap',
-            data_frequency='finest',
-            start=pd.Timestamp.utcnow(),
+            data_frequency=ds_def['data_frequencies'][0],
+            start=pd.to_datetime('2017-10-01'),
             force_download=True,
         )
+        pass
+
+    def test_clean(self):
+        marketplace = Marketplace()
+        marketplace.clean('marketcap')
         pass

@@ -15,6 +15,9 @@ SYMBOLS_URL = 'https://s3.amazonaws.com/enigmaco/catalyst-exchanges/' \
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M'
 DATE_FORMAT = '%Y-%m-%d'
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+try:
+    ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+except Exception as e:
+    print('unable to get catalyst path: {}'.format(e))
 
 AUTO_INGEST = False

@@ -18,9 +18,9 @@ def merge_bundles(zsource, ztarget):
     """
     # TODO: find a way to do this iteratively instead of in-memory
     df_source = zsource.todataframe()
-    df_source.set_index('last_updated', drop=False, inplace=True)
+    df_source.set_index('date', drop=False, inplace=True)
     df_target = ztarget.todataframe()
-    df_target.set_index('last_updated', drop=False, inplace=True)
+    df_target.set_index('date', drop=False, inplace=True)
 
     df = df_target.merge(
         right=df_source,

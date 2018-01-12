@@ -1,25 +1,30 @@
 import json
 import os
-
-import bcolz
-import pandas as pd
 import shutil
 
+import bcolz
+import logbook
+import pandas as pd
+import six
 from web3 import Web3, HTTPProvider
 
+from catalyst.constants import ROOT_DIR, LOG_LEVEL
 from catalyst.exchange.utils.stats_utils import set_print_settings
-from catalyst.constants import ROOT_DIR
 from catalyst.marketplace.utils.bundle_utils import merge_bundles
-from catalyst.marketplace.utils.path_utils import get_temp_bundles_folder, \
-    get_data_source, get_bundle_folder, get_data_source_folder
+from catalyst.marketplace.utils.path_utils import get_data_source, \
+    get_bundle_folder, get_data_source_folder
 
+# TODO: host our own node on aws?
 REMOTE_NODE = 'http://localhost:7545'
+# TODO: read from GitHub
 CONTRACT_PATH = os.path.join(
     ROOT_DIR, '..', 'marketplace', 'build', 'contracts', 'Marketplace.json'
 )
 CONTRACT_ADDRESS = Web3.toChecksumAddress(
     '0xe2b6cf3863240892d59664d209a28289a73ef644'
 )
+
+log = logbook.Logger('Marketplace', level=LOG_LEVEL)
 
 
 class Marketplace:
@@ -43,20 +48,32 @@ class Marketplace:
                 desc='The marketcap value in USD.',
                 start_date=pd.to_datetime('2017-01-01'),
                 end_date=pd.to_datetime('2018-01-15'),
+                data_frequencies=['daily'],
             ),
             dict(
                 name='GitHub',
                 desc='The rate of development activity on GitHub.',
                 start_date=pd.to_datetime('2017-01-01'),
                 end_date=pd.to_datetime('2018-01-15'),
+                data_frequencies=['daily', 'hour'],
             ),
             dict(
                 name='Influencers',
                 desc='Tweets and related sentiments by selected influencers.',
                 start_date=pd.to_datetime('2017-01-01'),
                 end_date=pd.to_datetime('2018-01-15'),
+                data_frequencies=['daily', 'hour', 'minute'],
             ),
         ]
+
+    def get_data_source_def(self, data_source_name):
+        data_source_name = data_source_name.lower()
+        dsm = self.get_data_sources_map()
+
+        ds = six.next(
+            (d for d in dsm if d['name'].lower() == data_source_name), None
+        )
+        return ds
 
     def list(self):
         subscribers = self.contract.call(
@@ -136,6 +153,35 @@ class Marketplace:
 
         pass
 
+    def get_data_source(self, data_source_name, data_frequency=None,
+                        start=None, end=None):
+        data_source_name = data_source_name.lower()
+
+        if data_frequency is None:
+            ds_def = self.get_data_source_def(data_source_name)
+            freqs = ds_def['data_frequencies']
+            data_frequency = freqs[0]
+
+            if len(freqs) > 1:
+                log.warn(
+                    'no data frequencies specified for data source {}, '
+                    'selected the first one by default: {}'.format(
+                        data_source_name, data_frequency
+                    )
+                )
+
+        # TODO: filter ctable by start and end date
+        bundle_folder = get_bundle_folder(data_source_name, data_frequency)
+        z = bcolz.ctable(rootdir=bundle_folder, mode='r')
+
+        df = z.todataframe()  # type: pd.DataFrame
+        df.set_index(['date', 'symbol'], drop=False, inplace=True)
+
+        if start and end is None:
+            df = df.xs(start, level=0)
+
+        return df
+
     def clean(self, data_source_name, data_frequency=None):
         data_source_name = data_source_name.lower()
 
@@ -143,7 +189,7 @@ class Marketplace:
             folder = get_data_source_folder(data_source_name)
 
         else:
-            forlder = get_bundle_folder(data_source_name, data_frequency)
+            folder = get_bundle_folder(data_source_name, data_frequency)
 
         shutil.rmtree(folder)
         pass

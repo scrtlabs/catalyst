@@ -34,8 +34,7 @@ def get_data_source_folder(data_source_name, environ=None):
 def get_bundle_folder(data_source_name, data_frequency, environ=None):
     data_source_folder = get_data_source_folder(data_source_name, environ)
 
-    subfolder = data_frequency if data_frequency is not None else 'data'
-    bundle_folder = os.path.join(data_source_folder, subfolder)
+    bundle_folder = os.path.join(data_source_folder, data_frequency)
 
     ensure_directory(bundle_folder)
 

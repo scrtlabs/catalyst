@@ -43,6 +43,7 @@ from catalyst.finance.execution import MarketOrder
 from catalyst.finance.performance import PerformanceTracker
 from catalyst.finance.performance.period import calc_period_stats
 from catalyst.gens.tradesimulation import AlgorithmSimulator
+from catalyst.marketplace.marketplace import Marketplace
 from catalyst.utils.api_support import api_method
 from catalyst.utils.input_validation import error_keywords, ensure_upper_case
 from catalyst.utils.math_utils import round_nearest
@@ -91,6 +92,8 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
             exchanges=self.exchanges,
             attempts=self.attempts,
         )
+
+        self._marketplace = None
 
     @staticmethod
     def __convert_order_params_for_blotter(limit_price, stop_price, style):
@@ -166,6 +169,16 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
         :return:
         """
         return round_nearest(amount, asset.min_trade_size)
+
+    @api_method
+    def get_data_source(self, data_source_name, data_frequency=None,
+                        start=None, end=None):
+        if self._marketplace is None:
+            self._marketplace = Marketplace()
+
+        return self._marketplace.get_data_source(
+            data_source_name, data_frequency, start, end,
+        )
 
     @api_method
     @preprocess(symbol_str=ensure_upper_case)
