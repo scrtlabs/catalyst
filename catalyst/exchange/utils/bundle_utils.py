@@ -1,6 +1,8 @@
 import calendar
 import os
 import tarfile
+
+import bcolz
 from datetime import timedelta, datetime, date
 
 import numpy as np
@@ -355,3 +357,4 @@ def get_assets(exchange, include_symbols, exclude_symbols):
 
         else:
             return all_assets
+

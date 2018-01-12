@@ -17,8 +17,9 @@ class TestMarketplace(WithLogger, ZiplineTestCase):
     def test_ingest(self):
         marketplace = Marketplace()
         marketplace.ingest(
-            data_source_name='GitHub',
+            data_source_name='Marketcap',
             data_frequency='finest',
             start=pd.Timestamp.utcnow(),
+            force_download=True,
         )
         pass

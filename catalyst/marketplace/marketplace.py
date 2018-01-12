@@ -1,12 +1,17 @@
 import json
 import os
+
+import bcolz
 import pandas as pd
+import shutil
 
 from web3 import Web3, HTTPProvider
 
 from catalyst.exchange.utils.stats_utils import set_print_settings
 from catalyst.constants import ROOT_DIR
-from catalyst.marketplace.utils.paths import get_temp_bundles_folder
+from catalyst.marketplace.utils.bundle_utils import merge_bundles
+from catalyst.marketplace.utils.path_utils import get_temp_bundles_folder, \
+    get_data_source, get_bundle_folder, get_data_source_folder
 
 REMOTE_NODE = 'http://localhost:7545'
 CONTRACT_PATH = os.path.join(
@@ -114,9 +119,31 @@ class Marketplace:
         pass
 
     def ingest(self, data_source_name, data_frequency=None, start=None,
-               end=None):
-        temp_folder = get_temp_bundles_folder(data_source_name)
+               end=None, force_download=False):
+        data_source_name = data_source_name.lower()
+
+        period = start.strftime('%Y-%m-%d')
+        tmp_folder = get_data_source(data_source_name, period, force_download)
+
+        bundle_folder = get_bundle_folder(data_source_name, data_frequency)
+        if os.listdir(bundle_folder):
+            zsource = bcolz.ctable(rootdir=tmp_folder, mode='r')
+            ztarget = bcolz.ctable(rootdir=bundle_folder, mode='r')
+            merge_bundles(zsource, ztarget)
+
+        else:
+            os.rename(tmp_folder, bundle_folder)
+
         pass
 
-    def clean(self, data_source_name):
+    def clean(self, data_source_name, data_frequency=None):
+        data_source_name = data_source_name.lower()
+
+        if data_frequency is None:
+            folder = get_data_source_folder(data_source_name)
+
+        else:
+            forlder = get_bundle_folder(data_source_name, data_frequency)
+
+        shutil.rmtree(folder)
         pass
