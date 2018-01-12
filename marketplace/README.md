@@ -3,9 +3,9 @@ It was generated with Truffle. Truffle can be used to compile and test
 the smart contracts. It's being tested on a test blockhain using Ganache.
 
 Steps to test:
-* Download an run Ganache
+* Download and run Ganache
 * Ensure that your Ganache endpoint matches `truffle.js`
-* In this `marketplace` folder:
+* In this `marketplace` folder, run the following commands:
     * `truffle compile`
     * `truffle test`
     * `truffle migrate --reset`
