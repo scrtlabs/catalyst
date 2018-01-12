@@ -291,6 +291,7 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
         DataFrame
 
         """
+        # TODO: verify that the exchange supports the timeframe
         bundle = self.exchange_bundles[exchange_name]  # type: ExchangeBundle
 
         freq, candle_size, unit, adj_data_frequency = get_frequency(

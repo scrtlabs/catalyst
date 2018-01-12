@@ -18,7 +18,8 @@ from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
     ExchangeSymbolsNotFound, ExchangeRequestError, InvalidOrderStyle, \
-    ExchangeNotFoundError, CreateOrderError, InvalidHistoryTimeframeError
+    ExchangeNotFoundError, CreateOrderError, InvalidHistoryTimeframeError, \
+    UnsupportedHistoryFrequencyError
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.utils.exchange_utils import mixin_market_params, \
     from_ms_timestamp, get_epoch, get_exchange_folder, get_catalyst_symbol, \
@@ -377,6 +378,14 @@ class CCXT(Exchange):
 
         symbols = self.get_symbols(assets)
         timeframe = CCXT.get_timeframe(freq)
+
+        if timeframe not in self.api.timeframes:
+            freqs = [CCXT.get_frequency(t) for t in self.api.timeframes]
+            raise UnsupportedHistoryFrequencyError(
+                exchange=self.name,
+                freq=freq,
+                freqs=freqs,
+            )
 
         ms = None
         if start_dt is not None:
