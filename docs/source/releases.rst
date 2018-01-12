@@ -2,9 +2,19 @@
 Release Notes
 =============
 
+Version 0.4.4
+^^^^^^^^^^^^^
+**Release Date**: 2018-01-09
+
+Bug Fixes
+~~~~~~~~~
+- Removed redundant capital_base validation (:issue:`142`)
+- Fixed portfolio update issue with restored state (:issue:`111`)
+- Skipping cash validation where there are open orders (:issue:`144`)
+
 Version 0.4.3
 ^^^^^^^^^^^^^
-**Release Date**: 2017-01-05
+**Release Date**: 2018-01-05
 
 Bug Fixes
 ~~~~~~~~~
@@ -13,7 +23,7 @@ Bug Fixes
 
 Version 0.4.2
 ^^^^^^^^^^^^^
-**Release Date**: 2017-01-03
+**Release Date**: 2018-01-03
 
 Bug Fixes
 ~~~~~~~~~

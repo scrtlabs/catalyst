@@ -8,13 +8,12 @@ from time import sleep
 
 import click
 import pandas as pd
-from logbook import Logger
-
 from catalyst.data.bundles import load
 from catalyst.data.data_portal import DataPortal
 from catalyst.exchange.exchange_pricing_loader import ExchangePricingLoader, \
     TradingPairPricing
 from catalyst.exchange.utils.factory import get_exchange
+from logbook import Logger
 
 try:
     from pygments import highlight
@@ -40,9 +39,6 @@ from catalyst.exchange.exchange_algorithm import (
 from catalyst.exchange.exchange_data_portal import DataPortalExchangeLive, \
     DataPortalExchangeBacktest
 from catalyst.exchange.exchange_asset_finder import ExchangeAssetFinder
-from catalyst.exchange.exchange_errors import (
-    ExchangeRequestError, ExchangeRequestErrorTooManyAttempts,
-    BaseCurrencyNotFoundError, NotEnoughCapitalError)
 
 from catalyst.constants import LOG_LEVEL
 
@@ -144,8 +140,22 @@ def _run(handle_data,
         else:
             click.echo(algotext)
 
-    mode = 'paper-trading' if simulate_orders else 'live-trading' \
-        if live else 'backtest'
+    log.warn(
+        'Catalyst is currently in ALPHA. It is going through rapid '
+        'development and it is subject to errors. Please use carefully. '
+        'We encourage you to report any issue on GitHub: '
+        'https://github.com/enigmampc/catalyst/issues'
+    )
+    sleep(3)
+
+    if live:
+        if simulate_orders:
+            mode = 'paper-trading'
+        else:
+            mode = 'live-trading'
+    else:
+        mode = 'backtest'
+
     log.info('running algo in {mode} mode'.format(mode=mode))
 
     exchange_name = exchange
@@ -198,66 +208,6 @@ def _run(handle_data,
             trading_calendar=open_calendar,
             first_trading_day=pd.to_datetime('today', utc=True)
         )
-
-        def fetch_capital_base(exchange, attempt_index=0):
-            """
-            Fetch the base currency amount required to bootstrap
-            the algorithm against the exchange.
-
-            The algorithm cannot continue without this value.
-
-            :param exchange: the targeted exchange
-            :param attempt_index:
-            :return capital_base: the amount of base currency available for
-            trading
-            """
-            try:
-                log.debug('retrieving capital base in {} to bootstrap '
-                          'exchange {}'.format(base_currency, exchange_name))
-                balances = exchange.get_balances()
-            except ExchangeRequestError as e:
-                if attempt_index < 20:
-                    log.warn(
-                        'could not retrieve balances on {}: {}'.format(
-                            exchange.name, e
-                        )
-                    )
-                    sleep(5)
-                    return fetch_capital_base(exchange, attempt_index + 1)
-
-                else:
-                    raise ExchangeRequestErrorTooManyAttempts(
-                        attempts=attempt_index,
-                        error=e
-                    )
-
-            if base_currency in balances:
-                base_currency_available = balances[base_currency]['free']
-                log.info(
-                    'base currency available in the account: {} {}'.format(
-                        base_currency_available, base_currency
-                    )
-                )
-
-                return base_currency_available
-            else:
-                raise BaseCurrencyNotFoundError(
-                    base_currency=base_currency,
-                    exchange=exchange_name
-                )
-
-        if not simulate_orders:
-            for exchange_name in exchanges:
-                exchange = exchanges[exchange_name]
-                balance = fetch_capital_base(exchange)
-
-                if balance < capital_base:
-                    raise NotEnoughCapitalError(
-                        exchange=exchange_name,
-                        base_currency=base_currency,
-                        balance=balance,
-                        capital_base=capital_base,
-                    )
 
         sim_params = create_simulation_parameters(
             start=start,

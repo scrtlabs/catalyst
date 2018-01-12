@@ -3,7 +3,6 @@ import random
 import tempfile
 
 from catalyst.assets._assets import TradingPair
-
 from catalyst.exchange.utils.exchange_utils import get_exchange_folder
 from catalyst.exchange.utils.factory import find_exchanges
 from catalyst.utils.paths import ensure_directory

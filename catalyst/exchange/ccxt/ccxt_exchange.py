@@ -6,12 +6,8 @@ from collections import defaultdict
 import ccxt
 import pandas as pd
 import six
-from catalyst.assets._assets import TradingPair
-from ccxt import ExchangeNotAvailable, InvalidOrder
-from logbook import Logger
-from six import string_types
-
 from catalyst.algorithm import MarketOrder
+from catalyst.assets._assets import TradingPair
 from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.exchange_bundle import ExchangeBundle
@@ -23,6 +19,10 @@ from catalyst.exchange.utils.exchange_utils import mixin_market_params, \
     from_ms_timestamp, get_epoch, get_exchange_folder, get_catalyst_symbol, \
     get_exchange_auth
 from catalyst.finance.order import Order, ORDER_STATUS
+from ccxt import InvalidOrder, NetworkError, \
+    ExchangeError
+from logbook import Logger
+from six import string_types
 
 log = Logger('CCXT', level=LOG_LEVEL)
 
@@ -105,7 +105,12 @@ class CCXT(Exchange):
                 with open(filename, 'w+') as f:
                     json.dump(self.markets, f, indent=4)
 
-            except ExchangeNotAvailable as e:
+            except (ExchangeError, NetworkError) as e:
+                log.warn(
+                    'unable to fetch markets {}: {}'.format(
+                        self.name, e
+                    )
+                )
                 raise ExchangeRequestError(error=e)
 
         self.load_assets()
@@ -377,9 +382,9 @@ class CCXT(Exchange):
             ms = int(delta.total_seconds()) * 1000
 
         candles = dict()
-        for asset in assets:
+        for index, asset in enumerate(assets):
             ohlcvs = self.api.fetch_ohlcv(
-                symbol=symbols[0],
+                symbol=symbols[index],
                 timeframe=timeframe,
                 since=ms,
                 limit=bar_count,
@@ -408,6 +413,7 @@ class CCXT(Exchange):
     def _fetch_symbol_map(self, is_local):
         try:
             return self.fetch_symbol_map(is_local)
+
         except ExchangeSymbolsNotFound:
             return None
 
@@ -559,8 +565,12 @@ class CCXT(Exchange):
             for key in balances:
                 balances_lower[key.lower()] = balances[key]
 
-        except Exception as e:
-            log.debug('error retrieving balances: {}', e)
+        except (ExchangeError, NetworkError) as e:
+            log.warn(
+                'unable to fetch balance {}: {}'.format(
+                    self.name, e
+                )
+            )
             raise ExchangeRequestError(error=e)
 
         return balances_lower
@@ -703,13 +713,17 @@ class CCXT(Exchange):
                 amount=adj_amount,
                 price=price
             )
-        except ExchangeNotAvailable as e:
-            log.debug('unable to create order: {}'.format(e))
-            raise ExchangeRequestError(error=e)
-
         except InvalidOrder as e:
             log.warn('the exchange rejected the order: {}'.format(e))
             raise CreateOrderError(exchange=self.name, error=e)
+
+        except (ExchangeError, NetworkError) as e:
+            log.warn(
+                'unable to create order {} / {}: {}'.format(
+                    self.name, symbol, e
+                )
+            )
+            raise ExchangeRequestError(error=e)
 
         if 'info' not in result:
             raise ValueError('cannot use order without info attribute')
@@ -735,7 +749,12 @@ class CCXT(Exchange):
                 limit=None,
                 params=dict()
             )
-        except Exception as e:
+        except (ExchangeError, NetworkError) as e:
+            log.warn(
+                'unable to fetch open orders {} / {}: {}'.format(
+                    self.name, asset.symbol, e
+                )
+            )
             raise ExchangeRequestError(error=e)
 
         orders = []
@@ -758,7 +777,12 @@ class CCXT(Exchange):
             order_status = self.api.fetch_order(id=order_id, symbol=symbol)
             order, executed_price = self._create_order(order_status)
 
-        except Exception as e:
+        except (ExchangeError, NetworkError) as e:
+            log.warn(
+                'unable to fetch order {} / {}: {}'.format(
+                    self.name, order_id, e
+                )
+            )
             raise ExchangeRequestError(error=e)
 
         return order, executed_price
@@ -777,7 +801,12 @@ class CCXT(Exchange):
                 if asset_or_symbol is not None else None
             self.api.cancel_order(id=order_id, symbol=symbol)
 
-        except Exception as e:
+        except (ExchangeError, NetworkError) as e:
+            log.warn(
+                'unable to cancel order {} / {}: {}'.format(
+                    self.name, order_id, e
+                )
+            )
             raise ExchangeRequestError(error=e)
 
     def tickers(self, assets):
@@ -828,10 +857,10 @@ class CCXT(Exchange):
 
                 tickers[asset] = ticker
 
-        except ExchangeNotAvailable as e:
+        except (ExchangeError, NetworkError) as e:
             log.warn(
-                'unable to fetch ticker: {} {}'.format(
-                    self.name, asset.symbol
+                'unable to fetch ticker {} / {}: {}'.format(
+                    self.name, asset.symbol, e
                 )
             )
             raise ExchangeRequestError(error=e)

@@ -6,7 +6,6 @@ from datetime import timedelta, datetime, date
 import numpy as np
 import pandas as pd
 import pytz
-
 from catalyst.data.bundles.core import download_without_progress
 from catalyst.exchange.utils.exchange_utils import get_exchange_bundles_folder
 

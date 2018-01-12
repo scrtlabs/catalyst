@@ -57,7 +57,7 @@ def analyze(context, perf):
     log.info('the stats: {}'.format(get_pretty_stats(perf)))
 
     # The base currency of the algo exchange
-    base_currency = context.exchanges.values()[0].base_currency.upper()
+    base_currency = list(context.exchanges.values())[0].base_currency.upper()
 
     # Plot the portfolio value over time.
     ax1 = plt.subplot(611)

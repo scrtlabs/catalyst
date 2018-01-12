@@ -175,7 +175,7 @@ def handle_data(context, data):
 def analyze(context=None, results=None):
     import matplotlib.pyplot as plt
 
-    base_currency = context.exchanges.values()[0].base_currency.upper()
+    base_currency = list(context.exchanges.values())[0].base_currency.upper()
     # Plot the portfolio and asset data.
     ax1 = plt.subplot(611)
     results.loc[:, 'portfolio_value'].plot(ax=ax1)

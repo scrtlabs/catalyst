@@ -146,6 +146,7 @@ def load_crypto_market_data(trading_day=None, trading_days=None,
         exchange = get_exchange(
             exchange_name='poloniex', base_currency='usdt'
         )
+        exchange.init()
 
     benchmark_asset = exchange.get_asset(bm_symbol)
 

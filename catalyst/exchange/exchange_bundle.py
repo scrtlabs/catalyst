@@ -8,12 +8,8 @@ from operator import is_not
 import numpy as np
 import pandas as pd
 import pytz
-from catalyst.assets._assets import TradingPair
-from logbook import Logger
-from pytz import UTC
-from six import itervalues
-
 from catalyst import get_calendar
+from catalyst.assets._assets import TradingPair
 from catalyst.constants import DATE_TIME_FORMAT, AUTO_INGEST
 from catalyst.constants import LOG_LEVEL
 from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
@@ -32,6 +28,9 @@ from catalyst.exchange.utils.exchange_utils import get_exchange_folder, \
     save_exchange_symbols, mixin_market_params, get_catalyst_symbol
 from catalyst.utils.cli import maybe_show_progress
 from catalyst.utils.paths import ensure_directory
+from logbook import Logger
+from pytz import UTC
+from six import itervalues
 
 log = Logger('exchange_bundle', level=LOG_LEVEL)
 
