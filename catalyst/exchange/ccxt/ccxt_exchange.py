@@ -382,9 +382,9 @@ class CCXT(Exchange):
             ms = int(delta.total_seconds()) * 1000
 
         candles = dict()
-        for asset in assets:
+        for index, asset in enumerate(assets):
             ohlcvs = self.api.fetch_ohlcv(
-                symbol=symbols[0],
+                symbol=symbols[index],
                 timeframe=timeframe,
                 since=ms,
                 limit=bar_count,
