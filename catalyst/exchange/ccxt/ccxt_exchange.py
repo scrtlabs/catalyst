@@ -941,48 +941,45 @@ class CCXT(Exchange):
         list[dict[str, float]
 
         """
-        tickers = dict()
-        try:
-            for asset in assets:
-                symbol = self.get_symbol(asset)
-                # TODO: use fetch_tickers() for efficiency
-                # I tried using fetch_tickers() but noticed some
-                # inconsistencies, see issue:
-                # https://github.com/ccxt/ccxt/issues/870
+        tickers = {}
+        for asset in assets:
+            symbol = self.get_symbol(asset)
+
+            self.ask_request()
+
+            # TODO: use fetch_tickers() for efficiency
+            # I tried using fetch_tickers() but noticed some
+            # inconsistencies, see issue:
+            # https://github.com/ccxt/ccxt/issues/870
+            try:
                 ticker = self.api.fetch_ticker(symbol=symbol)
-                if not ticker:
-                    log.warn('ticker not found for {} {}'.format(
-                        self.name, symbol
-                    ))
-                    continue
-
-                ticker['last_traded'] = from_ms_timestamp(ticker['timestamp'])
-
-                if 'last_price' not in ticker:
-                    # TODO: any more exceptions?
-                    ticker['last_price'] = ticker['last']
-
-                if 'baseVolume' in ticker and ticker['baseVolume'] is not None:
-                    # Using the volume represented in the base currency
-                    ticker['volume'] = ticker['baseVolume']
-
-                elif 'info' in ticker and 'bidQty' in ticker['info'] \
-                        and 'askQty' in ticker['info']:
-                    ticker['volume'] = float(ticker['info']['bidQty']) + \
-                                       float(ticker['info']['askQty'])
-
-                else:
-                    ticker['volume'] = 0
-
-                tickers[asset] = ticker
-
-        except (ExchangeError, NetworkError) as e:
-            log.warn(
-                'unable to fetch ticker {} / {}: {}'.format(
-                    self.name, asset.symbol, e
+            except (ExchangeError, NetworkError) as e:
+                log.warn(
+                    'unable to fetch ticker {} / {}: {}'.format(
+                        self.name, asset.symbol, e
+                    )
                 )
-            )
-            raise ExchangeRequestError(error=e)
+                continue
+
+            ticker['last_traded'] = from_ms_timestamp(ticker['timestamp'])
+
+            if 'last_price' not in ticker:
+                # TODO: any more exceptions?
+                ticker['last_price'] = ticker['last']
+
+            if 'baseVolume' in ticker and ticker['baseVolume'] is not None:
+                # Using the volume represented in the base currency
+                ticker['volume'] = ticker['baseVolume']
+
+            elif 'info' in ticker and 'bidQty' in ticker['info'] \
+                    and 'askQty' in ticker['info']:
+                ticker['volume'] = float(ticker['info']['bidQty']) + \
+                                   float(ticker['info']['askQty'])
+
+            else:
+                ticker['volume'] = 0
+
+            tickers[asset] = ticker
 
         return tickers
 
