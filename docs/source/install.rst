@@ -180,20 +180,6 @@ use a single tool to install Python and non-Python dependencies, or if you're
 already using `Anaconda <http://continuum.io/downloads>`_ as your Python 
 distribution, refer to the :ref:`Installing with Conda <conda>` section.
 
-Once you've installed the necessary additional dependencies for your system 
-(see below for your particular platform: :ref:`Linux`, :ref:`MacOS` or 
-:ref:`Windows`), you should be able to simply run
-
-.. code-block:: bash
-
-   $ pip install enigma-catalyst matplotlib
-
-Note that in the command above we install two different packages. The second 
-one, ``matplotlib`` is a visualization library. While it's not strictly 
-required to run catalyst simulations or live trading, it comes in very handy
-to visualize the performance of your algorithms, and for this reason we 
-recommend you install it, as well.
-
 If you use Python for anything other than Catalyst, we **strongly** recommend
 that you install in a `virtualenv
 <https://virtualenv.readthedocs.org/en/latest>`_.  The `Hitchhiker's Guide to
@@ -206,7 +192,22 @@ summarized version:
    $ pip install virtualenv
    $ virtualenv catalyst-venv
    $ source ./catalyst-venv/bin/activate
+
+
+
+Once you've installed the necessary additional dependencies for your system 
+(:ref:`Linux`, :ref:`MacOS` or :ref:`Windows`) **and have activated your virtualenv**, you should be able to simply run
+
+.. code-block:: bash
+
    $ pip install enigma-catalyst matplotlib
+
+Note that in the command above we install two different packages. The second 
+one, ``matplotlib`` is a visualization library. While it's not strictly 
+required to run catalyst simulations or live trading, it comes in very handy
+to visualize the performance of your algorithms, and for this reason we 
+recommend you install it, as well.
+
 
 Troubleshooting ``pip`` Install
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -408,20 +409,34 @@ following brew packages:
 
    $ brew install freetype pkg-config gcc openssl
 
-MacOS + virtualenv + matplotlib
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+MacOS + virtualenv/conda + matplotlib
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A note about using matplotlib in virtual enviroments on MacOS: it may be 
-necessary to run
+The first time that you try to run an algorithm that loads the ``matplotlib`` 
+library, you may get the following error:
+
+.. code-block:: text
+
+  RuntimeError: Python is not installed as a framework. The Mac OS X backend 
+  will not be able to function correctly if Python is not installed as a 
+  framework. See the Python documentation for more information on installing 
+  Python as a framework on Mac OS X. Please either reinstall Python as a 
+  framework, or try one of the other backends. If you are using (Ana)Conda 
+  please install python.app and replace the use of 'python' with 'pythonw'. 
+  See 'Working with Matplotlib on OSX' in the Matplotlib FAQ for more 
+  information.
+
+This is a ``matplotlib``-specific error, that will go away once you run the 
+following command:
 
 .. code-block:: bash
 
    echo "backend: TkAgg" > ~/.matplotlib/matplotlibrc
 
 in order to override the default ``MacOS`` backend for your system, which 
-may not be accessible from inside the virtual environment. This will allow 
-Catalyst to open matplotlib charts from within a virtual environment, which 
-is useful for displaying the performance of your backtests.  To learn more 
+may not be accessible from inside the virtual or conda environment. This will 
+allow Catalyst to open matplotlib charts from within a virtual environment, 
+which is useful for displaying the performance of your backtests.  To learn more 
 about matplotlib backends, please refer to the
 `matplotlib backend documentation <https://matplotlib.org/faq/usage_faq.html#what-is-a-backend>`_.
 
