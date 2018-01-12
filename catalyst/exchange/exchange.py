@@ -900,6 +900,22 @@ class Exchange:
         pass
 
     @abstractmethod
+    def process_order(self, order):
+        """
+        Similar to get_order but looks only for executed orders.
+
+        Parameters
+        ----------
+        order: Order
+
+        Returns
+        -------
+        float
+            Avg execution price
+
+        """
+
+    @abstractmethod
     def cancel_order(self, order_param, symbol_or_asset=None):
         """Cancel an open order.
 
@@ -979,7 +995,7 @@ class Exchange:
     @abc.abstractmethod
     def get_orderbook(self, asset, order_type, limit):
         """
-        Retrieve the the orderbook for the given trading pair.
+        Retrieve the orderbook for the given trading pair.
 
         Parameters
         ----------
@@ -993,3 +1009,20 @@ class Exchange:
         list[dict[str, float]
         """
         pass
+
+    @abc.abstractmethod
+    def get_trades(self, asset, my_trades, start_dt, limit):
+        """
+        Retrieve a list of trades.
+
+        Parameters
+        ----------
+        my_trades: bool
+            List only my trades.
+        start_dt
+        limit
+
+        Returns
+        -------
+
+        """

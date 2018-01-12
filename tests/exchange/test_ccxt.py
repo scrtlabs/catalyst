@@ -1,7 +1,7 @@
 import pandas as pd
 from logbook import Logger
 
-from base import BaseExchangeTestCase
+from .base import BaseExchangeTestCase
 from catalyst.exchange.ccxt.ccxt_exchange import CCXT
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.utils.exchange_utils import get_exchange_auth
@@ -74,6 +74,22 @@ class TestCCXT(BaseExchangeTestCase):
         ]
         tickers = self.exchange.tickers(assets)
         assert len(tickers) == 1
+        pass
+
+    def test_my_trades(self):
+        asset = self.exchange.get_asset('eng_eth')
+
+        trades = self.exchange.get_trades(asset)
+        assert trades
+        pass
+
+    def test_get_executed_order(self):
+        log.info('retrieving executed order')
+        asset = self.exchange.get_asset('eng_eth')
+
+        order = self.exchange.get_order('165784', asset)
+        transactions = self.exchange.process_order(order)
+        assert transactions
         pass
 
     def test_get_balances(self):
