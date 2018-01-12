@@ -707,6 +707,12 @@ class CCXT(Exchange):
         else:
             adj_amount = abs(amount)
 
+        if adj_amount == 0:
+            raise CreateOrderError(
+                exchange=self.name,
+                e='order amount lower than the smallest lot: {}'.format(amount)
+            )
+
         try:
             result = self.api.create_order(
                 symbol=symbol,
