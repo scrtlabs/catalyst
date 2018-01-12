@@ -483,7 +483,7 @@ bitcoin price.
 
 Now we will run the simulation again, but this time we extend our original 
 algorithm with the addition of the ``analyze()`` function. Somewhat analogously 
-as how ``initialize()`` gets called once before the start of the algorith, 
+as how ``initialize()`` gets called once before the start of the algorithm, 
 ``analyze()`` gets called once at the end of the algorithm, and receives two 
 variables: ``context``, which we discussed at the very beginning, and ``perf``, 
 which is the pandas dataframe containing the performance data for our algorithm 
