@@ -40,6 +40,7 @@ develop-eggs
 coverage.xml
 htmlcov
 nosetests.xml
+.python-version
 
 # C Extensions
 *.o
