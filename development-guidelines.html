@@ -320,6 +320,20 @@
 <span class="nv">$ </span><span class="o">{</span>BROWSER<span class="o">}</span> build/html/index.html
 </pre></div>
 </div>
+<p>There is a <a class="reference external" href="https://github.com/sphinx-doc/sphinx/issues/3212">documented issue</a>
+with <code class="docutils literal"><span class="pre">sphinx</span></code> and <code class="docutils literal"><span class="pre">docutils</span></code> that causes the error below when trying to build
+the docs.</p>
+<div class="highlight-text"><div class="highlight"><pre>Exception occurred:
+  File &quot;(...)/env-c/lib/python2.7/site-packages/docutils/writers/_html_base.py&quot;, line 671, in depart_document
+    assert not self.context, &#39;len(context) = %s&#39; % len(self.context)
+AssertionError: len(context) = 3
+</pre></div>
+</div>
+<p>If you get this error, you need to downgrade your version of <code class="docutils literal"><span class="pre">docutils</span></code> as
+follows, and build the docs again:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pip install <span class="nv">docutils</span><span class="o">==</span>0.12
+</pre></div>
+</div>
 </div>
 <div class="section" id="commit-messages">
 <h2>Commit messages<a class="headerlink" href="#commit-messages" title="Permalink to this headline">¶</a></h2>
