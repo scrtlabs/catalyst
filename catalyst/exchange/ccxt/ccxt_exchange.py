@@ -767,7 +767,7 @@ class CCXT(Exchange):
 
         return orders
 
-    def _get_executed_order_fallback(self, order):
+    def _process_order_fallback(self, order):
         """
         Fallback method for exchanges which do not play nice with
         fetch-my-trades. Apparently, about 60% of exchanges will return
@@ -810,8 +810,9 @@ class CCXT(Exchange):
         return [transaction]
 
     def process_order(self, order):
+        # TODO: move to parent class after tracking features in the parent
         if not self.api.hasFetchMyTrades:
-            return self._get_executed_order_fallback(order)
+            return self._process_order_fallback(order)
 
         try:
             all_trades = self.get_trades(order.asset)
@@ -822,7 +823,7 @@ class CCXT(Exchange):
                     order.id, order.asset.symbol, e
                 )
             )
-            return self._get_executed_order_fallback(order)
+            return self._process_order_fallback(order)
 
         transactions = []
         trades = [t for t in all_trades if t['order'] == order.id]
