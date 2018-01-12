@@ -287,7 +287,7 @@ def get_pretty_stats(stats, recorded_cols=None, num_rows=10, show_tail=True):
 
     """
     if isinstance(stats, pd.DataFrame):
-        stats = stats.T.to_dict().values()
+        stats = list(stats.T.to_dict().values())
         stats.sort(key=itemgetter('period_close'))
 
     if len(stats) > num_rows:

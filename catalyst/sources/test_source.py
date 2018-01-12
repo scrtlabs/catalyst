@@ -144,7 +144,7 @@ class SpecificEquityTrades(object):
             for identifier in self.identifiers:
                 assets_by_identifier[identifier] = env.asset_finder.\
                     lookup_generic(identifier, datetime.now())[0]
-            self.sids = [asset.sid for asset in assets_by_identifier.values()]
+            self.sids = [asset.sid for asset in list(assets_by_identifier.values())]
             for event in self.event_list:
                 event.sid = assets_by_identifier[event.sid].sid
 
@@ -167,7 +167,7 @@ class SpecificEquityTrades(object):
             for identifier in self.identifiers:
                 assets_by_identifier[identifier] = env.asset_finder.\
                     lookup_generic(identifier, datetime.now())[0]
-            self.sids = [asset.sid for asset in assets_by_identifier.values()]
+            self.sids = [asset.sid for asset in list(assets_by_identifier.values())]
 
         # Hash_value for downstream sorting.
         self.arg_string = hash_args(*args, **kwargs)
