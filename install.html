@@ -87,7 +87,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#macos-requirements">MacOS Requirements</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#macos-virtualenv-matplotlib">MacOS + virtualenv + matplotlib</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#macos-virtualenv-conda-matplotlib">MacOS + virtualenv/conda + matplotlib</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#windows-requirements">Windows Requirements</a></li>
@@ -592,17 +592,29 @@ following brew packages:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>brew install freetype pkg-config gcc openssl
 </pre></div>
 </div>
-<div class="section" id="macos-virtualenv-matplotlib">
-<h3>MacOS + virtualenv + matplotlib<a class="headerlink" href="#macos-virtualenv-matplotlib" title="Permalink to this headline">¶</a></h3>
-<p>A note about using matplotlib in virtual enviroments on MacOS: it may be
-necessary to run</p>
+<div class="section" id="macos-virtualenv-conda-matplotlib">
+<h3>MacOS + virtualenv/conda + matplotlib<a class="headerlink" href="#macos-virtualenv-conda-matplotlib" title="Permalink to this headline">¶</a></h3>
+<p>The first time that you try to run an algorithm that loads the <code class="docutils literal"><span class="pre">matplotlib</span></code>
+library, you may get the following error:</p>
+<div class="highlight-text"><div class="highlight"><pre>RuntimeError: Python is not installed as a framework. The Mac OS X backend
+will not be able to function correctly if Python is not installed as a
+framework. See the Python documentation for more information on installing
+Python as a framework on Mac OS X. Please either reinstall Python as a
+framework, or try one of the other backends. If you are using (Ana)Conda
+please install python.app and replace the use of &#39;python&#39; with &#39;pythonw&#39;.
+See &#39;Working with Matplotlib on OSX&#39; in the Matplotlib FAQ for more
+information.
+</pre></div>
+</div>
+<p>This is a <code class="docutils literal"><span class="pre">matplotlib</span></code>-specific error, that will go away once you run the
+following command:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nb">echo</span> <span class="s2">&quot;backend: TkAgg&quot;</span> &gt; ~/.matplotlib/matplotlibrc
 </pre></div>
 </div>
 <p>in order to override the default <code class="docutils literal"><span class="pre">MacOS</span></code> backend for your system, which
-may not be accessible from inside the virtual environment. This will allow
-Catalyst to open matplotlib charts from within a virtual environment, which
-is useful for displaying the performance of your backtests.  To learn more
+may not be accessible from inside the virtual or conda environment. This will
+allow Catalyst to open matplotlib charts from within a virtual environment,
+which is useful for displaying the performance of your backtests.  To learn more
 about matplotlib backends, please refer to the
 <a class="reference external" href="https://matplotlib.org/faq/usage_faq.html#what-is-a-backend">matplotlib backend documentation</a>.</p>
 </div>

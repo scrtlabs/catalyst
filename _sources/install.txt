@@ -408,20 +408,34 @@ following brew packages:
 
    $ brew install freetype pkg-config gcc openssl
 
-MacOS + virtualenv + matplotlib
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+MacOS + virtualenv/conda + matplotlib
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A note about using matplotlib in virtual enviroments on MacOS: it may be 
-necessary to run
+The first time that you try to run an algorithm that loads the ``matplotlib`` 
+library, you may get the following error:
+
+.. code-block:: text
+
+  RuntimeError: Python is not installed as a framework. The Mac OS X backend 
+  will not be able to function correctly if Python is not installed as a 
+  framework. See the Python documentation for more information on installing 
+  Python as a framework on Mac OS X. Please either reinstall Python as a 
+  framework, or try one of the other backends. If you are using (Ana)Conda 
+  please install python.app and replace the use of 'python' with 'pythonw'. 
+  See 'Working with Matplotlib on OSX' in the Matplotlib FAQ for more 
+  information.
+
+This is a ``matplotlib``-specific error, that will go away once you run the 
+following command:
 
 .. code-block:: bash
 
    echo "backend: TkAgg" > ~/.matplotlib/matplotlibrc
 
 in order to override the default ``MacOS`` backend for your system, which 
-may not be accessible from inside the virtual environment. This will allow 
-Catalyst to open matplotlib charts from within a virtual environment, which 
-is useful for displaying the performance of your backtests.  To learn more 
+may not be accessible from inside the virtual or conda environment. This will 
+allow Catalyst to open matplotlib charts from within a virtual environment, 
+which is useful for displaying the performance of your backtests.  To learn more 
 about matplotlib backends, please refer to the
 `matplotlib backend documentation <https://matplotlib.org/faq/usage_faq.html#what-is-a-backend>`_.
 
