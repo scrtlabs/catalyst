@@ -359,9 +359,13 @@ def stats_to_s3(uri, stats, algo_namespace, recorded_cols=None,
     pid = os.getpid()
 
     parts = uri.split('//')
-    obj = s3.Object(parts[1], '{}/{}-{}-{}.csv'.format(
-        folder, timestr, algo_namespace, pid
-    ))
+    path = '{folder}/{algo}/{time}-{algo}-{pid}.csv'.format(
+        folder=folder,
+        algo=algo_namespace,
+        time=timestr,
+        pid=pid,
+    )
+    obj = s3.Object(parts[1], path)
     obj.put(Body=bytes_to_write)
 
 
