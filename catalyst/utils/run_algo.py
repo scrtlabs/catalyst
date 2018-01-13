@@ -91,6 +91,7 @@ def _run(handle_data,
          live_graph,
          analyze_live,
          simulate_orders,
+         auth_aliases,
          stats_output):
     """Run a backtest for the given algorithm.
 
@@ -163,14 +164,19 @@ def _run(handle_data,
         raise ValueError('Please specify at least one exchange.')
 
     exchange_list = [x.strip().lower() for x in exchange.split(',')]
-
     exchanges = dict()
-    for exchange_name in exchange_list:
-        exchanges[exchange_name] = get_exchange(
-            exchange_name=exchange_name,
+    for name in exchange_list:
+        if auth_aliases is not None and name in auth_aliases:
+            auth_alias = auth_aliases[name]
+        else:
+            auth_alias = None
+
+        exchanges[name] = get_exchange(
+            exchange_name=name,
             base_currency=base_currency,
             must_authenticate=(live and not simulate_orders),
             skip_init=True,
+            auth_alias=auth_alias,
         )
 
     open_calendar = get_calendar('OPEN')
@@ -391,6 +397,7 @@ def run_algorithm(initialize,
                   live_graph=False,
                   analyze_live=None,
                   simulate_orders=True,
+                  auth_aliases=None,
                   stats_output=None,
                   output=os.devnull):
     """Run a trading algorithm.
@@ -524,5 +531,6 @@ def run_algorithm(initialize,
         live_graph=live_graph,
         analyze_live=analyze_live,
         simulate_orders=simulate_orders,
+        auth_aliases=auth_aliases,
         stats_output=stats_output
     )
