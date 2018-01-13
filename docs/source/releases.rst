@@ -11,6 +11,7 @@ Bug Fixes
 - Improved order execution for exchanges supporting trade lists (:issue:`151`)
 - Fixed an issue where requesting history of multiple assets repeats values
 - Raising an error for order amounts smaller than exchange lots
+- Handling multiple req errors with tickers more gracefully (:issue:`160`)
 
 Version 0.4.4
 ^^^^^^^^^^^^^

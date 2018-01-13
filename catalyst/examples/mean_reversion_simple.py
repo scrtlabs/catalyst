@@ -259,6 +259,7 @@ if __name__ == '__main__':
             live_graph=False,
             simulate_orders=False,
             stats_output=None,
+            # auth_aliases=dict(poloniex='auth2')
         )
 
     else:

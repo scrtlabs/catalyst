@@ -1011,6 +1011,11 @@ class CCXT(Exchange):
         return result
 
     def get_trades(self, asset, my_trades=True, start_dt=None, limit=None):
+        if not my_trades:
+            raise NotImplemented(
+                'get_trades only supports "my trades"'
+            )
+
         # TODO: is it possible to sort this? Limit is useless otherwise.
         ccxt_symbol = self.get_symbol(asset)
         try:
