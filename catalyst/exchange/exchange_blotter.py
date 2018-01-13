@@ -209,7 +209,8 @@ class ExchangeBlotter(Blotter):
                 log.debug('found open order: {}'.format(order.id))
 
                 transactions = exchange.process_order(order)
-                if transactions:
+                # TODO: not letting partial orders through because of calculation issues
+                if transactions and order.status == ORDER_STATUS.FILLED:
                     avg_price = np.average(
                         a=[t.price for t in transactions],
                         weights=[t.amount for t in transactions],
