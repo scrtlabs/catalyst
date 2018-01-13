@@ -248,7 +248,7 @@ if __name__ == '__main__':
 
     if live:
         run_algorithm(
-            capital_base=0.1,
+            capital_base=0.01,
             initialize=initialize,
             handle_data=handle_data,
             analyze=analyze,
@@ -257,8 +257,9 @@ if __name__ == '__main__':
             algo_namespace=NAMESPACE,
             base_currency='btc',
             live_graph=False,
-            simulate_orders=True,
+            simulate_orders=False,
             stats_output=None,
+            # auth_aliases=dict(poloniex='auth2')
         )
 
     else:

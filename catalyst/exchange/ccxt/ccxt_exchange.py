@@ -6,6 +6,11 @@ from collections import defaultdict
 import ccxt
 import pandas as pd
 import six
+from ccxt import InvalidOrder, NetworkError, \
+    ExchangeError
+from logbook import Logger
+from six import string_types
+
 from catalyst.algorithm import MarketOrder
 from catalyst.assets._assets import TradingPair
 from catalyst.constants import LOG_LEVEL
@@ -13,16 +18,14 @@ from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
     ExchangeSymbolsNotFound, ExchangeRequestError, InvalidOrderStyle, \
-    ExchangeNotFoundError, CreateOrderError, InvalidHistoryTimeframeError
+    ExchangeNotFoundError, CreateOrderError, InvalidHistoryTimeframeError, \
+    UnsupportedHistoryFrequencyError
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.utils.exchange_utils import mixin_market_params, \
     from_ms_timestamp, get_epoch, get_exchange_folder, get_catalyst_symbol, \
     get_exchange_auth
 from catalyst.finance.order import Order, ORDER_STATUS
-from ccxt import InvalidOrder, NetworkError, \
-    ExchangeError
-from logbook import Logger
-from six import string_types
+from catalyst.finance.transaction import Transaction
 
 log = Logger('CCXT', level=LOG_LEVEL)
 
@@ -376,6 +379,14 @@ class CCXT(Exchange):
         symbols = self.get_symbols(assets)
         timeframe = CCXT.get_timeframe(freq)
 
+        if timeframe not in self.api.timeframes:
+            freqs = [CCXT.get_frequency(t) for t in self.api.timeframes]
+            raise UnsupportedHistoryFrequencyError(
+                exchange=self.name,
+                freq=freq,
+                freqs=freqs,
+            )
+
         ms = None
         if start_dt is not None:
             delta = start_dt - get_epoch()
@@ -705,6 +716,12 @@ class CCXT(Exchange):
         else:
             adj_amount = abs(amount)
 
+        if adj_amount == 0:
+            raise CreateOrderError(
+                exchange=self.name,
+                e='order amount lower than the smallest lot: {}'.format(amount)
+            )
+
         try:
             result = self.api.create_order(
                 symbol=symbol,
@@ -759,13 +776,111 @@ class CCXT(Exchange):
 
         orders = []
         for order_status in result:
-            order, executed_price = self._create_order(order_status)
+            order, _ = self._create_order(order_status)
             if asset is None or asset == order.sid:
                 orders.append(order)
 
         return orders
 
-    def get_order(self, order_id, asset_or_symbol=None):
+    def _process_order_fallback(self, order):
+        """
+        Fallback method for exchanges which do not play nice with
+        fetch-my-trades. Apparently, about 60% of exchanges will return
+        the correct executed values with this method. Others will support
+        fetch-my-trades.
+
+        Parameters
+        ----------
+        order: Order
+
+        Returns
+        -------
+        float
+
+        """
+        exc_order, price = self.get_order(
+            order.id, order.asset, return_price=True
+        )
+        order.status = exc_order.status
+
+        order.commission = exc_order.commission
+        if order.amount != exc_order.amount:
+            log.warn(
+                'executed order amount {} differs '
+                'from original'.format(
+                    exc_order.amount, order.amount
+                )
+            )
+            order.amount = exc_order.amount
+
+        if order.status == ORDER_STATUS.FILLED:
+            transaction = Transaction(
+                asset=order.asset,
+                amount=order.amount,
+                dt=pd.Timestamp.utcnow(),
+                price=price,
+                order_id=order.id,
+                commission=order.commission
+            )
+        return [transaction]
+
+    def process_order(self, order):
+        # TODO: move to parent class after tracking features in the parent
+        if not self.api.hasFetchMyTrades:
+            return self._process_order_fallback(order)
+
+        try:
+            all_trades = self.get_trades(order.asset)
+        except ExchangeRequestError as e:
+            log.warn(
+                'unable to fetch account trades, trying an alternate '
+                'method to find executed order {} / {}: {}'.format(
+                    order.id, order.asset.symbol, e
+                )
+            )
+            return self._process_order_fallback(order)
+
+        transactions = []
+        trades = [t for t in all_trades if t['order'] == order.id]
+        if not trades:
+            log.debug(
+                'order {} / {} not found in trades'.format(
+                    order.id, order.asset.symbol
+                )
+            )
+            return transactions
+
+        trades.sort(key=lambda t: t['timestamp'], reverse=False)
+        order.filled = 0
+        order.commission = 0
+        for trade in trades:
+            # status property will update automatically
+            filled = trade['amount'] * order.direction
+            order.filled += filled
+
+            commission = 0
+            if 'fee' in trade and 'cost' in trade['fee']:
+                commission = trade['fee']['cost']
+                order.commission += commission
+
+            order.check_triggers(
+                price=trade['price'],
+                dt=pd.to_datetime(trade['timestamp'], unit='ms', utc=True),
+            )
+            transaction = Transaction(
+                asset=order.asset,
+                amount=filled,
+                dt=pd.Timestamp.utcnow(),
+                price=trade['price'],
+                order_id=order.id,
+                commission=commission
+            )
+            transactions.append(transaction)
+
+        order.broker_order_id = ', '.join([t['id'] for t in trades])
+        return transactions
+
+    def get_order(self, order_id, asset_or_symbol=None, return_price=False):
         if asset_or_symbol is None:
             log.debug(
                 'order not found in memory, the request might fail '
@@ -777,6 +892,12 @@ class CCXT(Exchange):
             order_status = self.api.fetch_order(id=order_id, symbol=symbol)
             order, executed_price = self._create_order(order_status)
 
+            if return_price:
+                return order, executed_price
+
+            else:
+                return order
+
         except (ExchangeError, NetworkError) as e:
             log.warn(
                 'unable to fetch order {} / {}: {}'.format(
@@ -784,8 +905,6 @@ class CCXT(Exchange):
                 )
             )
             raise ExchangeRequestError(error=e)
-
-        return order, executed_price
 
     def cancel_order(self, order_param, asset_or_symbol=None):
         order_id = order_param.id \
@@ -822,48 +941,45 @@ class CCXT(Exchange):
         list[dict[str, float]
 
         """
-        tickers = dict()
-        try:
-            for asset in assets:
-                symbol = self.get_symbol(asset)
-                # TODO: use fetch_tickers() for efficiency
-                # I tried using fetch_tickers() but noticed some
-                # inconsistencies, see issue:
-                # https://github.com/ccxt/ccxt/issues/870
+        tickers = {}
+        for asset in assets:
+            symbol = self.get_symbol(asset)
+
+            self.ask_request()
+
+            # TODO: use fetch_tickers() for efficiency
+            # I tried using fetch_tickers() but noticed some
+            # inconsistencies, see issue:
+            # https://github.com/ccxt/ccxt/issues/870
+            try:
                 ticker = self.api.fetch_ticker(symbol=symbol)
-                if not ticker:
-                    log.warn('ticker not found for {} {}'.format(
-                        self.name, symbol
-                    ))
-                    continue
-
-                ticker['last_traded'] = from_ms_timestamp(ticker['timestamp'])
-
-                if 'last_price' not in ticker:
-                    # TODO: any more exceptions?
-                    ticker['last_price'] = ticker['last']
-
-                if 'baseVolume' in ticker and ticker['baseVolume'] is not None:
-                    # Using the volume represented in the base currency
-                    ticker['volume'] = ticker['baseVolume']
-
-                elif 'info' in ticker and 'bidQty' in ticker['info'] \
-                        and 'askQty' in ticker['info']:
-                    ticker['volume'] = float(ticker['info']['bidQty']) + \
-                                       float(ticker['info']['askQty'])
-
-                else:
-                    ticker['volume'] = 0
-
-                tickers[asset] = ticker
-
-        except (ExchangeError, NetworkError) as e:
-            log.warn(
-                'unable to fetch ticker {} / {}: {}'.format(
-                    self.name, asset.symbol, e
+            except (ExchangeError, NetworkError) as e:
+                log.warn(
+                    'unable to fetch ticker {} / {}: {}'.format(
+                        self.name, asset.symbol, e
+                    )
                 )
-            )
-            raise ExchangeRequestError(error=e)
+                continue
+
+            ticker['last_traded'] = from_ms_timestamp(ticker['timestamp'])
+
+            if 'last_price' not in ticker:
+                # TODO: any more exceptions?
+                ticker['last_price'] = ticker['last']
+
+            if 'baseVolume' in ticker and ticker['baseVolume'] is not None:
+                # Using the volume represented in the base currency
+                ticker['volume'] = ticker['baseVolume']
+
+            elif 'info' in ticker and 'bidQty' in ticker['info'] \
+                    and 'askQty' in ticker['info']:
+                ticker['volume'] = float(ticker['info']['bidQty']) + \
+                                   float(ticker['info']['askQty'])
+
+            else:
+                ticker['volume'] = 0
+
+            tickers[asset] = ticker
 
         return tickers
 
@@ -893,3 +1009,27 @@ class CCXT(Exchange):
                 ))
 
         return result
+
+    def get_trades(self, asset, my_trades=True, start_dt=None, limit=None):
+        if not my_trades:
+            raise NotImplemented(
+                'get_trades only supports "my trades"'
+            )
+
+        # TODO: is it possible to sort this? Limit is useless otherwise.
+        ccxt_symbol = self.get_symbol(asset)
+        try:
+            trades = self.api.fetch_my_trades(
+                symbol=ccxt_symbol,
+                since=start_dt,
+                limit=limit,
+            )
+        except (ExchangeError, NetworkError) as e:
+            log.warn(
+                'unable to fetch trades {} / {}: {}'.format(
+                    self.name, asset.symbol, e
+                )
+            )
+            raise ExchangeRequestError(error=e)
+
+        return trades

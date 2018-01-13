@@ -184,13 +184,13 @@ class TestSuiteExchange(WithLogger, ZiplineTestCase):
                 )
                 sleep(1)
 
-                open_order, _ = exchange.get_order(order.id, asset)
+                open_order = exchange.get_order(order.id, asset)
                 self.assertEqual(0, open_order.status)
 
                 exchange.cancel_order(open_order, asset)
                 sleep(1)
 
-                canceled_order, _ = exchange.get_order(open_order.id, asset)
+                canceled_order = exchange.get_order(open_order.id, asset)
                 warnings = [record for record in log_catcher.records if
                             record.level == WARNING]
 

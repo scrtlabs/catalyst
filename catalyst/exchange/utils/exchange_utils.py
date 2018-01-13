@@ -192,7 +192,7 @@ def get_symbols_string(assets):
     return ', '.join([asset.symbol for asset in array])
 
 
-def get_exchange_auth(exchange_name, environ=None):
+def get_exchange_auth(exchange_name, alias=None, environ=None):
     """
     The de-serialized contend of the exchange's auth.json file.
 
@@ -207,7 +207,8 @@ def get_exchange_auth(exchange_name, environ=None):
 
     """
     exchange_folder = get_exchange_folder(exchange_name, environ)
-    filename = os.path.join(exchange_folder, 'auth.json')
+    name = 'auth' if alias is None else alias
+    filename = os.path.join(exchange_folder, '{}.json'.format(name))
 
     if os.path.isfile(filename):
         with open(filename) as data_file:
