@@ -75,7 +75,8 @@ Note that the trading pairs are always referenced in the same manner.
 However, not all trading pairs are available on all exchanges. An
 error will occur if the specified trading pair is not trading
 on the exchange. To check which currency pairs are available on each 
-of the supported exchanges, see `Catalyst Market Coverage <https://www.enigma.co/catalyst/status`_.
+of the supported exchanges, see 
+`Catalyst Market Coverage <https://www.enigma.co/catalyst/status>`_.
 
 Trading an Algorithm
 ^^^^^^^^^^^^^^^^^^^^
