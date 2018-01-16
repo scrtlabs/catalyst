@@ -73,6 +73,7 @@ class CCXT(Exchange):
         self.max_requests_per_minute = 60
         self.low_balance_threshold = 0.1
         self.request_cpt = dict()
+        self._common_symbols = dict()
 
         self.bundle = ExchangeBundle(self.name)
         self.markets = None
@@ -218,6 +219,21 @@ class CCXT(Exchange):
         )
         return market
 
+    def substitute_currency_code(self, currency, source='catalyst'):
+        if source == 'catalyst':
+            currency = currency.upper()
+
+            key = self.api.common_currency_code(currency)
+            self._common_symbols[key] = currency.lower()
+            return key
+
+        else:
+            if currency in self._common_symbols:
+                return self._common_symbols[currency]
+
+            else:
+                return currency.lower()
+
     def get_symbol(self, asset_or_symbol, source='catalyst'):
         """
         The CCXT symbol.
@@ -225,6 +241,7 @@ class CCXT(Exchange):
         Parameters
         ----------
         asset_or_symbol
+        source
 
         Returns
         -------
@@ -234,7 +251,13 @@ class CCXT(Exchange):
         if source == 'ccxt':
             if isinstance(asset_or_symbol, string_types):
                 parts = asset_or_symbol.split('/')
-                return '{}_{}'.format(parts[0].lower(), parts[1].lower())
+                base_currency = self.substitute_currency_code(
+                    parts[0], source
+                )
+                quote_currency = self.substitute_currency_code(
+                    parts[1], source
+                )
+                return '{}_{}'.format(base_currency, quote_currency)
 
             else:
                 return asset_or_symbol.symbol
@@ -245,7 +268,13 @@ class CCXT(Exchange):
             ) else asset_or_symbol.symbol
 
             parts = symbol.split('_')
-            return '{}/{}'.format(parts[0].upper(), parts[1].upper())
+            base_currency = self.substitute_currency_code(
+                parts[0], source
+            )
+            quote_currency = self.substitute_currency_code(
+                parts[1], source
+            )
+            return '{}/{}'.format(base_currency, quote_currency)
 
     @staticmethod
     def map_frequency(value, source='ccxt', raise_error=True):
