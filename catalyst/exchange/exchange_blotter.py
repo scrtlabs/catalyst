@@ -209,7 +209,6 @@ class ExchangeBlotter(Blotter):
                 log.debug('found open order: {}'.format(order.id))
 
                 transactions = exchange.process_order(order)
-                # TODO: not letting partial orders through because of calculation issues
                 if transactions and order.status == ORDER_STATUS.FILLED:
                     avg_price = np.average(
                         a=[t.price for t in transactions],
@@ -247,8 +246,6 @@ class ExchangeBlotter(Blotter):
 
         for order, txn in self.check_open_orders():
             order.dt = txn.dt
-
-            # TODO: is the commission already on the order object?
             transactions.append(txn)
 
             if not order.open:
