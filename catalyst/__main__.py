@@ -395,6 +395,12 @@ def catalyst_magic(line, cell=None):
          '(e.g. usd, btc, eth).',
 )
 @click.option(
+    '-e',
+    '--end',
+    type=Date(tz='utc', as_timestamp=True),
+    help='An optional end date at which to stop the execution.',
+)
+@click.option(
     '--live-graph/--no-live-graph',
     is_flag=True,
     default=False,
@@ -419,6 +425,7 @@ def live(ctx,
          exchange_name,
          algo_namespace,
          base_currency,
+         end,
          live_graph,
          simulate_orders):
     """Trade live with the given algorithm.
@@ -461,7 +468,7 @@ def live(ctx,
         bundle=None,
         bundle_timestamp=None,
         start=None,
-        end=None,
+        end=end,
         output=output,
         print_algo=print_algo,
         local_namespace=local_namespace,

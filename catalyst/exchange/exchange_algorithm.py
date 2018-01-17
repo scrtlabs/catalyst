@@ -351,6 +351,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         self.live_graph = kwargs.pop('live_graph', None)
         self.stats_output = kwargs.pop('stats_output', None)
         self._analyze_live = kwargs.pop('analyze_live', None)
+        self.end = kwargs.pop('end', None)
 
         self._clock = None
         self.frame_stats = list()
@@ -709,6 +710,10 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         """
         if not self.is_running:
             return
+
+        if self.end is not None and self.end < data.current_dt:
+            log.info('Algorithm has reached specified end time. Finishing...')
+            self.interrupt_algorithm()
 
         # Resetting the frame stats every day to minimize memory footprint
         today = data.current_dt.floor('1D')

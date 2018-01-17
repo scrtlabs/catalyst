@@ -206,7 +206,8 @@ def _run(handle_data,
         start = pd.Timestamp.utcnow()
 
         # TODO: fix the end data.
-        end = start + timedelta(hours=8760)
+        if end is None:
+            end = start + timedelta(hours=8760)
 
         data = DataPortalExchangeLive(
             exchanges=exchanges,
@@ -234,6 +235,7 @@ def _run(handle_data,
             simulate_orders=simulate_orders,
             stats_output=stats_output,
             analyze_live=analyze_live,
+            end=end,
         )
     elif exchanges:
         # Removed the existing Poloniex fork to keep things simple
