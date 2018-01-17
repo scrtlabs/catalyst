@@ -303,6 +303,7 @@ class ExchangeTradingAlgorithmBacktest(ExchangeTradingAlgorithmBase):
         super(ExchangeTradingAlgorithmBacktest, self).__init__(*args, **kwargs)
 
         self.frame_stats = list()
+        self.state = {}
         log.info('initialized trading algorithm in backtest mode')
 
     def is_last_frame_of_day(self, data):
@@ -470,6 +471,13 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         This allows us to stop/start algos without loosing their state.
 
         """
+        self.state = get_algo_object(
+            algo_name=self.algo_namespace,
+            key='context.state',
+        )
+        if self.state is None:
+            self.state = {}
+
         if self.perf_tracker is None:
             # Note from the Zipline dev:
             # HACK: When running with the `run` method, we set perf_tracker to
@@ -765,6 +773,11 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             obj=self.perf_tracker.todays_performance,
             rel_path='daily_performance'
         )
+        log.debug('saving context.state object')
+        save_algo_object(
+            algo_name=self.algo_namespace,
+            key='context.state',
+            obj=self.state)
 
     def _process_stats(self, data):
         today = data.current_dt.floor('1D')
