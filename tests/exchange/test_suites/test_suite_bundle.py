@@ -98,7 +98,7 @@ class TestSuiteBundle(WithLogger, ZiplineTestCase):
     def test_validate_bundles(self):
         # exchange_population = 3
         asset_population = 3
-        data_frequency = random.choice(['minute', 'daily'])
+        data_frequency = random.choice(['minute'])
 
         # bundle = 'dailyBundle' if data_frequency
         #  == 'daily' else 'minuteBundle'
@@ -106,7 +106,7 @@ class TestSuiteBundle(WithLogger, ZiplineTestCase):
         #     population=exchange_population,
         #     features=[bundle],
         # )  # Type: list[Exchange]
-        exchanges = [get_exchange('bitfinex', skip_init=True)]
+        exchanges = [get_exchange('poloniex', skip_init=True)]
 
         data_portal = TestSuiteBundle.get_data_portal(exchanges)
         for exchange in exchanges:
