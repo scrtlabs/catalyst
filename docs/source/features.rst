@@ -44,11 +44,11 @@ For additional details on the functionality added on recent releases, see the
 Upcoming features
 ~~~~~~~~~~~~~~~~~
 
-* Additional datasets beyond pricing data (Dec. 2017)
-* API documentation (Jan. 2017)
-* Support for decentralized exchanges (Jan. 2017)
-* Support for data ingestion of community-contributed data sets (Jan. 2017)
-* Pipeline support (Jan. 2018)
+* Additional datasets beyond pricing data (Q1 2018)
+* API documentation (Q1 2018)
+* Support for decentralized exchanges (Q1 2018)
+* Support for data ingestion of community-contributed data sets (Q1 2018)
+* Pipeline support (Q1 2018)
 * Web UI (Q2 2018)
 
 
