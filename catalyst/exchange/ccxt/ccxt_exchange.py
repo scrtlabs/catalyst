@@ -22,8 +22,10 @@ from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
     UnsupportedHistoryFrequencyError
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.utils.exchange_utils import mixin_market_params, \
-    from_ms_timestamp, get_epoch, get_exchange_folder, get_catalyst_symbol, \
+    get_exchange_folder, get_catalyst_symbol, \
     get_exchange_auth
+from exchange.utils.datetime_utils import from_ms_timestamp, get_epoch, \
+    get_periods_range
 from catalyst.finance.order import Order, ORDER_STATUS
 from catalyst.finance.transaction import Transaction
 
@@ -399,7 +401,7 @@ class CCXT(Exchange):
             timeframe, source='ccxt', raise_error=raise_error
         )
 
-    def get_candles(self, freq, assets, bar_count=None, start_dt=None,
+    def get_candles(self, freq, assets, bar_count=1, start_dt=None,
                     end_dt=None):
         is_single = (isinstance(assets, TradingPair))
         if is_single:
@@ -416,9 +418,25 @@ class CCXT(Exchange):
                 freqs=freqs,
             )
 
+        if start_dt is not None and end_dt is not None:
+            raise ValueError(
+                'Please provide either start_dt or end_dt, not both.'
+            )
+
+        elif end_dt is not None:
+            dt_range = get_periods_range(
+                end_dt=end_dt,
+                periods=bar_count,
+                freq=freq,
+            )
+            # skip the left bound of the range since the open range is
+            # on the right bound
+            start_dt = dt_range[1]
+
         ms = None
         if start_dt is not None:
-            delta = start_dt - get_epoch()
+            if end_dt is not None:
+                delta = start_dt - get_epoch()
             ms = int(delta.total_seconds()) * 1000
 
         candles = dict()

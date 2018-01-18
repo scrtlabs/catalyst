@@ -1,5 +1,6 @@
 import random
 
+import os
 import pandas as pd
 from logbook import TestHandler
 from pandas.util.testing import assert_frame_equal
@@ -11,7 +12,6 @@ from catalyst.exchange.utils.exchange_utils import get_candles_df
 from catalyst.exchange.utils.factory import get_exchange
 from catalyst.exchange.utils.test_utils import output_df, \
     select_random_assets
-from catalyst.testing.fixtures import WithLogger, ZiplineTestCase
 
 pd.set_option('display.expand_frame_repr', False)
 pd.set_option('precision', 8)
@@ -19,7 +19,7 @@ pd.set_option('display.width', 1000)
 pd.set_option('display.max_colwidth', 1000)
 
 
-class TestSuiteBundle(WithLogger, ZiplineTestCase):
+class TestSuiteBundle:
     @staticmethod
     def get_data_portal(exchanges):
         open_calendar = get_calendar('OPEN')
@@ -46,7 +46,9 @@ class TestSuiteBundle(WithLogger, ZiplineTestCase):
         assets
         end_dt
         bar_count
-        sample_minutes
+        freq
+        data_frequency
+        data_portal
 
         Returns
         -------
@@ -64,10 +66,6 @@ class TestSuiteBundle(WithLogger, ZiplineTestCase):
                 field='close',
                 data_frequency=data_frequency,
             )
-            print('bundle data:\n{}'.format(
-                data['bundle'].tail(10))
-            )
-
             candles = exchange.get_candles(
                 end_dt=end_dt,
                 freq=freq,
@@ -81,19 +79,31 @@ class TestSuiteBundle(WithLogger, ZiplineTestCase):
                 bar_count=bar_count,
                 end_dt=end_dt,
             )
-            print('exchange data:\n{}'.format(
-                data['exchange'].tail(10))
-            )
             for source in data:
                 df = data[source]
-                path = output_df(df, assets, '{}_{}'.format(freq, source))
-                print('saved {}:\n{}'.format(source, path))
+                path, folder = output_df(
+                    df, assets, '{}_{}'.format(freq, source)
+                )
 
             assert_frame_equal(
                 right=data['bundle'],
                 left=data['exchange'],
-                check_less_precise=True,
+                check_less_precise=1,
             )
+            try:
+                assert_frame_equal(
+                    right=data['bundle'],
+                    left=data['exchange'],
+                    check_less_precise=min([a.decimals for a in assets]),
+                )
+            except Exception as e:
+                print('Some differences were found within a 1 decimal point '
+                      'interval of confidence: {}'.format(e))
+                with open(os.path.join(folder, 'compare.txt'), 'w+') as handle:
+                    handle.write(e.args[0])
+
+            print('saved test results: {}'.format(folder))
+            pass
 
     def test_validate_bundles(self):
         # exchange_population = 3

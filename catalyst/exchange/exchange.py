@@ -13,10 +13,10 @@ from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     PricingDataNotLoadedError, \
     NoDataAvailableOnExchange, NoValueForField, LastCandleTooEarlyError, \
     TickerNotFoundError, NotEnoughCashError
-from catalyst.exchange.utils.bundle_utils import get_start_dt, \
-    get_delta, get_periods, get_periods_range
+from exchange.utils.datetime_utils import get_delta, get_periods_range, \
+    get_periods, get_start_dt, get_frequency
 from catalyst.exchange.utils.exchange_utils import get_exchange_symbols, \
-    get_frequency, resample_history_df, has_bundle
+    resample_history_df, has_bundle
 from logbook import Logger
 
 log = Logger('Exchange', level=LOG_LEVEL)
@@ -433,7 +433,7 @@ class Exchange:
         series = pd.Series(values, index=dates)
 
         periods = get_periods_range(
-            start_dt, end_dt, data_frequency
+            start_dt=start_dt, end_dt=end_dt, freq=data_frequency
         )
         # TODO: ensure that this working as expected, if not use fillna
         series = series.reindex(
@@ -929,8 +929,7 @@ class Exchange:
         pass
 
     @abstractmethod
-    def get_candles(self, freq, assets, bar_count=None,
-                    start_dt=None, end_dt=None):
+    def get_candles(self, freq, assets, bar_count, start_dt=None, end_dt=None):
         """
         Retrieve OHLCV candles for the given assets
 

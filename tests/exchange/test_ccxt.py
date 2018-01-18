@@ -1,6 +1,8 @@
 import pandas as pd
 from logbook import Logger
 
+from catalyst.testing import ZiplineTestCase
+from catalyst.testing.fixtures import WithLogger
 from .base import BaseExchangeTestCase
 from catalyst.exchange.ccxt.ccxt_exchange import CCXT
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
@@ -59,7 +61,7 @@ class TestCCXT(BaseExchangeTestCase):
             freq='5T',
             assets=[self.exchange.get_asset('eth_btc')],
             bar_count=200,
-            start_dt=pd.to_datetime('2017-01-01', utc=True)
+            start_dt=pd.to_datetime('2017-09-01', utc=True)
         )
 
         for asset in candles:

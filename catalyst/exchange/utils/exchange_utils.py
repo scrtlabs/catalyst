@@ -2,21 +2,20 @@ import hashlib
 import json
 import os
 import pickle
-import re
 import shutil
 from datetime import date, datetime
 
 import pandas as pd
 from catalyst.assets._assets import TradingPair
+from six import string_types
+from six.moves.urllib import request
+
 from catalyst.constants import DATE_FORMAT, SYMBOLS_URL
-from catalyst.exchange.exchange_errors import ExchangeSymbolsNotFound, \
-    InvalidHistoryFrequencyError, InvalidHistoryFrequencyAlias
+from catalyst.exchange.exchange_errors import ExchangeSymbolsNotFound
 from catalyst.exchange.utils.serialization_utils import ExchangeJSONEncoder, \
     ExchangeJSONDecoder
 from catalyst.utils.paths import data_root, ensure_directory, \
     last_modified_time
-from six import string_types
-from six.moves.urllib import request
 
 
 def get_sid(symbol):
@@ -513,72 +512,6 @@ def get_common_assets(exchanges):
     return assets
 
 
-def get_frequency(freq, data_frequency):
-    """
-    Get the frequency parameters.
-
-    Notes
-    -----
-    We're trying to use Pandas convention for frequency aliases.
-
-    Parameters
-    ----------
-    freq: str
-    data_frequency: str
-
-    Returns
-    -------
-    str, int, str, str
-
-    """
-    if freq == 'minute':
-        unit = 'T'
-        candle_size = 1
-
-    elif freq == 'daily':
-        unit = 'D'
-        candle_size = 1
-
-    else:
-        freq_match = re.match(r'([0-9].*)?(m|M|d|D|h|H|T)', freq, re.M | re.I)
-        if freq_match:
-            candle_size = int(freq_match.group(1)) if freq_match.group(1) \
-                else 1
-            unit = freq_match.group(2)
-
-        else:
-            raise InvalidHistoryFrequencyError(frequency=freq)
-
-    # TODO: some exchanges support H and W frequencies but not bundles
-    # Find a way to pass-through these parameters to exchanges
-    # but resample from minute or daily in backtest mode
-    # see catalyst/exchange/ccxt/ccxt_exchange.py:242 for mapping between
-    # Pandas offet aliases (used by Catalyst) and the CCXT timeframes
-    if unit.lower() == 'd':
-        alias = '{}D'.format(candle_size)
-
-        if data_frequency == 'minute':
-            data_frequency = 'daily'
-
-    elif unit.lower() == 'm' or unit == 'T':
-        alias = '{}T'.format(candle_size)
-
-        if data_frequency == 'daily':
-            data_frequency = 'minute'
-
-    # elif unit.lower() == 'h':
-    #     candle_size = candle_size * 60
-    #
-    #     alias = '{}T'.format(candle_size)
-    #     if data_frequency == 'daily':
-    #         data_frequency = 'minute'
-
-    else:
-        raise InvalidHistoryFrequencyAlias(freq=freq)
-
-    return alias, candle_size, unit, data_frequency
-
-
 def resample_history_df(df, freq, field):
     """
     Resample the OHCLV DataFrame using the specified frequency.
@@ -650,14 +583,6 @@ def mixin_market_params(exchange_name, params, market):
 
             if 'lot' not in params:
                 params['lot'] = params['min_trade_size']
-
-
-def from_ms_timestamp(ms):
-    return pd.to_datetime(ms, unit='ms', utc=True)
-
-
-def get_epoch():
-    return pd.to_datetime('1970-1-1', utc=True)
 
 
 def group_assets_by_exchange(assets):
