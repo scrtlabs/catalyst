@@ -209,7 +209,12 @@ class ExchangeBlotter(Blotter):
                 log.debug('found open order: {}'.format(order.id))
 
                 transactions = exchange.process_order(order)
-                if transactions and order.status == ORDER_STATUS.FILLED:
+                # This is a temporary measure, we should really update all
+                # trades, not just when the order gets filled. I just think
+                # that this is safer until we have a robust way to track
+                # the trades already processed by the algo. We can't loose
+                # them if the algo shuts down.
+                if transactions and order.open_amount == 0:
                     avg_price = np.average(
                         a=[t.price for t in transactions],
                         weights=[t.amount for t in transactions],
