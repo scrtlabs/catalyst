@@ -21,10 +21,11 @@ pd.set_option('display.max_colwidth', 1000)
 
 class TestSuiteBundle(WithLogger, ZiplineTestCase):
     @staticmethod
-    def get_data_portal(exchange_names):
+    def get_data_portal(exchanges):
         open_calendar = get_calendar('OPEN')
-        asset_finder = ExchangeAssetFinder()
+        asset_finder = ExchangeAssetFinder(exchanges)
 
+        exchange_names = [exchange.name for exchange in exchanges]
         data_portal = DataPortalExchangeBacktest(
             exchange_names=exchange_names,
             asset_finder=asset_finder,
@@ -107,9 +108,7 @@ class TestSuiteBundle(WithLogger, ZiplineTestCase):
         # )  # Type: list[Exchange]
         exchanges = [get_exchange('bitfinex', skip_init=True)]
 
-        data_portal = TestSuiteBundle.get_data_portal(
-            [exchange.name for exchange in exchanges]
-        )
+        data_portal = TestSuiteBundle.get_data_portal(exchanges)
         for exchange in exchanges:
             exchange.init()
 
