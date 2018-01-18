@@ -13,7 +13,8 @@ from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     PricingDataNotLoadedError, \
     NoDataAvailableOnExchange, NoValueForField, LastCandleTooEarlyError, \
     TickerNotFoundError, NotEnoughCashError
-from exchange.utils.datetime_utils import get_delta, get_periods_range, \
+from catalyst.exchange.utils.datetime_utils import get_delta, \
+    get_periods_range, \
     get_periods, get_start_dt, get_frequency
 from catalyst.exchange.utils.exchange_utils import get_exchange_symbols, \
     resample_history_df, has_bundle
@@ -497,39 +498,37 @@ class Exchange:
         freq, candle_size, unit, data_frequency = get_frequency(
             frequency, data_frequency
         )
-        adj_bar_count = candle_size * bar_count
-
-        start_dt = get_start_dt(end_dt, adj_bar_count, data_frequency)
-
         # The get_history method supports multiple asset
         candles = self.get_candles(
             freq=freq,
             assets=assets,
             bar_count=bar_count,
-            start_dt=start_dt if not is_current else None,
             end_dt=end_dt if not is_current else None,
         )
 
         series = dict()
         for asset in candles:
+            first_candle = candles[asset][0]
             asset_series = self.get_series_from_candles(
                 candles=candles[asset],
-                start_dt=start_dt,
+                start_dt=first_candle['last_traded'],
                 end_dt=end_dt,
                 data_frequency=frequency,
                 field=field,
             )
-            if end_dt is not None:
-                delta = get_delta(candle_size, data_frequency)
-                adj_end_dt = end_dt - delta
-                last_traded = asset_series.index[-1]
 
-                if last_traded < adj_end_dt:
-                    raise LastCandleTooEarlyError(
-                        last_traded=last_traded,
-                        end_dt=adj_end_dt,
-                        exchange=self.name,
-                    )
+            # Checking to make sure that the dates match
+            delta = get_delta(candle_size, data_frequency)
+            adj_end_dt = end_dt - delta
+            last_traded = asset_series.index[-1]
+
+            if last_traded < adj_end_dt:
+                raise LastCandleTooEarlyError(
+                    last_traded=last_traded,
+                    end_dt=adj_end_dt,
+                    exchange=self.name,
+                )
+
             series[asset] = asset_series
 
         df = pd.DataFrame(series)

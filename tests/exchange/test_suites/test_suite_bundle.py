@@ -85,6 +85,8 @@ class TestSuiteBundle:
                     df, assets, '{}_{}'.format(freq, source)
                 )
 
+            print('saved {} test results: {}'.format(end_dt, folder))
+
             assert_frame_equal(
                 right=data['bundle'],
                 left=data['exchange'],
@@ -102,7 +104,6 @@ class TestSuiteBundle:
                 with open(os.path.join(folder, 'compare.txt'), 'w+') as handle:
                     handle.write(e.args[0])
 
-            print('saved test results: {}'.format(folder))
             pass
 
     def test_validate_bundles(self):
@@ -116,7 +117,7 @@ class TestSuiteBundle:
         #     population=exchange_population,
         #     features=[bundle],
         # )  # Type: list[Exchange]
-        exchanges = [get_exchange('poloniex', skip_init=True)]
+        exchanges = [get_exchange('bitfinex', skip_init=True)]
 
         data_portal = TestSuiteBundle.get_data_portal(exchanges)
         for exchange in exchanges:

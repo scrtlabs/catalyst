@@ -15,7 +15,7 @@ log = Logger('test_ccxt')
 class TestCCXT(BaseExchangeTestCase):
     @classmethod
     def setup(self):
-        exchange_name = 'binance'
+        exchange_name = 'bitfinex'
         auth = get_exchange_auth(exchange_name)
         self.exchange = CCXT(
             exchange_name=exchange_name,
@@ -58,7 +58,7 @@ class TestCCXT(BaseExchangeTestCase):
     def test_get_candles(self):
         log.info('retrieving candles')
         candles = self.exchange.get_candles(
-            freq='5T',
+            freq='30T',
             assets=[self.exchange.get_asset('eth_btc')],
             bar_count=200,
             start_dt=pd.to_datetime('2017-09-01', utc=True)

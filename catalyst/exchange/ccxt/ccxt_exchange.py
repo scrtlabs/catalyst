@@ -24,7 +24,8 @@ from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.utils.exchange_utils import mixin_market_params, \
     get_exchange_folder, get_catalyst_symbol, \
     get_exchange_auth
-from exchange.utils.datetime_utils import from_ms_timestamp, get_epoch, \
+from catalyst.exchange.utils.datetime_utils import from_ms_timestamp, \
+    get_epoch, \
     get_periods_range
 from catalyst.finance.order import Order, ORDER_STATUS
 from catalyst.finance.transaction import Transaction
@@ -424,27 +425,36 @@ class CCXT(Exchange):
             )
 
         elif end_dt is not None:
-            dt_range = get_periods_range(
-                end_dt=end_dt,
-                periods=bar_count,
-                freq=freq,
+            # Make sure that end_dt really wants data in the past
+            # if it's close to now, we skip the 'since' parameters to
+            # lower the probability of error
+            bars_to_now = pd.date_range(
+                end_dt, pd.Timestamp.utcnow(), freq=freq
             )
-            # skip the left bound of the range since the open range is
-            # on the right bound
-            start_dt = dt_range[1]
+            if len(bars_to_now) > 1:
+                dt_range = get_periods_range(
+                    end_dt=end_dt,
+                    periods=bar_count,
+                    freq=freq,
+                )
+                # with some exchanges, skip the left bound of the range
+                # since the open range is on the right bound
+                if self.name in ['poloniex']:
+                    start_dt = dt_range[1]
+                else:
+                    start_dt = dt_range[0]
 
-        ms = None
+        since = None
         if start_dt is not None:
-            if end_dt is not None:
-                delta = start_dt - get_epoch()
-            ms = int(delta.total_seconds()) * 1000
+            delta = start_dt - get_epoch()
+            since = int(delta.total_seconds()) * 1000
 
         candles = dict()
         for index, asset in enumerate(assets):
             ohlcvs = self.api.fetch_ohlcv(
                 symbol=symbols[index],
                 timeframe=timeframe,
-                since=ms,
+                since=since,
                 limit=bar_count,
                 params={}
             )

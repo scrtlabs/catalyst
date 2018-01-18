@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, date
 import pandas as pd
 import pytz
 
-from exchange.exchange_errors import InvalidHistoryFrequencyError, \
+from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
     InvalidHistoryFrequencyAlias
 
 

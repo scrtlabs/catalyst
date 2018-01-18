@@ -10,7 +10,7 @@ from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     PricingDataNotLoadedError)
 from catalyst.exchange.utils.exchange_utils import resample_history_df, group_assets_by_exchange
-from exchange.utils.datetime_utils import get_frequency
+from catalyst.exchange.utils.datetime_utils import get_frequency
 from logbook import Logger
 from redo import retry
 

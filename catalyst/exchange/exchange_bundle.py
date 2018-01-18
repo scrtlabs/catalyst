@@ -22,7 +22,7 @@ from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
     PricingDataNotLoadedError, DataCorruptionError, PricingDataValueError
 from catalyst.exchange.utils.bundle_utils import range_in_bundle, \
     get_bcolz_chunk, get_df_from_arrays, get_assets
-from exchange.utils.datetime_utils import get_delta, get_start_dt, \
+from catalyst.exchange.utils.datetime_utils import get_delta, get_start_dt, \
     get_period_label, get_month_start_end, get_year_start_end
 from catalyst.exchange.utils.exchange_utils import get_exchange_folder, \
     save_exchange_symbols, mixin_market_params, get_catalyst_symbol
