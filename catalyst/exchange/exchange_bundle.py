@@ -232,12 +232,12 @@ class ExchangeBundle:
 
                 problem = '{name} ({start_dt} to {end_dt}) has empty ' \
                           'periods: {dates}'.format(
-                            name=asset.symbol,
-                            start_dt=asset.start_date.strftime(
-                                DATE_TIME_FORMAT),
-                            end_dt=end_dt.strftime(DATE_TIME_FORMAT),
-                            dates=[date.strftime(
-                                DATE_TIME_FORMAT) for date in dates])
+                    name=asset.symbol,
+                    start_dt=asset.start_date.strftime(
+                        DATE_TIME_FORMAT),
+                    end_dt=end_dt.strftime(DATE_TIME_FORMAT),
+                    dates=[date.strftime(
+                        DATE_TIME_FORMAT) for date in dates])
 
                 if empty_rows_behavior == 'warn':
                     log.warn(problem)
@@ -286,12 +286,12 @@ class ExchangeBundle:
 
             problem = '{name} ({start_dt} to {end_dt}) has {threshold} ' \
                       'identical close values on: {dates}'.format(
-                        name=asset.symbol,
-                        start_dt=asset.start_date.strftime(DATE_TIME_FORMAT),
-                        end_dt=end_dt.strftime(DATE_TIME_FORMAT),
-                        threshold=threshold,
-                        dates=[pd.to_datetime(date).strftime(DATE_TIME_FORMAT)
-                               for date in dates])
+                name=asset.symbol,
+                start_dt=asset.start_date.strftime(DATE_TIME_FORMAT),
+                end_dt=end_dt.strftime(DATE_TIME_FORMAT),
+                threshold=threshold,
+                dates=[pd.to_datetime(date).strftime(DATE_TIME_FORMAT)
+                       for date in dates])
 
             problems.append(problem)
 
@@ -629,8 +629,8 @@ class ExchangeBundle:
                     show_progress,
                     label='Ingesting {frequency} price data on '
                           '{exchange}'.format(
-                            exchange=self.exchange_name,
-                            frequency=data_frequency,
+                        exchange=self.exchange_name,
+                        frequency=data_frequency,
                     )) as it:
                 for chunk in it:
                     problems += self.ingest_ctable(
@@ -964,14 +964,14 @@ class ExchangeBundle:
                                   data_frequency,
                                   trailing_bar_count=None,
                                   reset_reader=False):
+        if trailing_bar_count:
+            delta = get_delta(trailing_bar_count, data_frequency)
+            end_dt += delta
+
         start_dt = get_start_dt(end_dt, bar_count, data_frequency, False)
         start_dt, _ = self.get_adj_dates(
             start_dt, end_dt, assets, data_frequency
         )
-
-        if trailing_bar_count:
-            delta = get_delta(trailing_bar_count, data_frequency)
-            end_dt += delta
 
         # This is an attempt to resolve some caching with the reader
         # when auto-ingesting data.
