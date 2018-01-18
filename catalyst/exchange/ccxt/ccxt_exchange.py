@@ -431,18 +431,14 @@ class CCXT(Exchange):
             bars_to_now = pd.date_range(
                 end_dt, pd.Timestamp.utcnow(), freq=freq
             )
-            if len(bars_to_now) > 1:
+            # See: https://github.com/ccxt/ccxt/issues/1360
+            if len(bars_to_now) > 1 or self.name in ['poloniex']:
                 dt_range = get_periods_range(
                     end_dt=end_dt,
                     periods=bar_count,
                     freq=freq,
                 )
-                # with some exchanges, skip the left bound of the range
-                # since the open range is on the right bound
-                if self.name in ['poloniex']:
-                    start_dt = dt_range[1]
-                else:
-                    start_dt = dt_range[0]
+                start_dt = dt_range[0]
 
         since = None
         if start_dt is not None:
@@ -471,6 +467,9 @@ class CCXT(Exchange):
                     close=ohlcv[4],
                     volume=ohlcv[5]
                 ))
+            candles[asset] = sorted(
+                candles[asset], key=lambda c: c['last_traded']
+            )
 
         if is_single:
             return six.next(six.itervalues(candles))

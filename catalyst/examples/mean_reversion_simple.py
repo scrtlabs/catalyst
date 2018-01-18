@@ -39,7 +39,7 @@ def initialize(context):
 
     context.RSI_OVERSOLD = 55
     context.RSI_OVERBOUGHT = 60
-    context.CANDLE_SIZE = '5T'
+    context.CANDLE_SIZE = '15T'
 
     context.start_time = time.time()
 
@@ -114,7 +114,7 @@ def handle_data(context, data):
     # TODO: retest with open orders
     # Since we are using limit orders, some orders may not execute immediately
     # we wait until all orders are executed before considering more trades.
-    orders = get_open_orders(context.market)
+    orders = context.blotter.open_orders
     if len(orders) > 0:
         log.info('exiting because orders are open: {}'.format(orders))
         return
