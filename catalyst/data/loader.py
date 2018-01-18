@@ -101,7 +101,7 @@ def load_crypto_market_data(trading_day=None, trading_days=None,
         trading_day = get_calendar('OPEN').trading_day
 
     # TODO: consider making configurable
-    bm_symbol = 'btc_usdt'
+    bm_symbol = 'btc_usd'
     # if trading_days is None:
     #    trading_days = get_calendar('OPEN').schedule
 
@@ -144,7 +144,7 @@ def load_crypto_market_data(trading_day=None, trading_days=None,
         #  breaks things and it's only needed here
         from catalyst.exchange.utils.factory import get_exchange
         exchange = get_exchange(
-            exchange_name='poloniex', base_currency='usdt'
+            exchange_name='bitfinex', base_currency='usd'
         )
         exchange.init()
 
