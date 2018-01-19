@@ -8,6 +8,8 @@ from time import sleep
 
 import click
 import pandas as pd
+from six import string_types
+
 from catalyst.data.bundles import load
 from catalyst.data.data_portal import DataPortal
 from catalyst.exchange.exchange_pricing_loader import ExchangePricingLoader, \
@@ -97,6 +99,7 @@ def _run(handle_data,
 
     This is shared between the cli and :func:`catalyst.run_algo`.
     """
+    # TODO: refactor for more granularity
     if algotext is not None:
         if local_namespace:
             ip = get_ipython()  # noqa
@@ -162,6 +165,17 @@ def _run(handle_data,
     exchange_name = exchange
     if exchange_name is None:
         raise ValueError('Please specify at least one exchange.')
+
+    if isinstance(auth_aliases, string_types):
+        aliases = auth_aliases.split(',')
+        if len(aliases) < 2 or len(aliases) % 2 != 0:
+            raise ValueError(
+                'the `auth_aliases` parameter must contain an even list '
+                'of comma-delimited values. For example, '
+                '"binance,auth2" or "binance,auth2,bittrex,auth2".'
+            )
+
+        auth_aliases = dict(zip(aliases[::2], aliases[1::2]))
 
     exchange_list = [x.strip().lower() for x in exchange.split(',')]
     exchanges = dict()
