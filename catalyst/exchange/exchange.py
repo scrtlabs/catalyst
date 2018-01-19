@@ -586,7 +586,6 @@ class Exchange:
             frequency, data_frequency
         )
         adj_bar_count = candle_size * bar_count
-
         try:
             series = self.bundle.get_history_window_series_and_load(
                 assets=assets,
@@ -620,7 +619,6 @@ class Exchange:
                     freq=freq,
                     assets=asset,
                     bar_count=trailing_bar_count,
-                    start_dt=start_dt,
                     end_dt=end_dt
                 )
 
