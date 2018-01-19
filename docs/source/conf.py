@@ -41,11 +41,11 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Catalyst'
-copyright = u'2017, Enigma MPC, Inc.'
+copyright = u'2018, Enigma MPC, Inc.'
 
 # The full version, including alpha/beta/rc tags, but excluding the commit hash
 #release = version.split('+', 1)[0]
-release = '0.3'
+release = '0.4'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
