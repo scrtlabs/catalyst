@@ -10,7 +10,8 @@ from catalyst.exchange.exchange_bcolz import BcolzExchangeBarReader, \
 from catalyst.exchange.exchange_bundle import ExchangeBundle, \
     BUNDLE_NAME_TEMPLATE
 from catalyst.exchange.utils.bundle_utils import get_bcolz_chunk, \
-    get_start_dt, get_df_from_arrays
+    get_df_from_arrays
+from exchange.utils.datetime_utils import get_start_dt
 from catalyst.exchange.utils.exchange_utils import get_exchange_folder
 from catalyst.exchange.utils.factory import get_exchange
 from catalyst.exchange.utils.stats_utils import df_to_string

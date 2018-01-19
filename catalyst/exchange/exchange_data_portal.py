@@ -9,8 +9,8 @@ from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     PricingDataNotLoadedError)
-from catalyst.exchange.utils.exchange_utils import get_frequency, \
-    resample_history_df, group_assets_by_exchange
+from catalyst.exchange.utils.exchange_utils import resample_history_df, group_assets_by_exchange
+from catalyst.exchange.utils.datetime_utils import get_frequency
 from logbook import Logger
 from redo import retry
 
@@ -291,6 +291,7 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
         DataFrame
 
         """
+        # TODO: verify that the exchange supports the timeframe
         bundle = self.exchange_bundles[exchange_name]  # type: ExchangeBundle
 
         freq, candle_size, unit, adj_data_frequency = get_frequency(

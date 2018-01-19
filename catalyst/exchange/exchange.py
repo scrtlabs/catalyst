@@ -13,10 +13,11 @@ from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     PricingDataNotLoadedError, \
     NoDataAvailableOnExchange, NoValueForField, LastCandleTooEarlyError, \
     TickerNotFoundError, NotEnoughCashError
-from catalyst.exchange.utils.bundle_utils import get_start_dt, \
-    get_delta, get_periods, get_periods_range
+from catalyst.exchange.utils.datetime_utils import get_delta, \
+    get_periods_range, \
+    get_periods, get_start_dt, get_frequency
 from catalyst.exchange.utils.exchange_utils import get_exchange_symbols, \
-    get_frequency, resample_history_df, has_bundle
+    resample_history_df, has_bundle
 from logbook import Logger
 
 log = Logger('Exchange', level=LOG_LEVEL)
@@ -233,11 +234,15 @@ class Exchange:
         """
         asset = None
 
+        # TODO: temp mapping, fix to use a single symbol convention
+        og_symbol = symbol
+        symbol = self.get_symbol(symbol) if not is_exchange_symbol else symbol
         log.debug(
             'searching assets for: {} {}'.format(
                 self.name, symbol
             )
         )
+        # TODO: simplify and loose the loop
         for a in self.assets:
             if asset is not None:
                 break
@@ -259,7 +264,8 @@ class Exchange:
 
             # The symbol provided may use the Catalyst or the exchange
             # convention
-            key = a.exchange_symbol if is_exchange_symbol else a.symbol
+            key = a.exchange_symbol if \
+                is_exchange_symbol else self.get_symbol(a)
             if not asset and key.lower() == symbol.lower():
                 if applies:
                     asset = a
@@ -275,7 +281,7 @@ class Exchange:
             supported_symbols = sorted([a.symbol for a in self.assets])
 
             raise SymbolNotFoundOnExchange(
-                symbol=symbol,
+                symbol=og_symbol,
                 exchange=self.name.title(),
                 supported_symbols=supported_symbols
             )
@@ -433,7 +439,7 @@ class Exchange:
         series = pd.Series(values, index=dates)
 
         periods = get_periods_range(
-            start_dt, end_dt, data_frequency
+            start_dt=start_dt, end_dt=end_dt, freq=data_frequency
         )
         # TODO: ensure that this working as expected, if not use fillna
         series = series.reindex(
@@ -497,39 +503,37 @@ class Exchange:
         freq, candle_size, unit, data_frequency = get_frequency(
             frequency, data_frequency
         )
-        adj_bar_count = candle_size * bar_count
-
-        start_dt = get_start_dt(end_dt, adj_bar_count, data_frequency)
-
         # The get_history method supports multiple asset
         candles = self.get_candles(
             freq=freq,
             assets=assets,
             bar_count=bar_count,
-            start_dt=start_dt if not is_current else None,
             end_dt=end_dt if not is_current else None,
         )
 
         series = dict()
         for asset in candles:
+            first_candle = candles[asset][0]
             asset_series = self.get_series_from_candles(
                 candles=candles[asset],
-                start_dt=start_dt,
+                start_dt=first_candle['last_traded'],
                 end_dt=end_dt,
                 data_frequency=frequency,
                 field=field,
             )
-            if end_dt is not None:
-                delta = get_delta(candle_size, data_frequency)
-                adj_end_dt = end_dt - delta
-                last_traded = asset_series.index[-1]
 
-                if last_traded < adj_end_dt:
-                    raise LastCandleTooEarlyError(
-                        last_traded=last_traded,
-                        end_dt=adj_end_dt,
-                        exchange=self.name,
-                    )
+            # Checking to make sure that the dates match
+            delta = get_delta(candle_size, data_frequency)
+            adj_end_dt = end_dt - delta
+            last_traded = asset_series.index[-1]
+
+            if last_traded < adj_end_dt:
+                raise LastCandleTooEarlyError(
+                    last_traded=last_traded,
+                    end_dt=adj_end_dt,
+                    exchange=self.name,
+                )
+
             series[asset] = asset_series
 
         df = pd.DataFrame(series)
@@ -583,11 +587,11 @@ class Exchange:
             A dataframe containing the requested data.
 
         """
+        # TODO: this function needs some work, we're currently using it just for benchmark data
         freq, candle_size, unit, data_frequency = get_frequency(
             frequency, data_frequency
         )
         adj_bar_count = candle_size * bar_count
-
         try:
             series = self.bundle.get_history_window_series_and_load(
                 assets=assets,
@@ -614,15 +618,14 @@ class Exchange:
                 # The get_history method supports multiple asset
                 # Use the original frequency to let each api optimize
                 # the size of result sets
-                trailing_bar_count = get_periods(
+                trailing_bars = get_periods(
                     trailing_dt, end_dt, freq
                 )
                 candles = self.get_candles(
                     freq=freq,
                     assets=asset,
-                    bar_count=trailing_bar_count,
-                    start_dt=start_dt,
-                    end_dt=end_dt
+                    end_dt=end_dt,
+                    bar_count=trailing_bars if trailing_bars < 500 else 500,
                 )
 
                 last_value = series[asset].iloc(0) if asset in series \
@@ -900,6 +903,22 @@ class Exchange:
         pass
 
     @abstractmethod
+    def process_order(self, order):
+        """
+        Similar to get_order but looks only for executed orders.
+
+        Parameters
+        ----------
+        order: Order
+
+        Returns
+        -------
+        float
+            Avg execution price
+
+        """
+
+    @abstractmethod
     def cancel_order(self, order_param, symbol_or_asset=None):
         """Cancel an open order.
 
@@ -913,8 +932,7 @@ class Exchange:
         pass
 
     @abstractmethod
-    def get_candles(self, freq, assets, bar_count=None,
-                    start_dt=None, end_dt=None):
+    def get_candles(self, freq, assets, bar_count, start_dt=None, end_dt=None):
         """
         Retrieve OHLCV candles for the given assets
 
@@ -979,7 +997,7 @@ class Exchange:
     @abc.abstractmethod
     def get_orderbook(self, asset, order_type, limit):
         """
-        Retrieve the the orderbook for the given trading pair.
+        Retrieve the orderbook for the given trading pair.
 
         Parameters
         ----------
@@ -993,3 +1011,20 @@ class Exchange:
         list[dict[str, float]
         """
         pass
+
+    @abc.abstractmethod
+    def get_trades(self, asset, my_trades, start_dt, limit):
+        """
+        Retrieve a list of trades.
+
+        Parameters
+        ----------
+        my_trades: bool
+            List only my trades.
+        start_dt
+        limit
+
+        Returns
+        -------
+
+        """

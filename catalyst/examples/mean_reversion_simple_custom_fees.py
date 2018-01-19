@@ -161,7 +161,7 @@ def analyze(context=None, perf=None):
 
     import matplotlib.pyplot as plt
     # The base currency of the algo exchange
-    base_currency = context.exchanges.values()[0].base_currency.upper()
+    base_currency = list(context.exchanges.values())[0].base_currency.upper()
 
     # Plot the portfolio value over time.
     ax1 = plt.subplot(611)

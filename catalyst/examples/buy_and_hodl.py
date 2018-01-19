@@ -23,7 +23,7 @@ from catalyst.api import (order_target_value, symbol, record,
 
 
 def initialize(context):
-    context.ASSET_NAME = 'btc_usd'
+    context.ASSET_NAME = 'btc_usdt'
     context.TARGET_HODL_RATIO = 0.8
     context.RESERVE_RATIO = 1.0 - context.TARGET_HODL_RATIO
 
@@ -140,9 +140,9 @@ if __name__ == '__main__':
         initialize=initialize,
         handle_data=handle_data,
         analyze=analyze,
-        exchange_name='bitfinex',
+        exchange_name='poloniex',
         algo_namespace='buy_and_hodl',
-        base_currency='usd',
+        base_currency='usdt',
         start=pd.to_datetime('2015-03-01', utc=True),
         end=pd.to_datetime('2017-10-31', utc=True),
     )

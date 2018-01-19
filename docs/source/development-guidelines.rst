@@ -84,6 +84,25 @@ To build and view the docs locally, run:
    $ {BROWSER} build/html/index.html
 
 
+There is a `documented issue <https://github.com/sphinx-doc/sphinx/issues/3212>`_ 
+with ``sphinx`` and ``docutils`` that causes the error below when trying to build 
+the docs.
+
+.. code-block:: text
+
+   Exception occurred:
+     File "(...)/env-c/lib/python2.7/site-packages/docutils/writers/_html_base.py", line 671, in depart_document
+       assert not self.context, 'len(context) = %s' % len(self.context)
+   AssertionError: len(context) = 3
+
+If you get this error, you need to downgrade your version of ``docutils`` as 
+follows, and build the docs again:
+
+.. code-block:: bash
+
+   $ pip install docutils==0.12
+
+
 Commit messages
 ---------------
 

@@ -100,6 +100,13 @@ class InvalidHistoryFrequencyError(ZiplineError):
     ).strip()
 
 
+class UnsupportedHistoryFrequencyError(ZiplineError):
+    msg = (
+        '{exchange} does not support candle frequency {freq}, please choose '
+        'from: {freqs}.'
+    ).strip()
+
+
 class InvalidHistoryTimeframeError(ZiplineError):
     msg = (
         'CCXT timeframe {timeframe} not supported by the exchange.'

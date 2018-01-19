@@ -1,7 +1,9 @@
 import pandas as pd
 from logbook import Logger
 
-from base import BaseExchangeTestCase
+from catalyst.testing import ZiplineTestCase
+from catalyst.testing.fixtures import WithLogger
+from .base import BaseExchangeTestCase
 from catalyst.exchange.ccxt.ccxt_exchange import CCXT
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.utils.exchange_utils import get_exchange_auth
@@ -13,7 +15,7 @@ log = Logger('test_ccxt')
 class TestCCXT(BaseExchangeTestCase):
     @classmethod
     def setup(self):
-        exchange_name = 'binance'
+        exchange_name = 'bitfinex'
         auth = get_exchange_auth(exchange_name)
         self.exchange = CCXT(
             exchange_name=exchange_name,
@@ -56,10 +58,10 @@ class TestCCXT(BaseExchangeTestCase):
     def test_get_candles(self):
         log.info('retrieving candles')
         candles = self.exchange.get_candles(
-            freq='5T',
+            freq='30T',
             assets=[self.exchange.get_asset('eth_btc')],
             bar_count=200,
-            start_dt=pd.to_datetime('2017-01-01', utc=True)
+            start_dt=pd.to_datetime('2017-09-01', utc=True)
         )
 
         for asset in candles:
@@ -70,10 +72,26 @@ class TestCCXT(BaseExchangeTestCase):
     def test_tickers(self):
         log.info('retrieving tickers')
         assets = [
-            self.exchange.get_asset('eng_eth'),
+            self.exchange.get_asset('iot_usd'),
         ]
         tickers = self.exchange.tickers(assets)
         assert len(tickers) == 1
+        pass
+
+    def test_my_trades(self):
+        asset = self.exchange.get_asset('dsh_btc')
+
+        trades = self.exchange.get_trades(asset)
+        assert trades
+        pass
+
+    def test_get_executed_order(self):
+        log.info('retrieving executed order')
+        asset = self.exchange.get_asset('eng_eth')
+
+        order = self.exchange.get_order('165784', asset)
+        transactions = self.exchange.process_order(order)
+        assert transactions
         pass
 
     def test_get_balances(self):

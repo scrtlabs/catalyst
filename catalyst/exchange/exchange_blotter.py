@@ -1,4 +1,8 @@
+import numpy as np
 import pandas as pd
+from logbook import Logger
+from redo import retry
+
 from catalyst.assets._assets import TradingPair
 from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.exchange_errors import ExchangeRequestError
@@ -8,8 +12,6 @@ from catalyst.finance.order import ORDER_STATUS
 from catalyst.finance.slippage import SlippageModel
 from catalyst.finance.transaction import create_transaction, Transaction
 from catalyst.utils.input_validation import expect_types
-from logbook import Logger
-from redo import retry
 
 log = Logger('exchange_blotter', level=LOG_LEVEL)
 
@@ -93,7 +95,6 @@ class TradingPairFixedSlippage(SlippageModel):
 
     def simulate(self, data, asset, orders_for_asset):
         self._volume_for_bar = 0
-
         price = data.current(asset, 'close')
 
         dt = data.current_dt
@@ -103,18 +104,20 @@ class TradingPairFixedSlippage(SlippageModel):
 
             order.check_triggers(price, dt)
             if not order.triggered:
-                log.debug('order has not reached the trigger at current '
-                          'price {}'.format(price))
+                log.info(
+                    'order has not reached the trigger at current '
+                    'price {}'.format(price)
+                )
                 continue
 
             execution_price, execution_volume = self.process_order(data, order)
+            if execution_price is not None:
+                transaction = create_transaction(
+                    order, dt, execution_price, execution_volume
+                )
 
-            transaction = create_transaction(
-                order, dt, execution_price, execution_volume
-            )
-
-            self._volume_for_bar += abs(transaction.amount)
-            yield order, transaction
+                self._volume_for_bar += abs(transaction.amount)
+                yield order, transaction
 
     def process_order(self, data, order):
         price = data.current(order.asset, 'close')
@@ -205,34 +208,29 @@ class ExchangeBlotter(Blotter):
             for order in self.open_orders[asset]:
                 log.debug('found open order: {}'.format(order.id))
 
-                new_order, executed_price = exchange.get_order(order.id, asset)
-                log.debug(
-                    'got updated order {} {}'.format(
-                        new_order, executed_price
+                transactions = exchange.process_order(order)
+                # This is a temporary measure, we should really update all
+                # trades, not just when the order gets filled. I just think
+                # that this is safer until we have a robust way to track
+                # the trades already processed by the algo. We can't loose
+                # them if the algo shuts down.
+                if transactions and order.open_amount == 0:
+                    avg_price = np.average(
+                        a=[t.price for t in transactions],
+                        weights=[t.amount for t in transactions],
                     )
-                )
-                order.status = new_order.status
-
-                if order.status == ORDER_STATUS.FILLED:
-                    order.commission = new_order.commission
-                    if order.amount != new_order.amount:
-                        log.warn(
-                            'executed order amount {} differs '
-                            'from original'.format(
-                                new_order.amount, order.amount
-                            )
+                    ostatus = 'filled' if order.open_amount == 0 else 'partial'
+                    log.info(
+                        '{} order {} / {}: {}, avg price: {}'.format(
+                            ostatus,
+                            order.id,
+                            asset.symbol,
+                            order.filled,
+                            avg_price,
                         )
-                        order.amount = new_order.amount
-
-                    transaction = Transaction(
-                        asset=order.asset,
-                        amount=order.amount,
-                        dt=pd.Timestamp.utcnow(),
-                        price=executed_price,
-                        order_id=order.id,
-                        commission=order.commission
                     )
-                    yield order, transaction
+                    for transaction in transactions:
+                        yield order, transaction
 
                 elif order.status == ORDER_STATUS.CANCELLED:
                     yield order, None
@@ -253,8 +251,6 @@ class ExchangeBlotter(Blotter):
 
         for order, txn in self.check_open_orders():
             order.dt = txn.dt
-
-            # TODO: is the commission already on the order object?
             transactions.append(txn)
 
             if not order.open:

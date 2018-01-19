@@ -27,7 +27,7 @@ import pandas as pd
 
 
 def initialize(context):
-    context.asset = symbol('btc_usd')
+    context.asset = symbol('btc_usdt')
 
 
 def handle_data(context, data):
@@ -41,9 +41,9 @@ if __name__ == '__main__':
         data_frequency='daily',
         initialize=initialize,
         handle_data=handle_data,
-        exchange_name='bitfinex',
+        exchange_name='poloniex',
         algo_namespace='buy_and_hodl',
-        base_currency='usd',
+        base_currency='usdt',
         start=pd.to_datetime('2015-03-01', utc=True),
         end=pd.to_datetime('2017-10-31', utc=True),
     )

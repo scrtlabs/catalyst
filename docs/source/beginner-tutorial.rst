@@ -483,7 +483,7 @@ bitcoin price.
 
 Now we will run the simulation again, but this time we extend our original 
 algorithm with the addition of the ``analyze()`` function. Somewhat analogously 
-as how ``initialize()`` gets called once before the start of the algorith, 
+as how ``initialize()`` gets called once before the start of the algorithm, 
 ``analyze()`` gets called once at the end of the algorithm, and receives two 
 variables: ``context``, which we discussed at the very beginning, and ``perf``, 
 which is the pandas dataframe containing the performance data for our algorithm 
@@ -589,7 +589,7 @@ the ``examples`` directory:
     from catalyst import run_algorithm
     from catalyst.api import (order, record, symbol, order_target_percent, 
             get_open_orders)
-    from catalyst.exchange.stats_utils import extract_transactions
+    from catalyst.exchange.utils.stats_utils import extract_transactions
 
     NAMESPACE = 'dual_moving_average'
     log = Logger(NAMESPACE)
@@ -660,7 +660,8 @@ the ``examples`` directory:
     def analyze(context, perf):
 
         # Get the base_currency that was passed as a parameter to the simulation
-        base_currency = context.exchanges.values()[0].base_currency.upper()
+        exchange = list(context.exchanges.values())[0]
+        base_currency = exchange.base_currency.upper()
 
         # First chart: Plot portfolio value using base_currency
         ax1 = plt.subplot(411)

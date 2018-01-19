@@ -303,6 +303,7 @@ class ExchangeTradingAlgorithmBacktest(ExchangeTradingAlgorithmBase):
         super(ExchangeTradingAlgorithmBacktest, self).__init__(*args, **kwargs)
 
         self.frame_stats = list()
+        self.state = {}
         log.info('initialized trading algorithm in backtest mode')
 
     def is_last_frame_of_day(self, data):
@@ -350,6 +351,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         self.live_graph = kwargs.pop('live_graph', None)
         self.stats_output = kwargs.pop('stats_output', None)
         self._analyze_live = kwargs.pop('analyze_live', None)
+        self.end = kwargs.pop('end', None)
 
         self._clock = None
         self.frame_stats = list()
@@ -470,6 +472,13 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         This allows us to stop/start algos without loosing their state.
 
         """
+        self.state = get_algo_object(
+            algo_name=self.algo_namespace,
+            key='context.state',
+        )
+        if self.state is None:
+            self.state = {}
+
         if self.perf_tracker is None:
             # Note from the Zipline dev:
             # HACK: When running with the `run` method, we set perf_tracker to
@@ -702,6 +711,10 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         if not self.is_running:
             return
 
+        if self.end is not None and self.end < data.current_dt:
+            log.info('Algorithm has reached specified end time. Finishing...')
+            self.interrupt_algorithm()
+
         # Resetting the frame stats every day to minimize memory footprint
         today = data.current_dt.floor('1D')
         if self.current_day is not None and today > self.current_day:
@@ -765,6 +778,11 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             obj=self.perf_tracker.todays_performance,
             rel_path='daily_performance'
         )
+        log.debug('saving context.state object')
+        save_algo_object(
+            algo_name=self.algo_namespace,
+            key='context.state',
+            obj=self.state)
 
     def _process_stats(self, data):
         today = data.current_dt.floor('1D')

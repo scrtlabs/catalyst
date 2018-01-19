@@ -62,14 +62,14 @@ def output_df(df, assets, name=None):
 
     """
     if isinstance(assets, TradingPair):
-        exchange_folder = assets.exchange
-        asset_folder = assets.symbol
+        asset_folder = '{}_{}'.format(assets.exchange, assets.symbol)
     else:
-        exchange_folder = ','.join([asset.exchange for asset in assets])
-        asset_folder = ','.join([asset.symbol for asset in assets])
+        asset_folder = ','.join(
+            ['{}_{}'.format(a.exchange, a.symbol) for a in assets]
+        )
 
     folder = os.path.join(
-        tempfile.gettempdir(), 'catalyst', exchange_folder, asset_folder
+        tempfile.gettempdir(), 'catalyst', asset_folder
     )
     ensure_directory(folder)
 
@@ -79,4 +79,4 @@ def output_df(df, assets, name=None):
     path = os.path.join(folder, '{}.csv'.format(name))
     df.to_csv(path)
 
-    return path
+    return path, folder

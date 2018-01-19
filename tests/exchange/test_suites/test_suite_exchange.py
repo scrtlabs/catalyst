@@ -15,6 +15,7 @@ from catalyst.exchange.utils.test_utils import select_random_exchanges, \
     handle_exchange_error, select_random_assets
 from catalyst.testing import ZiplineTestCase
 from catalyst.testing.fixtures import WithLogger
+from exchange.utils.factory import get_exchanges
 
 log = Logger('TestSuiteExchange')
 
@@ -83,12 +84,13 @@ class TestSuiteExchange(WithLogger, ZiplineTestCase):
 
     def test_tickers(self):
         exchange_population = 3
-        asset_population = 3
+        asset_population = 15
 
-        exchanges = select_random_exchanges(
-            exchange_population,
-            features=['fetchTickers'],
-        )  # Type: list[Exchange]
+        # exchanges = select_random_exchanges(
+        #     exchange_population,
+        #     features=['fetchTickers'],
+        # )  # Type: list[Exchange]
+        exchanges = list(get_exchanges(['bitfinex']).values())
         for exchange in exchanges:
             exchange.init()
 
@@ -184,13 +186,13 @@ class TestSuiteExchange(WithLogger, ZiplineTestCase):
                 )
                 sleep(1)
 
-                open_order, _ = exchange.get_order(order.id, asset)
+                open_order = exchange.get_order(order.id, asset)
                 self.assertEqual(0, open_order.status)
 
                 exchange.cancel_order(open_order, asset)
                 sleep(1)
 
-                canceled_order, _ = exchange.get_order(open_order.id, asset)
+                canceled_order = exchange.get_order(open_order.id, asset)
                 warnings = [record for record in log_catcher.records if
                             record.level == WARNING]
 

@@ -41,8 +41,8 @@ from catalyst.exchange.utils.exchange_utils import get_exchange_symbols
 
 def initialize(context):
     context.i = -1  # minute counter
-    context.exchange = context.exchanges.values()[0].name.lower()
-    context.base_currency = context.exchanges.values()[0].base_currency.lower()
+    context.exchange = list(context.exchanges.values())[0].name.lower()
+    context.base_currency = list(context.exchanges.values())[0].base_currency.lower()
 
 
 def handle_data(context, data):
@@ -65,7 +65,7 @@ def handle_data(context, data):
     minutes = 30
 
     # get lookback_days of history data: that is 'lookback' number of bins
-    lookback = one_day_in_minutes / minutes * lookback_days
+    lookback = int(one_day_in_minutes / minutes * lookback_days)
     if not context.i % minutes and context.universe:
         # we iterate for every pair in the current universe
         for coin in context.coins:

@@ -39,7 +39,7 @@ def initialize(context):
 
     context.RSI_OVERSOLD = 55
     context.RSI_OVERBOUGHT = 60
-    context.CANDLE_SIZE = '5T'
+    context.CANDLE_SIZE = '15T'
 
     context.start_time = time.time()
 
@@ -114,7 +114,7 @@ def handle_data(context, data):
     # TODO: retest with open orders
     # Since we are using limit orders, some orders may not execute immediately
     # we wait until all orders are executed before considering more trades.
-    orders = get_open_orders(context.market)
+    orders = context.blotter.open_orders
     if len(orders) > 0:
         log.info('exiting because orders are open: {}'.format(orders))
         return
@@ -161,7 +161,7 @@ def analyze(context=None, perf=None):
 
     import matplotlib.pyplot as plt
     # The base currency of the algo exchange
-    base_currency = context.exchanges.values()[0].base_currency.upper()
+    base_currency = list(context.exchanges.values())[0].base_currency.upper()
 
     # Plot the portfolio value over time.
     ax1 = plt.subplot(611)
@@ -244,11 +244,11 @@ def analyze(context=None, perf=None):
 
 if __name__ == '__main__':
     # The execution mode: backtest or live
-    live = False
+    live = True
 
     if live:
         run_algorithm(
-            capital_base=0.1,
+            capital_base=0.01,
             initialize=initialize,
             handle_data=handle_data,
             analyze=analyze,
@@ -259,6 +259,7 @@ if __name__ == '__main__':
             live_graph=False,
             simulate_orders=False,
             stats_output=None,
+            # auth_aliases=dict(poloniex='auth2')
         )
 
     else:

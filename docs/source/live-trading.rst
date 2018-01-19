@@ -4,11 +4,63 @@ This document explains how to get started with live trading.
 
 Supported Exchanges
 ^^^^^^^^^^^^^^^^^^^
-Catalyst can trade against these exchanges:
 
-- Bitfinex, id= ``bitfinex``
-- Bittrex, id= ``bittrex``
-- Poloniex, id= ``poloniex``
+Since version 0.4, Catalyst integrated with `CCXT <https://github.com/ccxt/ccxt>`_,
+a cryptocurrency trading library with support for more than 90 exchanges. The 
+range of CCXT and Catalyst support for each of those exchanges varies greatly. 
+The most supported exchanges are as follows:
+
+The exchanges available for backtesting are fully supported in live mode:
+
+- Bitfinex, id = ``bitfinex``
+- Bittrex, id = ``bittrex``
+- Poloniex, id = ``poloniex``
+
+Additionally, we have successfully tested the following exchanges:
+
+- Binance, id = ``binance``
+- Bitmex, id = ``bitmex``
+- GDAX, id = ``gdax``
+
+As Catalyst is currently in Alpha and in under active development, you are 
+encouraged to throughly test any exchange in *paper trading* mode before trading
+*live* with it.
+
+Paper Trading vs Live Trading modes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Catalyst currently supports three different modes in which you can execute your
+trading algorithm. The first is backtesting, which is covered extensively in the 
+tutorial, and uses historical data to run your algorithm. There is no 
+interaction with the exchange in backtesting mode, and this is the first mode 
+that you should test any new algorithm.
+
+Once you are confident with the simulations that you have obtained with your
+algorithm in backtesting, you may switch to live trading, where you have two
+different modes:
+* *Paper Trading*: The simulated algorithm runs in real time, and fetches 
+pricing data in real time from the exchange, but the orders never reach the 
+exchange, and are instead kept within Catalyst and simulated. No real currency
+is bought or sold. Think of it as a `backtesting happening in real time`.
+* *Live Trading*: This is the proper live trading mode in which an algorithm
+runs in real time, fetching pricing data from live exchanges and placing orders 
+against the exchange. Real currency is transacted on the exchange driven by the 
+algorithm.
+
+These three modes are controlled by the following variables:
+
++---------------+-------------------------+
+|    Mode       |       Parameters        |
++               +-------+-----------------+
+|               | live  | simulate_orders |
++---------------+-------+-----------------+
+| backtesting   | False | True (default)  |
++---------------+-------+-----------------+
+| paper trading | True  | True            |
++---------------+-------+-----------------+
+| live trading  | True  | False           |
++---------------+-------+-----------------+
+
 
 Authentication
 ^^^^^^^^^^^^^^
@@ -75,7 +127,8 @@ Note that the trading pairs are always referenced in the same manner.
 However, not all trading pairs are available on all exchanges. An
 error will occur if the specified trading pair is not trading
 on the exchange. To check which currency pairs are available on each 
-of the supported exchanges, see `Catalyst Market Coverage <https://www.enigma.co/catalyst/status`_.
+of the supported exchanges, see 
+`Catalyst Market Coverage <https://www.enigma.co/catalyst/status>`_.
 
 Trading an Algorithm
 ^^^^^^^^^^^^^^^^^^^^
@@ -105,20 +158,22 @@ What differs are the arguments provided to the catalyst client or
 
 Here is the breakdown of the new arguments:
 
-- ``live``: Boolean flag which enables live trading.
+- ``live``: Boolean flag which enables live trading. It defaults to ``False``.
 - ``capital_base``: The amount of base_currency assigned to the strategy.
   It has to be lower or equal to the amount of base currency available for
   trading on the exchange. For illustration, order_target_percent(asset, 1)
   will order the capital_base amount specified here of the specified asset.
-- ``exchange_name``: The name of the targeted exchange
-  (supported values: *bitfinex*, *bittrex*).
+- ``exchange_name``: The name of the targeted exchange. See the 
+  `CCXT Supported Exchanges <https://github.com/ccxt/ccxt/wiki/Exchange-Markets>`_ 
+  for the full list.
 - ``algo_namespace``: A arbitrary label assigned to your algorithm for
   data storage purposes.
 - ``base_currency``: The base currency used to calculate the
   statistics of your algorithm. Currently, the base currency of all
   trading pairs of your algorithm must match this value.
 - ``simulate_orders``: Enables the paper trading mode, in which orders are
-  simulated in Catalyst instead of processed on the exchange.
+  simulated in Catalyst instead of processed on the exchange. It defaults to 
+  ``True``.
 
 Here is a complete algorithm for reference:
 `Buy Low and Sell High <https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/buy_low_sell_high_live.py>`_
