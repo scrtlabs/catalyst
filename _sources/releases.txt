@@ -2,6 +2,18 @@
 Release Notes
 =============
 
+Version 0.4.7
+^^^^^^^^^^^^^
+**Release Date**: 2018-01-19
+
+Bug Fixes
+~~~~~~~~~
+- Fixing issue :issue:`137` impacting the CLI
+
+Build
+~~~~~
+- Implemented authentication aliases (:issue:`60`)
+
 Version 0.4.6
 ^^^^^^^^^^^^^
 **Release Date**: 2018-01-18
