@@ -61,6 +61,7 @@ class CCXT(Exchange):
                 'apiKey': key,
                 'secret': secret,
             })
+            self.api.enableRateLimit = True
 
         except Exception:
             raise ExchangeNotFoundError(exchange_name=exchange_name)
@@ -1001,6 +1002,7 @@ class CCXT(Exchange):
         for asset in assets:
             symbol = self.get_symbol(asset)
 
+            # Test the CCXT throttling further to see if we need this
             self.ask_request()
 
             # TODO: use fetch_tickers() for efficiency

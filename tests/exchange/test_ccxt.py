@@ -72,14 +72,14 @@ class TestCCXT(BaseExchangeTestCase):
     def test_tickers(self):
         log.info('retrieving tickers')
         assets = [
-            self.exchange.get_asset('eng_eth'),
+            self.exchange.get_asset('iot_usd'),
         ]
         tickers = self.exchange.tickers(assets)
         assert len(tickers) == 1
         pass
 
     def test_my_trades(self):
-        asset = self.exchange.get_asset('eng_eth')
+        asset = self.exchange.get_asset('dsh_btc')
 
         trades = self.exchange.get_trades(asset)
         assert trades

@@ -234,11 +234,15 @@ class Exchange:
         """
         asset = None
 
+        # TODO: temp mapping, fix to use a single symbol convention
+        og_symbol = symbol
+        symbol = self.get_symbol(symbol) if not is_exchange_symbol else symbol
         log.debug(
             'searching assets for: {} {}'.format(
                 self.name, symbol
             )
         )
+        # TODO: simplify and loose the loop
         for a in self.assets:
             if asset is not None:
                 break
@@ -260,7 +264,8 @@ class Exchange:
 
             # The symbol provided may use the Catalyst or the exchange
             # convention
-            key = a.exchange_symbol if is_exchange_symbol else a.symbol
+            key = a.exchange_symbol if \
+                is_exchange_symbol else self.get_symbol(a)
             if not asset and key.lower() == symbol.lower():
                 if applies:
                     asset = a
@@ -276,7 +281,7 @@ class Exchange:
             supported_symbols = sorted([a.symbol for a in self.assets])
 
             raise SymbolNotFoundOnExchange(
-                symbol=symbol,
+                symbol=og_symbol,
                 exchange=self.name.title(),
                 supported_symbols=supported_symbols
             )
