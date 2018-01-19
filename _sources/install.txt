@@ -193,8 +193,6 @@ summarized version:
    $ virtualenv catalyst-venv
    $ source ./catalyst-venv/bin/activate
 
-
-
 Once you've installed the necessary additional dependencies for your system 
 (:ref:`Linux`, :ref:`MacOS` or :ref:`Windows`) **and have activated your virtualenv**, you should be able to simply run
 
@@ -220,13 +218,13 @@ Troubleshooting ``pip`` Install
 
    .. code-block:: bash
 
-      pip install --upgrade pip
+      $ pip install --upgrade pip
 
    On Windows, the recommended command is:
 
    .. code-block:: bash
 
-      python -m pip install --upgrade pip
+      $ python -m pip install --upgrade pip
 
 ----
 
@@ -252,7 +250,7 @@ Troubleshooting ``pip`` Install
 
    .. code-block:: bash
 
-      pip install --pre enigma-catalyst
+      $ pip install --pre enigma-catalyst
 
 ----
 
@@ -264,7 +262,7 @@ Troubleshooting ``pip`` Install
 
    .. code-block:: bash
 
-      pip install --upgrade pip setuptools
+      $ pip install --upgrade pip setuptools
 
 ----
 
@@ -279,7 +277,7 @@ Troubleshooting ``pip`` Install
 
    .. code-block:: bash
 
-      pip install -r requirements.txt
+      $ pip install -r requirements.txt
 
 ----
 
@@ -295,7 +293,7 @@ Troubleshooting ``pip`` Install
 
    .. code-block:: bash
 
-      sudo apt-get install python-dev
+      $ sudo apt-get install python-dev
 
 .. _pipenv:
 
@@ -377,14 +375,14 @@ outdated. Thus, you first need to run:
 
 .. code-block:: bash
 
-   pip install --upgrade pip setuptools
+   $ pip install --upgrade pip setuptools
 
 The default installation is also missing the C and C++ compilers, which you 
 install by:
 
 .. code-block:: bash
 
-   sudo yum install gcc gcc-c++
+   $ sudo yum install gcc gcc-c++
 
 Then you should follow the regular installation instructions outlined at the 
 beginning of this page.
@@ -431,7 +429,7 @@ following command:
 
 .. code-block:: bash
 
-   echo "backend: TkAgg" > ~/.matplotlib/matplotlibrc
+   $ echo "backend: TkAgg" > ~/.matplotlib/matplotlibrc
 
 in order to override the default ``MacOS`` backend for your system, which 
 may not be accessible from inside the virtual or conda environment. This will 
@@ -489,6 +487,33 @@ mentioned above are as follows:
   - Right click on it and choose ``Run as administrator``
   - ``cd`` into the folder where you downloaded ``VCForPython27.msi``
   - Run ``msiexec /i VCForPython27.msi``
+
+Updating Catalyst
+-----------------
+
+Catalyst is currently in alpha and in under very active development. We release
+new minor versions every few days in response to the thorough battle testing 
+that our user community puts Catalyst in. As a result, you should expect to 
+update Catalyst frequently. Once installed, Catalyst can easily be updated as a 
+``pip`` package regardless of the environemnt used for installation. Make sure 
+you activate your environment first as you did in your first install, and then 
+execute:
+
+.. code-block:: bash
+
+   $ pip uninstall enigma-catalyst
+   $ pip install enigma-catalyst
+
+Alternatively, you could update Catalyst issuing the following command:
+
+.. code-block:: bash
+
+   $ pip install -U enigma-catalyst
+
+but this command will also upgrade all the Catalyst dependencies to the latest 
+versions available, and may have unexpected side effects if a newer version of a 
+dependency inadvertently breaks some functionality that Catalyst relies on. 
+Thus, the first method is the recommended one.
 
 Getting Help
 ------------
