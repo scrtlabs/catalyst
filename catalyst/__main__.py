@@ -285,6 +285,7 @@ def run(ctx,
         analyze_live=None,
         live_graph=False,
         simulate_orders=True,
+        auth_aliases=None,
         stats_output=None,
     )
 
@@ -413,6 +414,15 @@ def catalyst_magic(line, cell=None):
     help='Simulating orders enable the paper trading mode. No orders will be '
          'sent to the exchange unless set to false.',
 )
+@click.option(
+    '--auth-aliases',
+    default=None,
+    help='Authentication file aliases for the specified exchanges. By default,'
+         'each exchange uses the "auth.json" file in the exchange folder. '
+         'Specifying an "auth2" alias would use "auth2.json". It should be '
+         'specified like this: "[exchange_name],[alias],..." For example, '
+         '"binance,auth2" or "binance,auth2,bittrex,auth2".',
+)
 @click.pass_context
 def live(ctx,
          algofile,
@@ -427,6 +437,7 @@ def live(ctx,
          base_currency,
          end,
          live_graph,
+         auth_aliases,
          simulate_orders):
     """Trade live with the given algorithm.
     """
@@ -480,6 +491,7 @@ def live(ctx,
         live_graph=live_graph,
         analyze_live=None,
         simulate_orders=simulate_orders,
+        auth_aliases=auth_aliases,
         stats_output=None,
     )
 
