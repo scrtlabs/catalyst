@@ -582,6 +582,7 @@ class Exchange:
             A dataframe containing the requested data.
 
         """
+        # TODO: this function needs some work, we're currently using it just for benchmark data
         freq, candle_size, unit, data_frequency = get_frequency(
             frequency, data_frequency
         )
@@ -612,13 +613,14 @@ class Exchange:
                 # The get_history method supports multiple asset
                 # Use the original frequency to let each api optimize
                 # the size of result sets
-                trailing_bar_count = get_periods(
+                trailing_bars = get_periods(
                     trailing_dt, end_dt, freq
                 )
                 candles = self.get_candles(
                     freq=freq,
                     assets=asset,
-                    bar_count=trailing_bar_count,
+                    end_dt=end_dt,
+                    bar_count=trailing_bars if trailing_bars < 500 else 500,
                 )
 
                 last_value = series[asset].iloc(0) if asset in series \
