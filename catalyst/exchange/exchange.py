@@ -619,7 +619,6 @@ class Exchange:
                     freq=freq,
                     assets=asset,
                     bar_count=trailing_bar_count,
-                    end_dt=end_dt
                 )
 
                 last_value = series[asset].iloc(0) if asset in series \
