@@ -1030,7 +1030,7 @@ class CCXT(Exchange):
                 ticker['volume'] = ticker['baseVolume']
 
             elif 'info' in ticker and 'bidQty' in ticker['info'] \
-                    and 'askQty' in ticker['info']:
+                and 'askQty' in ticker['info']:
                 ticker['volume'] = float(ticker['info']['bidQty']) + \
                                    float(ticker['info']['askQty'])
 
