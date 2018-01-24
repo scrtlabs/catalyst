@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+import urllib
 
 import bcolz
 import logbook
@@ -15,31 +16,44 @@ from catalyst.marketplace.utils.path_utils import get_data_source, \
     get_bundle_folder, get_data_source_folder
 
 # TODO: host our own node on aws?
-REMOTE_NODE = 'http://localhost:7545'
-# TODO: read from GitHub
-CONTRACT_PATH = os.path.join(
-    ROOT_DIR, '..', 'marketplace', 'build', 'contracts', 'Marketplace.json'
-)
-CONTRACT_ADDRESS = Web3.toChecksumAddress(
-    '0xe2b6cf3863240892d59664d209a28289a73ef644'
-)
+# TODO: switch to mainnet
+REMOTE_NODE = 'https://ropsten.infura.io/' 
+
+# TODO: move to MASTER branch on github
+CONTRACT_PATH = 'https://raw.githubusercontent.com/enigmampc/catalyst/' \
+                'data-marketplace/catalyst/marketplace/contract_address.txt'
+
+CONTRACT_ABI = 'https://raw.githubusercontent.com/enigmampc/catalyst/' \
+               'data-marketplace/catalyst/marketplace/contract_abi.json'
 
 log = logbook.Logger('Marketplace', level=LOG_LEVEL)
 
 
 class Marketplace:
     def __init__(self):
-        with open(CONTRACT_PATH) as handle:
-            json_interface = json.load(handle)
-            w3 = Web3(HTTPProvider(REMOTE_NODE))
 
-            self.contract = w3.eth.contract(
-                CONTRACT_ADDRESS,
-                abi=json_interface['abi'],
-            )  # Type: Contract
-            self.default_account = w3.eth.accounts[1]
+        contract_url = urllib.urlopen(CONTRACT_PATH) 
+        CONTRACT_ADDRESS = Web3.toChecksumAddress(
+                                    contract_url.readline().strip())
 
-            pass
+        abi_url = urllib.urlopen(CONTRACT_ABI)
+        abi = json.load(abi_url)
+
+        w3 = Web3(HTTPProvider(REMOTE_NODE))
+
+        self.contract = w3.eth.contract(
+            CONTRACT_ADDRESS,
+            abi=abi,
+        )  # Type: Contract
+
+        # TODO: Set default address correctly from user-provided config
+        DEFAULT_ETH_ADDRESS = os.environ.get('DEFAULT_ETH_ADDRESS', None)
+        if DEFAULT_ETH_ADDRESS is None:
+            raise ValueError('DEFAULT_ETH_ADDRESS is not set. Export as an '
+                             'environment variable. Quitting...')
+
+        self.default_account = DEFAULT_ETH_ADDRESS
+        pass
 
     def get_data_sources_map(self):
         return [
@@ -93,7 +107,7 @@ class Marketplace:
                 dict(
                     id=index,
                     subscribed=index in subscribed,
-                    **data_source,
+                    **data_source
                 )
             )
 
