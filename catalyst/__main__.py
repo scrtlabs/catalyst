@@ -3,6 +3,7 @@ import os
 from functools import wraps
 
 import click
+import sys
 import logbook
 import pandas as pd
 from six import text_type
@@ -257,7 +258,7 @@ def run(ctx,
     if capital_base is None:
         ctx.fail("must specify a capital base with '--capital-base'")
 
-    click.echo('Running in backtesting mode.')
+    click.echo('Running in backtesting mode.', sys.stdout)
 
     perf = _run(
         initialize=None,
@@ -290,7 +291,7 @@ def run(ctx,
     )
 
     if output == '-':
-        click.echo(str(perf))
+        click.echo(str(perf), sys.stdout)
     elif output != os.devnull:  # make the catalyst magic not write any data
         perf.to_pickle(output)
 
@@ -460,10 +461,10 @@ def live(ctx,
         ctx.fail("must specify a capital base with '--capital-base'")
 
     if simulate_orders:
-        click.echo('Running in paper trading mode.')
+        click.echo('Running in paper trading mode.', sys.stdout)
 
     else:
-        click.echo('Running in live trading mode.')
+        click.echo('Running in live trading mode.', sys.stdout)
 
     perf = _run(
         initialize=None,
@@ -496,7 +497,7 @@ def live(ctx,
     )
 
     if output == '-':
-        click.echo(str(perf))
+        click.echo(str(perf), sys.stdout)
     elif output != os.devnull:  # make the catalyst magic not write any data
         perf.to_pickle(output)
 
@@ -578,7 +579,7 @@ def ingest_exchange(ctx, exchange_name, data_frequency, start, end,
 
     exchange_bundle = ExchangeBundle(exchange_name)
 
-    click.echo('Ingesting exchange bundle {}...'.format(exchange_name))
+    click.echo('Ingesting exchange bundle {}...'.format(exchange_name), sys.stdout)
     exchange_bundle.ingest(
         data_frequency=data_frequency,
         include_symbols=include_symbols,
@@ -601,10 +602,11 @@ def ingest_exchange(ctx, exchange_name, data_frequency, start, end,
 @click.pass_context
 def clean_algo(ctx, algo_namespace):
     click.echo(
-        'Cleaning algo state: {}'.format(algo_namespace)
+        'Cleaning algo state: {}'.format(algo_namespace),
+        sys.stdout
     )
     delete_algo_folder(algo_namespace)
-    click.echo('Done')
+    click.echo('Done', sys.stdout)
 
 
 @main.command(name='clean-exchange')
@@ -631,11 +633,11 @@ def clean_exchange(ctx, exchange_name, data_frequency):
 
     exchange_bundle = ExchangeBundle(exchange_name)
 
-    click.echo('Cleaning exchange bundle {}...'.format(exchange_name))
+    click.echo('Cleaning exchange bundle {}...'.format(exchange_name), sys.stdout)
     exchange_bundle.clean(
         data_frequency=data_frequency,
     )
-    click.echo('Done')
+    click.echo('Done', sys.stdout)
 
 
 @main.command()
@@ -756,7 +758,7 @@ def bundles():
         # because there were no entries, print a single message indicating that
         # no ingestions have yet been made.
         for timestamp in ingestions or ["<no ingestions>"]:
-            click.echo("%s %s" % (bundle, timestamp))
+            click.echo("%s %s" % (bundle, timestamp), sys.stdout)
 
 
 if __name__ == '__main__':
