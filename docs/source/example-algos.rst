@@ -805,7 +805,7 @@ Credits: This code was originally submitted by `Abner Ayala-Acevedo
   import pandas as pd
 
   from catalyst import run_algorithm
-  from catalyst.exchange.exchange_utils import get_exchange_symbols
+  from catalyst.exchange.utils.exchange_utils import get_exchange_symbols
   from catalyst.api import (symbols, )
 
 
