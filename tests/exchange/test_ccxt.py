@@ -15,23 +15,23 @@ log = Logger('test_ccxt')
 class TestCCXT(BaseExchangeTestCase):
     @classmethod
     def setup(self):
-        exchange_name = 'bitfinex'
+        exchange_name = 'binance'
         auth = get_exchange_auth(exchange_name)
         self.exchange = CCXT(
             exchange_name=exchange_name,
             key=auth['key'],
             secret=auth['secret'],
-            base_currency='bnb',
+            base_currency='usdt',
         )
         self.exchange.init()
 
     def test_order(self):
         log.info('creating order')
-        asset = self.exchange.get_asset('neo_bnb')
+        asset = self.exchange.get_asset('eth_usdt')
         order_id = self.exchange.order(
             asset=asset,
-            style=ExchangeLimitOrder(limit_price=10),
-            amount=1,
+            style=ExchangeLimitOrder(limit_price=1000),
+            amount=1.01,
         )
         log.info('order created {}'.format(order_id))
         assert order_id is not None

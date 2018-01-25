@@ -760,24 +760,23 @@ class CCXT(Exchange):
 
         side = 'buy' if amount > 0 else 'sell'
         if hasattr(self.api, 'amount_to_lots'):
-            adj_amount = self.api.amount_to_lots(
-                symbol=symbol,
-                amount=abs(amount),
-            )
-            if adj_amount != abs(amount):
-                log.info(
-                    'adjusted order amount {} to {} based on lot size'.format(
-                        abs(amount), adj_amount,
+            # TODO: is this right?
+            if self.api.markets is None:
+                self.api.load_markets()
+
+            # https://github.com/ccxt/ccxt/issues/1483
+            adj_amount = abs(amount)
+            market = self.api.markets[symbol]
+            if 'lots' in market and market['lots'] > amount:
+                raise CreateOrderError(
+                    exchange=self.name,
+                    e='order amount lower than the smallest lot: {}'.format(
+                        amount
                     )
                 )
+
         else:
             adj_amount = abs(amount)
-
-        if adj_amount == 0:
-            raise CreateOrderError(
-                exchange=self.name,
-                e='order amount lower than the smallest lot: {}'.format(amount)
-            )
 
         try:
             result = self.api.create_order(
