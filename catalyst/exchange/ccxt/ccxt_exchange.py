@@ -984,7 +984,7 @@ class CCXT(Exchange):
             )
             raise ExchangeRequestError(error=e)
 
-    def tickers(self, assets):
+    def tickers(self, assets, on_ticker_error='raise'):
         """
         Retrieve current tick data for the given assets
 
@@ -1016,7 +1016,11 @@ class CCXT(Exchange):
                         self.name, asset.symbol, e
                     )
                 )
-                continue
+                if on_ticker_error == 'warn':
+                    continue
+
+                else:
+                    raise ExchangeRequestError(error=e)
 
             ticker['last_traded'] = from_ms_timestamp(ticker['timestamp'])
 

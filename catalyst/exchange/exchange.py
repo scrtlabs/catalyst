@@ -972,13 +972,15 @@ class Exchange:
         pass
 
     @abc.abstractmethod
-    def tickers(self, assets):
+    def tickers(self, assets, on_ticker_error='raise'):
         """
         Retrieve current tick data for the given assets
 
         Parameters
         ----------
         assets: list[TradingPair]
+        on_ticker_error: str [raise|warn]
+            How to handle an error when retrieving a single ticker.
 
         Returns
         -------
