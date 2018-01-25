@@ -574,75 +574,6 @@ def ingest_exchange(ctx, exchange_name, data_frequency, start, end,
     )
 
 
-@main.command(name='ls-data')
-@click.pass_context
-def ls_data(ctx):
-    click.echo(
-        'The alternative data sources:'
-    )
-    marketplace = Marketplace()
-    marketplace.list()
-    click.echo('Done')
-
-
-@main.command(name='register-data')
-@click.argument('data_source_name')
-@click.pass_context
-def register_data(ctx, data_source_name):
-    click.echo(
-        'Registering to data source: {}'.format(data_source_name)
-    )
-    marketplace = Marketplace()
-    marketplace.register(data_source_name)
-    click.echo('Done')
-
-
-@main.command(name='ingest-data')
-@click.argument('data_source_name')
-@click.option(
-    '-f',
-    '--data-frequency',
-    type=click.Choice({'daily', 'minute', 'daily,minute', 'minute,daily'}),
-    default='daily',
-    show_default=True,
-    help='The data frequency of the desired OHLCV bars.',
-)
-@click.option(
-    '-s',
-    '--start',
-    default=None,
-    type=Date(tz='utc', as_timestamp=True),
-    help='The start date of the data range. (default: one year from end date)',
-)
-@click.option(
-    '-e',
-    '--end',
-    default=None,
-    type=Date(tz='utc', as_timestamp=True),
-    help='The end date of the data range. (default: today)',
-)
-@click.pass_context
-def ingest_data(ctx, data_source_name, data_frequency, start, end):
-    click.echo(
-        'Ingesting data: {}'.format(data_source_name)
-    )
-    marketplace = Marketplace()
-    marketplace.ingest(data_source_name, data_frequency, start, end)
-    click.echo('Done')
-
-
-@main.command(name='clean-data')
-@click.argument('data_source_name')
-@click.pass_context
-def clean_data(ctx, data_source_name):
-    click.echo(
-        'Cleaning data source: {}'.format(data_source_name)
-    )
-    marketplace = Marketplace()
-    marketplace.clean(data_source_name)
-    click.echo('Done')
-
-
 @main.command(name='clean-algo')
 @click.option(
     '-n',
@@ -808,6 +739,134 @@ def bundles():
         # no ingestions have yet been made.
         for timestamp in ingestions or ["<no ingestions>"]:
             click.echo("%s %s" % (bundle, timestamp))
+
+
+@main.group()
+@click.pass_context
+def marketplace(ctx):
+    pass
+
+
+@marketplace.command()
+@click.pass_context
+def ls(ctx):
+    click.echo('Listing of available data sources on the marketplace:')
+    marketplace = Marketplace()
+    marketplace.list()
+    click.echo('Functionality not yet implemented.')
+
+
+@marketplace.command()
+@click.option(
+    '--dataset',
+    default=None,
+    help='The name of the dataset to ingest from the Data Marketplace.',
+)
+@click.pass_context
+def subscribe(ctx, dataset):
+    if dataset is None:
+        ctx.fail("must specify a dataset to subscribe to with '--dataset'\n"
+                 "List available dataset on the marketplace with "
+                 "'catalyst marketplace ls'")
+    marketplace = Marketplace()
+    marketplace.subscribe(dataset)
+
+
+@marketplace.command()
+@click.option(
+    '--dataset',
+    default=None,
+    help='The name of the dataset to ingest from the Data Marketplace.',
+)
+@click.option(
+    '-f',
+    '--data-frequency',
+    type=click.Choice({'daily', 'minute', 'daily,minute', 'minute,daily'}),
+    default='daily',
+    show_default=True,
+    help='The data frequency of the desired OHLCV bars.',
+)
+@click.option(
+    '-s',
+    '--start',
+    default=None,
+    type=Date(tz='utc', as_timestamp=True),
+    help='The start date of the data range. (default: one year from end date)',
+)
+@click.option(
+    '-e',
+    '--end',
+    default=None,
+    type=Date(tz='utc', as_timestamp=True),
+    help='The end date of the data range. (default: today)',
+)
+@click.pass_context
+def ingest(ctx, dataset, data_frequency, start, end):
+    if dataset is None:
+        ctx.fail("must specify a dataset to clean with '--dataset'\n"
+                 "List available dataset on the marketplace with "
+                 "'catalyst marketplace ls'")
+    click.echo(
+        'Ingesting data: {}'.format(dataset)
+    )
+    marketplace = Marketplace()
+    marketplace.ingest(dataset, data_frequency, start, end)
+
+
+@marketplace.command()
+@click.option(
+    '--dataset',
+    default=None,
+    help='The name of the dataset to ingest from the Data Marketplace.',
+)
+@click.pass_context
+def clean(ctx, dataset):
+    if dataset is None:
+        ctx.fail("must specify a dataset to ingest with '--dataset'\n"
+                 "List available dataset on the marketplace with "
+                 "'catalyst marketplace ls'")
+    click.echo(
+        'Cleaning data source: {}'.format(dataset)
+    )
+    marketplace = Marketplace()
+    marketplace.clean(dataset)
+    click.echo('Done')
+
+
+@marketplace.command()
+@click.pass_context
+def register(ctx):
+    marketplace = Marketplace()
+    marketplace.register()
+
+
+@marketplace.command()
+@click.option(
+    '--dataset',
+    default=None,
+    help='The name of the Marketplace dataset to publish data for.',
+)
+@click.option(
+    '--datadir',
+    default=None,
+    help='The folder that contains the CSV data files to publish.',
+)
+@click.option(
+    '--watch/--no-watch',
+    is_flag=True,
+    default=False,
+    help='Whether to watch the datadir for live data.',
+)
+@click.pass_context
+def publish(ctx, dataset, datadir, watch):
+    marketplace = Marketplace()
+    if dataset is None:
+        ctx.fail("must specify a dataset to publish data for "
+                 " with '--dataset'\n")
+    if datadir is None:
+        ctx.fail("must specify a datadir where to find the files to publish "
+                 " with '--datadir'\n")
+    marketplace.publish(dataset, datadir, watch)
 
 
 if __name__ == '__main__':
