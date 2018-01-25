@@ -72,7 +72,8 @@ class TestCCXT(BaseExchangeTestCase):
     def test_tickers(self):
         log.info('retrieving tickers')
         assets = [
-            self.exchange.get_asset('iot_usd'),
+            self.exchange.get_asset('ada_eth'),
+            self.exchange.get_asset('zrx_eth'),
         ]
         tickers = self.exchange.tickers(assets)
         assert len(tickers) == 1

@@ -997,31 +997,31 @@ class CCXT(Exchange):
         list[dict[str, float]
 
         """
-        tickers = {}
+        symbols = self.get_symbols(assets)
+        try:
+            results = self.api.fetch_tickers(symbols=symbols)
+        except (ExchangeError, NetworkError) as e:
+            log.warn(
+                'unable to fetch tickers {} / {}: {}'.format(
+                    self.name, symbols, e
+                )
+            )
+            raise ExchangeRequestError(error=e)
+
+        tickers = dict()
         for asset in assets:
             symbol = self.get_symbol(asset)
-
-            # Test the CCXT throttling further to see if we need this
-            self.ask_request()
-
-            # TODO: use fetch_tickers() for efficiency
-            # I tried using fetch_tickers() but noticed some
-            # inconsistencies, see issue:
-            # https://github.com/ccxt/ccxt/issues/870
-            try:
-                ticker = self.api.fetch_ticker(symbol=symbol)
-            except (ExchangeError, NetworkError) as e:
-                log.warn(
-                    'unable to fetch ticker {} / {}: {}'.format(
-                        self.name, asset.symbol, e
-                    )
+            if symbol not in results:
+                msg = 'ticker not found {} / {}'.format(
+                    self.name, symbol
                 )
+                log.warn(msg)
                 if on_ticker_error == 'warn':
                     continue
-
                 else:
-                    raise ExchangeRequestError(error=e)
+                    raise ExchangeRequestError(error=msg)
 
+            ticker = results[symbol]
             ticker['last_traded'] = from_ms_timestamp(ticker['timestamp'])
 
             if 'last_price' not in ticker:
