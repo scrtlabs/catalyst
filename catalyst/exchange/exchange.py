@@ -701,7 +701,7 @@ class Exchange:
                     )
 
         positions_value = 0.0
-        if positions is not None:
+        if positions:
             assets = set([position.asset for position in positions])
             tickers = self.tickers(assets)
 

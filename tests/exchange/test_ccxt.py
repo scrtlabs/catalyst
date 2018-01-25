@@ -76,7 +76,7 @@ class TestCCXT(BaseExchangeTestCase):
             self.exchange.get_asset('zrx_eth'),
         ]
         tickers = self.exchange.tickers(assets)
-        assert len(tickers) == 1
+        assert len(tickers) == 2
         pass
 
     def test_my_trades(self):

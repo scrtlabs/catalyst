@@ -997,16 +997,36 @@ class CCXT(Exchange):
         list[dict[str, float]
 
         """
-        symbols = self.get_symbols(assets)
-        try:
-            results = self.api.fetch_tickers(symbols=symbols)
-        except (ExchangeError, NetworkError) as e:
-            log.warn(
-                'unable to fetch tickers {} / {}: {}'.format(
-                    self.name, symbols, e
+        if len(assets) == 1:
+            symbol = self.get_symbol(assets[0])
+            try:
+                log.debug('fetching single ticker: {}'.format(symbol))
+                results = dict()
+                results[symbol] = self.api.fetch_ticker(symbol=symbol)
+
+            except (ExchangeError, NetworkError) as e:
+                log.warn(
+                    'unable to fetch ticker {} / {}: {}'.format(
+                        self.name, symbol, e
+                    )
                 )
-            )
-            raise ExchangeRequestError(error=e)
+                raise ExchangeRequestError(error=e)
+
+        elif len(assets) > 1:
+            symbols = self.get_symbols(assets)
+            try:
+                log.debug('fetching multiple tickers: {}'.format(symbols))
+                results = self.api.fetch_tickers(symbols=symbols)
+
+            except (ExchangeError, NetworkError) as e:
+                log.warn(
+                    'unable to fetch tickers {} / {}: {}'.format(
+                        self.name, symbols, e
+                    )
+                )
+                raise ExchangeRequestError(error=e)
+        else:
+            raise ValueError('Cannot request tickers with not assets.')
 
         tickers = dict()
         for asset in assets:
