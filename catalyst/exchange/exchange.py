@@ -178,6 +178,7 @@ class Exchange:
         if symbols is None:
             # Make a distinct list of all symbols
             symbols = list(set([asset.symbol for asset in self.assets]))
+            symbols.sort()
 
             if quote_currency is not None:
                 for symbol in symbols[:]:

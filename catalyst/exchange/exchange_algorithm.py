@@ -67,7 +67,7 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
         self.current_day = None
 
         if self.simulate_orders is None \
-                and self.sim_params.arena == 'backtest':
+            and self.sim_params.arena == 'backtest':
             self.simulate_orders = True
 
         # Operations with retry features
@@ -115,7 +115,7 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
             # be in-line with CXXT and many exchanges. We'll consider
             # adding more order types in the future.
             if not isinstance(style, ExchangeLimitOrder) or \
-                    not isinstance(style, MarketOrder):
+                not isinstance(style, MarketOrder):
                 raise OrderTypeNotSupported(
                     order_type=style.__class__.__name__
                 )
@@ -901,7 +901,8 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             sleeptime=self.attempts['retry_sleeptime'],
             retry_exceptions=(ExchangeRequestError,),
             cleanup=lambda: log.warn('Fetching open orders again.'),
-            args=(asset,))
+            args=(asset,)
+        )
 
     @api_method
     def get_order(self, order_id, exchange_name):
