@@ -1,22 +1,31 @@
-import json
 import os
-import shutil
 import sys
+import json
+import hmac
+import glob
+import time
+import shutil
+import hashlib
 
-import binascii
 import bcolz
 import logbook
 import pandas as pd
 import six
+import requests
 from web3 import Web3, HTTPProvider
 
 from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.utils.stats_utils import set_print_settings
-from catalyst.marketplace.marketplace_errors import MarketplacePubAddressEmpty
+from catalyst.marketplace.marketplace_errors import (
+    MarketplacePubAddressEmpty, MarketplaceDatasetNotFound,
+    MarketplaceNoAddressMatch, MarketplaceHTTPRequest,
+    MarketplaceNoCSVFiles)
 from catalyst.marketplace.utils.bundle_utils import merge_bundles
 from catalyst.marketplace.utils.path_utils import get_data_source, \
     get_bundle_folder, get_data_source_folder, get_marketplace_folder, \
     get_user_pubaddr
+from catalyst.marketplace.utils.eth_utils import bytes32, b32_str
+from catalyst.marketplace.utils.auth_utils import get_key_secret
 
 if sys.version_info.major < 3:
     import urllib
@@ -33,6 +42,8 @@ CONTRACT_PATH = 'https://raw.githubusercontent.com/enigmampc/catalyst/' \
 
 CONTRACT_ABI = 'https://raw.githubusercontent.com/enigmampc/catalyst/' \
                'data-marketplace/catalyst/marketplace/contract_abi.json'
+
+AUTH_SERVER = 'http://localhost:5000'
 
 log = logbook.Logger('Marketplace', level=LOG_LEVEL)
 
@@ -259,7 +270,7 @@ class Marketplace:
                     self.addresses[i]['pubAddr'],
                     self.addresses[i]['desc'])
                 )
-            address_i = int(input('Choose the your address associated with '
+            address_i = int(input('Choose your address associated with '
                                   'this transaction: [default: 0] ') or 0)
             if not (0 <= address_i < len(self.addresses)):
                 print('Please choose a number between 0 and {}\n'.format(
@@ -270,7 +281,7 @@ class Marketplace:
                 break
 
         tx = self.contract.functions.register(
-                    binascii.hexlify(dataset.encode('utf-8')),
+                    bytes32(dataset),
                     price,
                     address,
                  ).buildTransaction(
@@ -298,8 +309,63 @@ class Marketplace:
         signed_tx = input('Copy and Paste the "Signed Transaction" '
                           'field here:\n')
 
-        tx_hash = '0x{}'.format(binascii.hexlify(
-                                    self.web3.eth.sendRawTransaction(signed_tx)
-                                ).decode('utf-8'))
+        tx_hash = '0x{}'.format(b32_str(
+                    self.web3.eth.sendRawTransaction(signed_tx)))
 
         print('\nThis is the TxHash for this transaction: {}'.format(tx_hash))
+
+    def publish(self, dataset, datadir, watch):
+
+        datasource = self.contract.functions.getDataSource(
+                        bytes32(dataset)).call()
+
+        if not datasource[4]:
+            raise MarketplaceDatasetNotFound(dataset=dataset)
+
+        match = next((l for l in self.addresses if
+                      l['pubAddr'] == datasource[0]), None)
+
+        if not match:
+            raise MarketplaceNoAddressMatch(
+                    dataset=dataset,
+                    address=datasource[0])
+
+        print('Using address: {} to publish this dataset.'.format(
+                datasource[0]))
+
+        if 'key' in match:
+            key = match['key']
+            secret = match['secret']
+        else:
+            # TODO: Verify signature to obtain key/secret pair
+            key, secret = get_key_secret(datasource[0], dataset)
+
+        nonce = str(int(time.time()))
+
+        signature = hmac.new(secret.encode('utf-8'),
+                             nonce.encode('utf-8'),
+                             hashlib.sha512).hexdigest()
+        headers = {'Sign': signature, 'Key': key, 'Nonce': nonce}
+
+        filenames = glob.glob(os.path.join(datadir, '*.csv'))
+
+        if not filenames:
+            raise MarketplaceNoCSVFiles(datadir=datadir)
+
+        files = []
+        for file in filenames:
+            files.append(('file', open(file, 'rb')))
+
+        r = requests.post('{}/publish'.format(AUTH_SERVER),
+                          files=files,
+                          headers=headers)
+
+        if r.status_code != 200:
+            raise MarketplaceHTTPRequest(request='upload file',
+                                         error=r.status_code)
+
+        if 'error' in r.json():
+            raise MarketplaceHTTPRequest(request='upload file',
+                                         error=r.json()['error'])
+
+        print('Dataset {} published successfully.'.format(dataset))

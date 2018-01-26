@@ -1,7 +1,7 @@
-import bcolz
 import os
-import pandas as pd
 import shutil
+
+import bcolz
 
 
 def merge_bundles(zsource, ztarget):

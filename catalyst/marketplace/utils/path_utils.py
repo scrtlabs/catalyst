@@ -133,6 +133,7 @@ def get_data_source(data_source_name, period, force_download=False):
 def get_user_pubaddr(environ=None):
     """
     The de-serialized contend of the user's addresses.json file.
+
     Parameters
     ----------
     environ:
@@ -143,7 +144,6 @@ def get_user_pubaddr(environ=None):
 
     """
     marketplace_folder = get_marketplace_folder(environ)
-
     filename = os.path.join(marketplace_folder, 'addresses.json')
 
     if os.path.isfile(filename):
@@ -160,3 +160,27 @@ def get_user_pubaddr(environ=None):
             json.dump(data, f, sort_keys=False, indent=2,
                       separators=(',', ':'))
             return data
+
+
+def save_user_pubaddr(data, environ=None):
+    """
+    Saves the user's public addresses and their related metadata in
+    the corresponding addresses.json file.
+
+    Parameters
+    ----------
+    data: dict
+
+    Returns
+    -------
+    True
+
+    """
+    marketplace_folder = get_marketplace_folder(environ)
+    filename = os.path.join(marketplace_folder, 'addresses.json')
+
+    with open(filename, 'w') as f:
+        json.dump(data, f, sort_keys=False, indent=2,
+                  separators=(',', ':'))
+
+    return True
