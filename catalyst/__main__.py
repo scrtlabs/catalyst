@@ -1,9 +1,9 @@
 import errno
 import os
+import sys
 from functools import wraps
 
 import click
-import sys
 import logbook
 import pandas as pd
 from catalyst.marketplace.marketplace import Marketplace
@@ -752,10 +752,11 @@ def marketplace(ctx):
 @marketplace.command()
 @click.pass_context
 def ls(ctx):
-    click.echo('Listing of available data sources on the marketplace:')
+    click.echo('Listing of available data sources on the marketplace:', 
+                sys.stdout)
     marketplace = Marketplace()
     marketplace.list()
-    click.echo('Functionality not yet implemented.')
+    click.echo('Functionality not yet implemented.', sys.stdout)
 
 
 @marketplace.command()
@@ -808,9 +809,7 @@ def ingest(ctx, dataset, data_frequency, start, end):
         ctx.fail("must specify a dataset to clean with '--dataset'\n"
                  "List available dataset on the marketplace with "
                  "'catalyst marketplace ls'")
-    click.echo(
-        'Ingesting data: {}'.format(dataset)
-    )
+    click.echo('Ingesting data: {}'.format(dataset), sys.stdout)
     marketplace = Marketplace()
     marketplace.ingest(dataset, data_frequency, start, end)
 
@@ -827,12 +826,10 @@ def clean(ctx, dataset):
         ctx.fail("must specify a dataset to ingest with '--dataset'\n"
                  "List available dataset on the marketplace with "
                  "'catalyst marketplace ls'")
-    click.echo(
-        'Cleaning data source: {}'.format(dataset)
-    )
+    click.echo('Cleaning data source: {}'.format(dataset), sys.stdout)
     marketplace = Marketplace()
     marketplace.clean(dataset)
-    click.echo('Done')
+    click.echo('Done', sys.stdout)
 
 
 @marketplace.command()

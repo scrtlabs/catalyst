@@ -1,10 +1,34 @@
 import os
+import json
 import tarfile
 
 import shutil
 
 from catalyst.data.bundles.core import download_without_progress
 from catalyst.utils.paths import data_root, ensure_directory
+
+
+def get_marketplace_folder(environ=None):
+    """
+    The root path of the marketplace folder.
+
+    Parameters
+    ----------
+    environ:
+
+    Returns
+    -------
+    str
+
+    """
+    if not environ:
+        environ = os.environ
+
+    root = data_root(environ)
+    marketplace_folder = os.path.join(root, 'marketplace')
+    ensure_directory(marketplace_folder)
+
+    return marketplace_folder
 
 
 def get_data_source_folder(data_source_name, environ=None):
@@ -104,3 +128,35 @@ def get_data_source(data_source_name, period, force_download=False):
         tar.extractall(path)
 
     return path
+
+
+def get_user_pubaddr(environ=None):
+    """
+    The de-serialized contend of the user's addresses.json file.
+    Parameters
+    ----------
+    environ:
+
+    Returns
+    -------
+    Object
+
+    """
+    marketplace_folder = get_marketplace_folder(environ)
+
+    filename = os.path.join(marketplace_folder, 'addresses.json')
+
+    if os.path.isfile(filename):
+        with open(filename) as data_file:
+            data = json.load(data_file)
+            try:
+                d = data[0]['pubAddr']
+            except Exception as e:
+                return [data, ]
+            return data
+    else:
+        data = dict(pubAddr='', desc='')
+        with open(filename, 'w') as f:
+            json.dump(data, f, sort_keys=False, indent=2,
+                      separators=(',', ':'))
+            return data

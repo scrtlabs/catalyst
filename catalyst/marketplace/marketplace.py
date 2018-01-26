@@ -1,23 +1,31 @@
 import json
 import os
 import shutil
-import urllib
+import sys
 
+import binascii
 import bcolz
 import logbook
 import pandas as pd
 import six
 from web3 import Web3, HTTPProvider
 
-from catalyst.constants import ROOT_DIR, LOG_LEVEL
+from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.utils.stats_utils import set_print_settings
+from catalyst.marketplace.marketplace_errors import MarketplacePubAddressEmpty
 from catalyst.marketplace.utils.bundle_utils import merge_bundles
 from catalyst.marketplace.utils.path_utils import get_data_source, \
-    get_bundle_folder, get_data_source_folder
+    get_bundle_folder, get_data_source_folder, get_marketplace_folder, \
+    get_user_pubaddr
+
+if sys.version_info.major < 3:
+    import urllib
+else:
+    import urllib.request as urllib
 
 # TODO: host our own node on aws?
 # TODO: switch to mainnet
-REMOTE_NODE = 'https://ropsten.infura.io/' 
+REMOTE_NODE = 'https://ropsten.infura.io/'
 
 # TODO: move to MASTER branch on github
 CONTRACT_PATH = 'https://raw.githubusercontent.com/enigmampc/catalyst/' \
@@ -32,28 +40,28 @@ log = logbook.Logger('Marketplace', level=LOG_LEVEL)
 class Marketplace:
     def __init__(self):
 
-        contract_url = urllib.urlopen(CONTRACT_PATH) 
-        CONTRACT_ADDRESS = Web3.toChecksumAddress(
+        self.addresses = get_user_pubaddr()
+
+        if self.addresses[0]['pubAddr'] == '':
+            raise MarketplacePubAddressEmpty(
+                    filename=os.path.join(
+                        get_marketplace_folder(), 'addresses.json')
+                    )
+        self.default_account = self.addresses[0]['pubAddr']
+
+        contract_url = urllib.urlopen(CONTRACT_PATH)
+        self.contract_address = Web3.toChecksumAddress(
                                     contract_url.readline().strip())
 
         abi_url = urllib.urlopen(CONTRACT_ABI)
         abi = json.load(abi_url)
 
-        w3 = Web3(HTTPProvider(REMOTE_NODE))
+        self.web3 = Web3(HTTPProvider(REMOTE_NODE))
 
-        self.contract = w3.eth.contract(
-            CONTRACT_ADDRESS,
+        self.contract = self.web3.eth.contract(
+            self.contract_address,
             abi=abi,
-        )  # Type: Contract
-
-        # TODO: Set default address correctly from user-provided config
-        DEFAULT_ETH_ADDRESS = os.environ.get('DEFAULT_ETH_ADDRESS', None)
-        if DEFAULT_ETH_ADDRESS is None:
-            raise ValueError('DEFAULT_ETH_ADDRESS is not set. Export as an '
-                             'environment variable. Quitting...')
-
-        self.default_account = DEFAULT_ETH_ADDRESS
-        pass
+        )
 
     def get_data_sources_map(self):
         return [
@@ -122,11 +130,11 @@ class Marketplace:
 
         pass
 
-    def register(self, data_source_name):
+    def subscribe(self, dataset):
         data_sources = self.get_data_sources_map()
         index = next(
             (index for (index, d) in enumerate(data_sources) if
-             d['name'].lower() == data_source_name.lower()),
+             d['name'].lower() == dataset.lower()),
             None
         )
         if index is None:
@@ -140,7 +148,7 @@ class Marketplace:
             ).subscribe(index)
             print(
                 'Subscribed to data source {} successfully'.format(
-                    data_source_name
+                    dataset
                 )
             )
 
@@ -207,3 +215,91 @@ class Marketplace:
 
         shutil.rmtree(folder)
         pass
+
+    def register(self):
+        dataset = input('Enter the name of the dataset to register: ')
+        price = int(input('Enter the price for a monthly subscription to '
+                          'this dataset in ENG: '))
+
+        # while True:
+        #     freq = input('Enter the data frequency [daily, hourly, minute]: ')
+        #     if freq.lower() not in ('daily', 'houlry', 'minute'):
+        #         print("Not a valid frequency.")
+        #     else:
+        #         break
+
+        # while True:
+        #     reg_pub = input('Can data be published every hour at a regular '
+        #                     'time? [default: Y]: ') or 'y'
+        #     if reg_pub.lower() not in ('y', 'n'):
+        #         print("Please answer Y or N.")
+        #     else:
+        #         if reg_pub.lower() == 'y':
+        #             reg_pub = True
+        #         else:
+        #             reg_pub = False
+        #         break
+
+        # while True:
+        #     hist = input('Does it include historical data? '
+        #                  '[default: Y]') or 'y'
+        #     if hist.lower() not in ('y', 'n'):
+        #         print("Please answer Y or N.")
+        #     else:
+        #         if hist.lower() == 'y':
+        #             hist = True
+        #         else:
+        #             hist = False
+        #         break
+
+        while True:
+            for i in range(0, len(self.addresses)):
+                print('{}\t{}\t{}'.format(
+                    i,
+                    self.addresses[i]['pubAddr'],
+                    self.addresses[i]['desc'])
+                )
+            address_i = int(input('Choose the your address associated with '
+                                  'this transaction: [default: 0] ') or 0)
+            if not (0 <= address_i < len(self.addresses)):
+                print('Please choose a number between 0 and {}\n'.format(
+                        len(self.addresses)-1))
+            else:
+                address = Web3.toChecksumAddress(
+                               self.addresses[address_i]['pubAddr'])
+                break
+
+        tx = self.contract.functions.register(
+                    binascii.hexlify(dataset.encode('utf-8')),
+                    price,
+                    address,
+                 ).buildTransaction(
+                    {'nonce': self.web3.eth.getTransactionCount(address)})
+
+        tx['gas'] = int(tx['gas'] * 1.5)     # Defaults to not enough gas
+
+        print('\nVisit https://www.myetherwallet.com/#offline-transaction and '
+              'enter the following parameters:\n\n'
+              'From Address:\t\t{_from}\n'
+              'To Address:\t\t{to}\n'
+              'Value / Amount to Send:\t{value}\n'
+              'Gas Limit:\t\t{gas}\n'
+              'Nonce:\t\t\t{nonce}\n'
+              'Data:\t\t\t{data}\n'.format(
+                    _from=address,
+                    to=tx['to'],
+                    value=tx['value'],
+                    gas=tx['gas'],
+                    nonce=tx['nonce'],
+                    data=tx['data'],
+                    )
+              )
+
+        signed_tx = input('Copy and Paste the "Signed Transaction" '
+                          'field here:\n')
+
+        tx_hash = '0x{}'.format(binascii.hexlify(
+                                    self.web3.eth.sendRawTransaction(signed_tx)
+                                ).decode('utf-8'))
+
+        print('\nThis is the TxHash for this transaction: {}'.format(tx_hash))
