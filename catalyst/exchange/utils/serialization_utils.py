@@ -3,6 +3,7 @@ import re
 from json import JSONEncoder
 
 import pandas as pd
+from catalyst.assets._assets import TradingPair
 from catalyst.constants import DATE_TIME_FORMAT
 from six import string_types
 
@@ -11,6 +12,9 @@ class ExchangeJSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, pd.Timestamp):
             return obj.strftime(DATE_TIME_FORMAT)
+
+        elif isinstance(obj, TradingPair):
+            return obj.to_dict()
 
         # Let the base class default method raise the TypeError
         return JSONEncoder.default(self, obj)

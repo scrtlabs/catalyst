@@ -21,47 +21,13 @@ log = Logger('TestSuiteExchange')
 
 
 class TestSuiteExchange(WithLogger, ZiplineTestCase):
-    def _test_markets_exchange(self, exchange, attempts=0):
-        assets = None
-        try:
-            exchange.init()
-
-            # Verify that the assets and markets are populated
-            if not exchange.markets:
-                raise ValueError(
-                    'no markets found'
-                )
-            if not exchange.assets:
-                raise ValueError(
-                    'no assets derived from markets'
-                )
-            assets = exchange.assets
-
-        except ExchangeRequestError as e:
-            sleep(5)
-
-            if attempts > 5:
-                handle_exchange_error(exchange, e)
-
-            else:
-                print(
-                    're-trying an exchange request {} {}'.format(
-                        exchange.name, attempts
-                    )
-                )
-                self._test_markets_exchange(exchange, attempts + 1)
-
-        except Exception as e:
-            handle_exchange_error(exchange, e)
-
-        return assets
-
     def test_markets(self):
         population = 3
         results = dict()
 
         exchanges = select_random_exchanges(population)  # Type: list[Exchange]
         for exchange in exchanges:
+            exchange.init()
             assets = self._test_markets_exchange(exchange)
 
             if assets is not None:
