@@ -16607,7 +16607,30 @@ NaN
 
    </div>
 
+Catalyst using PyCharm
+~~~~~~~~~~~~~~~~~~~~~~
 
+Install
+^^^^^^^
+Install PyCharm from their 'website <https://www.jetbrains.com/pycharm/download/#section=windows>'_ .
+
+Setup
+^^^^^
+
+1. Create a new project folder for your scripts or open your existing folder in PyCharm.
+
+2. Once your project is open, go to File -> Settings -> Project:'NAME_OF_PROJECT' -> Project Interpreter.
+   Click the gear box next to the project interpreter and select 'add local'.
+
+   Then select 'Conda Environment' -> 'Existing environment'. Click the '...' button and
+   navigate to your catalyst env located in the Anaconda2 folder to select the 'python.exe' file
+   (for example: 'C:\Users\user\Anaconda2\envs\catalyst\python.exe'). Select OK, then apply and click OK again.
+
+3. Next, click on the dropdown menu on the top right of PyCharm and select 'Edit Configurations'.
+   Select the '+' button.
+   Set the script Path to the location of your script and make sure the interpreter is correct, then hit ok.
+
+You should now be able to run your script in PyCharm.
 
 Next steps
 ~~~~~~~~~~
