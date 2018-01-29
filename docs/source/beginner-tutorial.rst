@@ -16624,7 +16624,7 @@ Setup
 
    Then select 'Conda Environment' -> 'Existing environment'. Click the '...' button and
    navigate to your catalyst env located in the Anaconda2 folder to select the 'python.exe' file
-   (for example: 'C:"\\"Users"\\"user"\\"Anaconda2"\\"envs"\\"catalyst"\\"python.exe'). Select OK, then apply and click OK again.
+   (for example: 'C:\\Users\\user\\Anaconda2\\envs\\catalyst\\python.exe'). Select OK, then apply and click OK again.
 
 3. Next, click on the dropdown menu on the top right of PyCharm and select 'Edit Configurations'.
    Select the '+' button.
