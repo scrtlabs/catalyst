@@ -16628,7 +16628,7 @@ Setup
 
 3. Next, click on the dropdown menu on the top right of PyCharm and select 'Edit Configurations'.
    Select the '+' button.
-   Set the script Path to the location of your script and make sure the interpreter is correct, then hit ok.
+   Set the script Path to the path of your script and make sure the interpreter is correct, then hit ok.
 
 You should now be able to run your script in PyCharm.
 
