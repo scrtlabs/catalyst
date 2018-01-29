@@ -15,7 +15,7 @@ from catalyst.exchange.utils.test_utils import select_random_exchanges, \
     handle_exchange_error, select_random_assets
 from catalyst.testing import ZiplineTestCase
 from catalyst.testing.fixtures import WithLogger
-from exchange.utils.factory import get_exchanges
+from catalyst.exchange.utils.factory import get_exchanges
 
 log = Logger('TestSuiteExchange')
 
