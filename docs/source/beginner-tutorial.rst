@@ -16612,7 +16612,7 @@ Catalyst using PyCharm
 
 Install
 ^^^^^^^
-Install PyCharm from their 'website <https://www.jetbrains.com/pycharm/download/#section=windows>'_ .
+Install PyCharm from their ('website <https://www.jetbrains.com/pycharm/download/#section=windows>') .
 
 Setup
 ^^^^^
