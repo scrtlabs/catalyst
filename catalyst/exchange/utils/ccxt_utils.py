@@ -104,7 +104,14 @@ def get_exchange_config(exchange_name, path=None, environ=None,
             now = pd.Timestamp.utcnow()
             limit = pd.Timedelta(expiry)
             if pd.Timedelta(now - last_modified_time(filename)) > limit:
-                request.urlretrieve(url=url, filename=filename)
+                try:
+                    request.urlretrieve(url=url, filename=filename)
+                except Exception as e:
+                    log.warn(
+                        'unable to update config {} => {}: {}'.format(
+                            url, filename, e
+                        )
+                    )
 
         else:
             request.urlretrieve(url=url, filename=filename)
