@@ -22,7 +22,7 @@ import ccxt
 log = Logger('ccxt_utils', level=LOG_LEVEL)
 
 
-def find_exchange_configs(features=None, history=None, is_authenticated=False,
+def scan_exchange_configs(features=None, history=None, is_authenticated=False,
                           path=None):
     """
     Finding exchanges from their config files
@@ -36,7 +36,6 @@ def find_exchange_configs(features=None, history=None, is_authenticated=False,
     -------
 
     """
-    exchange_config = []
     for exchange_name in ccxt.exchanges:
         config = get_exchange_config(exchange_name, path)
         if not config or 'error' in config:
@@ -68,17 +67,7 @@ def find_exchange_configs(features=None, history=None, is_authenticated=False,
 
         # TODO: filter by history
         if has_features:
-            try:
-                exchange_config.append(config)
-
-            except Exception as e:
-                log.warn(
-                    'unable to initialize exchange {}: {}'.format(
-                        exchange_name, e
-                    )
-                )
-
-    return exchange_config
+            yield config
 
 
 def get_exchange_config(exchange_name, path=None, environ=None,

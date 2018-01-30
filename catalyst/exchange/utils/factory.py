@@ -4,7 +4,7 @@ from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.ccxt.ccxt_exchange import CCXT
 from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.exchange_errors import ExchangeAuthEmpty
-from catalyst.exchange.utils.ccxt_utils import find_exchange_configs
+from catalyst.exchange.utils.ccxt_utils import scan_exchange_configs
 from catalyst.exchange.utils.exchange_utils import get_exchange_auth, \
     get_exchange_folder
 from logbook import Logger
@@ -74,20 +74,33 @@ def find_exchanges(features=None, history=None, skip_blacklist=True, path=None,
     list[Exchange]
 
     """
-    exchange_configs = find_exchange_configs(
-        features, history, is_authenticated, path
+
+    return list(
+        scan_exchanges(
+            features,
+            history,
+            skip_blacklist,
+            path,
+            is_authenticated,
+            base_currency
+        )
     )
-    exchanges = []
-    for config in exchange_configs:
+
+
+def scan_exchanges(features=None, history=None, skip_blacklist=True, path=None,
+                   is_authenticated=False, base_currency=None):
+    for config in scan_exchange_configs(
+        features=features,
+        history=history,
+        is_authenticated=is_authenticated,
+        path=path,
+    ):
         if skip_blacklist and (config is None or 'error' in config):
             continue
 
-        exchange = get_exchange(
+        yield get_exchange(
             exchange_name=config['id'],
             skip_init=True,
             base_currency=base_currency,
             config=config,
         )
-        exchanges.append(exchange)
-
-    return exchanges
