@@ -21,3 +21,5 @@ except Exception as e:
     print('unable to get catalyst path: {}'.format(e))
 
 AUTO_INGEST = False
+
+AUTH_SERVER = 'https://data.enigma.co'

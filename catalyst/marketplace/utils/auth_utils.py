@@ -4,8 +4,7 @@ from catalyst.marketplace.marketplace_errors import (
      MarketplaceHTTPRequest)
 from catalyst.marketplace.utils.path_utils import (
      get_user_pubaddr, save_user_pubaddr)
-
-AUTH_SERVER = 'http://localhost:5000'
+from catalyst.constants import AUTH_SERVER 
 
 
 def get_key_secret(pubAddr, dataset):

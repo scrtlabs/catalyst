@@ -14,7 +14,7 @@ import six
 import requests
 from web3 import Web3, HTTPProvider
 
-from catalyst.constants import LOG_LEVEL
+from catalyst.constants import LOG_LEVEL, AUTH_SERVER
 from catalyst.exchange.utils.stats_utils import set_print_settings
 from catalyst.marketplace.marketplace_errors import (
     MarketplacePubAddressEmpty, MarketplaceDatasetNotFound,
@@ -42,8 +42,6 @@ CONTRACT_PATH = 'https://raw.githubusercontent.com/enigmampc/catalyst/' \
 
 CONTRACT_ABI = 'https://raw.githubusercontent.com/enigmampc/catalyst/' \
                'data-marketplace/catalyst/marketplace/contract_abi.json'
-
-AUTH_SERVER = 'http://localhost:5000'
 
 log = logbook.Logger('Marketplace', level=LOG_LEVEL)
 
