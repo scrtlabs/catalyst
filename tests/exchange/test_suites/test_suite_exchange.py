@@ -138,7 +138,6 @@ class TestSuiteExchange(WithLogger, ZiplineTestCase):
                     assets=assets,
                     bar_count=bar_count,
                     start_dt=dt_range[0],
-                    end_dt=dt_range[-1],
                 )
 
                 assert len(candles) == asset_population
