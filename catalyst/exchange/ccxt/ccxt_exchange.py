@@ -765,7 +765,7 @@ class CCXT(Exchange):
                 self.api.load_markets()
 
             # https://github.com/ccxt/ccxt/issues/1483
-            adj_amount = abs(amount)
+            adj_amount = round(abs(amount), asset.decimals)
             market = self.api.markets[symbol]
             if 'lots' in market and market['lots'] > amount:
                 raise CreateOrderError(
@@ -776,7 +776,7 @@ class CCXT(Exchange):
                 )
 
         else:
-            adj_amount = abs(amount)
+            adj_amount = round(abs(amount), asset.decimals)
 
         try:
             result = self.api.create_order(
@@ -858,25 +858,29 @@ class CCXT(Exchange):
             order.id, order.asset, return_price=True
         )
         order.status = exc_order.status
-
         order.commission = exc_order.commission
-        if order.amount != exc_order.amount:
-            log.warn(
-                'executed order amount {} differs '
-                'from original'.format(
-                    exc_order.amount, order.amount
-                )
-            )
-            order.amount = exc_order.amount
+        order.filled = exc_order.amount
 
-        if order.status == ORDER_STATUS.FILLED:
+        if exc_order.status == ORDER_STATUS.FILLED:
+            if order.amount > exc_order.amount:
+                log.warn(
+                    'executed order amount {} differs '
+                    'from original'.format(
+                        exc_order.amount, order.amount
+                    )
+                )
+
+            order.check_triggers(
+                price=price,
+                dt=exc_order.dt,
+            )
             transaction = Transaction(
                 asset=order.asset,
                 amount=order.amount,
                 dt=pd.Timestamp.utcnow(),
                 price=price,
                 order_id=order.id,
-                commission=order.commission
+                commission=order.commission,
             )
         return [transaction]
 
