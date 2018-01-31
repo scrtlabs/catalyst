@@ -1008,7 +1008,7 @@ class CCXT(Exchange):
                 results = dict()
                 results[symbol] = self.api.fetch_ticker(symbol=symbol)
 
-            except (ExchangeError, NetworkError, Exception) as e:
+            except (ExchangeError, NetworkError,) as e:
                 log.warn(
                     'unable to fetch ticker {} / {}: {}'.format(
                         self.name, symbol, e
