@@ -6,6 +6,7 @@ import glob
 import time
 import shutil
 import hashlib
+import binascii
 
 import bcolz
 import logbook
@@ -97,6 +98,52 @@ class Marketplace:
             ),
         ]
 
+    def choose_pubaddr(self):
+        while True:
+            for i in range(0, len(self.addresses)):
+                print('{}\t{}\t{}'.format(
+                    i,
+                    self.addresses[i]['pubAddr'],
+                    self.addresses[i]['desc'])
+                )
+            address_i = int(input('Choose your address associated with '
+                                  'this transaction: [default: 0] ') or 0)
+            if not (0 <= address_i < len(self.addresses)):
+                print('Please choose a number between 0 and {}\n'.format(
+                        len(self.addresses)-1))
+            else:
+                address = Web3.toChecksumAddress(
+                               self.addresses[address_i]['pubAddr'])
+                break
+
+        return address
+
+    def sign_transaction(self, from_address, tx):
+
+        print('\nVisit https://www.myetherwallet.com/#offline-transaction and '
+              'enter the following parameters:\n\n'
+              'From Address:\t\t{_from}\n'
+              'To Address:\t\t{to}\n'
+              'Value / Amount to Send:\t{value}\n'
+              'Gas Limit:\t\t{gas}\n'
+              'Nonce:\t\t\t{nonce}\n'
+              'Data:\t\t\t{data}\n'.format(
+                    _from=from_address,
+                    to=tx['to'],
+                    value=tx['value'],
+                    gas=tx['gas'],
+                    nonce=tx['nonce'],
+                    data=tx['data'],
+                    )
+              )
+
+        signed_tx = input('Copy and Paste the "Signed Transaction" field here:\n')
+
+        if signed_tx.startswith('0x'):
+            signed_tx = signed_tx[2:]
+
+        return signed_tx
+
     def get_data_source_def(self, data_source_name):
         data_source_name = data_source_name.lower()
         dsm = self.get_data_sources_map()
@@ -137,34 +184,50 @@ class Marketplace:
         )
         print(df.to_string(formatters=formatters))
 
-        pass
-
     def subscribe(self, dataset):
-        data_sources = self.get_data_sources_map()
-        index = next(
-            (index for (index, d) in enumerate(data_sources) if
-             d['name'].lower() == dataset.lower()),
-            None
-        )
-        if index is None:
-            raise ValueError(
-                'Data source not found.'
-            )
+
+        # data_sources = self.get_data_sources_map()
+        # index = next(
+        #     (index for (index, d) in enumerate(data_sources) if
+        #      d['name'].lower() == dataset.lower()),
+        #     None
+        # )
+
+        # Check if dataset exists, if not throw exception
+        # if index is None:
+        #     raise ValueError(
+        #         'Data source not found.'
+        #     )
+
+        address = self.choose_pubaddr()
+
+        tx = self.contract.functions.subscribe(
+                    bytes32(dataset),
+                 ).buildTransaction(
+                    {'nonce': self.web3.eth.getTransactionCount(address)})
+
+        if 'ropsten' in REMOTE_NODE:
+            tx['gas'] = 4700000
+
+        signed_tx = self.sign_transaction(address, tx)
 
         try:
-            self.contract.transact(
-                {'from': self.default_account}
-            ).subscribe(index)
-            print(
-                'Subscribed to data source {} successfully'.format(
-                    dataset
-                )
-            )
+            tx_hash = '0x{}'.format(b32_str(
+                          self.web3.eth.sendRawTransaction(signed_tx)))
+            print('\nThis is the TxHash for this transaction: '
+                  '{}'.format(tx_hash))
+
+            if 'ropsten' in REMOTE_NODE:
+                etherscan = 'https://ropsten.etherscan.io/tx/{}'.format(
+                                tx_hash)
+            else:
+                etherscan = 'https://etherscan.io/tx/{}'.format(tx_hash)
+
+            print('You can check the outcome of your transaction here:\n'
+                  '{}'.format(etherscan))
 
         except Exception as e:
             print('Unable to subscribe to data source: {}'.format(e))
-
-        pass
 
     def ingest(self, data_source_name, data_frequency=None, start=None,
                end=None, force_download=False):
@@ -261,22 +324,7 @@ class Marketplace:
         #             hist = False
         #         break
 
-        while True:
-            for i in range(0, len(self.addresses)):
-                print('{}\t{}\t{}'.format(
-                    i,
-                    self.addresses[i]['pubAddr'],
-                    self.addresses[i]['desc'])
-                )
-            address_i = int(input('Choose your address associated with '
-                                  'this transaction: [default: 0] ') or 0)
-            if not (0 <= address_i < len(self.addresses)):
-                print('Please choose a number between 0 and {}\n'.format(
-                        len(self.addresses)-1))
-            else:
-                address = Web3.toChecksumAddress(
-                               self.addresses[address_i]['pubAddr'])
-                break
+        address = self.choose_pubaddr()
 
         tx = self.contract.functions.register(
                     bytes32(dataset),
@@ -287,25 +335,7 @@ class Marketplace:
 
         tx['gas'] = int(tx['gas'] * 1.5)     # Defaults to not enough gas
 
-        print('\nVisit https://www.myetherwallet.com/#offline-transaction and '
-              'enter the following parameters:\n\n'
-              'From Address:\t\t{_from}\n'
-              'To Address:\t\t{to}\n'
-              'Value / Amount to Send:\t{value}\n'
-              'Gas Limit:\t\t{gas}\n'
-              'Nonce:\t\t\t{nonce}\n'
-              'Data:\t\t\t{data}\n'.format(
-                    _from=address,
-                    to=tx['to'],
-                    value=tx['value'],
-                    gas=tx['gas'],
-                    nonce=tx['nonce'],
-                    data=tx['data'],
-                    )
-              )
-
-        signed_tx = input('Copy and Paste the "Signed Transaction" '
-                          'field here:\n')
+        signed_tx = self.sign_transaction(address, tx)
 
         tx_hash = '0x{}'.format(b32_str(
                     self.web3.eth.sendRawTransaction(signed_tx)))

@@ -30,4 +30,4 @@ def b32_str(bytes32):
     str
 
     """
-    return binascii.hexlify(bytes32.decode('utf-8'))
+    return binascii.hexlify(bytes32).decode('utf-8')
