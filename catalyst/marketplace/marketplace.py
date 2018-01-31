@@ -341,9 +341,13 @@ class Marketplace:
         nonce = str(int(time.time()))
 
         signature = hmac.new(secret.encode('utf-8'),
-                             nonce.encode('utf-8'),
+                             '{}{}'.format(dataset,nonce).encode('utf-8'),
                              hashlib.sha512).hexdigest()
-        headers = {'Sign': signature, 'Key': key, 'Nonce': nonce}
+
+        headers = {'Sign': signature, 
+                   'Key': key, 
+                   'Nonce': nonce,
+                   'Dataset': dataset}
 
         filenames = glob.glob(os.path.join(datadir, '*.csv'))
 
