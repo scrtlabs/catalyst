@@ -998,13 +998,13 @@ class CCXT(Exchange):
 
         """
         if len(assets) == 1:
-            symbol = self.get_symbol(assets[0])
             try:
+                symbol = self.get_symbol(assets[0])
                 log.debug('fetching single ticker: {}'.format(symbol))
                 results = dict()
                 results[symbol] = self.api.fetch_ticker(symbol=symbol)
 
-            except (ExchangeError, NetworkError) as e:
+            except (ExchangeError, NetworkError, Exception) as e:
                 log.warn(
                     'unable to fetch ticker {} / {}: {}'.format(
                         self.name, symbol, e

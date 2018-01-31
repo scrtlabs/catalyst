@@ -703,7 +703,7 @@ class Exchange:
 
         positions_value = 0.0
         if positions:
-            assets = set([position.asset for position in positions])
+            assets = list(set([position.asset for position in positions]))
             tickers = self.tickers(assets)
 
             for position in positions:
