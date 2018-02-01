@@ -14,7 +14,9 @@ import six
 import requests
 from web3 import Web3, HTTPProvider
 
-from catalyst.constants import LOG_LEVEL, AUTH_SERVER
+from catalyst.constants import ( LOG_LEVEL, AUTH_SERVER, ETH_REMOTE_NODE, 
+    MARKETPLACE_CONTRACT, MARKETPLACE_CONTRACT_ABI, ENIGMA_CONTRACT,
+    ENIGMA_CONTRACT_ABI )
 from catalyst.exchange.utils.stats_utils import set_print_settings
 from catalyst.marketplace.marketplace_errors import (
     MarketplacePubAddressEmpty, MarketplaceDatasetNotFound,
@@ -33,28 +35,6 @@ if sys.version_info.major < 3:
 else:
     import urllib.request as urllib
 
-# TODO: host our own node on aws?
-# TODO: switch to mainnet
-REMOTE_NODE = 'https://ropsten.infura.io/'
-
-# TODO: move to MASTER branch on github
-MARKETPLACE_CONTRACT = 'https://raw.githubusercontent.com/enigmampc/' \
-                       'catalyst/data-marketplace/catalyst/marketplace/' \
-                       'contract_marketplace_address.txt'
-
-MARKETPLACE_CONTRACT_ABI = 'https://raw.githubusercontent.com/enigmampc/' \
-                           'catalyst/data-marketplace/catalyst/marketplace/' \
-                           'contract_marketplace_abi.json'
-
-# TODO: switch to mainnet
-ENIGMA_CONTRACT = 'https://raw.githubusercontent.com/enigmampc/catalyst/' \
-                  'data-marketplace/catalyst/marketplace/' \
-                  'contract_enigma_address.txt'
-
-ENIGMA_CONTRACT_ABI = 'https://raw.githubusercontent.com/enigmampc/' \
-                      'catalyst/data-marketplace/catalyst/marketplace/' \
-                      'contract_enigma_abi.json'
-
 
 log = logbook.Logger('Marketplace', level=LOG_LEVEL)
 
@@ -71,7 +51,7 @@ class Marketplace:
                     )
         self.default_account = self.addresses[0]['pubAddr']
 
-        self.web3 = Web3(HTTPProvider(REMOTE_NODE))
+        self.web3 = Web3(HTTPProvider(ETH_REMOTE_NODE))
 
         contract_url = urllib.urlopen(MARKETPLACE_CONTRACT)
 
@@ -99,30 +79,30 @@ class Marketplace:
             abi=abi,
         )
 
-    def get_data_sources_map(self):
-        return [
-            dict(
-                name='Marketcap',
-                desc='The marketcap value in USD.',
-                start_date=pd.to_datetime('2017-01-01'),
-                end_date=pd.to_datetime('2018-01-15'),
-                data_frequencies=['daily'],
-            ),
-            dict(
-                name='GitHub',
-                desc='The rate of development activity on GitHub.',
-                start_date=pd.to_datetime('2017-01-01'),
-                end_date=pd.to_datetime('2018-01-15'),
-                data_frequencies=['daily', 'hour'],
-            ),
-            dict(
-                name='Influencers',
-                desc='Tweets and related sentiments by selected influencers.',
-                start_date=pd.to_datetime('2017-01-01'),
-                end_date=pd.to_datetime('2018-01-15'),
-                data_frequencies=['daily', 'hour', 'minute'],
-            ),
-        ]
+    # def get_data_sources_map(self):
+    #     return [
+    #         dict(
+    #             name='Marketcap',
+    #             desc='The marketcap value in USD.',
+    #             start_date=pd.to_datetime('2017-01-01'),
+    #             end_date=pd.to_datetime('2018-01-15'),
+    #             data_frequencies=['daily'],
+    #         ),
+    #         dict(
+    #             name='GitHub',
+    #             desc='The rate of development activity on GitHub.',
+    #             start_date=pd.to_datetime('2017-01-01'),
+    #             end_date=pd.to_datetime('2018-01-15'),
+    #             data_frequencies=['daily', 'hour'],
+    #         ),
+    #         dict(
+    #             name='Influencers',
+    #             desc='Tweets and related sentiments by selected influencers.',
+    #             start_date=pd.to_datetime('2017-01-01'),
+    #             end_date=pd.to_datetime('2018-01-15'),
+    #             data_frequencies=['daily', 'hour', 'minute'],
+    #         ),
+    #     ]
 
     def choose_pubaddr(self):
         while True:
@@ -142,7 +122,7 @@ class Marketplace:
                                self.addresses[address_i]['pubAddr'])
                 break
 
-        return address
+        return address, address_i
 
     def sign_transaction(self, from_address, tx):
 
@@ -213,7 +193,7 @@ class Marketplace:
 
     def subscribe(self, dataset):
 
-        address = self.choose_pubaddr()
+        address = self.choose_pubaddr()[0]
 
         dataset_info = self.mkt_contract.functions.getDataSource(
                                 bytes32(dataset)).call()
@@ -272,7 +252,7 @@ class Marketplace:
                  ).buildTransaction(
                     {'nonce': self.web3.eth.getTransactionCount(address)})
 
-        if 'ropsten' in REMOTE_NODE:
+        if 'ropsten' in ETH_REMOTE_NODE:
             tx['gas'] = min(int(tx['gas'] * 1.5), 4700000)
 
         signed_tx = self.sign_transaction(address, tx)
@@ -287,7 +267,7 @@ class Marketplace:
             print('Unable to subscribe to data source: {}'.format(e))
             return
 
-        if 'ropsten' in REMOTE_NODE:
+        if 'ropsten' in ETH_REMOTE_NODE:
             etherscan = 'https://ropsten.etherscan.io/tx/{}'.format(
                             tx_hash)
         else:
@@ -319,7 +299,7 @@ class Marketplace:
                  ).buildTransaction(
                     {'nonce': self.web3.eth.getTransactionCount(address)})
 
-        if 'ropsten' in REMOTE_NODE:
+        if 'ropsten' in ETH_REMOTE_NODE:
             tx['gas'] = min(int(tx['gas'] * 1.5), 4700000)
 
         signed_tx = self.sign_transaction(address, tx)
@@ -334,7 +314,7 @@ class Marketplace:
             print('Unable to subscribe to data source: {}'.format(e))
             return
 
-        if 'ropsten' in REMOTE_NODE:
+        if 'ropsten' in ETH_REMOTE_NODE:
             etherscan = 'https://ropsten.etherscan.io/tx/{}'.format(
                             tx_hash)
         else:
@@ -369,7 +349,7 @@ class Marketplace:
     def ingest(self, dataset, data_frequency=None, start=None,
                end=None, force_download=False):
 
-        address = self.choose_pubaddr()
+        address, address_i = self.choose_pubaddr()
 
         check_sub = self.mkt_contract.functions.checkAddressSubscription(
                             address, bytes32(dataset)).call()
@@ -384,7 +364,31 @@ class Marketplace:
                     dataset=dataset,
                     date=check_sub[4])
 
-        # WIP
+        if 'key' in self.addresses[address_i]:
+            key = self.addresses[address_i]['key']
+            secret = self.addresses[address_i]['secret']
+        else:
+            # TODO: Verify signature to obtain key/secret pair
+            key, secret = get_key_secret(datasource[0], dataset)
+
+        nonce = str(int(time.time()))
+
+        signature = hmac.new(secret.encode('utf-8'),
+                             '{}{}'.format(dataset, nonce).encode('utf-8'),
+                             hashlib.sha512).hexdigest()
+
+        headers = {'Sign': signature,
+                   'Key': key,
+                   'Nonce': nonce,
+                   'Dataset': dataset}
+
+        r = requests.post('{}/ingest'.format(AUTH_SERVER), headers=headers)
+
+
+        print(r)
+        exit(0)
+
+
 
         dataset = dataset.lower()
 
@@ -479,7 +483,7 @@ class Marketplace:
         #             hist = False
         #         break
 
-        address = self.choose_pubaddr()
+        address = self.choose_pubaddr()[0]
 
         tx = self.mkt_contract.functions.register(
                     bytes32(dataset),
@@ -488,7 +492,7 @@ class Marketplace:
                  ).buildTransaction(
                     {'nonce': self.web3.eth.getTransactionCount(address)})
 
-        if 'ropsten' in REMOTE_NODE and tx['gas'] > 4700000:
+        if 'ropsten' in ETH_REMOTE_NODE and tx['gas'] > 4700000:
             tx['gas'] = 4700000
 
         signed_tx = self.sign_transaction(address, tx)
