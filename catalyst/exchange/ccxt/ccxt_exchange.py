@@ -798,6 +798,14 @@ class CCXT(Exchange):
             )
             raise ExchangeRequestError(error=e)
 
+        if 'amount' in result and result['amount'] != adj_amount:
+            log.info(
+                'order amount adjusted by {} from {} to {}'.format(
+                    self.name, adj_amount, result['amount']
+                )
+            )
+            adj_amount = result['amount']
+
         if 'info' not in result:
             raise ValueError('cannot use order without info attribute')
 
@@ -886,7 +894,7 @@ class CCXT(Exchange):
 
     def process_order(self, order):
         # TODO: move to parent class after tracking features in the parent
-        if not self.api.hasFetchMyTrades:
+        if not self.api.has['fetchMyTrades']:
             return self._process_order_fallback(order)
 
         try:
