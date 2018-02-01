@@ -1103,7 +1103,7 @@ class CCXT(Exchange):
 
         return result
 
-    def get_trades(self, asset, my_trades=True, start_dt=None, limit=None):
+    def get_trades(self, asset, my_trades=True, start_dt=None, limit=100):
         if not my_trades:
             raise NotImplemented(
                 'get_trades only supports "my trades"'
