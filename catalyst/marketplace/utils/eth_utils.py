@@ -30,4 +30,21 @@ def b32_str(bytes32):
     str
 
     """
-    return binascii.hexlify(bytes32).decode('utf-8')
+    return binascii.unhexlify(
+            bytes32.decode('utf-8').rstrip('\0')).decode('ascii')
+
+
+def bin_hex(binary):
+    """
+    Convert bytes32 to string
+
+    Parameters
+    ----------
+    input: bytes object
+
+    Returns
+    -------
+    str
+
+    """
+    return binascii.hexlify(binary).decode('utf-8')

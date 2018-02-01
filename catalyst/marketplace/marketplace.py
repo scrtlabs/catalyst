@@ -6,7 +6,6 @@ import glob
 import time
 import shutil
 import hashlib
-import binascii
 
 import bcolz
 import logbook
@@ -20,12 +19,13 @@ from catalyst.exchange.utils.stats_utils import set_print_settings
 from catalyst.marketplace.marketplace_errors import (
     MarketplacePubAddressEmpty, MarketplaceDatasetNotFound,
     MarketplaceNoAddressMatch, MarketplaceHTTPRequest,
-    MarketplaceNoCSVFiles)
+    MarketplaceNoCSVFiles, MarketplaceContractDataNoMatch,
+    MarketplaceSubscriptionExpired)
 from catalyst.marketplace.utils.bundle_utils import merge_bundles
 from catalyst.marketplace.utils.path_utils import get_data_source, \
     get_bundle_folder, get_data_source_folder, get_marketplace_folder, \
     get_user_pubaddr
-from catalyst.marketplace.utils.eth_utils import bytes32, b32_str
+from catalyst.marketplace.utils.eth_utils import bytes32, b32_str, bin_hex
 from catalyst.marketplace.utils.auth_utils import get_key_secret
 
 if sys.version_info.major < 3:
@@ -38,11 +38,23 @@ else:
 REMOTE_NODE = 'https://ropsten.infura.io/'
 
 # TODO: move to MASTER branch on github
-CONTRACT_PATH = 'https://raw.githubusercontent.com/enigmampc/catalyst/' \
-                'data-marketplace/catalyst/marketplace/contract_address.txt'
+MARKETPLACE_CONTRACT = 'https://raw.githubusercontent.com/enigmampc/' \
+                       'catalyst/data-marketplace/catalyst/marketplace/' \
+                       'contract_marketplace_address.txt'
 
-CONTRACT_ABI = 'https://raw.githubusercontent.com/enigmampc/catalyst/' \
-               'data-marketplace/catalyst/marketplace/contract_abi.json'
+MARKETPLACE_CONTRACT_ABI = 'https://raw.githubusercontent.com/enigmampc/' \
+                           'catalyst/data-marketplace/catalyst/marketplace/' \
+                           'contract_marketplace_abi.json'
+
+# TODO: switch to mainnet
+ENIGMA_CONTRACT = 'https://raw.githubusercontent.com/enigmampc/catalyst/' \
+                  'data-marketplace/catalyst/marketplace/' \
+                  'contract_enigma_address.txt'
+
+ENIGMA_CONTRACT_ABI = 'https://raw.githubusercontent.com/enigmampc/' \
+                      'catalyst/data-marketplace/catalyst/marketplace/' \
+                      'contract_enigma_abi.json'
+
 
 log = logbook.Logger('Marketplace', level=LOG_LEVEL)
 
@@ -59,17 +71,31 @@ class Marketplace:
                     )
         self.default_account = self.addresses[0]['pubAddr']
 
-        contract_url = urllib.urlopen(CONTRACT_PATH)
-        self.contract_address = Web3.toChecksumAddress(
-                                    contract_url.readline().strip())
-
-        abi_url = urllib.urlopen(CONTRACT_ABI)
-        abi = json.load(abi_url)
-
         self.web3 = Web3(HTTPProvider(REMOTE_NODE))
 
-        self.contract = self.web3.eth.contract(
-            self.contract_address,
+        contract_url = urllib.urlopen(MARKETPLACE_CONTRACT)
+
+        self.mkt_contract_address = Web3.toChecksumAddress(
+                                       contract_url.readline().strip())
+
+        abi_url = urllib.urlopen(MARKETPLACE_CONTRACT_ABI)
+        abi = json.load(abi_url)
+
+        self.mkt_contract = self.web3.eth.contract(
+            self.mkt_contract_address,
+            abi=abi,
+        )
+
+        contract_url = urllib.urlopen(ENIGMA_CONTRACT)
+
+        self.eng_contract_address = Web3.toChecksumAddress(
+                                        contract_url.readline().strip())
+
+        abi_url = urllib.urlopen(ENIGMA_CONTRACT_ABI)
+        abi = json.load(abi_url)
+
+        self.eng_contract = self.web3.eth.contract(
+            self.eng_contract_address,
             abi=abi,
         )
 
@@ -137,7 +163,8 @@ class Marketplace:
                     )
               )
 
-        signed_tx = input('Copy and Paste the "Signed Transaction" field here:\n')
+        signed_tx = input('Copy and Paste the "Signed Transaction" '
+                          'field here:\n')
 
         if signed_tx.startswith('0x'):
             signed_tx = signed_tx[2:]
@@ -186,57 +213,185 @@ class Marketplace:
 
     def subscribe(self, dataset):
 
-        # data_sources = self.get_data_sources_map()
-        # index = next(
-        #     (index for (index, d) in enumerate(data_sources) if
-        #      d['name'].lower() == dataset.lower()),
-        #     None
-        # )
-
-        # Check if dataset exists, if not throw exception
-        # if index is None:
-        #     raise ValueError(
-        #         'Data source not found.'
-        #     )
-
         address = self.choose_pubaddr()
 
-        tx = self.contract.functions.subscribe(
+        dataset_info = self.mkt_contract.functions.getDataSource(
+                                bytes32(dataset)).call()
+
+        price = dataset_info[1]
+
+        print('\nThe price for a monthly subscription to this dataset is'
+              ' {} ENG'.format(price))
+
+        print('Checking that the ENG balance in {} is greater than '
+              '{} ENG... '.format(address, price), end='')
+
+        balance = self.web3.eth.call({
+                    'from': address,
+                    'to': self.eng_contract_address,
+                    'data': '0x70a08231000000000000000000000000{}'.format(
+                        address[2:])
+                    })
+
+        balance = int(balance[2:], 16) // 10 ** 8
+
+        if balance > price:
+            print('OK.')
+        else:
+            print('FAIL.\n\nAddress {} balance is {} ENG,\nwhich is lower '
+                  'than the price of the dataset that you are trying to\n'
+                  'buy: {} ENG. Get enough ENG to cover the costs of the '
+                  'monthly\nsubscription for what you are trying to buy, '
+                  'and try again.'.format(address, balance, price))
+            return
+
+        while True:
+            agree_pay = input('Please confirm that you agree to pay {} ENG '
+                              'for a monthly subscription to the dataset "{}" '
+                              'starting today. [default: Y] '.format(
+                                  price, dataset)) or 'y'
+            if agree_pay.lower() not in ('y', 'n'):
+                print("Please answer Y or N.")
+            else:
+                if agree_pay.lower() == 'y':
+                    break
+                else:
+                    return
+
+        print('Ready to subscribe to dataset {}.\n'.format(dataset))
+        print('In order to execute the subscription, you will need to sign '
+              'two different transactions:\n'
+              '1. First transaction is to authorize the Marketplace contract '
+              'to spend {} ENG on your behalf.\n'
+              '2. Second transaction is the actual subscription for the '
+              'desired dataset'.format(price))
+
+        tx = self.eng_contract.functions.approve(
+                    self.mkt_contract_address,
+                    price,
+                 ).buildTransaction(
+                    {'nonce': self.web3.eth.getTransactionCount(address)})
+
+        if 'ropsten' in REMOTE_NODE:
+            tx['gas'] = min(int(tx['gas'] * 1.5), 4700000)
+
+        signed_tx = self.sign_transaction(address, tx)
+
+        try:
+            tx_hash = '0x{}'.format(bin_hex(
+                          self.web3.eth.sendRawTransaction(signed_tx)))
+            print('\nThis is the TxHash for this transaction: '
+                  '{}'.format(tx_hash))
+
+        except Exception as e:
+            print('Unable to subscribe to data source: {}'.format(e))
+            return
+
+        if 'ropsten' in REMOTE_NODE:
+            etherscan = 'https://ropsten.etherscan.io/tx/{}'.format(
+                            tx_hash)
+        else:
+            etherscan = 'https://etherscan.io/tx/{}'.format(tx_hash)
+
+        print('You can check the outcome of your transaction here:\n'
+              '{}\n\n'.format(etherscan))
+
+        print('Waiting for the first transaction to succeed...')
+
+        while True:
+            try:
+                if self.web3.eth.getTransactionReceipt(tx_hash).status:
+                    break
+                else:
+                    print('\nTransaction failed. Aborting...')
+                    return
+            except AttributeError:
+                pass
+            for i in range(0, 10):
+                print('.', end='', flush=True)
+                time.sleep(1)
+
+        print('\nFirst transaction successful!\n'
+              'Now processing second transaction.')
+
+        tx = self.mkt_contract.functions.subscribe(
                     bytes32(dataset),
                  ).buildTransaction(
                     {'nonce': self.web3.eth.getTransactionCount(address)})
 
         if 'ropsten' in REMOTE_NODE:
-            tx['gas'] = 4700000
+            tx['gas'] = min(int(tx['gas'] * 1.5), 4700000)
 
         signed_tx = self.sign_transaction(address, tx)
 
         try:
-            tx_hash = '0x{}'.format(b32_str(
+            tx_hash = '0x{}'.format(bin_hex(
                           self.web3.eth.sendRawTransaction(signed_tx)))
             print('\nThis is the TxHash for this transaction: '
                   '{}'.format(tx_hash))
 
-            if 'ropsten' in REMOTE_NODE:
-                etherscan = 'https://ropsten.etherscan.io/tx/{}'.format(
-                                tx_hash)
-            else:
-                etherscan = 'https://etherscan.io/tx/{}'.format(tx_hash)
-
-            print('You can check the outcome of your transaction here:\n'
-                  '{}'.format(etherscan))
-
         except Exception as e:
             print('Unable to subscribe to data source: {}'.format(e))
+            return
 
-    def ingest(self, data_source_name, data_frequency=None, start=None,
+        if 'ropsten' in REMOTE_NODE:
+            etherscan = 'https://ropsten.etherscan.io/tx/{}'.format(
+                            tx_hash)
+        else:
+            etherscan = 'https://etherscan.io/tx/{}'.format(tx_hash)
+
+        print('You can check the outcome of your transaction here:\n'
+              '{}'.format(etherscan))
+
+        print('Waiting for the second transaction to succeed...')
+
+        while True:
+            try:
+                if self.web3.eth.getTransactionReceipt(tx_hash).status:
+                    break
+                else:
+                    print('\nTransaction failed. Aborting...')
+                    return
+            except AttributeError:
+                pass
+            for i in range(0, 10):
+                print('.', end='', flush=True)
+                time.sleep(1)
+
+        print('\nSecond transaction successful!\n'
+              'You have successfully subscribed to dataset {} with'
+              'address {}.\n'
+              'You can now ingest this dataset anytime during the '
+              'next month by running the following command:\n'
+              'catalyst marketplace ingest --dataset={}'.format(
+                dataset, address, dataset))
+
+    def ingest(self, dataset, data_frequency=None, start=None,
                end=None, force_download=False):
-        data_source_name = data_source_name.lower()
+
+        address = self.choose_pubaddr()
+
+        check_sub = self.mkt_contract.functions.checkAddressSubscription(
+                            address, bytes32(dataset)).call()
+
+        if check_sub[0] != address or b32_str(check_sub[1]) != dataset:
+            raise MarketplaceContractDataNoMatch(
+                    params='address: {}, dataset: {}'.format(
+                            address, dataset))
+
+        if not check_sub[5]:
+            raise MarketplaceSubscriptionExpired(
+                    dataset=dataset,
+                    date=check_sub[4])
+
+        # WIP
+
+        dataset = dataset.lower()
 
         period = start.strftime('%Y-%m-%d')
-        tmp_folder = get_data_source(data_source_name, period, force_download)
+        tmp_folder = get_data_source(dataset, period, force_download)
 
-        bundle_folder = get_bundle_folder(data_source_name, data_frequency)
+        bundle_folder = get_bundle_folder(dataset, data_frequency)
         if os.listdir(bundle_folder):
             zsource = bcolz.ctable(rootdir=tmp_folder, mode='r')
             ztarget = bcolz.ctable(rootdir=bundle_folder, mode='r')
@@ -294,10 +449,10 @@ class Marketplace:
                           'this dataset in ENG: '))
 
         # while True:
-        #     freq = input('Enter the data frequency [daily, hourly, minute]: ')
-        #     if freq.lower() not in ('daily', 'houlry', 'minute'):
+        #    freq = input('Enter the data frequency [daily, hourly, minute]: ')
+        #    if freq.lower() not in ('daily', 'houlry', 'minute'):
         #         print("Not a valid frequency.")
-        #     else:
+        #    else:
         #         break
 
         # while True:
@@ -326,25 +481,26 @@ class Marketplace:
 
         address = self.choose_pubaddr()
 
-        tx = self.contract.functions.register(
+        tx = self.mkt_contract.functions.register(
                     bytes32(dataset),
                     price,
                     address,
                  ).buildTransaction(
                     {'nonce': self.web3.eth.getTransactionCount(address)})
 
-        tx['gas'] = int(tx['gas'] * 1.5)     # Defaults to not enough gas
+        if 'ropsten' in REMOTE_NODE and tx['gas'] > 4700000:
+            tx['gas'] = 4700000
 
         signed_tx = self.sign_transaction(address, tx)
 
-        tx_hash = '0x{}'.format(b32_str(
+        tx_hash = '0x{}'.format(bin_hex(
                     self.web3.eth.sendRawTransaction(signed_tx)))
 
         print('\nThis is the TxHash for this transaction: {}'.format(tx_hash))
 
     def publish(self, dataset, datadir, watch):
 
-        datasource = self.contract.functions.getDataSource(
+        datasource = self.mkt_contract.functions.getDataSource(
                         bytes32(dataset)).call()
 
         if not datasource[4]:
@@ -371,11 +527,11 @@ class Marketplace:
         nonce = str(int(time.time()))
 
         signature = hmac.new(secret.encode('utf-8'),
-                             '{}{}'.format(dataset,nonce).encode('utf-8'),
+                             '{}{}'.format(dataset, nonce).encode('utf-8'),
                              hashlib.sha512).hexdigest()
 
-        headers = {'Sign': signature, 
-                   'Key': key, 
+        headers = {'Sign': signature,
+                   'Key': key,
                    'Nonce': nonce,
                    'Dataset': dataset}
 

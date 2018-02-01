@@ -7,7 +7,8 @@ from catalyst.errors import ZiplineError
 def silent_except_hook(exctype, excvalue, exctraceback):
     if exctype in [MarketplacePubAddressEmpty, MarketplaceDatasetNotFound,
                    MarketplaceNoAddressMatch, MarketplaceHTTPRequest,
-                   MarketplaceNoCSVFiles]:
+                   MarketplaceNoCSVFiles, MarketplaceContractDataNoMatch,
+                   MarketplaceSubscriptionExpired]:
         fn = traceback.extract_tb(exctraceback)[-1][0]
         ln = traceback.extract_tb(exctraceback)[-1][1]
         print("Error traceback: {1} (line {2})\n"
@@ -48,4 +49,20 @@ class MarketplaceHTTPRequest(ZiplineError):
 class MarketplaceNoCSVFiles(ZiplineError):
     msg = (
         'No CSV files found on {datadir} to upload.'
+    )
+
+
+class MarketplaceContractDataNoMatch(ZiplineError):
+    msg = (
+        'The information found on the contract does not match the '
+        'requested data:\n{params}.'
+    )
+
+
+class MarketplaceSubscriptionExpired(ZiplineError):
+    msg = (
+        'Your subscription to dataset "{dataset}" expired on {date} '
+        'and is no longer active. You have to subscribe again running the '
+        'following command:\n'
+        'catalyst marketplace subscribe --dataset={dataset}'
     )
