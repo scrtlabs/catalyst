@@ -11,7 +11,7 @@ class TestMarketplace(WithLogger, ZiplineTestCase):
 
     def test_register(self):
         marketplace = Marketplace()
-        marketplace.register('GitHub')
+        marketplace.register()
         pass
 
     def test_ingest(self):
@@ -30,3 +30,4 @@ class TestMarketplace(WithLogger, ZiplineTestCase):
         marketplace = Marketplace()
         marketplace.clean('marketcap')
         pass
+

@@ -37,7 +37,6 @@ if sys.version_info.major < 3:
 else:
     import urllib.request as urllib
 
-
 log = logbook.Logger('Marketplace', level=LOG_LEVEL)
 
 
@@ -48,9 +47,9 @@ class Marketplace:
 
         if self.addresses[0]['pubAddr'] == '':
             raise MarketplacePubAddressEmpty(
-                    filename=os.path.join(
-                        get_marketplace_folder(), 'addresses.json')
-                    )
+                filename=os.path.join(
+                    get_marketplace_folder(), 'addresses.json')
+            )
         self.default_account = self.addresses[0]['pubAddr']
 
         self.web3 = Web3(HTTPProvider(ETH_REMOTE_NODE))
@@ -58,7 +57,7 @@ class Marketplace:
         contract_url = urllib.urlopen(MARKETPLACE_CONTRACT)
 
         self.mkt_contract_address = Web3.toChecksumAddress(
-                                       contract_url.readline().strip())
+            contract_url.readline().strip())
 
         abi_url = urllib.urlopen(MARKETPLACE_CONTRACT_ABI)
         abi = json.load(abi_url)
@@ -71,7 +70,7 @@ class Marketplace:
         contract_url = urllib.urlopen(ENIGMA_CONTRACT)
 
         self.eng_contract_address = Web3.toChecksumAddress(
-                                        contract_url.readline().strip())
+            contract_url.readline().strip())
 
         abi_url = urllib.urlopen(ENIGMA_CONTRACT_ABI)
         abi = json.load(abi_url)
@@ -118,10 +117,10 @@ class Marketplace:
                                   'this transaction: [default: 0] ') or 0)
             if not (0 <= address_i < len(self.addresses)):
                 print('Please choose a number between 0 and {}\n'.format(
-                        len(self.addresses)-1))
+                    len(self.addresses) - 1))
             else:
                 address = Web3.toChecksumAddress(
-                               self.addresses[address_i]['pubAddr'])
+                    self.addresses[address_i]['pubAddr'])
                 break
 
         return address, address_i
@@ -136,14 +135,14 @@ class Marketplace:
               'Gas Limit:\t\t{gas}\n'
               'Nonce:\t\t\t{nonce}\n'
               'Data:\t\t\t{data}\n'.format(
-                    _from=from_address,
-                    to=tx['to'],
-                    value=tx['value'],
-                    gas=tx['gas'],
-                    nonce=tx['nonce'],
-                    data=tx['data'],
-                    )
-              )
+            _from=from_address,
+            to=tx['to'],
+            value=tx['value'],
+            gas=tx['gas'],
+            nonce=tx['nonce'],
+            data=tx['data'],
+        )
+        )
 
         signed_tx = input('Copy and Paste the "Signed Transaction" '
                           'field here:\n')
@@ -198,7 +197,7 @@ class Marketplace:
         address = self.choose_pubaddr()[0]
 
         dataset_info = self.mkt_contract.functions.getDataSource(
-                                bytes32(dataset)).call()
+            bytes32(dataset)).call()
 
         price = dataset_info[1]
 
@@ -209,11 +208,11 @@ class Marketplace:
               '{} ENG... '.format(address, price), end='')
 
         balance = self.web3.eth.call({
-                    'from': address,
-                    'to': self.eng_contract_address,
-                    'data': '0x70a08231000000000000000000000000{}'.format(
-                        address[2:])
-                    })
+            'from': address,
+            'to': self.eng_contract_address,
+            'data': '0x70a08231000000000000000000000000{}'.format(
+                address[2:])
+        })
 
         balance = int(balance[2:], 16) // 10 ** 8
 
@@ -231,7 +230,7 @@ class Marketplace:
             agree_pay = input('Please confirm that you agree to pay {} ENG '
                               'for a monthly subscription to the dataset "{}" '
                               'starting today. [default: Y] '.format(
-                                  price, dataset)) or 'y'
+                price, dataset)) or 'y'
             if agree_pay.lower() not in ('y', 'n'):
                 print("Please answer Y or N.")
             else:
@@ -249,10 +248,10 @@ class Marketplace:
               'desired dataset'.format(price))
 
         tx = self.eng_contract.functions.approve(
-                    self.mkt_contract_address,
-                    price,
-                 ).buildTransaction(
-                    {'nonce': self.web3.eth.getTransactionCount(address)})
+            self.mkt_contract_address,
+            price,
+        ).buildTransaction(
+            {'nonce': self.web3.eth.getTransactionCount(address)})
 
         if 'ropsten' in ETH_REMOTE_NODE:
             tx['gas'] = min(int(tx['gas'] * 1.5), 4700000)
@@ -261,7 +260,7 @@ class Marketplace:
 
         try:
             tx_hash = '0x{}'.format(bin_hex(
-                          self.web3.eth.sendRawTransaction(signed_tx)))
+                self.web3.eth.sendRawTransaction(signed_tx)))
             print('\nThis is the TxHash for this transaction: '
                   '{}'.format(tx_hash))
 
@@ -271,7 +270,7 @@ class Marketplace:
 
         if 'ropsten' in ETH_REMOTE_NODE:
             etherscan = 'https://ropsten.etherscan.io/tx/{}'.format(
-                            tx_hash)
+                tx_hash)
         else:
             etherscan = 'https://etherscan.io/tx/{}'.format(tx_hash)
 
@@ -297,9 +296,9 @@ class Marketplace:
               'Now processing second transaction.')
 
         tx = self.mkt_contract.functions.subscribe(
-                    bytes32(dataset),
-                 ).buildTransaction(
-                    {'nonce': self.web3.eth.getTransactionCount(address)})
+            bytes32(dataset),
+        ).buildTransaction(
+            {'nonce': self.web3.eth.getTransactionCount(address)})
 
         if 'ropsten' in ETH_REMOTE_NODE:
             tx['gas'] = min(int(tx['gas'] * 1.5), 4700000)
@@ -308,7 +307,7 @@ class Marketplace:
 
         try:
             tx_hash = '0x{}'.format(bin_hex(
-                          self.web3.eth.sendRawTransaction(signed_tx)))
+                self.web3.eth.sendRawTransaction(signed_tx)))
             print('\nThis is the TxHash for this transaction: '
                   '{}'.format(tx_hash))
 
@@ -318,7 +317,7 @@ class Marketplace:
 
         if 'ropsten' in ETH_REMOTE_NODE:
             etherscan = 'https://ropsten.etherscan.io/tx/{}'.format(
-                            tx_hash)
+                tx_hash)
         else:
             etherscan = 'https://etherscan.io/tx/{}'.format(tx_hash)
 
@@ -346,7 +345,7 @@ class Marketplace:
               'You can now ingest this dataset anytime during the '
               'next month by running the following command:\n'
               'catalyst marketplace ingest --dataset={}'.format(
-                dataset, address, dataset))
+            dataset, address, dataset))
 
     def ingest(self, dataset, data_frequency=None, start=None,
                end=None, force_download=False):
@@ -356,17 +355,17 @@ class Marketplace:
         address, address_i = self.choose_pubaddr()
 
         check_sub = self.mkt_contract.functions.checkAddressSubscription(
-                            address, bytes32(dataset)).call()
+            address, bytes32(dataset)).call()
 
         if check_sub[0] != address or b32_str(check_sub[1]) != dataset:
             raise MarketplaceContractDataNoMatch(
-                    params='address: {}, dataset: {}'.format(
-                            address, dataset))
+                params='address: {}, dataset: {}'.format(
+                    address, dataset))
 
         if not check_sub[5]:
             raise MarketplaceSubscriptionExpired(
-                    dataset=dataset,
-                    date=check_sub[4])
+                dataset=dataset,
+                date=check_sub[4])
 
         if 'key' in self.addresses[address_i]:
             key = self.addresses[address_i]['key']
@@ -500,11 +499,11 @@ class Marketplace:
         address = self.choose_pubaddr()[0]
 
         tx = self.mkt_contract.functions.register(
-                    bytes32(dataset),
-                    price,
-                    address,
-                 ).buildTransaction(
-                    {'nonce': self.web3.eth.getTransactionCount(address)})
+            bytes32(dataset),
+            price,
+            address,
+        ).buildTransaction(
+            {'nonce': self.web3.eth.getTransactionCount(address)})
 
         if 'ropsten' in ETH_REMOTE_NODE and tx['gas'] > 4700000:
             tx['gas'] = 4700000
@@ -512,14 +511,14 @@ class Marketplace:
         signed_tx = self.sign_transaction(address, tx)
 
         tx_hash = '0x{}'.format(bin_hex(
-                    self.web3.eth.sendRawTransaction(signed_tx)))
+            self.web3.eth.sendRawTransaction(signed_tx)))
 
         print('\nThis is the TxHash for this transaction: {}'.format(tx_hash))
 
     def publish(self, dataset, datadir, watch):
 
         datasource = self.mkt_contract.functions.getDataSource(
-                        bytes32(dataset)).call()
+            bytes32(dataset)).call()
 
         if not datasource[4]:
             raise MarketplaceDatasetNotFound(dataset=dataset)
@@ -529,11 +528,11 @@ class Marketplace:
 
         if not match:
             raise MarketplaceNoAddressMatch(
-                    dataset=dataset,
-                    address=datasource[0])
+                dataset=dataset,
+                address=datasource[0])
 
         print('Using address: {} to publish this dataset.'.format(
-                datasource[0]))
+            datasource[0]))
 
         if 'key' in match:
             key = match['key']
