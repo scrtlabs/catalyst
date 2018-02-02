@@ -539,57 +539,61 @@ class Marketplace:
             else:
                 break
 
-        price = int(input('Enter the price for a monthly subscription to '
-                          'this dataset in ENG: '))
+        price = int(
+            input(
+                'Enter the price for a monthly subscription to '
+                'this dataset in ENG: '
+            )
+        )
+        while True:
+            freq = input('Enter the data frequency [daily, hourly, minute]: ')
+            if freq.lower() not in ('daily', 'hourly', 'minute'):
+                print('Not a valid frequency.')
+            else:
+                break
 
-        # while True:
-        #    freq = input('Enter the data frequency [daily, hourly, minute]: ')
-        #    if freq.lower() not in ('daily', 'houlry', 'minute'):
-        #         print("Not a valid frequency.")
-        #    else:
-        #         break
+        while True:
+            reg_pub = input(
+                'Doest it include historical data? [default: Y]: '
+            ) or 'y'
+            if reg_pub.lower() not in ('y', 'n'):
+                print('Please answer Y or N.')
+            else:
+                if reg_pub.lower() == 'y':
+                    has_history = True
+                else:
+                    has_history = False
+                break
 
-        # while True:
-        #     reg_pub = input('Can data be published every hour at a regular '
-        #                     'time? [default: Y]: ') or 'y'
-        #     if reg_pub.lower() not in ('y', 'n'):
-        #         print("Please answer Y or N.")
-        #     else:
-        #         if reg_pub.lower() == 'y':
-        #             reg_pub = True
-        #         else:
-        #             reg_pub = False
-        #         break
-
-        # while True:
-        #     hist = input('Does it include historical data? '
-        #                  '[default: Y]') or 'y'
-        #     if hist.lower() not in ('y', 'n'):
-        #         print("Please answer Y or N.")
-        #     else:
-        #         if hist.lower() == 'y':
-        #             hist = True
-        #         else:
-        #             hist = False
-        #         break
+        while True:
+            reg_pub = input(
+                'Doest it include live data? [default: Y]: '
+            ) or 'y'
+            if reg_pub.lower() not in ('y', 'n'):
+                print('Please answer Y or N.')
+            else:
+                if reg_pub.lower() == 'y':
+                    has_live = True
+                else:
+                    has_live = False
+                break
 
         address = self.choose_pubaddr()[0]
-
         tx = self.mkt_contract.functions.register(
             bytes32(dataset),
             price,
             address,
         ).buildTransaction(
-            {'nonce': self.web3.eth.getTransactionCount(address)})
+            {'nonce': self.web3.eth.getTransactionCount(address)}
+        )
 
         if 'ropsten' in ETH_REMOTE_NODE:
             tx['gas'] = min(int(tx['gas'] * 1.5), 4700000)
 
         signed_tx = self.sign_transaction(address, tx)
-
-        tx_hash = '0x{}'.format(bin_hex(
-            self.web3.eth.sendRawTransaction(signed_tx)))
-
+        tx_hash = '0x{}'.format(
+            bin_hex(self.web3.eth.sendRawTransaction(signed_tx))
+        )
         print('\nThis is the TxHash for this transaction: {}'.format(tx_hash))
 
         self.check_transaction(tx_hash)

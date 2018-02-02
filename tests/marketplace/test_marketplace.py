@@ -32,6 +32,11 @@ class TestMarketplace(WithLogger, ZiplineTestCase):
         )
         pass
 
+    def test_publish(self):
+        marketplace = Marketplace()
+        datadir = '/Users/fredfortier/Downloads/marketcap_test_single'
+        marketplace.publish('marketcap1', datadir, False)
+
     def test_clean(self):
         marketplace = Marketplace()
         marketplace.clean('marketcap')
