@@ -5,6 +5,7 @@ import tarfile
 import shutil
 
 from catalyst.data.bundles.core import download_without_progress
+from catalyst.utils.deprecate import deprecated
 from catalyst.utils.paths import data_root, ensure_directory
 
 
@@ -55,6 +56,7 @@ def get_data_source_folder(data_source_name, environ=None):
     return data_source_folder
 
 
+@deprecated
 def get_bundle_folder(data_source_name, data_frequency, environ=None):
     data_source_folder = get_data_source_folder(data_source_name, environ)
 
@@ -65,13 +67,13 @@ def get_bundle_folder(data_source_name, data_frequency, environ=None):
     return bundle_folder
 
 
-def get_temp_bundles_folder(data_source_name, environ=None):
+def get_temp_bundles_folder(environ=None):
     """
     The temp folder for bundle downloads by algo name.
 
     Parameters
     ----------
-    data_source_name: str
+    ds_name: str
     environ:
 
     Returns
@@ -79,55 +81,31 @@ def get_temp_bundles_folder(data_source_name, environ=None):
     str
 
     """
-    data_source_folder = get_data_source_folder(data_source_name, environ)
+    root = data_root(environ)
+    folder = os.path.join(root, 'marketplace', 'temp_bundles')
+    ensure_directory(folder)
 
-    temp_bundles = os.path.join(data_source_folder, 'temp_bundles')
-    ensure_directory(temp_bundles)
-
-    return temp_bundles
+    return folder
 
 
-def get_data_source(data_source_name, period, force_download=False):
+def extract_bundle(tar_filename):
     """
-    Download and extract a bcolz bundle.
+    Extract a bcolz bundle.
 
     Parameters
     ----------
-    exchange_name: str
-    symbol: str
-    data_frequency: str
-    period: str
+    ds_name
 
     Returns
     -------
     str
 
     """
-    root = get_temp_bundles_folder(data_source_name)
-    name = '{data_source}_{period}'.format(
-        data_source=data_source_name,
-        period=period,
-    )
-    path = os.path.join(root, name)
+    target_path = tar_filename.replace('.tar.gz', '')
+    with tarfile.open(tar_filename, 'r') as tar:
+        tar.extractall(target_path)
 
-    if os.path.isdir(path):
-        if force_download:
-            shutil.rmtree(path)
-
-        else:
-            return path
-
-    ensure_directory(path)
-
-    url = 'http://127.0.0.1:8080/{data_source}/{name}.tar.gz'.format(
-        data_source=data_source_name,
-        name=name,
-    )
-    bytes = download_without_progress(url)
-    with tarfile.open('r', fileobj=bytes) as tar:
-        tar.extractall(path)
-
-    return path
+    return target_path
 
 
 def get_user_pubaddr(environ=None):

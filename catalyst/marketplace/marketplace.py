@@ -1,21 +1,21 @@
+import glob
+import hashlib
+import hmac
+import json
 import os
 import re
-import sys
-import json
-import hmac
-import glob
-import time
 import shutil
-import hashlib
+import sys
+import time
 
 import bcolz
 import logbook
 import pandas as pd
+import requests
 import six
 from requests_toolbelt import MultipartDecoder
 from requests_toolbelt.multipart.decoder import \
     NonMultipartContentTypeException
-import requests
 from web3 import Web3, HTTPProvider
 
 from catalyst.constants import (
@@ -27,12 +27,12 @@ from catalyst.marketplace.marketplace_errors import (
     MarketplaceNoAddressMatch, MarketplaceHTTPRequest,
     MarketplaceNoCSVFiles, MarketplaceContractDataNoMatch,
     MarketplaceSubscriptionExpired)
-from catalyst.marketplace.utils.bundle_utils import merge_bundles
-from catalyst.marketplace.utils.path_utils import get_data_source, \
-    get_bundle_folder, get_data_source_folder, get_marketplace_folder, \
-    get_user_pubaddr
-from catalyst.marketplace.utils.eth_utils import bytes32, b32_str, bin_hex
 from catalyst.marketplace.utils.auth_utils import get_key_secret
+from catalyst.marketplace.utils.bundle_utils import merge_bundles
+from catalyst.marketplace.utils.eth_utils import bytes32, b32_str, bin_hex
+from catalyst.marketplace.utils.path_utils import get_bundle_folder, \
+    get_data_source_folder, get_marketplace_folder, \
+    get_user_pubaddr, get_temp_bundles_folder, extract_bundle
 
 if sys.version_info.major < 3:
     import urllib
@@ -125,7 +125,7 @@ class Marketplace:
                                       'this transaction: [default: 0] ') or 0)
                 if not (0 <= address_i < len(self.addresses)):
                     print('Please choose a number between 0 and {}\n'.format(
-                        len(self.addresses)-1))
+                        len(self.addresses) - 1))
                 else:
                     address = Web3.toChecksumAddress(
                         self.addresses[address_i]['pubAddr'])
@@ -369,92 +369,119 @@ class Marketplace:
               'catalyst marketplace ingest --dataset={}'.format(
             dataset, address, dataset))
 
-    def ingest(self, dataset, data_frequency=None, start=None,
-               end=None, force_download=False):
+    def process_temp_bundle(self, ds_name, path):
+        """
+        Merge the temp bundle into the main bundle for the specified
+        data source.
 
-        dataset = dataset.lower()
+        Parameters
+        ----------
+        ds_name
+        path
 
+        Returns
+        -------
+
+        """
+        tmp_bundle = extract_bundle(path)
+        bundle_folder = get_data_source_folder(ds_name)
+        if os.listdir(bundle_folder):
+            zsource = bcolz.ctable(rootdir=tmp_bundle, mode='r')
+            ztarget = bcolz.ctable(rootdir=bundle_folder, mode='r')
+            merge_bundles(zsource, ztarget)
+
+        else:
+            os.rename(tmp_bundle, bundle_folder)
+
+        pass
+
+    def ingest(self, ds_name, start=None, end=None, force_download=False):
+
+        ds_name = ds_name.lower()
         dataset_info = self.mkt_contract.functions.getDataSource(
-            bytes32(dataset)).call()
+            bytes32(ds_name)
+        ).call()
 
         if not dataset_info[4]:
             print('The requested "{}" dataset is not registered in '
-                  'the Data Marketplace.'.format(dataset))
+                  'the Data Marketplace.'.format(ds_name))
             return
 
         address, address_i = self.choose_pubaddr()
-
         check_sub = self.mkt_contract.functions.checkAddressSubscription(
-            address, bytes32(dataset)).call()
+            address, bytes32(ds_name)
+        ).call()
 
-        if check_sub[0] != address or b32_str(check_sub[1]) != dataset:
+        if check_sub[0] != address or b32_str(check_sub[1]) != ds_name:
             raise MarketplaceContractDataNoMatch(
                 params='address: {}, dataset: {}'.format(
-                    address, dataset))
+                    address, ds_name
+                )
+            )
 
         if not check_sub[5]:
             raise MarketplaceSubscriptionExpired(
-                dataset=dataset,
-                date=check_sub[4])
+                dataset=ds_name,
+                date=check_sub[4],
+            )
 
         if 'key' in self.addresses[address_i]:
             key = self.addresses[address_i]['key']
             secret = self.addresses[address_i]['secret']
         else:
             # TODO: Verify signature to obtain key/secret pair
-            key, secret = get_key_secret(address, dataset)
+            key, secret = get_key_secret(address, ds_name)
 
         nonce = str(int(time.time()))
+        signature = hmac.new(
+            secret.encode('utf-8'),
+            '{}{}'.format(ds_name, nonce).encode('utf-8'),
+            hashlib.sha512
+        ).hexdigest()
 
-        signature = hmac.new(secret.encode('utf-8'),
-                             '{}{}'.format(dataset, nonce).encode('utf-8'),
-                             hashlib.sha512).hexdigest()
-
-        headers = {'Sign': signature,
-                   'Key': key,
-                   'Nonce': nonce,
-                   'Dataset': dataset}
-
-        print('Starting download of dataset for ingestion...')
-
-        r = requests.post('{}/marketplace/ingest'.format(AUTH_SERVER),
-                          headers=headers, stream=True)
-
+        headers = {
+            'Sign': signature,
+            'Key': key,
+            'Nonce': nonce,
+            'Dataset': ds_name,
+        }
+        log.debug('Starting download of dataset for ingestion...')
+        r = requests.post(
+            '{}/marketplace/ingest'.format(AUTH_SERVER),
+            headers=headers,
+            stream=True,
+        )
         if r.status_code == 200:
+            target_path = get_temp_bundles_folder()
             try:
                 decoder = MultipartDecoder.from_response(r)
                 for part in decoder.parts:
                     h = part.headers[b'Content-Disposition'].decode('utf-8')
-                    filename = re.search(r'filename="(.*)"', h).group(1)
+                    # Extracting the filename from the header
+                    name = re.search(r'filename="(.*)"', h).group(1)
+
+                    filename = os.path.join(target_path, name)
                     with open(filename, 'wb') as f:
                         # for chunk in part.content.iter_content(chunk_size=1024):
                         #    if chunk: # filter out keep-alive new chunks
                         #        f.write(chunk)
                         f.write(part.content)
+
+                    self.process_temp_bundle(ds_name, filename)
+
             except NonMultipartContentTypeException:
                 response = r.json()
-                raise MarketplaceHTTPRequest(request='ingest dataset',
-                                             error=response)
+                raise MarketplaceHTTPRequest(
+                    request='ingest dataset',
+                    error=response,
+                )
         else:
-            raise MarketplaceHTTPRequest(request='ingest dataset',
-                                         error=r.status_code)
+            raise MarketplaceHTTPRequest(
+                request='ingest dataset',
+                error=r.status_code,
+            )
 
-        print('Download successful, now we need to ingest...')
-        exit(0)
-        # TODO: sync with Fred on the below and
-        # exiting for now
-
-        period = start.strftime('%Y-%m-%d')
-        tmp_folder = get_data_source(dataset, period, force_download)
-
-        bundle_folder = get_bundle_folder(dataset, data_frequency)
-        if os.listdir(bundle_folder):
-            zsource = bcolz.ctable(rootdir=tmp_folder, mode='r')
-            ztarget = bcolz.ctable(rootdir=bundle_folder, mode='r')
-            merge_bundles(zsource, ztarget)
-
-        else:
-            os.rename(tmp_folder, bundle_folder)
+        log.info('{} ingested successfully'.format(ds_name))
 
     def get_data_source(self, data_source_name, data_frequency=None,
                         start=None, end=None):

@@ -14,9 +14,15 @@ class TestMarketplace(WithLogger, ZiplineTestCase):
         marketplace.register()
         pass
 
+    def test_subscribe(self):
+        marketplace = Marketplace()
+        marketplace.subscribe('Victor2')
+        pass
+
     def test_ingest(self):
         marketplace = Marketplace()
-        ds_def = marketplace.get_data_source_def('Marketcap')
+        ds_def = marketplace.ingest('Victor2')
+        pass
 
         marketplace.ingest(
             data_source_name='Marketcap',
@@ -30,4 +36,3 @@ class TestMarketplace(WithLogger, ZiplineTestCase):
         marketplace = Marketplace()
         marketplace.clean('marketcap')
         pass
-
