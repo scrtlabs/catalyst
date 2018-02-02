@@ -213,10 +213,17 @@ class Marketplace:
 
     def subscribe(self, dataset):
 
+        dataset = dataset.lower()
+
         address = self.choose_pubaddr()[0]
 
         dataset_info = self.mkt_contract.functions.getDataSource(
             bytes32(dataset)).call()
+
+        if not dataset_info[4]:
+            print('The requested "{}" dataset is not registered in '
+                  'the Data Marketplace.'.format(dataset))
+            return
 
         price = dataset_info[1]
 
@@ -363,6 +370,14 @@ class Marketplace:
                end=None, force_download=False):
 
         dataset = dataset.lower()
+
+        dataset_info = self.mkt_contract.functions.getDataSource(
+            bytes32(dataset)).call()
+
+        if not dataset_info[4]:
+            print('The requested "{}" dataset is not registered in '
+                  'the Data Marketplace.'.format(dataset))
+            return
 
         address, address_i = self.choose_pubaddr()
 
@@ -551,6 +566,8 @@ class Marketplace:
 
     def publish(self, dataset, datadir, watch):
 
+        dataset = dataset.lower()
+
         datasource = self.mkt_contract.functions.getDataSource(
             bytes32(dataset)).call()
 
@@ -607,4 +624,4 @@ class Marketplace:
             raise MarketplaceHTTPRequest(request='upload file',
                                          error=r.json()['error'])
 
-        print('Dataset {} published successfully.'.format(dataset))
+        print('Dataset {} uploaded successfully.'.format(dataset))
