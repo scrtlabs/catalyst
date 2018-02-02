@@ -240,7 +240,10 @@ class Marketplace:
                 address[2:])
         })
 
-        balance = int(balance[2:], 16) // 10 ** 8
+        try:
+            balance = int(balance[2:], 16) // 10 ** 8
+        except ValueError:
+            balance = int(bin_hex(balance), 16) // 10 ** 8
 
         if balance > price:
             print('OK.')
