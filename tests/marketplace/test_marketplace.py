@@ -16,20 +16,12 @@ class TestMarketplace(WithLogger, ZiplineTestCase):
 
     def test_subscribe(self):
         marketplace = Marketplace()
-        marketplace.subscribe('Victor2')
+        marketplace.subscribe('marketcap1')
         pass
 
     def test_ingest(self):
         marketplace = Marketplace()
-        ds_def = marketplace.ingest('Victor2')
-        pass
-
-        marketplace.ingest(
-            data_source_name='Marketcap',
-            data_frequency=ds_def['data_frequencies'][0],
-            start=pd.to_datetime('2017-10-01'),
-            force_download=True,
-        )
+        ds_def = marketplace.ingest('marketcap1')
         pass
 
     def test_publish(self):
