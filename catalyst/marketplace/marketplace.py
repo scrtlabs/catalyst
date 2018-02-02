@@ -160,6 +160,17 @@ class Marketplace:
 
         return signed_tx
 
+    def check_transaction(self, tx_hash):
+
+        if 'ropsten' in ETH_REMOTE_NODE:
+            etherscan = 'https://ropsten.etherscan.io/tx/{}'.format(
+                tx_hash)
+        else:
+            etherscan = 'https://etherscan.io/tx/{}'.format(tx_hash)
+
+        print('\nYou can check the outcome of your transaction here:\n'
+              '{}\n\n'.format(etherscan))
+
     def get_data_source_def(self, data_source_name):
         data_source_name = data_source_name.lower()
         dsm = self.get_data_sources_map()
@@ -276,14 +287,7 @@ class Marketplace:
             print('Unable to subscribe to data source: {}'.format(e))
             return
 
-        if 'ropsten' in ETH_REMOTE_NODE:
-            etherscan = 'https://ropsten.etherscan.io/tx/{}'.format(
-                tx_hash)
-        else:
-            etherscan = 'https://etherscan.io/tx/{}'.format(tx_hash)
-
-        print('You can check the outcome of your transaction here:\n'
-              '{}\n\n'.format(etherscan))
+        self.check_transaction(tx_hash)
 
         print('Waiting for the first transaction to succeed...')
 
@@ -476,7 +480,20 @@ class Marketplace:
         pass
 
     def register(self):
-        dataset = input('Enter the name of the dataset to register: ')
+        while True:
+            dataset = input('Enter the name of the dataset to register: ')
+            dataset = dataset.lower()
+
+            datasource = self.mkt_contract.functions.getDataSource(
+                bytes32(dataset)).call()
+
+            if datasource[4]:
+                print('There is already a dataset registered under '
+                      'the name "{}". Please choose a different '
+                      'name.'.format(dataset))
+            else:
+                break
+
         price = int(input('Enter the price for a monthly subscription to '
                           'this dataset in ENG: '))
 
@@ -520,8 +537,8 @@ class Marketplace:
         ).buildTransaction(
             {'nonce': self.web3.eth.getTransactionCount(address)})
 
-        if 'ropsten' in ETH_REMOTE_NODE and tx['gas'] > 4700000:
-            tx['gas'] = 4700000
+        if 'ropsten' in ETH_REMOTE_NODE:
+            tx['gas'] = min(int(tx['gas'] * 1.5), 4700000)
 
         signed_tx = self.sign_transaction(address, tx)
 
@@ -529,6 +546,8 @@ class Marketplace:
             self.web3.eth.sendRawTransaction(signed_tx)))
 
         print('\nThis is the TxHash for this transaction: {}'.format(tx_hash))
+
+        self.check_transaction(tx_hash)
 
     def publish(self, dataset, datadir, watch):
 
