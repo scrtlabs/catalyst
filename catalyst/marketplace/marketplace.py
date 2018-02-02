@@ -13,6 +13,8 @@ import logbook
 import pandas as pd
 import six
 from requests_toolbelt import MultipartDecoder
+from requests_toolbelt.multipart.decoder import \
+    NonMultipartContentTypeException
 import requests
 from web3 import Web3, HTTPProvider
 
@@ -106,22 +108,28 @@ class Marketplace:
     #     ]
 
     def choose_pubaddr(self):
-        while True:
-            for i in range(0, len(self.addresses)):
-                print('{}\t{}\t{}'.format(
-                    i,
-                    self.addresses[i]['pubAddr'],
-                    self.addresses[i]['desc'])
-                )
-            address_i = int(input('Choose your address associated with '
-                                  'this transaction: [default: 0] ') or 0)
-            if not (0 <= address_i < len(self.addresses)):
-                print('Please choose a number between 0 and {}\n'.format(
-                    len(self.addresses) - 1))
-            else:
-                address = Web3.toChecksumAddress(
-                    self.addresses[address_i]['pubAddr'])
-                break
+
+        if len(self.addresses) == 1:
+            address = self.addresses[0]['pubAddr']
+            address_i = 0
+            print('Using {} for this transaction.'.format(address))
+        else:
+            while True:
+                for i in range(0, len(self.addresses)):
+                    print('{}\t{}\t{}'.format(
+                        i,
+                        self.addresses[i]['pubAddr'],
+                        self.addresses[i]['desc'])
+                    )
+                address_i = int(input('Choose your address associated with '
+                                      'this transaction: [default: 0] ') or 0)
+                if not (0 <= address_i < len(self.addresses)):
+                    print('Please choose a number between 0 and {}\n'.format(
+                        len(self.addresses)-1))
+                else:
+                    address = Web3.toChecksumAddress(
+                        self.addresses[address_i]['pubAddr'])
+                    break
 
         return address, address_i
 
@@ -385,19 +393,26 @@ class Marketplace:
                    'Nonce': nonce,
                    'Dataset': dataset}
 
+        print('Starting download of dataset for ingestion...')
+
         r = requests.post('{}/marketplace/ingest'.format(AUTH_SERVER),
                           headers=headers, stream=True)
 
         if r.status_code == 200:
-            decoder = MultipartDecoder.from_response(r)
-            for part in decoder.parts:
-                h = part.headers[b'Content-Disposition'].decode('utf-8')
-                filename = re.search(r'filename="(.*)"', h).group(1)
-                with open(filename, 'wb') as f:
-                    # for chunk in part.content.iter_content(chunk_size=1024):
-                    #    if chunk: # filter out keep-alive new chunks
-                    #        f.write(chunk)
-                    f.write(part.content)
+            try:
+                decoder = MultipartDecoder.from_response(r)
+                for part in decoder.parts:
+                    h = part.headers[b'Content-Disposition'].decode('utf-8')
+                    filename = re.search(r'filename="(.*)"', h).group(1)
+                    with open(filename, 'wb') as f:
+                        # for chunk in part.content.iter_content(chunk_size=1024):
+                        #    if chunk: # filter out keep-alive new chunks
+                        #        f.write(chunk)
+                        f.write(part.content)
+            except NonMultipartContentTypeException:
+                response = r.json()
+                raise MarketplaceHTTPRequest(request='ingest dataset',
+                                             error=response)
         else:
             raise MarketplaceHTTPRequest(request='ingest dataset',
                                          error=r.status_code)
