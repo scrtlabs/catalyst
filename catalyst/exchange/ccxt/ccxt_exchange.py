@@ -798,13 +798,21 @@ class CCXT(Exchange):
             )
             raise ExchangeRequestError(error=e)
 
+        exchange_amount = None
         if 'amount' in result and result['amount'] != adj_amount:
+            exchange_amount = result['amount']
+
+        elif 'info' in result:
+            if 'origQty' in result['info']:
+                exchange_amount = float(result['info']['origQty'])
+
+        if exchange_amount:
             log.info(
                 'order amount adjusted by {} from {} to {}'.format(
-                    self.name, adj_amount, result['amount']
+                    self.name, adj_amount, exchange_amount
                 )
             )
-            adj_amount = result['amount']
+            adj_amount = exchange_amount
 
         if 'info' not in result:
             raise ValueError('cannot use order without info attribute')
