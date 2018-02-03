@@ -869,6 +869,8 @@ class CCXT(Exchange):
         order.commission = exc_order.commission
         order.filled = exc_order.amount
 
+        transactions = []
+
         if exc_order.status == ORDER_STATUS.FILLED:
             if order.amount > exc_order.amount:
                 log.warn(
@@ -882,15 +884,17 @@ class CCXT(Exchange):
                 price=price,
                 dt=exc_order.dt,
             )
-            transaction = Transaction(
-                asset=order.asset,
-                amount=order.amount,
-                dt=pd.Timestamp.utcnow(),
-                price=price,
-                order_id=order.id,
-                commission=order.commission,
+            transactions.append(
+                Transaction(
+                    asset=order.asset,
+                    amount=order.amount,
+                    dt=pd.Timestamp.utcnow(),
+                    price=price,
+                    order_id=order.id,
+                    commission=order.commission,
+                )
             )
-        return [transaction]
+        return transactions
 
     def process_order(self, order):
         # TODO: move to parent class after tracking features in the parent
