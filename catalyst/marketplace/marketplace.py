@@ -522,8 +522,8 @@ class Marketplace:
         headers = get_signed_headers(ds_name, key, secret)
         r = requests.post(
             '{}/marketplace/register'.format(AUTH_SERVER),
-            data=dict(
-                name=ds_name,
+            json=dict(
+                ds_name=ds_name,
                 desc=desc,
                 data_frequency=data_frequency,
                 has_history=has_history,
@@ -604,15 +604,6 @@ class Marketplace:
             # TODO: Verify signature to obtain key/secret pair
             key, secret = get_key_secret(address, dataset)
 
-        self.create_metadata(
-            key=key,
-            secret=secret,
-            ds_name=dataset,
-            data_frequency=freq,
-            desc=desc,
-            has_history=has_history,
-            has_live=has_live,
-        )
         tx = self.mkt_contract.functions.register(
             bytes32(dataset),
             price,
@@ -631,6 +622,18 @@ class Marketplace:
         print('\nThis is the TxHash for this transaction: {}'.format(tx_hash))
 
         self.check_transaction(tx_hash)
+
+        print('\nWarming up the {} dataset'.format(dataset))
+        self.create_metadata(
+            key=key,
+            secret=secret,
+            ds_name=dataset,
+            data_frequency=freq,
+            desc=desc,
+            has_history=has_history,
+            has_live=has_live,
+        )
+        print('\n{} registered successfully'.format(dataset))
 
     def publish(self, dataset, datadir, watch):
         dataset = dataset.lower()
