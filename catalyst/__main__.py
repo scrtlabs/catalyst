@@ -1,6 +1,5 @@
 import errno
 import os
-import sys
 from functools import wraps
 
 import click
@@ -581,7 +580,8 @@ def ingest_exchange(ctx, exchange_name, data_frequency, start, end,
 
     exchange_bundle = ExchangeBundle(exchange_name)
 
-    click.echo('Ingesting exchange bundle {}...'.format(exchange_name), sys.stdout)
+    click.echo('Ingesting exchange bundle {}...'.format(exchange_name),
+               sys.stdout)
     exchange_bundle.ingest(
         data_frequency=data_frequency,
         include_symbols=include_symbols,
@@ -635,7 +635,8 @@ def clean_exchange(ctx, exchange_name, data_frequency):
 
     exchange_bundle = ExchangeBundle(exchange_name)
 
-    click.echo('Cleaning exchange bundle {}...'.format(exchange_name), sys.stdout)
+    click.echo('Cleaning exchange bundle {}...'.format(exchange_name),
+               sys.stdout)
     exchange_bundle.clean(
         data_frequency=data_frequency,
     )
@@ -773,7 +774,7 @@ def marketplace(ctx):
 @click.pass_context
 def ls(ctx):
     click.echo('Listing of available data sources on the marketplace:',
-                sys.stdout)
+               sys.stdout)
     marketplace = Marketplace()
     marketplace.list()
 
@@ -885,7 +886,6 @@ def publish(ctx, dataset, datadir, watch):
         ctx.fail("must specify a datadir where to find the files to publish "
                  " with '--datadir'\n")
     marketplace.publish(dataset, datadir, watch)
-            click.echo("%s %s" % (bundle, timestamp), sys.stdout)
 
 
 if __name__ == '__main__':
