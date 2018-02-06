@@ -133,7 +133,8 @@ def get_user_pubaddr(environ=None):
                 return [data, ]
             return data
     else:
-        data = dict(pubAddr='', desc='')
+        data = []
+        data.append(dict(pubAddr='', desc=''))
         with open(filename, 'w') as f:
             json.dump(data, f, sort_keys=False, indent=2,
                       separators=(',', ':'))
