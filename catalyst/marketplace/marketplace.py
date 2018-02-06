@@ -27,7 +27,8 @@ from catalyst.marketplace.marketplace_errors import (
     MarketplaceNoAddressMatch, MarketplaceHTTPRequest,
     MarketplaceNoCSVFiles, MarketplaceContractDataNoMatch,
     MarketplaceSubscriptionExpired)
-from catalyst.marketplace.utils.auth_utils import get_key_secret
+from catalyst.marketplace.utils.auth_utils import get_key_secret, \
+    get_signed_headers
 from catalyst.marketplace.utils.bundle_utils import merge_bundles
 from catalyst.marketplace.utils.eth_utils import bytes32, b32_str, bin_hex
 from catalyst.marketplace.utils.path_utils import get_bundle_folder, \
@@ -212,20 +213,19 @@ class Marketplace:
         print(df.to_string(formatters=formatters))
 
     def subscribe(self, dataset):
-
         dataset = dataset.lower()
 
         address = self.choose_pubaddr()[0]
+        provider_info = self.mkt_contract.functions.getDataProviderInfo(
+            bytes32(dataset)
+        ).call()
 
-        dataset_info = self.mkt_contract.functions.getDataSource(
-            bytes32(dataset)).call()
-
-        if not dataset_info[4]:
+        if not provider_info[4]:
             print('The requested "{}" dataset is not registered in '
                   'the Data Marketplace.'.format(dataset))
             return
 
-        price = dataset_info[1]
+        price = provider_info[1]
 
         print('\nThe price for a monthly subscription to this dataset is'
               ' {} ENG'.format(price))
@@ -239,7 +239,6 @@ class Marketplace:
             'data': '0x70a08231000000000000000000000000{}'.format(
                 address[2:])
         })
-
         try:
             balance = int(balance[2:], 16) // 10 ** 8
         except ValueError:
@@ -398,11 +397,11 @@ class Marketplace:
     def ingest(self, ds_name, start=None, end=None, force_download=False):
 
         ds_name = ds_name.lower()
-        dataset_info = self.mkt_contract.functions.getDataSource(
+        provider_info = self.mkt_contract.functions.getDataProviderInfo(
             bytes32(ds_name)
         ).call()
 
-        if not dataset_info[4]:
+        if not provider_info[4]:
             print('The requested "{}" dataset is not registered in '
                   'the Data Marketplace.'.format(ds_name))
             return
@@ -432,19 +431,7 @@ class Marketplace:
             # TODO: Verify signature to obtain key/secret pair
             key, secret = get_key_secret(address, ds_name)
 
-        nonce = str(int(time.time()))
-        signature = hmac.new(
-            secret.encode('utf-8'),
-            '{}{}'.format(ds_name, nonce).encode('utf-8'),
-            hashlib.sha512
-        ).hexdigest()
-
-        headers = {
-            'Sign': signature,
-            'Key': key,
-            'Nonce': nonce,
-            'Dataset': ds_name,
-        }
+        headers = get_signed_headers(ds_name, key, secret)
         log.debug('Starting download of dataset for ingestion...')
         r = requests.post(
             '{}/marketplace/ingest'.format(AUTH_SERVER),
@@ -524,15 +511,46 @@ class Marketplace:
         shutil.rmtree(folder)
         pass
 
+    def create_metadata(self, key, secret, ds_name, data_frequency, desc,
+                        has_history=True, has_live=True):
+        """
+
+        Returns
+        -------
+
+        """
+        headers = get_signed_headers(ds_name, key, secret)
+        r = requests.post(
+            '{}/marketplace/register'.format(AUTH_SERVER),
+            data=dict(
+                name=ds_name,
+                desc=desc,
+                data_frequency=data_frequency,
+                has_history=has_history,
+                has_live=has_live,
+            ),
+            headers=headers,
+        )
+
+        if r.status_code != 200:
+            raise MarketplaceHTTPRequest(
+                request='register', error=r.status_code
+            )
+
+        if 'error' in r.json():
+            raise MarketplaceHTTPRequest(
+                request='upload file', error=r.json()['error']
+            )
+
     def register(self):
         while True:
-            dataset = input('Enter the name of the dataset to register: ')
-            dataset = dataset.lower()
+            desc = input('Enter the name of the dataset to register: ')
+            dataset = desc.lower()
+            provider_info = self.mkt_contract.functions.getDataProviderInfo(
+                bytes32(dataset)
+            ).call()
 
-            datasource = self.mkt_contract.functions.getDataSource(
-                bytes32(dataset)).call()
-
-            if datasource[4]:
+            if provider_info[4]:
                 print('There is already a dataset registered under '
                       'the name "{}". Please choose a different '
                       'name.'.format(dataset))
@@ -554,7 +572,7 @@ class Marketplace:
 
         while True:
             reg_pub = input(
-                'Doest it include historical data? [default: Y]: '
+                'Does it include historical data? [default: Y]: '
             ) or 'y'
             if reg_pub.lower() not in ('y', 'n'):
                 print('Please answer Y or N.')
@@ -578,7 +596,23 @@ class Marketplace:
                     has_live = False
                 break
 
-        address = self.choose_pubaddr()[0]
+        address, address_i = self.choose_pubaddr()
+        if 'key' in self.addresses[address_i]:
+            key = self.addresses[address_i]['key']
+            secret = self.addresses[address_i]['secret']
+        else:
+            # TODO: Verify signature to obtain key/secret pair
+            key, secret = get_key_secret(address, dataset)
+
+        self.create_metadata(
+            key=key,
+            secret=secret,
+            ds_name=dataset,
+            data_frequency=freq,
+            desc=desc,
+            has_history=has_history,
+            has_live=has_live,
+        )
         tx = self.mkt_contract.functions.register(
             bytes32(dataset),
             price,
@@ -599,44 +633,34 @@ class Marketplace:
         self.check_transaction(tx_hash)
 
     def publish(self, dataset, datadir, watch):
-
         dataset = dataset.lower()
+        provider_info = self.mkt_contract.functions.getDataProviderInfo(
+            bytes32(dataset)
+        ).call()
 
-        datasource = self.mkt_contract.functions.getDataSource(
-            bytes32(dataset)).call()
-
-        if not datasource[4]:
+        if not provider_info[4]:
             raise MarketplaceDatasetNotFound(dataset=dataset)
 
-        match = next((l for l in self.addresses if
-                      l['pubAddr'] == datasource[0]), None)
-
+        match = next(
+            (l for l in self.addresses if l['pubAddr'] == provider_info[0]),
+            None
+        )
         if not match:
             raise MarketplaceNoAddressMatch(
                 dataset=dataset,
-                address=datasource[0])
+                address=provider_info[0])
 
         print('Using address: {} to publish this dataset.'.format(
-            datasource[0]))
+            provider_info[0]))
 
         if 'key' in match:
             key = match['key']
             secret = match['secret']
         else:
             # TODO: Verify signature to obtain key/secret pair
-            key, secret = get_key_secret(datasource[0], dataset)
+            key, secret = get_key_secret(provider_info[0], dataset)
 
-        nonce = str(int(time.time()))
-
-        signature = hmac.new(secret.encode('utf-8'),
-                             '{}{}'.format(dataset, nonce).encode('utf-8'),
-                             hashlib.sha512).hexdigest()
-
-        headers = {'Sign': signature,
-                   'Key': key,
-                   'Nonce': nonce,
-                   'Dataset': dataset}
-
+        headers = get_signed_headers(dataset, key, secret)
         filenames = glob.glob(os.path.join(datadir, '*.csv'))
 
         if not filenames:

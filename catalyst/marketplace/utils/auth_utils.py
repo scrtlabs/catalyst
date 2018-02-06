@@ -1,10 +1,14 @@
+import hashlib
+import hmac
+
 import requests
+import time
 
 from catalyst.marketplace.marketplace_errors import (
-     MarketplaceHTTPRequest)
+    MarketplaceHTTPRequest)
 from catalyst.marketplace.utils.path_utils import (
-     get_user_pubaddr, save_user_pubaddr)
-from catalyst.constants import AUTH_SERVER 
+    get_user_pubaddr, save_user_pubaddr)
+from catalyst.constants import AUTH_SERVER
 
 
 def get_key_secret(pubAddr, dataset):
@@ -25,8 +29,8 @@ def get_key_secret(pubAddr, dataset):
     session = requests.Session()
     response = session.get('{}/getkeysecret'.format(AUTH_SERVER),
                            headers={
-                            'pubAddr': pubAddr,
-                            'dataset': dataset})
+                               'pubAddr': pubAddr,
+                               'dataset': dataset})
 
     if 'error' in response.json():
         raise MarketplaceHTTPRequest(request=str('obtain key/secret'),
@@ -44,3 +48,35 @@ def get_key_secret(pubAddr, dataset):
     save_user_pubaddr(addresses)
 
     return match['key'], match['secret']
+
+
+def get_signed_headers(ds_name, key, secret):
+    """
+    Return a new request header including the key / secret signature
+
+    Parameters
+    ----------
+    ds_name
+    key
+    secret
+
+    Returns
+    -------
+
+    """
+    nonce = str(int(time.time()))
+
+    signature = hmac.new(
+        secret.encode('utf-8'),
+        '{}{}'.format(ds_name, nonce).encode('utf-8'),
+        hashlib.sha512
+    ).hexdigest()
+
+    headers = {
+        'Sign': signature,
+        'Key': key,
+        'Nonce': nonce,
+        'Dataset': ds_name,
+    }
+
+    return headers
