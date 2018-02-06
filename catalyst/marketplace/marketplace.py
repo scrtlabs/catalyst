@@ -658,7 +658,7 @@ class Marketplace:
         for file in filenames:
             files.append(('file', open(file, 'rb')))
 
-        r = requests.post('{}/publish'.format(AUTH_SERVER),
+        r = requests.post('{}/marketplace/publish'.format(AUTH_SERVER),
                           files=files,
                           headers=headers)
 

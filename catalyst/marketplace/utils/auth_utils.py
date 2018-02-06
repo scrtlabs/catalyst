@@ -27,7 +27,7 @@ def get_key_secret(pubAddr, dataset):
 
     """
     session = requests.Session()
-    response = session.get('{}/getkeysecret'.format(AUTH_SERVER),
+    response = session.get('{}/marketplace/getkeysecret'.format(AUTH_SERVER),
                            headers={
                                'pubAddr': pubAddr,
                                'dataset': dataset})
