@@ -1,6 +1,4 @@
 import glob
-import hashlib
-import hmac
 import json
 import os
 import re
@@ -144,14 +142,14 @@ class Marketplace:
               'Gas Limit:\t\t{gas}\n'
               'Nonce:\t\t\t{nonce}\n'
               'Data:\t\t\t{data}\n'.format(
-            _from=from_address,
-            to=tx['to'],
-            value=tx['value'],
-            gas=tx['gas'],
-            nonce=tx['nonce'],
-            data=tx['data'],
-        )
-        )
+                _from=from_address,
+                to=tx['to'],
+                value=tx['value'],
+                gas=tx['gas'],
+                nonce=tx['nonce'],
+                data=tx['data'],
+                )
+              )
 
         signed_tx = input('Copy and Paste the "Signed Transaction" '
                           'field here:\n')
@@ -182,35 +180,21 @@ class Marketplace:
         return ds
 
     def list(self):
-        subscribers = self.contract.call(
-            {'from': self.default_account}
-        ).getSubscribers()
 
-        subscribed = []
-        for index, address in enumerate(subscribers):
-            if address == self.default_account:
-                subscribed.append(index)
-
-        data_sources = self.get_data_sources_map()
+        data_sources = self.mkt_contract.functions.getAllProviders().call()
 
         data = []
         for index, data_source in enumerate(data_sources):
-            data.append(
-                dict(
-                    id=index,
-                    subscribed=index in subscribed,
-                    **data_source
+            if index > 0:
+                data.append(
+                    dict(
+                        dataset=data_source.decode('utf-8').rstrip('\0')
+                    )
                 )
-            )
 
         df = pd.DataFrame(data)
-        df.set_index(['id', 'name', 'desc'], drop=True, inplace=True)
         set_print_settings()
-
-        formatters = dict(
-            subscribed=lambda s: u'\u2713' if s else '',
-        )
-        print(df.to_string(formatters=formatters))
+        print(df)
 
     def subscribe(self, dataset):
         dataset = dataset.lower()
@@ -258,7 +242,7 @@ class Marketplace:
             agree_pay = input('Please confirm that you agree to pay {} ENG '
                               'for a monthly subscription to the dataset "{}" '
                               'starting today. [default: Y] '.format(
-                price, dataset)) or 'y'
+                                price, dataset)) or 'y'
             if agree_pay.lower() not in ('y', 'n'):
                 print("Please answer Y or N.")
             else:
@@ -366,7 +350,7 @@ class Marketplace:
               'You can now ingest this dataset anytime during the '
               'next month by running the following command:\n'
               'catalyst marketplace ingest --dataset={}'.format(
-            dataset, address, dataset))
+                dataset, address, dataset))
 
     def process_temp_bundle(self, ds_name, path):
         """
@@ -449,9 +433,10 @@ class Marketplace:
 
                     filename = os.path.join(target_path, name)
                     with open(filename, 'wb') as f:
-                        # for chunk in part.content.iter_content(chunk_size=1024):
-                        #    if chunk: # filter out keep-alive new chunks
-                        #        f.write(chunk)
+                        # for chunk in part.content.iter_content(
+                        #         chunk_size=1024):
+                        #     if chunk: # filter out keep-alive new chunks
+                        #         f.write(chunk)
                         f.write(part.content)
 
                     self.process_temp_bundle(ds_name, filename)

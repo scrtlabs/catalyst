@@ -2,9 +2,6 @@ import os
 import json
 import tarfile
 
-import shutil
-
-from catalyst.data.bundles.core import download_without_progress
 from catalyst.utils.deprecate import deprecated
 from catalyst.utils.paths import data_root, ensure_directory
 

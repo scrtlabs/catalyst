@@ -756,7 +756,6 @@ def ls(ctx):
                 sys.stdout)
     marketplace = Marketplace()
     marketplace.list()
-    click.echo('Functionality not yet implemented.', sys.stdout)
 
 
 @marketplace.command()
