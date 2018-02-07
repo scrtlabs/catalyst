@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import glob
 import json
 import os
@@ -27,7 +29,7 @@ from catalyst.marketplace.marketplace_errors import (
 from catalyst.marketplace.utils.auth_utils import get_key_secret, \
     get_signed_headers
 from catalyst.marketplace.utils.bundle_utils import merge_bundles
-from catalyst.marketplace.utils.eth_utils import bytes32, b32_str, bin_hex
+from catalyst.marketplace.utils.eth_utils import bin_hex
 from catalyst.marketplace.utils.path_utils import get_bundle_folder, \
     get_data_source_folder, get_marketplace_folder, \
     get_user_pubaddr, get_temp_bundles_folder, extract_bundle
@@ -142,14 +144,13 @@ class Marketplace:
               'Gas Limit:\t\t{gas}\n'
               'Nonce:\t\t\t{nonce}\n'
               'Data:\t\t\t{data}\n'.format(
-            _from=from_address,
-            to=tx['to'],
-            value=tx['value'],
-            gas=tx['gas'],
-            nonce=tx['nonce'],
-            data=tx['data'],
-        )
-        )
+                _from=from_address,
+                to=tx['to'],
+                value=tx['value'],
+                gas=tx['gas'],
+                nonce=tx['nonce'],
+                data=tx['data'],)
+              )
 
         signed_tx = input('Copy and Paste the "Signed Transaction" '
                           'field here:\n')
@@ -188,7 +189,7 @@ class Marketplace:
             if index > 0:
                 data.append(
                     dict(
-                        dataset=data_source.decode('utf-8').rstrip('\0')
+                        dataset=Web3.toText(data_source)
                     )
                 )
 
@@ -197,12 +198,12 @@ class Marketplace:
         print(df)
 
     def subscribe(self, dataset):
-        # TODO: what happens if we are already subscribed?
+
         dataset = dataset.lower()
 
         address = self.choose_pubaddr()[0]
         provider_info = self.mkt_contract.functions.getDataProviderInfo(
-            bytes32(dataset)
+            Web3.toHex(dataset)
         ).call()
 
         if not provider_info[4]:
@@ -211,6 +212,15 @@ class Marketplace:
             return
 
         price = provider_info[1]
+
+        subscribed = self.mkt_contract.functions.checkAddressSubscription(
+            address, Web3.toHex(dataset)
+        ).call()
+
+        if subscribed[5]:
+            print('You are already subscribed to the "{}" dataset.\n'
+                  'Your subscription started on {}, and is valid until'
+                  '{}'.format(dataset, subscribed[3], subscribed[4]))
 
         print('\nThe price for a monthly subscription to this dataset is'
               ' {} ENG'.format(price))
@@ -228,10 +238,7 @@ class Marketplace:
                 wallet_address
             )
         })
-        try:
-            balance = int(balance[2:], 16) // 10 ** 8
-        except ValueError:
-            balance = int(bin_hex(balance), 16) // 10 ** 8
+        balance = Web3.toInt(hexstr=balance) // 10 ** 8
 
         if balance > price:
             print('OK.')
@@ -247,7 +254,7 @@ class Marketplace:
             agree_pay = input('Please confirm that you agree to pay {} ENG '
                               'for a monthly subscription to the dataset "{}" '
                               'starting today. [default: Y] '.format(
-                price, dataset)) or 'y'
+                                price, dataset)) or 'y'
             if agree_pay.lower() not in ('y', 'n'):
                 print("Please answer Y or N.")
             else:
@@ -302,14 +309,14 @@ class Marketplace:
             except AttributeError:
                 pass
             for i in range(0, 10):
-                # print('.', end='', flush=True)
+                print('.', end='', flush=True)
                 time.sleep(1)
 
         print('\nFirst transaction successful!\n'
               'Now processing second transaction.')
 
         tx = self.mkt_contract.functions.subscribe(
-            bytes32(dataset),
+            Web3.toHex(dataset),
         ).buildTransaction(
             {'nonce': self.web3.eth.getTransactionCount(address)})
 
@@ -349,7 +356,7 @@ class Marketplace:
             except AttributeError:
                 pass
             for i in range(0, 10):
-                # print('.', end='', flush=True)
+                print('.', end='', flush=True)
                 time.sleep(1)
 
         print('\nSecond transaction successful!\n'
@@ -358,7 +365,7 @@ class Marketplace:
               'You can now ingest this dataset anytime during the '
               'next month by running the following command:\n'
               'catalyst marketplace ingest --dataset={}'.format(
-            dataset, address, dataset))
+                dataset, address, dataset))
 
     def process_temp_bundle(self, ds_name, path):
         """
@@ -391,7 +398,7 @@ class Marketplace:
         ds_name = ds_name.lower()
         # TODO: catch error conditions
         provider_info = self.mkt_contract.functions.getDataProviderInfo(
-            bytes32(ds_name)
+            Web3.toHex(ds_name)
         ).call()
 
         if not provider_info[4]:
@@ -402,10 +409,10 @@ class Marketplace:
         address, address_i = self.choose_pubaddr()
         fns = self.mkt_contract.functions
         check_sub = fns.checkAddressSubscription(
-            address, bytes32(ds_name)
+            address, Web3.toHex(ds_name)
         ).call()
 
-        if check_sub[0] != address or b32_str(check_sub[1]) != ds_name:
+        if check_sub[0] != address or Web3.toText(check_sub[1]) != ds_name:
             raise MarketplaceContractDataNoMatch(
                 params='address: {}, dataset: {}'.format(
                     address, ds_name
@@ -541,7 +548,7 @@ class Marketplace:
             desc = input('Enter the name of the dataset to register: ')
             dataset = desc.lower()
             provider_info = self.mkt_contract.functions.getDataProviderInfo(
-                bytes32(dataset)
+                Web3.toHex(dataset)
             ).call()
 
             if provider_info[4]:
@@ -598,7 +605,7 @@ class Marketplace:
             key, secret = get_key_secret(address)
 
         tx = self.mkt_contract.functions.register(
-            bytes32(dataset),
+            Web3.toHex(dataset),
             price,
             address,
         ).buildTransaction(
@@ -631,7 +638,7 @@ class Marketplace:
     def publish(self, dataset, datadir, watch):
         dataset = dataset.lower()
         provider_info = self.mkt_contract.functions.getDataProviderInfo(
-            bytes32(dataset)
+            Web3.toHex(dataset)
         ).call()
 
         if not provider_info[4]:

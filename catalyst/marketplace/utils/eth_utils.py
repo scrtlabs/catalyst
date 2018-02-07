@@ -1,37 +1,37 @@
 import binascii
 
 
-def bytes32(string):
-    """
-    Convert string to bytes32 data type for smart contract
+# def bytes32(string):
+#     """
+#     Convert string to bytes32 data type for smart contract
 
-    Parameters
-    ----------
-    string: str
+#     Parameters
+#     ----------
+#     string: str
 
-    Returns
-    -------
-    list
+#     Returns
+#     -------
+#     list
 
-    """
-    return binascii.hexlify(string.encode('utf-8'))
+#     """
+#     return binascii.hexlify(string.encode('utf-8'))
 
 
-def b32_str(bytes32):
-    """
-    Convert bytes32 to string
+# def b32_str(bytes32):
+#     """
+#     Convert bytes32 to string
 
-    Parameters
-    ----------
-    input: bytes object
+#     Parameters
+#     ----------
+#     input: bytes object
 
-    Returns
-    -------
-    str
+#     Returns
+#     -------
+#     str
 
-    """
-    return binascii.unhexlify(
-            bytes32.decode('utf-8').rstrip('\0')).decode('ascii')
+#     """
+#     return binascii.unhexlify(
+#             bytes32.decode('utf-8').rstrip('\0')).decode('ascii')
 
 
 def bin_hex(binary):
