@@ -14,7 +14,6 @@ import six
 from requests_toolbelt import MultipartDecoder
 from requests_toolbelt.multipart.decoder import \
     NonMultipartContentTypeException
-from web3 import Web3, HTTPProvider
 
 from catalyst.constants import (
     LOG_LEVEL, AUTH_SERVER, ETH_REMOTE_NODE, MARKETPLACE_CONTRACT,
@@ -43,6 +42,8 @@ log = logbook.Logger('Marketplace', level=LOG_LEVEL)
 
 class Marketplace:
     def __init__(self):
+        global Web3
+        from web3 import Web3, HTTPProvider
 
         self.addresses = get_user_pubaddr()
 
@@ -107,7 +108,6 @@ class Marketplace:
     #     ]
 
     def choose_pubaddr(self):
-
         if len(self.addresses) == 1:
             address = self.addresses[0]['pubAddr']
             address_i = 0
