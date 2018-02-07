@@ -215,8 +215,10 @@ class Marketplace:
         print('\nThe price for a monthly subscription to this dataset is'
               ' {} ENG'.format(price))
 
-        print('Checking that the ENG balance in {} is greater than '
-              '{} ENG... '.format(address, price), end='')
+        print(
+            'Checking that the ENG balance in {} is greater than {} '
+            'ENG... '.format(address, price)
+        )
 
         wallet_address = address[2:]
         balance = self.web3.eth.call({

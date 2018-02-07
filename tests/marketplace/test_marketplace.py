@@ -16,7 +16,7 @@ class TestMarketplace(WithLogger, ZiplineTestCase):
 
     def test_subscribe(self):
         marketplace = Marketplace()
-        marketplace.subscribe('marketcap1234')
+        marketplace.subscribe('marketcap2222')
         pass
 
     def test_ingest(self):
