@@ -302,7 +302,7 @@ class Marketplace:
             except AttributeError:
                 pass
             for i in range(0, 10):
-                print('.', end='', flush=True)
+                # print('.', end='', flush=True)
                 time.sleep(1)
 
         print('\nFirst transaction successful!\n'
@@ -349,7 +349,7 @@ class Marketplace:
             except AttributeError:
                 pass
             for i in range(0, 10):
-                print('.', end='', flush=True)
+                # print('.', end='', flush=True)
                 time.sleep(1)
 
         print('\nSecond transaction successful!\n'
