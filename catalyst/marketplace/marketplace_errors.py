@@ -8,7 +8,7 @@ def silent_except_hook(exctype, excvalue, exctraceback):
     if exctype in [MarketplacePubAddressEmpty, MarketplaceDatasetNotFound,
                    MarketplaceNoAddressMatch, MarketplaceHTTPRequest,
                    MarketplaceNoCSVFiles, MarketplaceContractDataNoMatch,
-                   MarketplaceSubscriptionExpired,
+                   MarketplaceSubscriptionExpired, MarketplaceJSONError,
                    MarketplaceWalletNotSupported, MarketplaceEmptySignature]:
         fn = traceback.extract_tb(exctraceback)[-1][0]
         ln = traceback.extract_tb(exctraceback)[-1][1]
@@ -78,4 +78,11 @@ class MarketplaceWalletNotSupported(ZiplineError):
 class MarketplaceEmptySignature(ZiplineError):
     msg = (
         'Signature cannot be empty.'
+    )
+
+
+class MarketplaceJSONError(ZiplineError):
+    msg = (
+        'The configuration file {file} is malformed. Please correct '
+        'the following error:\n{error}'
     )

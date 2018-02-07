@@ -48,3 +48,35 @@ def bin_hex(binary):
 
     """
     return binascii.hexlify(binary).decode('utf-8')
+
+
+def from_grains(amount):
+    """
+    Convert from grains to cryptocurrency
+
+    Parameters
+    ----------
+    input: amount
+
+    Returns
+    -------
+    int
+
+    """
+    return amount // 10 ** 8
+
+
+def to_grains(amount):
+    """
+    Convert from cryptocurrency to grains
+
+    Parameters
+    ----------
+    input: amount
+
+    Returns
+    -------
+    int
+
+    """
+    return amount * 10 ** 8

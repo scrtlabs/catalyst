@@ -24,12 +24,12 @@ from catalyst.exchange.utils.stats_utils import set_print_settings
 from catalyst.marketplace.marketplace_errors import (
     MarketplacePubAddressEmpty, MarketplaceDatasetNotFound,
     MarketplaceNoAddressMatch, MarketplaceHTTPRequest,
-    MarketplaceNoCSVFiles, MarketplaceContractDataNoMatch,
-    MarketplaceSubscriptionExpired)
+    MarketplaceNoCSVFiles)
 from catalyst.marketplace.utils.auth_utils import get_key_secret, \
     get_signed_headers
 from catalyst.marketplace.utils.bundle_utils import merge_bundles
-from catalyst.marketplace.utils.eth_utils import bin_hex
+from catalyst.marketplace.utils.eth_utils import bin_hex, from_grains, \
+    to_grains
 from catalyst.marketplace.utils.path_utils import get_bundle_folder, \
     get_data_source_folder, get_marketplace_folder, \
     get_user_pubaddr, get_temp_bundles_folder, extract_bundle
@@ -109,6 +109,9 @@ class Marketplace:
     #         ),
     #     ]
 
+    def to_text(self, hex):
+        return Web3.toText(hex).rstrip('\0')
+
     def choose_pubaddr(self):
         if len(self.addresses) == 1:
             address = self.addresses[0]['pubAddr']
@@ -187,15 +190,19 @@ class Marketplace:
         data = []
         for index, data_source in enumerate(data_sources):
             if index > 0:
-                data.append(
-                    dict(
-                        dataset=Web3.toText(data_source)
+                # if 'test' not in Web3.toText(data_source).lower():
+                    data.append(
+                        dict(
+                            dataset=self.to_text(data_source)
+                        )
                     )
-                )
 
         df = pd.DataFrame(data)
         set_print_settings()
-        print(df)
+        if df.empty:
+            print('There are no datasets available yet.')
+        else:
+            print(df)
 
     def subscribe(self, dataset):
 
@@ -211,16 +218,20 @@ class Marketplace:
                   'the Data Marketplace.'.format(dataset))
             return
 
-        price = provider_info[1]
+        grains = provider_info[1]
+        price = from_grains(grains)
 
         subscribed = self.mkt_contract.functions.checkAddressSubscription(
             address, Web3.toHex(dataset)
         ).call()
 
         if subscribed[5]:
-            print('You are already subscribed to the "{}" dataset.\n'
-                  'Your subscription started on {}, and is valid until'
-                  '{}'.format(dataset, subscribed[3], subscribed[4]))
+            print('\nYou are already subscribed to the "{}" dataset.\n'
+                  'Your subscription started on {} UTC, and is valid until '
+                  '{} UTC.'.format(
+                    dataset, pd.to_datetime(subscribed[3], unit='s', utc=True),
+                    pd.to_datetime(subscribed[4], unit='s', utc=True)))
+            return
 
         print('\nThe price for a monthly subscription to this dataset is'
               ' {} ENG'.format(price))
@@ -238,16 +249,18 @@ class Marketplace:
                 wallet_address
             )
         })
-        balance = Web3.toInt(hexstr=balance) // 10 ** 8
 
-        if balance > price:
+        balance = Web3.toInt(hexstr=balance)
+
+        if balance > grains:
             print('OK.')
         else:
             print('FAIL.\n\nAddress {} balance is {} ENG,\nwhich is lower '
                   'than the price of the dataset that you are trying to\n'
                   'buy: {} ENG. Get enough ENG to cover the costs of the '
                   'monthly\nsubscription for what you are trying to buy, '
-                  'and try again.'.format(address, balance, price))
+                  'and try again.'.format(
+                    address, from_grains(balance), price))
             return
 
         while True:
@@ -271,7 +284,6 @@ class Marketplace:
               '2. Second transaction is the actual subscription for the '
               'desired dataset'.format(price))
 
-        grains = price * 10 ** 8
         tx = self.eng_contract.functions.approve(
             self.mkt_contract_address,
             grains,
@@ -395,7 +407,8 @@ class Marketplace:
 
     def ingest(self, ds_name, start=None, end=None, force_download=False):
 
-        ds_name = ds_name.lower()
+        # ds_name = ds_name.lower()
+
         # TODO: catch error conditions
         provider_info = self.mkt_contract.functions.getDataProviderInfo(
             Web3.toHex(ds_name)
@@ -412,18 +425,19 @@ class Marketplace:
             address, Web3.toHex(ds_name)
         ).call()
 
-        if check_sub[0] != address or Web3.toText(check_sub[1]) != ds_name:
-            raise MarketplaceContractDataNoMatch(
-                params='address: {}, dataset: {}'.format(
-                    address, ds_name
-                )
-            )
+        if check_sub[0] != address or self.to_text(check_sub[1]) != ds_name:
+            print('You are not subscribed to dataset "{}" with address {}. '
+                  'Plese subscribe first.'.format(ds_name, address))
+            return
 
         if not check_sub[5]:
-            raise MarketplaceSubscriptionExpired(
-                dataset=ds_name,
-                date=check_sub[4],
-            )
+            print('Your subscription to dataset "{}" expired on {} UTC.'
+                  'Please renew your subscription by running:\n'
+                  'catalyst marketplace subscribe --dataset={}'. format(
+                    ds_name,
+                    pd.to_datetime(check_sub[4], unit='s', utc=True),
+                    ds_name)
+                  )
 
         if 'key' in self.addresses[address_i]:
             key = self.addresses[address_i]['key']
@@ -604,9 +618,11 @@ class Marketplace:
         else:
             key, secret = get_key_secret(address)
 
+        grains = to_grains(price)
+
         tx = self.mkt_contract.functions.register(
             Web3.toHex(dataset),
-            price,
+            grains,
             address,
         ).buildTransaction(
             {'nonce': self.web3.eth.getTransactionCount(address)}

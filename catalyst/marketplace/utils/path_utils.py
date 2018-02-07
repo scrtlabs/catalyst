@@ -4,6 +4,7 @@ import tarfile
 
 from catalyst.utils.deprecate import deprecated
 from catalyst.utils.paths import data_root, ensure_directory
+from catalyst.marketplace.marketplace_errors import MarketplaceJSONError
 
 
 def get_marketplace_folder(environ=None):
@@ -123,7 +124,10 @@ def get_user_pubaddr(environ=None):
 
     if os.path.isfile(filename):
         with open(filename) as data_file:
-            data = json.load(data_file)
+            try:
+                data = json.load(data_file)
+            except json.decoder.JSONDecodeError as e:
+                raise MarketplaceJSONError(file=filename, error=e)
             try:
                 d = data[0]['pubAddr']
             except Exception as e:
