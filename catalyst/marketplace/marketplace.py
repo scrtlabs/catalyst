@@ -142,9 +142,11 @@ class Marketplace:
         print('\nVisit https://www.myetherwallet.com/#offline-transaction and '
               'enter the following parameters:\n\n'
               'From Address:\t\t{_from}\n'
+              '\n\tClick the "Generate Information" button\n\n'
               'To Address:\t\t{to}\n'
               'Value / Amount to Send:\t{value}\n'
               'Gas Limit:\t\t{gas}\n'
+              'Gas Price:\t\t[Accept the default value]\n'
               'Nonce:\t\t\t{nonce}\n'
               'Data:\t\t\t{data}\n'.format(
             _from=from_address,
@@ -229,7 +231,7 @@ class Marketplace:
 
         print(
             'Checking that the ENG balance in {} is greater than {} '
-            'ENG... '.format(address, price)
+            'ENG... '.format(address, price), end=''
         )
 
         wallet_address = address[2:]
@@ -338,14 +340,7 @@ class Marketplace:
             print('Unable to subscribe to data source: {}'.format(e))
             return
 
-        if 'ropsten' in ETH_REMOTE_NODE:
-            etherscan = 'https://ropsten.etherscan.io/tx/{}'.format(
-                tx_hash)
-        else:
-            etherscan = 'https://etherscan.io/tx/{}'.format(tx_hash)
-
-        print('You can check the outcome of your transaction here:\n'
-              '{}'.format(etherscan))
+        self.check_transaction(tx_hash)
 
         print('Waiting for the second transaction to succeed...')
 
@@ -609,12 +604,35 @@ class Marketplace:
             tx['gas'] = min(int(tx['gas'] * 1.5), 4700000)
 
         signed_tx = self.sign_transaction(address, tx)
-        tx_hash = '0x{}'.format(
-            bin_hex(self.web3.eth.sendRawTransaction(signed_tx))
-        )
-        print('\nThis is the TxHash for this transaction: {}'.format(tx_hash))
+        
+        try:
+            tx_hash = '0x{}'.format(
+                bin_hex(self.web3.eth.sendRawTransaction(signed_tx))
+            )
+            print(
+                '\nThis is the TxHash for this transaction: {}'.format(tx_hash)
+            )
+
+        except Exception as e:
+            print('Unable to subscribe to data source: {}'.format(e))
+            return
 
         self.check_transaction(tx_hash)
+
+        print('Waiting for the transaction to succeed...')
+
+        while True:
+            try:
+                if self.web3.eth.getTransactionReceipt(tx_hash).status:
+                    break
+                else:
+                    print('\nTransaction failed. Aborting...')
+                    return
+            except AttributeError:
+                pass
+            for i in range(0, 10):
+                print('.', end='', flush=True)
+                time.sleep(1)
 
         print('\nWarming up the {} dataset'.format(dataset))
         self.create_metadata(
