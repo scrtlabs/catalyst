@@ -16,18 +16,19 @@ class TestMarketplace(WithLogger, ZiplineTestCase):
 
     def test_subscribe(self):
         marketplace = Marketplace()
-        marketplace.subscribe('marketcap1')
+        marketplace.subscribe('marketcap1234')
         pass
 
     def test_ingest(self):
         marketplace = Marketplace()
-        ds_def = marketplace.ingest('marketcap1')
+        ds_def = marketplace.ingest('marketcap1234')
         pass
 
     def test_publish(self):
         marketplace = Marketplace()
         datadir = '/Users/fredfortier/Downloads/marketcap_test_single'
-        marketplace.publish('marketcap1', datadir, False)
+        marketplace.publish('marketcap1234', datadir, False)
+        pass
 
     def test_clean(self):
         marketplace = Marketplace()

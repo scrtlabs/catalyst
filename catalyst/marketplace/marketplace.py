@@ -142,14 +142,14 @@ class Marketplace:
               'Gas Limit:\t\t{gas}\n'
               'Nonce:\t\t\t{nonce}\n'
               'Data:\t\t\t{data}\n'.format(
-                _from=from_address,
-                to=tx['to'],
-                value=tx['value'],
-                gas=tx['gas'],
-                nonce=tx['nonce'],
-                data=tx['data'],
-                )
-              )
+            _from=from_address,
+            to=tx['to'],
+            value=tx['value'],
+            gas=tx['gas'],
+            nonce=tx['nonce'],
+            data=tx['data'],
+        )
+        )
 
         signed_tx = input('Copy and Paste the "Signed Transaction" '
                           'field here:\n')
@@ -197,6 +197,7 @@ class Marketplace:
         print(df)
 
     def subscribe(self, dataset):
+        # TODO: what happens if we are already subscribed?
         dataset = dataset.lower()
 
         address = self.choose_pubaddr()[0]
@@ -217,11 +218,13 @@ class Marketplace:
         print('Checking that the ENG balance in {} is greater than '
               '{} ENG... '.format(address, price), end='')
 
+        wallet_address = address[2:]
         balance = self.web3.eth.call({
             'from': address,
             'to': self.eng_contract_address,
             'data': '0x70a08231000000000000000000000000{}'.format(
-                address[2:])
+                wallet_address
+            )
         })
         try:
             balance = int(balance[2:], 16) // 10 ** 8
@@ -242,7 +245,7 @@ class Marketplace:
             agree_pay = input('Please confirm that you agree to pay {} ENG '
                               'for a monthly subscription to the dataset "{}" '
                               'starting today. [default: Y] '.format(
-                                price, dataset)) or 'y'
+                price, dataset)) or 'y'
             if agree_pay.lower() not in ('y', 'n'):
                 print("Please answer Y or N.")
             else:
@@ -259,22 +262,25 @@ class Marketplace:
               '2. Second transaction is the actual subscription for the '
               'desired dataset'.format(price))
 
+        grains = price * 10 ** 8
         tx = self.eng_contract.functions.approve(
             self.mkt_contract_address,
-            price,
+            grains,
         ).buildTransaction(
-            {'nonce': self.web3.eth.getTransactionCount(address)})
+            {'nonce': self.web3.eth.getTransactionCount(address)}
+        )
 
         if 'ropsten' in ETH_REMOTE_NODE:
             tx['gas'] = min(int(tx['gas'] * 1.5), 4700000)
 
         signed_tx = self.sign_transaction(address, tx)
-
         try:
-            tx_hash = '0x{}'.format(bin_hex(
-                self.web3.eth.sendRawTransaction(signed_tx)))
-            print('\nThis is the TxHash for this transaction: '
-                  '{}'.format(tx_hash))
+            tx_hash = '0x{}'.format(
+                bin_hex(self.web3.eth.sendRawTransaction(signed_tx))
+            )
+            print(
+                '\nThis is the TxHash for this transaction: {}'.format(tx_hash)
+            )
 
         except Exception as e:
             print('Unable to subscribe to data source: {}'.format(e))
@@ -350,7 +356,7 @@ class Marketplace:
               'You can now ingest this dataset anytime during the '
               'next month by running the following command:\n'
               'catalyst marketplace ingest --dataset={}'.format(
-                dataset, address, dataset))
+            dataset, address, dataset))
 
     def process_temp_bundle(self, ds_name, path):
         """
@@ -381,6 +387,7 @@ class Marketplace:
     def ingest(self, ds_name, start=None, end=None, force_download=False):
 
         ds_name = ds_name.lower()
+        # TODO: catch error conditions
         provider_info = self.mkt_contract.functions.getDataProviderInfo(
             bytes32(ds_name)
         ).call()
@@ -391,7 +398,8 @@ class Marketplace:
             return
 
         address, address_i = self.choose_pubaddr()
-        check_sub = self.mkt_contract.functions.checkAddressSubscription(
+        fns = self.mkt_contract.functions
+        check_sub = fns.checkAddressSubscription(
             address, bytes32(ds_name)
         ).call()
 
