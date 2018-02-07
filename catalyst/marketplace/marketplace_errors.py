@@ -8,7 +8,8 @@ def silent_except_hook(exctype, excvalue, exctraceback):
     if exctype in [MarketplacePubAddressEmpty, MarketplaceDatasetNotFound,
                    MarketplaceNoAddressMatch, MarketplaceHTTPRequest,
                    MarketplaceNoCSVFiles, MarketplaceContractDataNoMatch,
-                   MarketplaceSubscriptionExpired]:
+                   MarketplaceSubscriptionExpired,
+                   MarketplaceWalletNotSupported, MarketplaceEmptySignature]:
         fn = traceback.extract_tb(exctraceback)[-1][0]
         ln = traceback.extract_tb(exctraceback)[-1][1]
         print("Error traceback: {1} (line {2})\n"
@@ -65,4 +66,16 @@ class MarketplaceSubscriptionExpired(ZiplineError):
         'and is no longer active. You have to subscribe again running the '
         'following command:\n'
         'catalyst marketplace subscribe --dataset={dataset}'
+    )
+
+
+class MarketplaceWalletNotSupported(ZiplineError):
+    msg = (
+        'Wallet {wallet} is not supported.'
+    )
+
+
+class MarketplaceEmptySignature(ZiplineError):
+    msg = (
+        'Signature cannot be empty.'
     )

@@ -422,8 +422,7 @@ class Marketplace:
             key = self.addresses[address_i]['key']
             secret = self.addresses[address_i]['secret']
         else:
-            # TODO: Verify signature to obtain key/secret pair
-            key, secret = get_key_secret(address, ds_name)
+            key, secret = get_key_secret(address)
 
         headers = get_signed_headers(ds_name, key, secret)
         log.debug('Starting download of dataset for ingestion...')
@@ -596,8 +595,7 @@ class Marketplace:
             key = self.addresses[address_i]['key']
             secret = self.addresses[address_i]['secret']
         else:
-            # TODO: Verify signature to obtain key/secret pair
-            key, secret = get_key_secret(address, dataset)
+            key, secret = get_key_secret(address)
 
         tx = self.mkt_contract.functions.register(
             bytes32(dataset),
@@ -655,8 +653,7 @@ class Marketplace:
             key = match['key']
             secret = match['secret']
         else:
-            # TODO: Verify signature to obtain key/secret pair
-            key, secret = get_key_secret(provider_info[0], dataset)
+            key, secret = get_key_secret(provider_info[0])
 
         headers = get_signed_headers(dataset, key, secret)
         filenames = glob.glob(os.path.join(datadir, '*.csv'))
