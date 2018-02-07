@@ -816,18 +816,15 @@ def symbols(*args):
     """
 
 
-def get_data_source(data_source_name, data_frequency=None,
-                    start=None, end=None):
+def get_dataset(ds_name, start=None, end=None):
     """
     Lookup a data source from the marketplace
 
     Parameters
     ----------
-    self
-    data_source_name
-    data_frequency
-    start
-    end
+    ds_name: str
+    start: pd.Timestamp
+    end: pd.Timestamp
 
     Returns
     -------

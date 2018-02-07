@@ -10,7 +10,7 @@ import talib
 from logbook import Logger
 
 from catalyst import run_algorithm
-from catalyst.api import symbol, record, order_target_percent, get_data_source
+from catalyst.api import symbol, record, order_target_percent, get_dataset
 from catalyst.exchange.utils.stats_utils import set_print_settings, \
     get_pretty_stats
 # We give a name to the algorithm which Catalyst will use to persist its state.
@@ -33,8 +33,8 @@ def initialize(context):
     # parameters or values you're going to use.
 
     # In our example, we're looking at Neo in Ether.
-    df = get_data_source(
-        'marketcap', start=context.datetime
+    df = get_dataset(
+        'marketcap1234', start=context.datetime
     )  # type: pd.DataFrame
 
     # Keep only the top coins by market cap

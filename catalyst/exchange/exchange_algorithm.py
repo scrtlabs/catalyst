@@ -171,13 +171,12 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
         return round_nearest(amount, asset.min_trade_size)
 
     @api_method
-    def get_data_source(self, data_source_name, data_frequency=None,
-                        start=None, end=None):
+    def get_dataset(self, data_source_name, start=None, end=None):
         if self._marketplace is None:
             self._marketplace = Marketplace()
 
-        return self._marketplace.get_data_source(
-            data_source_name, data_frequency, start, end,
+        return self._marketplace.get_dataset(
+            data_source_name, start, end,
         )
 
     @api_method

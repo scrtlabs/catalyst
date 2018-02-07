@@ -147,13 +147,13 @@ class Marketplace:
               'Gas Limit:\t\t{gas}\n'
               'Nonce:\t\t\t{nonce}\n'
               'Data:\t\t\t{data}\n'.format(
-                _from=from_address,
-                to=tx['to'],
-                value=tx['value'],
-                gas=tx['gas'],
-                nonce=tx['nonce'],
-                data=tx['data'],)
-              )
+            _from=from_address,
+            to=tx['to'],
+            value=tx['value'],
+            gas=tx['gas'],
+            nonce=tx['nonce'],
+            data=tx['data'], )
+        )
 
         signed_tx = input('Copy and Paste the "Signed Transaction" '
                           'field here:\n')
@@ -174,15 +174,6 @@ class Marketplace:
         print('\nYou can check the outcome of your transaction here:\n'
               '{}\n\n'.format(etherscan))
 
-    def get_data_source_def(self, data_source_name):
-        data_source_name = data_source_name.lower()
-        dsm = self.get_data_sources_map()
-
-        ds = six.next(
-            (d for d in dsm if d['name'].lower() == data_source_name), None
-        )
-        return ds
-
     def list(self):
 
         data_sources = self.mkt_contract.functions.getAllProviders().call()
@@ -191,11 +182,11 @@ class Marketplace:
         for index, data_source in enumerate(data_sources):
             if index > 0:
                 # if 'test' not in Web3.toText(data_source).lower():
-                    data.append(
-                        dict(
-                            dataset=self.to_text(data_source)
-                        )
+                data.append(
+                    dict(
+                        dataset=self.to_text(data_source)
                     )
+                )
 
         df = pd.DataFrame(data)
         set_print_settings()
@@ -229,8 +220,8 @@ class Marketplace:
             print('\nYou are already subscribed to the "{}" dataset.\n'
                   'Your subscription started on {} UTC, and is valid until '
                   '{} UTC.'.format(
-                    dataset, pd.to_datetime(subscribed[3], unit='s', utc=True),
-                    pd.to_datetime(subscribed[4], unit='s', utc=True)))
+                dataset, pd.to_datetime(subscribed[3], unit='s', utc=True),
+                pd.to_datetime(subscribed[4], unit='s', utc=True)))
             return
 
         print('\nThe price for a monthly subscription to this dataset is'
@@ -260,14 +251,14 @@ class Marketplace:
                   'buy: {} ENG. Get enough ENG to cover the costs of the '
                   'monthly\nsubscription for what you are trying to buy, '
                   'and try again.'.format(
-                    address, from_grains(balance), price))
+                address, from_grains(balance), price))
             return
 
         while True:
             agree_pay = input('Please confirm that you agree to pay {} ENG '
                               'for a monthly subscription to the dataset "{}" '
                               'starting today. [default: Y] '.format(
-                                price, dataset)) or 'y'
+                price, dataset)) or 'y'
             if agree_pay.lower() not in ('y', 'n'):
                 print("Please answer Y or N.")
             else:
@@ -377,7 +368,7 @@ class Marketplace:
               'You can now ingest this dataset anytime during the '
               'next month by running the following command:\n'
               'catalyst marketplace ingest --dataset={}'.format(
-                dataset, address, dataset))
+            dataset, address, dataset))
 
     def process_temp_bundle(self, ds_name, path):
         """
@@ -433,11 +424,11 @@ class Marketplace:
         if not check_sub[5]:
             print('Your subscription to dataset "{}" expired on {} UTC.'
                   'Please renew your subscription by running:\n'
-                  'catalyst marketplace subscribe --dataset={}'. format(
-                    ds_name,
-                    pd.to_datetime(check_sub[4], unit='s', utc=True),
-                    ds_name)
-                  )
+                  'catalyst marketplace subscribe --dataset={}'.format(
+                ds_name,
+                pd.to_datetime(check_sub[4], unit='s', utc=True),
+                ds_name)
+            )
 
         if 'key' in self.addresses[address_i]:
             key = self.addresses[address_i]['key']
@@ -485,25 +476,11 @@ class Marketplace:
 
         log.info('{} ingested successfully'.format(ds_name))
 
-    def get_data_source(self, data_source_name, data_frequency=None,
-                        start=None, end=None):
-        data_source_name = data_source_name.lower()
-
-        if data_frequency is None:
-            ds_def = self.get_data_source_def(data_source_name)
-            freqs = ds_def['data_frequencies']
-            data_frequency = freqs[0]
-
-            if len(freqs) > 1:
-                log.warn(
-                    'no data frequencies specified for data source {}, '
-                    'selected the first one by default: {}'.format(
-                        data_source_name, data_frequency
-                    )
-                )
+    def get_dataset(self, ds_name, start=None, end=None):
+        ds_name = ds_name.lower()
 
         # TODO: filter ctable by start and end date
-        bundle_folder = get_bundle_folder(data_source_name, data_frequency)
+        bundle_folder = get_data_source_folder(ds_name)
         z = bcolz.ctable(rootdir=bundle_folder, mode='r')
 
         df = z.todataframe()  # type: pd.DataFrame
