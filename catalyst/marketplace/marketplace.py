@@ -484,7 +484,7 @@ class Marketplace:
         z = bcolz.ctable(rootdir=bundle_folder, mode='r')
 
         df = z.todataframe()  # type: pd.DataFrame
-        df.set_index(['date', 'symbol'], drop=False, inplace=True)
+        df.set_index(['date', 'symbol'], drop=True, inplace=True)
 
         if start and end is None:
             df = df.xs(start, level=0)
