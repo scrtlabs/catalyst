@@ -246,7 +246,10 @@ class Marketplace:
             )
         })
 
-        balance = Web3.toInt(hexstr=balance)
+        try:
+            balance = Web3.toInt(balance)           # web3 >= 4.0.0b7
+        except TypeError:
+            balance = Web3.toInt(hexstr=balance)    # web3 <= 4.0.0b6
 
         if balance > grains:
             print('OK.')
