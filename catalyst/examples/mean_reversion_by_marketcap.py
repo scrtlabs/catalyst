@@ -33,10 +33,14 @@ def initialize(context):
     # parameters or values you're going to use.
 
     # In our example, we're looking at Neo in Ether.
-    df = get_dataset(
-        'marketcap1234', start=context.datetime
-    )  # type: pd.DataFrame
+    df = get_dataset('testmarketcap2')  # type: pd.DataFrame
 
+    # Picking a specific date in our DataFrame
+    first_dt = df.index.get_level_values(0)[0]
+    # Since we use a MultiIndex with date / symbol, picking a date will
+    # result in a new DataFrame for the selected date with a single
+    # symbol index
+    df = df.xs(first_dt, level=0)
     # Keep only the top coins by market cap
     df = df.loc[df['market_cap_usd'].isin(df['market_cap_usd'].nlargest(100))]
 
