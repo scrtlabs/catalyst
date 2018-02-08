@@ -2,6 +2,14 @@
 Release Notes
 =============
 
+Version 0.5.2
+^^^^^^^^^^^^^
+**Release Date**: 2018-02-08
+
+Bug Fixes
+~~~~~~~~~
+- Fixed an issue with live candle values :issue:`216` and :issue:`199`
+
 Version 0.5.1
 ^^^^^^^^^^^^^
 **Release Date**: 2018-02-07
