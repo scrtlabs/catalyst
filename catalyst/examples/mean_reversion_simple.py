@@ -38,7 +38,7 @@ def initialize(context):
     context.current_day = None
 
     context.RSI_OVERSOLD = 40
-    context.RSI_OVERBOUGHT = 50
+    context.RSI_OVERBOUGHT = 60
     context.CANDLE_SIZE = '15T'
 
     context.start_time = time.time()
@@ -257,7 +257,7 @@ if __name__ == '__main__':
             algo_namespace=NAMESPACE,
             base_currency='eth',
             live_graph=False,
-            simulate_orders=True,
+            simulate_orders=False,
             stats_output=None,
             # auth_aliases=dict(poloniex='auth2')
         )
