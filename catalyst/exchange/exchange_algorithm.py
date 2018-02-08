@@ -391,8 +391,6 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             log.warn("Can't initialize signal handler inside another thread."
                      "Exit should be handled by the user.")
 
-        log.info('initialized trading algorithm in live mode')
-
     def interrupt_algorithm(self):
         self.is_running = False
 
@@ -874,6 +872,13 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         raise NotImplementedError()
 
     def _get_open_orders(self, asset=None):
+        if self.simulate_orders:
+            raise ValueError(
+                'The get_open_orders() method only works in live mode. '
+                'The purpose is to list open orders on the exchange '
+                'regardless who placed them. To list the open orders of '
+                'this algo, use `context.blotter.open_orders`.'
+            )
         if asset:
             exchange = self.exchanges[asset.exchange]
             return exchange.get_open_orders(asset)
@@ -907,6 +912,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             If an asset is passed then this will return a list of the open
             orders for this asset.
         """
+        # TODO: should this be a shortcut to the open orders in the blotter?
         return retry(
             action=self._get_open_orders,
             attempts=self.attempts['get_open_orders_attempts'],
