@@ -219,11 +219,15 @@ class Marketplace:
         ).call()
 
         if subscribed[5]:
-            print('\nYou are already subscribed to the "{}" dataset.\n'
-                  'Your subscription started on {} UTC, and is valid until '
-                  '{} UTC.'.format(
-                dataset, pd.to_datetime(subscribed[3], unit='s', utc=True),
-                pd.to_datetime(subscribed[4], unit='s', utc=True)))
+            print(
+                '\nYou are already subscribed to the "{}" dataset.\n'
+                'Your subscription started on {} UTC, and is valid until '
+                '{} UTC.'.format(
+                    dataset,
+                    pd.to_datetime(subscribed[3], unit='s', utc=True),
+                    pd.to_datetime(subscribed[4], unit='s', utc=True)
+                )
+            )
             return
 
         print('\nThe price for a monthly subscription to this dataset is'
@@ -604,7 +608,7 @@ class Marketplace:
             tx['gas'] = min(int(tx['gas'] * 1.5), 4700000)
 
         signed_tx = self.sign_transaction(address, tx)
-        
+
         try:
             tx_hash = '0x{}'.format(
                 bin_hex(self.web3.eth.sendRawTransaction(signed_tx))
