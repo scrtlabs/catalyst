@@ -21,6 +21,8 @@ dependencies:
   - bottleneck==1.2.1
   - chardet==3.0.4
   - ccxt==1.10.1049
+  - web3==4.0.0b7
+  - requests-toolbelt==0.8.0
   - click==6.7
   - contextlib2==0.5.5
   - cycler==0.10.0
