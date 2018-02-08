@@ -1,8 +1,7 @@
 import pandas as pd
 from logbook import Logger
 
-from catalyst.testing import ZiplineTestCase
-from catalyst.testing.fixtures import WithLogger
+from catalyst.exchange.utils.stats_utils import set_print_settings
 from .base import BaseExchangeTestCase
 from catalyst.exchange.ccxt.ccxt_exchange import CCXT
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
@@ -61,12 +60,16 @@ class TestCCXT(BaseExchangeTestCase):
             freq='30T',
             assets=[self.exchange.get_asset('eth_btc')],
             bar_count=200,
-            start_dt=pd.to_datetime('2017-09-01', utc=True)
+            # start_dt=pd.to_datetime('2017-09-01', utc=True),
         )
 
         for asset in candles:
             df = pd.DataFrame(candles[asset])
             df.set_index('last_traded', drop=True, inplace=True)
+
+        set_print_settings()
+        print(df.head(10))
+        print(df.tail(10))
         pass
 
     def test_tickers(self):

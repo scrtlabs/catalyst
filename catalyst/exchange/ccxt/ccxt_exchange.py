@@ -425,15 +425,12 @@ class CCXT(Exchange):
                 'Please provide either start_dt or end_dt, not both.'
             )
 
-        elif end_dt is not None:
-            # Make sure that end_dt really wants data in the past
-            # if it's close to now, we skip the 'since' parameters to
-            # lower the probability of error
-            bars_to_now = pd.date_range(
-                end_dt, pd.Timestamp.utcnow(), freq=freq
-            )
-            # See: https://github.com/ccxt/ccxt/issues/1360
-            if len(bars_to_now) > 1 or self.name in ['poloniex']:
+        if start_dt is None:
+            # TODO: determine why binance is failing
+            if end_dt is None and self.name not in ['binance']:
+                end_dt = pd.Timestamp.utcnow()
+
+            if end_dt is not None:
                 dt_range = get_periods_range(
                     end_dt=end_dt,
                     periods=bar_count,
@@ -441,10 +438,13 @@ class CCXT(Exchange):
                 )
                 start_dt = dt_range[0]
 
-        since = None
         if start_dt is not None:
+            # Convert out start date to a UNIX timestamp, then translate to
+            # milliseconds
             delta = start_dt - get_epoch()
             since = int(delta.total_seconds()) * 1000
+        else:
+            since = None
 
         candles = dict()
         for index, asset in enumerate(assets):
