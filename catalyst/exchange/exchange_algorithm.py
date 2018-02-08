@@ -43,6 +43,7 @@ from catalyst.finance.execution import MarketOrder
 from catalyst.finance.performance import PerformanceTracker
 from catalyst.finance.performance.period import calc_period_stats
 from catalyst.gens.tradesimulation import AlgorithmSimulator
+from catalyst.marketplace.marketplace import Marketplace
 from catalyst.utils.api_support import api_method
 from catalyst.utils.input_validation import error_keywords, ensure_upper_case
 from catalyst.utils.math_utils import round_nearest
@@ -67,7 +68,7 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
         self.current_day = None
 
         if self.simulate_orders is None \
-                and self.sim_params.arena == 'backtest':
+            and self.sim_params.arena == 'backtest':
             self.simulate_orders = True
 
         # Operations with retry features
@@ -92,6 +93,8 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
             attempts=self.attempts,
         )
 
+        self._marketplace = None
+
     @staticmethod
     def __convert_order_params_for_blotter(limit_price, stop_price, style):
         """
@@ -115,7 +118,7 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
             # be in-line with CXXT and many exchanges. We'll consider
             # adding more order types in the future.
             if not isinstance(style, ExchangeLimitOrder) or \
-                    not isinstance(style, MarketOrder):
+                not isinstance(style, MarketOrder):
                 raise OrderTypeNotSupported(
                     order_type=style.__class__.__name__
                 )
@@ -166,6 +169,15 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
         :return:
         """
         return round_nearest(amount, asset.min_trade_size)
+
+    @api_method
+    def get_dataset(self, data_source_name, start=None, end=None):
+        if self._marketplace is None:
+            self._marketplace = Marketplace()
+
+        return self._marketplace.get_dataset(
+            data_source_name, start, end,
+        )
 
     @api_method
     @preprocess(symbol_str=ensure_upper_case)
@@ -901,7 +913,8 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             sleeptime=self.attempts['retry_sleeptime'],
             retry_exceptions=(ExchangeRequestError,),
             cleanup=lambda: log.warn('Fetching open orders again.'),
-            args=(asset,))
+            args=(asset,)
+        )
 
     @api_method
     def get_order(self, order_id, exchange_name):

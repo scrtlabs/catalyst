@@ -1,4 +1,4 @@
-.. image:: https://s3.amazonaws.com/enigmaco-docs/enigma-catalyst.jpg
+.. image:: https://s3.amazonaws.com/enigmaco-docs/enigma-catalyst.png
     :target: https://enigmampc.github.io/catalyst
     :align: center
     :alt: Enigma | Catalyst

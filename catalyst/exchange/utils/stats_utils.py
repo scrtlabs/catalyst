@@ -44,7 +44,7 @@ def crossover(source, target):
     """
     if isinstance(target, numbers.Number):
         if source[-1] is np.nan or source[-2] is np.nan \
-                or target is np.nan:
+            or target is np.nan:
             return False
 
         if source[-1] >= target > source[-2]:
@@ -54,7 +54,7 @@ def crossover(source, target):
 
     else:
         if source[-1] is np.nan or source[-2] is np.nan \
-                or target[-1] is np.nan or target[-2] is np.nan:
+            or target[-1] is np.nan or target[-2] is np.nan:
             return False
 
         if source[-1] > target[-1] and source[-2] < target[-2]:
@@ -81,7 +81,7 @@ def crossunder(source, target):
     """
     if isinstance(target, numbers.Number):
         if source[-1] is np.nan or source[-2] is np.nan \
-                or target is np.nan:
+            or target is np.nan:
             return False
 
         if source[-1] < target <= source[-2]:
@@ -90,7 +90,7 @@ def crossunder(source, target):
             return False
     else:
         if source[-1] is np.nan or source[-2] is np.nan \
-                or target[-1] is np.nan or target[-2] is np.nan:
+            or target[-1] is np.nan or target[-2] is np.nan:
             return False
 
         if source[-1] < target[-1] and source[-2] >= target[-2]:
@@ -229,7 +229,10 @@ def prepare_stats(stats, recorded_cols=list()):
                                               asset_values)
 
     df = pd.DataFrame(stats)
-
+    df['orders'] = df['orders'].apply(lambda orders: len(orders))
+    df['transactions'] = df['transactions'].apply(
+        lambda transactions: len(transactions)
+    )
     index_cols = [
         'period_close', 'starting_cash', 'ending_cash', 'portfolio_value',
         'pnl', 'long_exposure', 'short_exposure', 'orders', 'transactions',
@@ -240,11 +243,6 @@ def prepare_stats(stats, recorded_cols=list()):
         recorded_cols = [x for x in recorded_cols if x not in asset_cols]
         for column in recorded_cols:
             index_cols.append(column)
-
-    df['orders'] = df['orders'].apply(lambda orders: len(orders))
-    df['transactions'] = df['transactions'].apply(
-        lambda transactions: len(transactions)
-    )
 
     if asset_cols:
         columns = asset_cols

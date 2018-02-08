@@ -178,6 +178,7 @@ class Exchange:
         if symbols is None:
             # Make a distinct list of all symbols
             symbols = list(set([asset.symbol for asset in self.assets]))
+            symbols.sort()
 
             if quote_currency is not None:
                 for symbol in symbols[:]:
@@ -701,8 +702,8 @@ class Exchange:
                     )
 
         positions_value = 0.0
-        if positions is not None:
-            assets = set([position.asset for position in positions])
+        if positions:
+            assets = list(set([position.asset for position in positions]))
             tickers = self.tickers(assets)
 
             for position in positions:
@@ -972,13 +973,15 @@ class Exchange:
         pass
 
     @abc.abstractmethod
-    def tickers(self, assets):
+    def tickers(self, assets, on_ticker_error='raise'):
         """
         Retrieve current tick data for the given assets
 
         Parameters
         ----------
         assets: list[TradingPair]
+        on_ticker_error: str [raise|warn]
+            How to handle an error when retrieving a single ticker.
 
         Returns
         -------

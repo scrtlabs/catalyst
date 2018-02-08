@@ -760,24 +760,23 @@ class CCXT(Exchange):
 
         side = 'buy' if amount > 0 else 'sell'
         if hasattr(self.api, 'amount_to_lots'):
-            adj_amount = self.api.amount_to_lots(
-                symbol=symbol,
-                amount=abs(amount),
-            )
-            if adj_amount != abs(amount):
-                log.info(
-                    'adjusted order amount {} to {} based on lot size'.format(
-                        abs(amount), adj_amount,
+            # TODO: is this right?
+            if self.api.markets is None:
+                self.api.load_markets()
+
+            # https://github.com/ccxt/ccxt/issues/1483
+            adj_amount = round(abs(amount), asset.decimals)
+            market = self.api.markets[symbol]
+            if 'lots' in market and market['lots'] > amount:
+                raise CreateOrderError(
+                    exchange=self.name,
+                    e='order amount lower than the smallest lot: {}'.format(
+                        amount
                     )
                 )
-        else:
-            adj_amount = abs(amount)
 
-        if adj_amount == 0:
-            raise CreateOrderError(
-                exchange=self.name,
-                e='order amount lower than the smallest lot: {}'.format(amount)
-            )
+        else:
+            adj_amount = round(abs(amount), asset.decimals)
 
         try:
             result = self.api.create_order(
@@ -798,6 +797,22 @@ class CCXT(Exchange):
                 )
             )
             raise ExchangeRequestError(error=e)
+
+        exchange_amount = None
+        if 'amount' in result and result['amount'] != adj_amount:
+            exchange_amount = result['amount']
+
+        elif 'info' in result:
+            if 'origQty' in result['info']:
+                exchange_amount = float(result['info']['origQty'])
+
+        if exchange_amount:
+            log.info(
+                'order amount adjusted by {} from {} to {}'.format(
+                    self.name, adj_amount, exchange_amount
+                )
+            )
+            adj_amount = exchange_amount
 
         if 'info' not in result:
             raise ValueError('cannot use order without info attribute')
@@ -859,31 +874,38 @@ class CCXT(Exchange):
             order.id, order.asset, return_price=True
         )
         order.status = exc_order.status
-
         order.commission = exc_order.commission
-        if order.amount != exc_order.amount:
-            log.warn(
-                'executed order amount {} differs '
-                'from original'.format(
-                    exc_order.amount, order.amount
-                )
-            )
-            order.amount = exc_order.amount
+        order.filled = exc_order.amount
 
-        if order.status == ORDER_STATUS.FILLED:
+        transactions = []
+        if exc_order.status == ORDER_STATUS.FILLED:
+            if order.amount > exc_order.amount:
+                log.warn(
+                    'executed order amount {} differs '
+                    'from original'.format(
+                        exc_order.amount, order.amount
+                    )
+                )
+
+            order.check_triggers(
+                price=price,
+                dt=exc_order.dt,
+            )
             transaction = Transaction(
                 asset=order.asset,
                 amount=order.amount,
                 dt=pd.Timestamp.utcnow(),
                 price=price,
                 order_id=order.id,
-                commission=order.commission
+                commission=order.commission,
             )
-        return [transaction]
+            transactions.append(transaction)
+
+        return transactions
 
     def process_order(self, order):
         # TODO: move to parent class after tracking features in the parent
-        if not self.api.hasFetchMyTrades:
+        if not self.api.has['fetchMyTrades']:
             return self._process_order_fallback(order)
 
         try:
@@ -985,7 +1007,7 @@ class CCXT(Exchange):
             )
             raise ExchangeRequestError(error=e)
 
-    def tickers(self, assets):
+    def tickers(self, assets, on_ticker_error='raise'):
         """
         Retrieve current tick data for the given assets
 
@@ -998,27 +1020,51 @@ class CCXT(Exchange):
         list[dict[str, float]
 
         """
-        tickers = {}
-        for asset in assets:
-            symbol = self.get_symbol(asset)
-
-            # Test the CCXT throttling further to see if we need this
-            self.ask_request()
-
-            # TODO: use fetch_tickers() for efficiency
-            # I tried using fetch_tickers() but noticed some
-            # inconsistencies, see issue:
-            # https://github.com/ccxt/ccxt/issues/870
+        if len(assets) == 1:
             try:
-                ticker = self.api.fetch_ticker(symbol=symbol)
-            except (ExchangeError, NetworkError) as e:
+                symbol = self.get_symbol(assets[0])
+                log.debug('fetching single ticker: {}'.format(symbol))
+                results = dict()
+                results[symbol] = self.api.fetch_ticker(symbol=symbol)
+
+            except (ExchangeError, NetworkError,) as e:
                 log.warn(
                     'unable to fetch ticker {} / {}: {}'.format(
-                        self.name, asset.symbol, e
+                        self.name, symbol, e
                     )
                 )
-                continue
+                raise ExchangeRequestError(error=e)
 
+        elif len(assets) > 1:
+            symbols = self.get_symbols(assets)
+            try:
+                log.debug('fetching multiple tickers: {}'.format(symbols))
+                results = self.api.fetch_tickers(symbols=symbols)
+
+            except (ExchangeError, NetworkError) as e:
+                log.warn(
+                    'unable to fetch tickers {} / {}: {}'.format(
+                        self.name, symbols, e
+                    )
+                )
+                raise ExchangeRequestError(error=e)
+        else:
+            raise ValueError('Cannot request tickers with not assets.')
+
+        tickers = dict()
+        for asset in assets:
+            symbol = self.get_symbol(asset)
+            if symbol not in results:
+                msg = 'ticker not found {} / {}'.format(
+                    self.name, symbol
+                )
+                log.warn(msg)
+                if on_ticker_error == 'warn':
+                    continue
+                else:
+                    raise ExchangeRequestError(error=msg)
+
+            ticker = results[symbol]
             ticker['last_traded'] = from_ms_timestamp(ticker['timestamp'])
 
             if 'last_price' not in ticker:
@@ -1030,7 +1076,7 @@ class CCXT(Exchange):
                 ticker['volume'] = ticker['baseVolume']
 
             elif 'info' in ticker and 'bidQty' in ticker['info'] \
-                    and 'askQty' in ticker['info']:
+                and 'askQty' in ticker['info']:
                 ticker['volume'] = float(ticker['info']['bidQty']) + \
                                    float(ticker['info']['askQty'])
 
@@ -1068,7 +1114,7 @@ class CCXT(Exchange):
 
         return result
 
-    def get_trades(self, asset, my_trades=True, start_dt=None, limit=None):
+    def get_trades(self, asset, my_trades=True, start_dt=None, limit=100):
         if not my_trades:
             raise NotImplemented(
                 'get_trades only supports "my trades"'
