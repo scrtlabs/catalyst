@@ -60,7 +60,7 @@ def _handle_data(context, data):
         rsi=rsi,
     )
 
-    orders = get_open_orders(context.asset)
+    orders = context.blotter.open_orders
     if orders:
         log.info('skipping bar until all open orders execute')
         return
@@ -146,11 +146,11 @@ if __name__ == '__main__':
     live = True
     if live:
         run_algorithm(
-            capital_base=0.001,
+            capital_base=1000,
             initialize=initialize,
             handle_data=handle_data,
             analyze=analyze,
-            exchange_name='binance',
+            exchange_name='bittrex',
             live=True,
             algo_namespace=algo_namespace,
             base_currency='btc',
