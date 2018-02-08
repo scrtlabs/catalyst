@@ -2,6 +2,22 @@
 Release Notes
 =============
 
+Version 0.5.0
+^^^^^^^^^^^^^
+**Release Date**: 2018-02-07
+
+Bug Fixes
+~~~~~~~~~
+- Fixed an issue with orders that stay open :issue:`211`
+- Fixed Jupyter issues :issue:`179`
+- Fetching multiple tickers in one call to minimize rate limit risks :issue:`174`
+- Improved live state presentation :issue:`171`
+
+
+Build
+~~~~~
+- Introducing the Enigma Marketplace
+
 Version 0.4.7
 ^^^^^^^^^^^^^
 **Release Date**: 2018-01-19
