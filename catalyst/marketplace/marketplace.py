@@ -12,7 +12,6 @@ import bcolz
 import logbook
 import pandas as pd
 import requests
-import six
 from requests_toolbelt import MultipartDecoder
 from requests_toolbelt.multipart.decoder import \
     NonMultipartContentTypeException
@@ -149,13 +148,13 @@ class Marketplace:
               'Gas Price:\t\t[Accept the default value]\n'
               'Nonce:\t\t\t{nonce}\n'
               'Data:\t\t\t{data}\n'.format(
-            _from=from_address,
-            to=tx['to'],
-            value=tx['value'],
-            gas=tx['gas'],
-            nonce=tx['nonce'],
-            data=tx['data'], )
-        )
+                _from=from_address,
+                to=tx['to'],
+                value=tx['value'],
+                gas=tx['gas'],
+                nonce=tx['nonce'],
+                data=tx['data'], )
+              )
 
         signed_tx = input('Copy and Paste the "Signed Transaction" '
                           'field here:\n')
@@ -183,12 +182,12 @@ class Marketplace:
         data = []
         for index, data_source in enumerate(data_sources):
             if index > 0:
-                # if 'test' not in Web3.toText(data_source).lower():
-                data.append(
-                    dict(
-                        dataset=self.to_text(data_source)
+                if 'test' not in Web3.toText(data_source).lower():
+                    data.append(
+                        dict(
+                            dataset=self.to_text(data_source)
+                        )
                     )
-                )
 
         df = pd.DataFrame(data)
         set_print_settings()
@@ -257,14 +256,14 @@ class Marketplace:
                   'buy: {} ENG. Get enough ENG to cover the costs of the '
                   'monthly\nsubscription for what you are trying to buy, '
                   'and try again.'.format(
-                address, from_grains(balance), price))
+                    address, from_grains(balance), price))
             return
 
         while True:
             agree_pay = input('Please confirm that you agree to pay {} ENG '
                               'for a monthly subscription to the dataset "{}" '
                               'starting today. [default: Y] '.format(
-                price, dataset)) or 'y'
+                                price, dataset)) or 'y'
             if agree_pay.lower() not in ('y', 'n'):
                 print("Please answer Y or N.")
             else:
@@ -367,7 +366,7 @@ class Marketplace:
               'You can now ingest this dataset anytime during the '
               'next month by running the following command:\n'
               'catalyst marketplace ingest --dataset={}'.format(
-            dataset, address, dataset))
+                dataset, address, dataset))
 
     def process_temp_bundle(self, ds_name, path):
         """
@@ -424,10 +423,10 @@ class Marketplace:
             print('Your subscription to dataset "{}" expired on {} UTC.'
                   'Please renew your subscription by running:\n'
                   'catalyst marketplace subscribe --dataset={}'.format(
-                ds_name,
-                pd.to_datetime(check_sub[4], unit='s', utc=True),
-                ds_name)
-            )
+                    ds_name,
+                    pd.to_datetime(check_sub[4], unit='s', utc=True),
+                    ds_name)
+                  )
 
         if 'key' in self.addresses[address_i]:
             key = self.addresses[address_i]['key']
