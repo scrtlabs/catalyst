@@ -105,6 +105,11 @@
 <li class="toctree-l3"><a class="reference internal" href="#running-algorithms">Running Algorithms</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#pycharm-ide">PyCharm IDE</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Install</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setup">Setup</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#next-steps">Next steps</a></li>
 </ul>
 </li>
@@ -2592,6 +2597,48 @@ performance DataFrame.</p>
 </td><td><p>0.070834</p>
 </td></tr></tbody></table><p><p>5 rows × 45 columns</p>
 </p></div></div>
+</div>
+<div class="section" id="pycharm-ide">
+<h2>PyCharm IDE<a class="headerlink" href="#pycharm-ide" title="Permalink to this headline">¶</a></h2>
+<p>PyCharm is an Integrated Development Environment (IDE) used in computer
+programming, specifically for the Python language. It streamlines the continuos
+development of Python code, and among other things includes a debugger that
+comes in handy to see the inner workings of Catalyst, and your trading
+algorithms.</p>
+<div class="section" id="id1">
+<h3>Install<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>Install PyCharm from their <a class="reference external" href="https://www.jetbrains.com/pycharm/download/">Website</a>.
+There is a free and open-source <strong>Community</strong> version.</p>
+</div>
+<div class="section" id="setup">
+<h3>Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li>When creating a new project in PyCharm, right under you specify the Location,
+click on <strong>Project Interpreter</strong> to display a drop down menu</li>
+<li>Select <strong>Existing interpreter</strong>, click the gear box right next to it and
+select ‘add local’. Depending on your installation, select either
+“<em>Virtual Environemnt</em>” or “<em>Conda Environment” and click the ‘…’ button to
+navigate to your catalyst env and select the Python binary file:
+``bin/python`` for Linux/MacOS installations or ‘python.exe’ for Windows
+installs (for example: ‘C:\Users\user\Anaconda2\envs\catalyst\python.exe’).
+Select OK. You may want to click on *Make available to all projects</em> for your
+future reference. Click OK again, and create your new environment using the
+set up of your virtual environment.</li>
+</ol>
+<p>Alternatively, if you already have your project created, in Windows do:</p>
+<ol class="arabic simple">
+<li>File -&gt; Default Settings -&gt; Project Interpreter. Click the gear box next to
+the project interpreter and select ‘add local’, and follow the steps from the
+second step above.</li>
+</ol>
+<p>On MacOS:</p>
+<ol class="arabic simple">
+<li>PyCharm -&gt; Preferences -&gt; Settings -&gt; Project:’NAME_OF_PROJECT’ -&gt;
+Project Interpreter. Click the gear box next to the project interpreter
+and select ‘add local’, and follow the steps from the second step above.</li>
+</ol>
+<p>You should now be able to run your project/scripts in PyCharm.</p>
+</div>
 </div>
 <div class="section" id="next-steps">
 <h2>Next steps<a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h2>
