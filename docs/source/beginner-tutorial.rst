@@ -16609,30 +16609,49 @@ NaN
 
    </div>
 
-Catalyst using PyCharm
-~~~~~~~~~~~~~~~~~~~~~~
+PyCharm IDE
+~~~~~~~~~~~
+
+PyCharm is an Integrated Development Environment (IDE) used in computer 
+programming, specifically for the Python language. It streamlines the continuos
+development of Python code, and among other things includes a debugger that 
+comes in handy to see the inner workings of Catalyst, and your trading 
+algorithms.
 
 Install
 ^^^^^^^
-Install PyCharm from their `Website <https://www.jetbrains.com/pycharm/download/#section=windows>`__.
+Install PyCharm from their `Website <https://www.jetbrains.com/pycharm/download/>`__.
+There is a free and open-source **Community** version.
 
 Setup
 ^^^^^
 
-1. Create a new project folder for your scripts or open your existing folder in PyCharm.
+1. When creating a new project in PyCharm, right under you specify the Location,
+   click on **Project Interpreter** to display a drop down menu
 
-2. Once your project is open, go to File -> Settings -> Project:'NAME_OF_PROJECT' -> Project Interpreter.
-   Click the gear box next to the project interpreter and select 'add local'.
+2. Select **Existing interpreter**, click the gear box right next to it and 
+   select 'add local'. Depending on your installation, select either 
+   "*Virtual Environemnt*" or "*Conda Environment" and click the '...' button to
+   navigate to your catalyst env and select the Python binary file: 
+   ``bin/python`` for Linux/MacOS installations or 'python.exe' for Windows 
+   installs (for example: 'C:\\Users\\user\\Anaconda2\\envs\\catalyst\\python.exe'). 
+   Select OK. You may want to click on *Make available to all projects* for your
+   future reference. Click OK again, and create your new environment using the
+   set up of your virtual environment.
 
-   Then select 'Conda Environment' -> 'Existing environment'. Click the '...' button and
-   navigate to your catalyst env located in the Anaconda2 folder to select the 'python.exe' file
-   (for example: 'C:\\Users\\user\\Anaconda2\\envs\\catalyst\\python.exe'). Select OK, then apply and click OK again.
+Alternatively, if you already have your project created, in Windows do:
 
-3. Next, click on the dropdown menu on the top right of PyCharm and select 'Edit Configurations'.
-   Select the '+' button.
-   Set the script Path to the path of your script and make sure the interpreter is correct, then hit ok.
+1. File -> Default Settings -> Project Interpreter. Click the gear box next to 
+   the project interpreter and select ‘add local’, and follow the steps from the
+   second step above.
 
-You should now be able to run your script in PyCharm.
+On MacOS:
+
+1. PyCharm -> Preferences -> Settings -> Project:’NAME_OF_PROJECT’ -> 
+   Project Interpreter. Click the gear box next to the project interpreter 
+   and select ‘add local’, and follow the steps from the second step above.
+
+You should now be able to run your project/scripts in PyCharm.
 
 Next steps
 ~~~~~~~~~~
