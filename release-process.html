@@ -32,6 +32,9 @@
   
 
   
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="Catalyst 0.4 documentation" href="index.html"/> 
 
   
@@ -142,7 +145,7 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/release-process.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/release-process.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -163,20 +166,20 @@
 </div>
 <div class="section" id="updating-the-release-notes">
 <h2>Updating the Release Notes<a class="headerlink" href="#updating-the-release-notes" title="Permalink to this headline">¶</a></h2>
-<p>When we are ready to ship a new release of zipline, edit the <a class="reference internal" href="releases.html"><em>Release Notes</em></a>
+<p>When we are ready to ship a new release of zipline, edit the <a class="reference internal" href="releases.html"><span class="doc">Release Notes</span></a>
 page. We will have been maintaining a whatsnew file while working on the release
 with the new version. First, find that file in:
 <code class="docutils literal"><span class="pre">docs/source/whatsnew/&lt;version&gt;.txt</span></code>. It will be the highest version number.
-Edit the release date field to be today&#8217;s date in the format:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>&lt;month&gt; &lt;day&gt;, &lt;year&gt;
+Edit the release date field to be today’s date in the format:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">month</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">day</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">year</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>for example, November 6, 2015.
 Remove the active development warning from the whatsnew, since it will no
 longer be pending release.
-Update the title of the release from &#8220;Development&#8221; to &#8220;Release x.x.x&#8221; and
-update the underline of the title to match the title&#8217;s width.</p>
-<p>If you are renaming the release at this point, you&#8217;ll need to git mv the file
+Update the title of the release from “Development” to “Release x.x.x” and
+update the underline of the title to match the title’s width.</p>
+<p>If you are renaming the release at this point, you’ll need to git mv the file
 and also update releases.rst to reference the renamed file.</p>
 <p>To build and view the docs locally, run:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> docs
@@ -212,7 +215,7 @@ should be added to that header.</p>
 <h2>Updating the <code class="docutils literal"><span class="pre">__version__</span></code><a class="headerlink" href="#updating-the-version" title="Permalink to this headline">¶</a></h2>
 <p>We use <a class="reference external" href="https://github.com/warner/python-versioneer">versioneer</a> to
 manage the <code class="docutils literal"><span class="pre">__version__</span></code> and <code class="docutils literal"><span class="pre">setup.py</span></code> version. This means that we pull
-this information from our version control&#8217;s tags to ensure that they stay in
+this information from our version control’s tags to ensure that they stay in
 sync and to have very fine grained version strings for development installs.</p>
 <p>To upgrade the version use the git tag command like:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span></span>$ git tag &lt;major&gt;.&lt;minor&gt;.&lt;micro&gt;
@@ -220,7 +223,7 @@ $ git push <span class="o">&amp;&amp;</span> git push --tags
 </pre></div>
 </div>
 <p>This will push the the code and the tag information.</p>
-<p>Next, click the &#8220;Draft a new release&#8221; button on the <a class="reference external" href="https://github.com/quantopian/zipline/releases">zipline releases page</a>.  For the new release,
+<p>Next, click the “Draft a new release” button on the <a class="reference external" href="https://github.com/quantopian/zipline/releases">zipline releases page</a>.  For the new release,
 choose the tag you just pushed, and publish the release.</p>
 </div>
 <div class="section" id="uploading-pypi-packages">
@@ -250,19 +253,19 @@ all the required packages.</p>
 <p>Now that we have tested the package locally, it should be tested using the test
 PyPI server.</p>
 <p>Edit your <code class="docutils literal"><span class="pre">~/.pypirc</span></code> file to look like:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>[distutils]
-index-servers =
-    pypi
-    pypitest
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">distutils</span><span class="p">]</span>
+<span class="n">index</span><span class="o">-</span><span class="n">servers</span> <span class="o">=</span>
+    <span class="n">pypi</span>
+    <span class="n">pypitest</span>
 
-[pypi]
-username:
-password:
+<span class="p">[</span><span class="n">pypi</span><span class="p">]</span>
+<span class="n">username</span><span class="p">:</span>
+<span class="n">password</span><span class="p">:</span>
 
-[pypitest]
-repository: https://testpypi.python.org/pypi
-username:
-password:
+<span class="p">[</span><span class="n">pypitest</span><span class="p">]</span>
+<span class="n">repository</span><span class="p">:</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">testpypi</span><span class="o">.</span><span class="n">python</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">pypi</span>
+<span class="n">username</span><span class="p">:</span>
+<span class="n">password</span><span class="p">:</span>
 </pre></div>
 </div>
 <p>after that, run:</p>
@@ -296,7 +299,7 @@ number.</p>
 </div>
 <div class="section" id="bdist">
 <h3><code class="docutils literal"><span class="pre">bdist</span></code><a class="headerlink" href="#bdist" title="Permalink to this headline">¶</a></h3>
-<p>Because zipline now supports multiple versions of numpy, we&#8217;re not building
+<p>Because zipline now supports multiple versions of numpy, we’re not building
 binary wheels, since they are not tagged with the version of numpy with which
 they were compiled.</p>
 </div>
@@ -331,10 +334,10 @@ $ git push origin gh-pages
 <h2>Uploading conda packages<a class="headerlink" href="#uploading-conda-packages" title="Permalink to this headline">¶</a></h2>
 <p>Travis and AppVeyor build zipline conda packages for us.  Once they have built
 and uploaded to anaconda.org the packages (and their dependencies) for the
-release commit to master, we should move those packages from the &#8220;ci&#8221; label to
-the &#8220;main&#8221; label.  You can do this from the anaconda.org web interface.  This
-is also a good time to remove all the old &#8220;ci&#8221; packages from anaconda.</p>
-<p>Travis and AppVeyor only build and upload linux-64 and win-64 packages.  We&#8217;ll
+release commit to master, we should move those packages from the “ci” label to
+the “main” label.  You can do this from the anaconda.org web interface.  This
+is also a good time to remove all the old “ci” packages from anaconda.</p>
+<p>Travis and AppVeyor only build and upload linux-64 and win-64 packages.  We’ll
 need to build and upload osx-64 packages manually on an OSX machine.</p>
 <p>To build the conda packages for zipline locally, run:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span></span>$ python etc/conda_build_matrix.py
@@ -355,11 +358,11 @@ may be specified with the <code class="docutils literal"><span class="pre">--use
 <p>Push a new commit post-release that adds the whatsnew for the next release,
 which should be titled according to a micro version increment. If that next
 release turns out to be a major/minor version increment, the file can be
-renamed when that&#8217;s decided. You can use <code class="docutils literal"><span class="pre">docs/source/whatsnew/skeleton.txt</span></code>
+renamed when that’s decided. You can use <code class="docutils literal"><span class="pre">docs/source/whatsnew/skeleton.txt</span></code>
 as a template for the new file.</p>
 <p>Include the whatsnew file in <code class="docutils literal"><span class="pre">docs/source/releases.rst</span></code>. New releases should
 appear at the top. The syntax for this is:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>.. include:: whatsnew/&lt;version&gt;.txt
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="o">..</span> <span class="n">include</span><span class="p">::</span> <span class="n">whatsnew</span><span class="o">/&lt;</span><span class="n">version</span><span class="o">&gt;.</span><span class="n">txt</span>
 </pre></div>
 </div>
 </div>
@@ -404,7 +407,7 @@ appear at the top. The syntax for this is:</p>
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

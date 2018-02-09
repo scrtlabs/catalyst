@@ -32,6 +32,9 @@
   
 
   
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="Catalyst 0.4 documentation" href="index.html"/> 
 
   
@@ -142,7 +145,7 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/bundles.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/bundles.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -197,7 +200,7 @@ involve downloading and processing a lot of data. This can be run with:</p>
 </pre></div>
 </div>
 <p>where <code class="docutils literal"><span class="pre">&lt;bundle&gt;</span></code> is the name of the bundle to ingest, defaulting to
-<a class="reference internal" href="#quantopian-quandl-mirror"><span>quantopian-quandl</span></a>.</p>
+<a class="reference internal" href="#quantopian-quandl-mirror"><span class="std std-ref">quantopian-quandl</span></a>.</p>
 </div>
 <div class="section" id="old-data">
 <h2>Old Data<a class="headerlink" href="#old-data" title="Permalink to this headline">¶</a></h2>
@@ -208,7 +211,7 @@ copies. Running a backtest with an old ingestion makes it easier to reproduce
 backtest results later.</p>
 <p>One drawback of saving all of the data by default is that the data directory
 may grow quite large even if you do not want to use the data. As shown earlier,
-we can list all of the ingestions with the <a class="reference internal" href="#bundles-command"><span>bundles command</span></a>. To solve the problem of leaking old data there is another
+we can list all of the ingestions with the <a class="reference internal" href="#bundles-command"><span class="std std-ref">bundles command</span></a>. To solve the problem of leaking old data there is another
 command: <code class="docutils literal"><span class="pre">clean</span></code>, which will clear data bundles based on some time
 constraints.</p>
 <p>For example:</p>
@@ -247,7 +250,7 @@ current day to use the most recent data.</p>
 <h2>Default Data Bundles<a class="headerlink" href="#default-data-bundles" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="quandl-wiki-bundle">
 <span id="quandl-data-bundle"></span><h3>Quandl WIKI Bundle<a class="headerlink" href="#quandl-wiki-bundle" title="Permalink to this headline">¶</a></h3>
-<p>By default zipline comes with the <code class="docutils literal"><span class="pre">quandl</span></code> data bundle which uses quandl&#8217;s
+<p>By default zipline comes with the <code class="docutils literal"><span class="pre">quandl</span></code> data bundle which uses quandl’s
 <a class="reference external" href="https://www.quandl.com/data/WIKI">WIKI dataset</a>. The quandl data bundle
 includes daily pricing data, splits, cash dividends, and asset metadata. To
 ingest the <code class="docutils literal"><span class="pre">quandl</span></code> data bundle we recommend creating an account on quandl.com
@@ -313,7 +316,7 @@ different names.</p>
 zipline. To add a new bundle, one must implement an <code class="docutils literal"><span class="pre">ingest</span></code> function.</p>
 <p>The <code class="docutils literal"><span class="pre">ingest</span></code> function is responsible for loading the data into memory and
 passing it to a set of writer objects provided by zipline to convert the data to
-zipline&#8217;s internal format. The ingest function may work by downloading data from
+zipline’s internal format. The ingest function may work by downloading data from
 a remote location like the <code class="docutils literal"><span class="pre">quandl</span></code> bundle or yahoo bundles or it may just
 load files that are already on the machine. The function is provided with
 writers that will write the data to the correct location transactionally. If an
@@ -354,7 +357,7 @@ docs for write.</p>
 <h3><code class="docutils literal"><span class="pre">minute_bar_writer</span></code><a class="headerlink" href="#minute-bar-writer" title="Permalink to this headline">¶</a></h3>
 <p><code class="docutils literal"><span class="pre">minute_bar_writer</span></code> is an instance of
 <code class="xref py py-class docutils literal"><span class="pre">BcolzMinuteBarWriter</span></code>. This writer is used to
-convert data to zipline&#8217;s internal bcolz format to later be read by a
+convert data to zipline’s internal bcolz format to later be read by a
 <code class="xref py py-class docutils literal"><span class="pre">BcolzMinuteBarReader</span></code>. If minute data is
 provided, users should call
 <code class="xref py py-meth docutils literal"><span class="pre">write()</span></code> with an iterable of
@@ -376,7 +379,7 @@ as the dates are strictly increasing.</p>
 <h3><code class="docutils literal"><span class="pre">daily_bar_writer</span></code><a class="headerlink" href="#daily-bar-writer" title="Permalink to this headline">¶</a></h3>
 <p><code class="docutils literal"><span class="pre">daily_bar_writer</span></code> is an instance of
 <code class="xref py py-class docutils literal"><span class="pre">BcolzDailyBarWriter</span></code>. This writer is
-used to convert data into zipline&#8217;s internal bcolz format to later be read by a
+used to convert data into zipline’s internal bcolz format to later be read by a
 <code class="xref py py-class docutils literal"><span class="pre">BcolzDailyBarReader</span></code>. If daily data is
 provided, users should call
 <code class="xref py py-meth docutils literal"><span class="pre">write()</span></code> with an iterable of
@@ -413,12 +416,12 @@ help some bundles generate queries for the days needed.</p>
 </div>
 <div class="section" id="start-session">
 <h3><code class="docutils literal"><span class="pre">start_session</span></code><a class="headerlink" href="#start-session" title="Permalink to this headline">¶</a></h3>
-<p><code class="docutils literal"><span class="pre">start_session</span></code> is a <code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code> object indicating the first
+<p><code class="docutils literal"><span class="pre">start_session</span></code> is a <a class="reference external" href="http://pandas.pydata.org/pandas-docs/stable/generated/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v0.22.0)"><code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code></a> object indicating the first
 day that the bundle should load data for.</p>
 </div>
 <div class="section" id="end-session">
 <h3><code class="docutils literal"><span class="pre">end_session</span></code><a class="headerlink" href="#end-session" title="Permalink to this headline">¶</a></h3>
-<p><code class="docutils literal"><span class="pre">end_session</span></code> is a <code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code> object indicating the last day
+<p><code class="docutils literal"><span class="pre">end_session</span></code> is a <a class="reference external" href="http://pandas.pydata.org/pandas-docs/stable/generated/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v0.22.0)"><code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code></a> object indicating the last day
 that the bundle should load data for.</p>
 </div>
 <div class="section" id="cache">
@@ -426,7 +429,7 @@ that the bundle should load data for.</p>
 <p><code class="docutils literal"><span class="pre">cache</span></code> is an instance of <code class="xref py py-class docutils literal"><span class="pre">dataframe_cache</span></code>. This
 object is a mapping from strings to dataframes. This object is provided in case
 an ingestion crashes part way through. The idea is that the ingest function
-should check the cache for raw data, if it doesn&#8217;t exist in the cache, it should
+should check the cache for raw data, if it doesn’t exist in the cache, it should
 acquire it and then store it in the cache. Then it can parse and write the
 data. The cache will be cleared only after a successful load, this prevents the
 ingest function from needing to redownload all the data if there is some bug in
@@ -436,7 +439,7 @@ from another local file, then there is no need to use this cache.</p>
 <div class="section" id="show-progress">
 <h3><code class="docutils literal"><span class="pre">show_progress</span></code><a class="headerlink" href="#show-progress" title="Permalink to this headline">¶</a></h3>
 <p><code class="docutils literal"><span class="pre">show_progress</span></code> is a boolean indicating that the user would like to receive
-feedback about the ingest function&#8217;s progress fetching and writing the
+feedback about the ingest function’s progress fetching and writing the
 data. Some examples for where to show how many files you have downloaded out of
 the total needed, or how far into some data conversion the ingest function
 is. One tool that may help with implementing <code class="docutils literal"><span class="pre">show_progress</span></code> for a loop is
@@ -449,7 +452,7 @@ forwarded to <code class="docutils literal"><span class="pre">minute_bar_writer.
 written. <code class="docutils literal"><span class="pre">output_dir</span></code> will be some subdirectory of <code class="docutils literal"><span class="pre">$ZIPLINE_ROOT</span></code> and will
 contain the time of the start of the current ingestion. This can be used to
 directly move resources here if for some reason your ingest function can produce
-it&#8217;s own outputs without the writers. For example, the <code class="docutils literal"><span class="pre">quantopian:quandl</span></code>
+it’s own outputs without the writers. For example, the <code class="docutils literal"><span class="pre">quantopian:quandl</span></code>
 bundle uses this to directly untar the bundle into the <code class="docutils literal"><span class="pre">output_dir</span></code>.</p>
 </div>
 </div>
@@ -494,7 +497,7 @@ bundle uses this to directly untar the bundle into the <code class="docutils lit
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

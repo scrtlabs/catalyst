@@ -32,6 +32,9 @@
   
 
   
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="Catalyst 0.4 documentation" href="index.html"/>
         <link rel="next" title="Release Notes" href="releases.html"/>
         <link rel="prev" title="Resources" href="resources.html"/> 
@@ -92,8 +95,9 @@
 <li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
 <li class="toctree-l1"><a class="reference internal" href="videos.html">Videos</a></li>
 <li class="toctree-l1"><a class="reference internal" href="resources.html">Resources</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Development Guidelines</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Development Guidelines</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#creating-a-development-environment">Creating a Development Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#development-with-docker">Development with Docker</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#git-branching-structure">Git Branching Structure</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#contributing-to-the-docs">Contributing to the Docs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#commit-messages">Commit messages</a></li>
@@ -151,7 +155,7 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/development-guidelines.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/development-guidelines.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -170,7 +174,7 @@
 <p>All contributions, bug reports, bug fixes, documentation improvements, enhancements and ideas are welcome. We <a class="reference external" href="https://github.com/enigmampc/catalyst/issues">track issues</a> on <a class="reference external" href="https://github.com/enigmampc/catalyst">GitHub</a> and also have a <a class="reference external" href="https://discord.gg/SJK32GY">discord group</a> where you can ask questions.</p>
 <div class="section" id="creating-a-development-environment">
 <h2>Creating a Development Environment<a class="headerlink" href="#creating-a-development-environment" title="Permalink to this headline">¶</a></h2>
-<p>First, you&#8217;ll need to clone Catalyst by running:</p>
+<p>First, you’ll need to clone Catalyst by running:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span></span>$ git clone git@github.com:enigmampc/catalyst.git
 </pre></div>
 </div>
@@ -178,7 +182,7 @@
 <div class="highlight-bash"><div class="highlight"><pre><span></span>$ git checkout -b some-short-descriptive-name
 </pre></div>
 </div>
-<p>If you don&#8217;t already have them, you&#8217;ll need some C library dependencies. You can follow the <a class="reference external" href="install.html">install guide</a> to get the appropriate dependencies.</p>
+<p>If you don’t already have them, you’ll need some C library dependencies. You can follow the <a class="reference external" href="install.html">install guide</a> to get the appropriate dependencies.</p>
 <p>The following section assumes you already have virtualenvwrapper and pip installed on your system. Suggested installation of Python library dependencies used for development:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span></span>$ mkvirtualenv catalyst
 $ ./etc/ordered_pip.sh ./etc/requirements.txt
@@ -190,7 +194,13 @@ $ pip install -r ./etc/requirements_blaze.txt
 <div class="highlight-bash"><div class="highlight"><pre><span></span>$ python setup.py build_ext --inplace
 </pre></div>
 </div>
-<p>..If you want to work with zipline using a <a href="#id1"><span class="problematic" id="id2">`Docker`__</span></a> container, you&#8217;ll need to build the <code class="docutils literal"><span class="pre">Dockerfile</span></code> in the Zipline root directory, and then build <code class="docutils literal"><span class="pre">Dockerfile-dev</span></code>. Instructions for building both containers can be found in <code class="docutils literal"><span class="pre">Dockerfile</span></code> and <code class="docutils literal"><span class="pre">Dockerfile-dev</span></code>, respectively.</p>
+</div>
+<div class="section" id="development-with-docker">
+<h2>Development with Docker<a class="headerlink" href="#development-with-docker" title="Permalink to this headline">¶</a></h2>
+<p>If you want to work with zipline using a <a class="reference external" href="https://docs.docker.com/get-started/">Docker</a> container, you’ll need to
+build the <code class="docutils literal"><span class="pre">Dockerfile</span></code> in the Zipline root directory, and then build
+<code class="docutils literal"><span class="pre">Dockerfile-dev</span></code>. Instructions for building both containers can be found in
+<code class="docutils literal"><span class="pre">Dockerfile</span></code> and <code class="docutils literal"><span class="pre">Dockerfile-dev</span></code>, respectively.</p>
 </div>
 <div class="section" id="git-branching-structure">
 <h2>Git Branching Structure<a class="headerlink" href="#git-branching-structure" title="Permalink to this headline">¶</a></h2>
@@ -199,7 +209,7 @@ $ pip install -r ./etc/requirements_blaze.txt
 </div>
 <div class="section" id="contributing-to-the-docs">
 <h2>Contributing to the Docs<a class="headerlink" href="#contributing-to-the-docs" title="Permalink to this headline">¶</a></h2>
-<p>If you&#8217;d like to contribute to the documentation on enigmampc.github.io, you can navigate to <code class="docutils literal"><span class="pre">docs/source/</span></code> where each <a class="reference external" href="https://en.wikipedia.org/wiki/ReStructuredText">reStructuredText</a> file is a separate section there. To add a section, create a new file called <code class="docutils literal"><span class="pre">some-descriptive-name.rst</span></code> and add <code class="docutils literal"><span class="pre">some-descriptive-name</span></code> to <code class="docutils literal"><span class="pre">index.rst</span></code>. To edit a section, simply open up one of the existing files, make your changes, and save them.</p>
+<p>If you’d like to contribute to the documentation on enigmampc.github.io, you can navigate to <code class="docutils literal"><span class="pre">docs/source/</span></code> where each <a class="reference external" href="https://en.wikipedia.org/wiki/ReStructuredText">reStructuredText</a> file is a separate section there. To add a section, create a new file called <code class="docutils literal"><span class="pre">some-descriptive-name.rst</span></code> and add <code class="docutils literal"><span class="pre">some-descriptive-name</span></code> to <code class="docutils literal"><span class="pre">index.rst</span></code>. To edit a section, simply open up one of the existing files, make your changes, and save them.</p>
 <p>We use <a class="reference external" href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> to generate documentation for Catalyst, which you will need to install by running:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span></span>$ pip install -r ./etc/requirements_docs.txt
 </pre></div>
@@ -315,7 +325,7 @@ the algorithm has little cash on hand.
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

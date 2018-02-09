@@ -32,6 +32,9 @@
   
 
   
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="Catalyst 0.4 documentation" href="index.html"/>
         <link rel="next" title="Features" href="features.html"/>
         <link rel="prev" title="Catalyst Beginner Tutorial" href="beginner-tutorial.html"/> 
@@ -86,7 +89,7 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="install.html">Install</a></li>
 <li class="toctree-l1"><a class="reference internal" href="beginner-tutorial.html">Catalyst Beginner Tutorial</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Live Trading</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Live Trading</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#supported-exchanges">Supported Exchanges</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paper-trading-vs-live-trading-modes">Paper Trading vs Live Trading modes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#authentication">Authentication</a></li>
@@ -151,7 +154,7 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/live-trading.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/live-trading.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -254,7 +257,7 @@ a similar process.</p>
 </div>
 <p>The file goes here: <code class="docutils literal"><span class="pre">~/.catalyst/data/exchanges/bitfinex/auth.json</span></code></p>
 <p>Note that the <cite>bitfinex</cite> part in the directory above corresponds to the id of the Bitfinex
-exchange as defined in the &#8220;Supported Exchanges&#8221; section above.
+exchange as defined in the “Supported Exchanges” section above.
 Attempting to run an algorithm where the targeted exchange is missing
 its <code class="docutils literal"><span class="pre">auth.json</span></code> file will create the directory structure and create an empty
 auth.json file, but will result in an error.</p>
@@ -275,13 +278,13 @@ seperator.</p>
 <p><em>[Market Currency]_[Base Currency]</em> all lowercase.</p>
 <p>Currency symbols (e.g. btc, eth, ltc) follow the Bittrex convention.</p>
 <p>Here are some examples:</p>
-<div class="highlight-json"><div class="highlight"><pre><span></span># With Bitfinex
-bitcoin_usd_asset = symbol(&#39;btc_usd&#39;)
-ethereum_bitcoin_asset = symbol(&#39;eth_btc&#39;)
+<div class="code python highlight-python"><div class="highlight"><pre><span></span><span class="c1"># With Bitfinex</span>
+<span class="n">bitcoin_usd_asset</span> <span class="o">=</span> <span class="n">symbol</span><span class="p">(</span><span class="s1">&#39;btc_usd&#39;</span><span class="p">)</span>
+<span class="n">ethereum_bitcoin_asset</span> <span class="o">=</span> <span class="n">symbol</span><span class="p">(</span><span class="s1">&#39;eth_btc&#39;</span><span class="p">)</span>
 
-# With Bittrex
-ethereum_bitcoin_asset = symbol(&#39;eth_btc&#39;)
-neo_ethereum_asset = symbol(&#39;neo_eth)
+<span class="c1"># With Bittrex</span>
+<span class="n">ethereum_bitcoin_asset</span> <span class="o">=</span> <span class="n">symbol</span><span class="p">(</span><span class="s1">&#39;eth_btc&#39;</span><span class="p">)</span>
+<span class="n">neo_ethereum_asset</span> <span class="o">=</span> <span class="n">symbol</span><span class="p">(</span><span class="s1">&#39;neo_eth)</span>
 </pre></div>
 </div>
 <p>Note that the trading pairs are always referenced in the same manner.
@@ -384,7 +387,7 @@ simulated in Catalyst instead of processed on the exchange. It defaults to
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>
