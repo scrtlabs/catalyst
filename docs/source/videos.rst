@@ -11,6 +11,7 @@ Installation: MacOS
 
 |
 |
+
 Installation: Windows
 ---------------------
 
@@ -21,6 +22,7 @@ Where things go smoothly:
    <iframe width="560" height="315" src="https://www.youtube.com/embed/H8HqcEbZmkk" frameborder="0" allowfullscreen></iframe>
 
 |
+
 Where things don't:
 
 .. raw:: html
@@ -29,6 +31,7 @@ Where things don't:
 
 |
 |
+
 Backtesting a Strategy
 ----------------------
 
@@ -44,6 +47,7 @@ sell. Hopefully, we’ll ride the waves.
 
 |
 |
+
 Live Trading a Strategy
 -----------------------
 
@@ -54,5 +58,6 @@ in the previous video, we now take it to trade live against the Bittrex exchange
 .. raw:: html
 
 	<iframe width="560" height="315" src="https://www.youtube.com/embed/NupiE-Xuglw" frameborder="0" allowfullscreen></iframe>
+
 |
 |
