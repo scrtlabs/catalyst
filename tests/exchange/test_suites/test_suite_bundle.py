@@ -2,6 +2,7 @@ import random
 
 import os
 import pandas as pd
+from datetime import timedelta
 from logbook import TestHandler
 from pandas.util.testing import assert_frame_equal
 
@@ -159,6 +160,7 @@ class TestSuiteBundle:
                 if end_dt is None or asset_end_dt < end_dt:
                     end_dt = asset_end_dt
 
+            end_dt = end_dt + timedelta(minutes=3)
             dt_range = pd.date_range(
                 end=end_dt, periods=bar_count, freq=freq
             )

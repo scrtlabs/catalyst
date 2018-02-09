@@ -540,7 +540,7 @@ def resample_history_df(df, freq, field):
     else:
         raise ValueError('Invalid field.')
 
-    resampled_df = df.resample(freq).agg(agg)
+    resampled_df = df.resample(freq, closed='left', label='left').agg(agg)
     return resampled_df
 
 

@@ -298,7 +298,6 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
             frequency, data_frequency
         )
         adj_bar_count = candle_size * bar_count
-        trailing_bar_count = candle_size - 1
 
         if data_frequency == 'minute' and adj_data_frequency == 'daily':
             end_dt = end_dt.floor('1D')
@@ -310,7 +309,6 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
             field=field,
             data_frequency=adj_data_frequency,
             algo_end_dt=self._last_available_session,
-            trailing_bar_count=trailing_bar_count,
         )
 
         df = resample_history_df(pd.DataFrame(series), freq, field)
