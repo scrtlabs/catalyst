@@ -12,6 +12,7 @@ from catalyst.exchange.utils.exchange_utils import get_candles_df
 from catalyst.exchange.utils.factory import get_exchange
 from catalyst.exchange.utils.test_utils import output_df, \
     select_random_assets
+from catalyst.exchange.utils.stats_utils import set_print_settings
 
 pd.set_option('display.expand_frame_repr', False)
 pd.set_option('precision', 8)
@@ -58,6 +59,12 @@ class TestSuiteBundle:
 
         log_catcher = TestHandler()
         with log_catcher:
+            symbols = [asset.symbol for asset in assets]
+            print(
+                'comparing data for {}/{} with {} timeframe until {}'.format(
+                    exchange.name, symbols, freq, end_dt
+                )
+            )
             data['bundle'] = data_portal.get_history_window(
                 assets=assets,
                 end_dt=end_dt,
@@ -65,6 +72,12 @@ class TestSuiteBundle:
                 frequency=freq,
                 field='close',
                 data_frequency=data_frequency,
+            )
+            set_print_settings()
+            print(
+                'the bundle first / last row:\n{}'.format(
+                    data['bundle'].iloc[[-1, 0]]
+                )
             )
             candles = exchange.get_candles(
                 end_dt=end_dt,
@@ -78,6 +91,11 @@ class TestSuiteBundle:
                 freq=freq,
                 bar_count=bar_count,
                 end_dt=end_dt,
+            )
+            print(
+                'the exchange first / last row:\n{}'.format(
+                    data['exchange'].iloc[[-1, 0]]
+                )
             )
             for source in data:
                 df = data[source]
@@ -125,6 +143,8 @@ class TestSuiteBundle:
 
             frequencies = exchange.get_candle_frequencies(data_frequency)
             freq = random.sample(frequencies, 1)[0]
+
+            freq = '15T'
 
             bar_count = random.randint(1, 10)
 
