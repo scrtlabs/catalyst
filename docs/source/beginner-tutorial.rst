@@ -168,7 +168,7 @@ We'll start with the CLI, and introduce the ``run_algorithm()`` in the last
 example of this tutorial. Some of the :doc:`example algorithms <example-algos>` 
 provide instructions on how to run them both from the CLI, and using the 
 :func:`~catalyst.run_algorithm` function. For the third method, refer to the 
-corresponding section on :doc:`Catalyst & Jupyter Notebook <jupyter>` after you 
+corresponding section on :ref:`Catalyst & Jupyter Notebook <jupyter>` after you 
 have assimilated the contents of this tutorial.
 
 Command line interface
@@ -473,6 +473,7 @@ Which we execute by running:
     </div>
 
 |
+
 There is a row for each trading day, starting on the first day of our 
 simulation Jan 1st, 2016. In the columns you can find various
 information about the state of your algorithm. The column
@@ -518,7 +519,7 @@ alongside enigma-catalyst (with the exception of the ``Conda`` install, where it
 was included by default inside the conda environment we created). If for any 
 reason you don't have it installed, you can add it by running:
 
-.. code-block:: python
+.. code-block:: bash
 
   (catalyst)$ pip install matplotlib
 
@@ -806,6 +807,7 @@ the ``scikit-learn`` functions require ``numpy.ndarray``\ s rather than
 ``pandas.DataFrame``\ s, so you can simply pass the underlying
 ``ndarray`` of a ``DataFrame`` via ``.values``).
 
+.. _jupyter:
 
 Jupyter Notebook
 ~~~~~~~~~~~~~~~~
@@ -826,13 +828,13 @@ In order to use Jupyter Notebook, you first have to install it inside your
 environment. It's available as ``pip`` package, so regardless of how you 
 installed Catalyst, go inside your catalyst environemnt and run:
 
-.. code:: bash
+.. code-block:: bash
 
     (catalyst)$ pip install jupyter
 
 Once you have Jupyter Notebook installed, every time you want to use it run:
 
-.. code:: bash
+.. code-block:: bash
 
     (catalyst)$ jupyter notebook
 
@@ -846,7 +848,7 @@ Before running your algorithms inside the Jupyter Notebook, remember to ingest
 the data from the command line interface (CLI). In the example below, you would
 need to run first:
 
-.. code:: bash
+.. code-block:: bash
 
   catalyst ingest-exchange -x bitfinex -i btc_usd
 

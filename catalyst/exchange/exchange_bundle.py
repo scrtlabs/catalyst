@@ -458,7 +458,7 @@ class ExchangeBundle:
                 last_entry = None
 
         if start is None or \
-                (earliest_trade is not None and earliest_trade > start):
+            (earliest_trade is not None and earliest_trade > start):
             start = earliest_trade
 
         if last_entry is not None and (end is None or end > last_entry):
@@ -600,14 +600,14 @@ class ExchangeBundle:
         if show_breakdown:
             for asset in chunks:
                 with maybe_show_progress(
-                        chunks[asset],
-                        show_progress,
-                        label='Ingesting {frequency} price data for '
-                              '{symbol} on {exchange}'.format(
-                            exchange=self.exchange_name,
-                            frequency=data_frequency,
-                            symbol=asset.symbol
-                        )) as it:
+                    chunks[asset],
+                    show_progress,
+                    label='Ingesting {frequency} price data for '
+                          '{symbol} on {exchange}'.format(
+                        exchange=self.exchange_name,
+                        frequency=data_frequency,
+                        symbol=asset.symbol
+                    )) as it:
                     for chunk in it:
                         problems += self.ingest_ctable(
                             asset=chunk['asset'],
@@ -625,13 +625,13 @@ class ExchangeBundle:
                 key=lambda chunk: pd.to_datetime(chunk['period'])
             )
             with maybe_show_progress(
-                    all_chunks,
-                    show_progress,
-                    label='Ingesting {frequency} price data on '
-                          '{exchange}'.format(
-                        exchange=self.exchange_name,
-                        frequency=data_frequency,
-                    )) as it:
+                all_chunks,
+                show_progress,
+                label='Ingesting {frequency} price data on '
+                      '{exchange}'.format(
+                    exchange=self.exchange_name,
+                    frequency=data_frequency,
+                )) as it:
                 for chunk in it:
                     problems += self.ingest_ctable(
                         asset=chunk['asset'],
@@ -830,7 +830,6 @@ class ExchangeBundle:
                                            field,
                                            data_frequency,
                                            algo_end_dt=None,
-                                           trailing_bar_count=None,
                                            force_auto_ingest=False
                                            ):
         """
@@ -858,7 +857,6 @@ class ExchangeBundle:
                     bar_count=bar_count,
                     field=field,
                     data_frequency=data_frequency,
-                    trailing_bar_count=trailing_bar_count,
                 )
                 return pd.DataFrame(series)
 
@@ -887,7 +885,6 @@ class ExchangeBundle:
                     field=field,
                     data_frequency=data_frequency,
                     reset_reader=True,
-                    trailing_bar_count=trailing_bar_count,
                 )
                 return series
 
@@ -898,7 +895,6 @@ class ExchangeBundle:
                 bar_count=bar_count,
                 field=field,
                 data_frequency=data_frequency,
-                trailing_bar_count=trailing_bar_count,
             )
             return pd.DataFrame(series)
 
@@ -962,12 +958,7 @@ class ExchangeBundle:
                                   bar_count,
                                   field,
                                   data_frequency,
-                                  trailing_bar_count=None,
                                   reset_reader=False):
-        if trailing_bar_count:
-            delta = get_delta(trailing_bar_count, data_frequency)
-            end_dt += delta
-
         start_dt = get_start_dt(end_dt, bar_count, data_frequency, False)
         start_dt, _ = self.get_adj_dates(
             start_dt, end_dt, assets, data_frequency

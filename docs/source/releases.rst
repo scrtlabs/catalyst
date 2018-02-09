@@ -2,6 +2,14 @@
 Release Notes
 =============
 
+Version 0.5.3
+^^^^^^^^^^^^^
+**Release Date**: 2018-02-09
+
+Bug Fixes
+~~~~~~~~~
+- Fixed an issue with last candle in backtesting :issue:`219`
+
 Version 0.5.2
 ^^^^^^^^^^^^^
 **Release Date**: 2018-02-08

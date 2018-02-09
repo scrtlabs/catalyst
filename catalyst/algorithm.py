@@ -939,7 +939,7 @@ class TradingAlgorithm(object):
             The field to query. The options have the following meanings:
               arena : str
                   The arena from the simulation parameters. This will normally
-                  be ``'backtest'`` but some systems may use this distinguish
+                  be ``backtest`` but some systems may use this distinguish
                   live trading from backtesting.
               data_frequency : {'daily', 'minute'}
                   data_frequency tells the algorithm if it is running with
@@ -954,7 +954,7 @@ class TradingAlgorithm(object):
                   The platform that the code is running on. By default this
                   will be the string 'catalyst'. This can allow algorithms to
                   know if they are running on the Quantopian platform instead.
-              * : dict[str -> any]
+              \* : dict[str -> any]
                   Returns all of the fields in a dictionary.
 
         Returns
@@ -1032,7 +1032,7 @@ class TradingAlgorithm(object):
             argument is the name of the column in the preprocessed dataframe
             containing the symbols. This will be used along with the date
             information to map the sids in the asset finder.
-        **kwargs
+        \*\*kwargs
             Forwarded to :func:`pandas.read_csv`.
 
         Returns
@@ -1156,7 +1156,7 @@ class TradingAlgorithm(object):
 
         Parameters
         ----------
-        **kwargs
+        \*\*kwargs
             The names and values to record.
 
         Notes
@@ -1273,7 +1273,7 @@ class TradingAlgorithm(object):
 
         Parameters
         ----------
-        *args : iterable[str]
+        \*args : iterable[str]
             The ticker symbols to lookup.
 
         Returns

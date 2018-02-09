@@ -113,7 +113,7 @@ Currency symbols (e.g. btc, eth, ltc) follow the Bittrex convention.
 
 Here are some examples:
 
-.. code-block:: json
+.. code:: python
 
   # With Bitfinex
   bitcoin_usd_asset = symbol('btc_usd')

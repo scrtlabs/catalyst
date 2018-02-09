@@ -27,8 +27,8 @@ extlinks = {
 
 # -- Docstrings ---------------------------------------------------------------
 
-#extensions += ['numpydoc']
-#numpydoc_show_class_members = False
+extensions += ['numpydoc']
+numpydoc_show_class_members = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['.templates']
@@ -97,3 +97,6 @@ intersphinx_mapping = {
 doctest_global_setup = "import catalyst"
 
 todo_include_todos = True
+
+suppress_warnings = ['image.nonlocal_uri']
+
