@@ -125,6 +125,65 @@ class TestSuiteBundle:
 
             pass
 
+    def compare_current_with_last_candle(self, exchange, assets, end_dt,
+                                         freq, data_frequency, data_portal):
+        """
+        Creates DataFrames from the bundle and exchange for the specified
+        data set.
+
+        Parameters
+        ----------
+        exchange: Exchange
+        assets
+        end_dt
+        bar_count
+        freq
+        data_frequency
+        data_portal
+
+        Returns
+        -------
+
+        """
+        data = dict()
+
+        assets = sorted(assets, key=lambda a: a.symbol)
+        log_catcher = TestHandler()
+        with log_catcher:
+            symbols = [asset.symbol for asset in assets]
+            print(
+                'comparing data for {}/{} with {} timeframe on {}'.format(
+                    exchange.name, symbols, freq, end_dt
+                )
+            )
+            data['candle'] = data_portal.get_history_window(
+                assets=assets,
+                end_dt=end_dt,
+                bar_count=1,
+                frequency=freq,
+                field='close',
+                data_frequency=data_frequency,
+            )
+            set_print_settings()
+            print(
+                'the bundle first / last row:\n{}'.format(
+                    data['candle'].iloc[[-1]]
+                )
+            )
+            current = data_portal.get_spot_value(
+                assets=assets,
+                field='close',
+                dt=end_dt,
+                data_frequency=data_frequency,
+            )
+            data['current'] = pd.Series(data=current, index=assets)
+            print(
+                'the current price:\n{}'.format(
+                    data['current']
+                )
+            )
+            pass
+
     def test_validate_bundles(self):
         # exchange_population = 3
         asset_population = 3
@@ -144,8 +203,6 @@ class TestSuiteBundle:
 
             frequencies = exchange.get_candle_frequencies(data_frequency)
             freq = random.sample(frequencies, 1)[0]
-
-            freq = '15T'
 
             bar_count = random.randint(1, 10)
 
@@ -169,6 +226,48 @@ class TestSuiteBundle:
                 assets=assets,
                 end_dt=dt_range[-1],
                 bar_count=bar_count,
+                freq=freq,
+                data_frequency=data_frequency,
+                data_portal=data_portal,
+            )
+        pass
+
+    def test_validate_last_candle(self):
+        # exchange_population = 3
+        asset_population = 3
+        data_frequency = random.choice(['minute'])
+
+        # bundle = 'dailyBundle' if data_frequency
+        #  == 'daily' else 'minuteBundle'
+        # exchanges = select_random_exchanges(
+        #     population=exchange_population,
+        #     features=[bundle],
+        # )  # Type: list[Exchange]
+        exchanges = [get_exchange('poloniex', skip_init=True)]
+
+        data_portal = TestSuiteBundle.get_data_portal(exchanges)
+        for exchange in exchanges:
+            exchange.init()
+
+            frequencies = exchange.get_candle_frequencies(data_frequency)
+            freq = random.sample(frequencies, 1)[0]
+
+            assets = select_random_assets(
+                exchange.assets, asset_population
+            )
+            end_dt = None
+            for asset in assets:
+                attribute = 'end_{}'.format(data_frequency)
+                asset_end_dt = getattr(asset, attribute)
+
+                if end_dt is None or asset_end_dt < end_dt:
+                    end_dt = asset_end_dt
+
+            end_dt = end_dt + timedelta(minutes=3)
+            self.compare_current_with_last_candle(
+                exchange=exchange,
+                assets=assets,
+                end_dt=end_dt,
                 freq=freq,
                 data_frequency=data_frequency,
                 data_portal=data_portal,
