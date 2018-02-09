@@ -298,7 +298,7 @@ Troubleshooting ``pip`` Install
 .. _pipenv:
 
 Installing with ``pipenv``
--------------------------
+--------------------------
 
 Installing Catalyst via ``pipenv`` is perhaps easier that installing it via
 ``pip`` itself but you need to install ``pipenv`` first via ``pip``.
@@ -476,6 +476,7 @@ mentioned above are as follows:
     default you get 0 as the Value Data)
 
 |
+
 - **The installer has encountered an unexpected error installing this package. 
   This may indicate a problem with this package. The error code is 2503.**
 
