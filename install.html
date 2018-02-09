@@ -13,6 +13,8 @@
 
   
   
+  
+  
 
   
 
@@ -30,6 +32,9 @@
   
 
   
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="Catalyst 0.4 documentation" href="index.html"/>
         <link rel="next" title="Catalyst Beginner Tutorial" href="beginner-tutorial.html"/>
         <link rel="prev" title="Overview" href="index.html"/> 
@@ -41,21 +46,28 @@
 
 <body class="wy-body-for-nav" role="document">
 
+   
   <div class="wy-grid-for-nav">
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-nav-search">
-        
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
 
-        
-          <a href="index.html" class="icon icon-home"> Catalyst
-        
+          
+            <a href="index.html" class="icon icon-home"> Catalyst
+          
 
-        
-        </a>
+          
+          </a>
 
-        
+          
+            
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -64,15 +76,18 @@
   </form>
 </div>
 
-        
-      </div>
+          
+        </div>
 
-      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
-          
+            
+            
+              
+            
+            
               <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="">Install</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Install</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#installing-with-conda">Installing with <code class="docutils literal"><span class="pre">conda</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#troubleshooting-conda-install">Troubleshooting <code class="docutils literal"><span class="pre">conda</span></code> Install</a></li>
 </ul>
@@ -95,213 +110,77 @@
 <li class="toctree-l2"><a class="reference internal" href="#getting-help">Getting Help</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="beginner-tutorial.html">Catalyst Beginner Tutorial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#basics">Basics</a></li>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#my-first-algorithm">My first algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#ingesting-data">Ingesting data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#running-the-algorithm">Running the algorithm</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="beginner-tutorial.html#command-line-interface">Command line interface</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#access-to-previous-prices-using-history">Access to previous prices using <code class="docutils literal"><span class="pre">history</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="beginner-tutorial.html#working-example-dual-moving-average-cross-over">Working example: Dual Moving Average Cross-Over</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#jupyter-notebook">Jupyter Notebook</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="beginner-tutorial.html#install">Install</a></li>
-<li class="toctree-l3"><a class="reference internal" href="beginner-tutorial.html#running-algorithms">Running Algorithms</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#next-steps">Next steps</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="live-trading.html">Live Trading</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="live-trading.html#supported-exchanges">Supported Exchanges</a></li>
-<li class="toctree-l2"><a class="reference internal" href="live-trading.html#paper-trading-vs-live-trading-modes">Paper Trading vs Live Trading modes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="live-trading.html#authentication">Authentication</a></li>
-<li class="toctree-l2"><a class="reference internal" href="live-trading.html#currency-symbols">Currency Symbols</a></li>
-<li class="toctree-l2"><a class="reference internal" href="live-trading.html#trading-an-algorithm">Trading an Algorithm</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="features.html#current-functionality">Current Functionality</a></li>
-<li class="toctree-l2"><a class="reference internal" href="features.html#upcoming-features">Upcoming features</a></li>
-<li class="toctree-l2"><a class="reference internal" href="features.html#naming-convention">Naming Convention</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="example-algos.html">Example Algorithms</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="example-algos.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="example-algos.html#buy-btc-simple-algorithm">Buy BTC Simple Algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="example-algos.html#buy-and-hodl-algorithm">Buy and Hodl Algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="example-algos.html#dual-moving-average-crossover">Dual Moving Average Crossover</a></li>
-<li class="toctree-l2"><a class="reference internal" href="example-algos.html#mean-reversion-algorithm">Mean Reversion Algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="example-algos.html#simple-universe">Simple Universe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="example-algos.html#portfolio-optimization">Portfolio Optimization</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="utilities.html#output-to-csv-file">Output to CSV file</a></li>
-<li class="toctree-l2"><a class="reference internal" href="utilities.html#extracting-market-data">Extracting market data</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="videos.html">Videos</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="videos.html#installation-macos">Installation: MacOS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="videos.html#installation-windows">Installation: Windows</a></li>
-<li class="toctree-l2"><a class="reference internal" href="videos.html#backtesting-a-strategy">Backtesting a Strategy</a></li>
-<li class="toctree-l2"><a class="reference internal" href="videos.html#live-trading-a-strategy">Live Trading a Strategy</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="resources.html">Resources</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="resources.html#related-3rd-party-apis">Related 3rd Party APIs</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="development-guidelines.html">Development Guidelines</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#creating-a-development-environment">Creating a Development Environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#development-with-docker">Development with Docker</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#git-branching-structure">Git Branching Structure</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#contributing-to-the-docs">Contributing to the Docs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#commit-messages">Commit messages</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#formatting-docstrings">Formatting Docstrings</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="releases.html">Release Notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-3">Version 0.5.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#bug-fixes">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-2">Version 0.5.2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id1">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-1">Version 0.5.1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id2">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#build">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-7">Version 0.4.7</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id3">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id4">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-6">Version 0.4.6</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id5">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id6">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-5">Version 0.4.5</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id7">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-4">Version 0.4.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id8">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-3">Version 0.4.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id9">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-2">Version 0.4.2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id10">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id11">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-0">Version 0.4.0</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id12">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id13">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#version-0-3-10">Version 0.3.10</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id14">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-9">Version 0.3.9</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id15">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id16">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-8">Version 0.3.8</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id17">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-7">Version 0.3.7</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id18">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id19">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-6">Version 0.3.6</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id20">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-5">Version 0.3.5</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id21">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-4">Version 0.3.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id22">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id23">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#documentation">Documentation</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-3">Version 0.3.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id25">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id26">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-2">Version 0.3.2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id27">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id28">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-1">Version 0.3.1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id29">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3">Version 0.3</a></li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-2-dev5">Version 0.2.dev5</a></li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-2-dev4">Version 0.2.dev4</a></li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-2-dev3">Version 0.2.dev3</a></li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-2-dev2">Version 0.2.dev2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-2-dev1">Version 0.2.dev1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-1-dev9">Version 0.1.dev9</a></li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-1-dev8">Version 0.1.dev8</a></li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-1-dev7">Version 0.1.dev7</a></li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-1-dev6">Version 0.1.dev6</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="beginner-tutorial.html">Catalyst Beginner Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="live-trading.html">Live Trading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-algos.html">Example Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="videos.html">Videos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resources.html">Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development-guidelines.html">Development Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="releases.html">Release Notes</a></li>
 </ul>
 
+            
           
-        
+        </div>
       </div>
-      &nbsp;
     </nav>
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">Catalyst</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Catalyst</a>
+        
       </nav>
 
 
       
       <div class="wy-nav-content">
         <div class="rst-content">
-          <div role="navigation" aria-label="breadcrumbs navigation">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
-    <li>Install</li>
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Install</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
         
-          
-            <a href="_sources/install.txt" rel="nofollow"> View page source</a>
+            
+            <a href="_sources/install.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
-          <div role="main" class="document">
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
             
   <div class="section" id="install">
 <h1>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h1>
@@ -311,29 +190,29 @@ Like any other piece of software, Catalyst has a number of dependencies
 well. We recommend using a software named <code class="docutils literal"><span class="pre">Conda</span></code> that will manage all
 these dependencies for you, and set up the environment needed to get you up
 and running as easily as possible. This is the recommended installation method
-for Windows, MacOS and Linux. See <a class="reference internal" href="#conda"><span>Installing with Conda</span></a>.</p>
+for Windows, MacOS and Linux. See <a class="reference internal" href="#conda"><span class="std std-ref">Installing with Conda</span></a>.</p>
 <p>What conda does is create a pre-configured environment, and inside that
-environment install Catalyst using <code class="docutils literal"><span class="pre">pip</span></code>, Python&#8217;s package manager. Thus,
+environment install Catalyst using <code class="docutils literal"><span class="pre">pip</span></code>, Python’s package manager. Thus,
 as an alternative installation method for MacOS and Linux, you can install
 Catalyst directly with <code class="docutils literal"><span class="pre">pip</span></code> (we recommend in combination with a virtual
-environemnt). See <a class="reference internal" href="#pip"><span>Installing with pip</span></a>.</p>
+environemnt). See <a class="reference internal" href="#pip"><span class="std std-ref">Installing with pip</span></a>.</p>
 <p>Alternatively you can install Catalyst using <code class="docutils literal"><span class="pre">pipenv</span></code> which is a mix of pip
-and virtualenv. See <a class="reference internal" href="#pipenv"><span>Installing with pipenv</span></a>.</p>
+and virtualenv. See <a class="reference internal" href="#pipenv"><span class="std std-ref">Installing with pipenv</span></a>.</p>
 <p>Regardless of the method, each operating system (OS), has its own
 prerequisites, make sure to review the corresponding sections for your system:
-<a class="reference internal" href="#linux"><span>Linux</span></a>, <a class="reference internal" href="#macos"><span>MacOS</span></a> and <a class="reference internal" href="#windows"><span>Windows</span></a>.</p>
+<a class="reference internal" href="#linux"><span class="std std-ref">Linux</span></a>, <a class="reference internal" href="#macos"><span class="std std-ref">MacOS</span></a> and <a class="reference internal" href="#windows"><span class="std std-ref">Windows</span></a>.</p>
 <div class="section" id="installing-with-conda">
 <span id="conda"></span><h2>Installing with <code class="docutils literal"><span class="pre">conda</span></code><a class="headerlink" href="#installing-with-conda" title="Permalink to this headline">¶</a></h2>
 <p>The preferred method to install Catalyst is via the <code class="docutils literal"><span class="pre">conda</span></code> package manager,
-which comes as part of Continuum Analytics&#8217; <a class="reference external" href="http://continuum.io/downloads">Anaconda</a> distribution.</p>
+which comes as part of Continuum Analytics’ <a class="reference external" href="http://continuum.io/downloads">Anaconda</a> distribution.</p>
 <p>The primary advantage of using Conda over <code class="docutils literal"><span class="pre">pip</span></code> is that conda natively
 understands the complex binary dependencies of packages like <code class="docutils literal"><span class="pre">numpy</span></code> and
 <code class="docutils literal"><span class="pre">scipy</span></code>.  This means that <code class="docutils literal"><span class="pre">conda</span></code> can install Catalyst and its
-dependencies without requiring the use of a second tool to acquire Catalyst&#8217;s
+dependencies without requiring the use of a second tool to acquire Catalyst’s
 non-Python dependencies.</p>
 <blockquote>
 <div>For Windows, you will first need to install the <em>Microsoft Visual C++
-Compiler for Python 2.7</em>. Follow the instructions on the <a class="reference internal" href="#windows"><span>Windows</span></a> section and come back here.</div></blockquote>
+Compiler for Python 2.7</em>. Follow the instructions on the <a class="reference internal" href="#windows"><span class="std std-ref">Windows</span></a> section and come back here.</div></blockquote>
 <p>For instructions on how to install <code class="docutils literal"><span class="pre">conda</span></code>, see the <a class="reference external" href="http://conda.pydata.org/docs/download.html">Conda Installation
 Documentation</a>. Alternatively,
 you can install MiniConda, which is a smaller footprint (fewer packages and
@@ -347,18 +226,18 @@ for your Operating System.</li>
 window, which should print the list of packages installed with Conda.</li>
 </ol>
 <blockquote>
-<div>For Windows, if you accepted the default installation options, you didn&#8217;t
+<div>For Windows, if you accepted the default installation options, you didn’t
 check an option to add Conda to the PATH, so trying to run <code class="docutils literal"><span class="pre">conda</span></code> from
 a regular <code class="docutils literal"><span class="pre">Command</span> <span class="pre">Prompt</span></code> will result in the following error: <code class="docutils literal"><span class="pre">'conda'</span>
 <span class="pre">is</span> <span class="pre">no</span> <span class="pre">recognized</span> <span class="pre">as</span> <span class="pre">an</span> <span class="pre">internal</span> <span class="pre">or</span> <span class="pre">external</span> <span class="pre">command,</span> <span class="pre">operatble</span> <span class="pre">program</span> <span class="pre">or</span>
-<span class="pre">batch</span> <span class="pre">file</span></code>. That&#8217;s to be expected. You will nee to launch an <code class="docutils literal"><span class="pre">Anaconda</span>
+<span class="pre">batch</span> <span class="pre">file</span></code>. That’s to be expected. You will nee to launch an <code class="docutils literal"><span class="pre">Anaconda</span>
 <span class="pre">Prompt</span></code> that was added at installation time to your list of programs
 available from the Start menu.</div></blockquote>
 <p>Once either Conda or MiniConda has been set up you can install Catalyst:</p>
 <ol class="arabic">
 <li><p class="first">Download the file <a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/etc/python2.7-environment.yml">python2.7-environment.yml</a>.</p>
 <blockquote>
-<div><p>To download, simply click on the &#8216;Raw&#8217; button and save the file locally
+<div><p>To download, simply click on the ‘Raw’ button and save the file locally
 to a folder you can remember. Make sure that the file gets saved with the
 <code class="docutils literal"><span class="pre">.yml</span></code> extension, and nothing like a <code class="docutils literal"><span class="pre">.txt</span></code> file or anything else.</p>
 </div></blockquote>
@@ -367,23 +246,23 @@ to a folder you can remember. Make sure that the file gets saved with the
 saved the above <code class="docutils literal"><span class="pre">python2.7-environment.yml</span></code> file.</p>
 </li>
 <li><p class="first">Install using this file. This step can take about 5-10 minutes to install.</p>
-<div class="highlight-bash"><div class="highlight"><pre>conda env create -f python2.7-environment.yml
+<div class="highlight-bash"><div class="highlight"><pre><span></span>conda env create -f python2.7-environment.yml
 </pre></div>
 </div>
 </li>
 <li><p class="first">Activate the environment (which you need to do every time you start a new
 session to run Catalyst):</p>
 <p><strong>Linux or MacOS:</strong></p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nb">source </span>activate catalyst
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="nb">source</span> activate catalyst
 </pre></div>
 </div>
 <p><strong>Windows:</strong></p>
-<div class="highlight-bash"><div class="highlight"><pre>activate catalyst
+<div class="highlight-bash"><div class="highlight"><pre><span></span>activate catalyst
 </pre></div>
 </div>
 </li>
 <li><p class="first">Verify that Catalyst is install correctly:</p>
-<div class="highlight-bash"><div class="highlight"><pre>catalyst --version
+<div class="highlight-bash"><div class="highlight"><pre><span></span>catalyst --version
 </pre></div>
 </div>
 <p>which should display the current version.</p>
@@ -399,32 +278,32 @@ with the following steps:</p>
 <li><p class="first">If the above installation failed, and you have a partially set up catalyst
 environment, remove it first. If you are starting from scratch, proceed to
 step #2:</p>
-<div class="highlight-bash"><div class="highlight"><pre>conda env remove --name catalyst
+<div class="highlight-bash"><div class="highlight"><pre><span></span>conda env remove --name catalyst
 </pre></div>
 </div>
 </li>
 <li><p class="first">Create the environment:</p>
-<div class="highlight-bash"><div class="highlight"><pre>conda create --name catalyst <span class="nv">python</span><span class="o">=</span>2.7 scipy zlib
+<div class="highlight-bash"><div class="highlight"><pre><span></span>conda create --name catalyst <span class="nv">python</span><span class="o">=</span><span class="m">2</span>.7 scipy zlib
 </pre></div>
 </div>
 </li>
 <li><p class="first">Activate the environment:</p>
 <p><strong>Linux or MacOS:</strong></p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nb">source </span>activate catalyst
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="nb">source</span> activate catalyst
 </pre></div>
 </div>
 <p><strong>Windows:</strong></p>
-<div class="highlight-bash"><div class="highlight"><pre>activate catalyst
+<div class="highlight-bash"><div class="highlight"><pre><span></span>activate catalyst
 </pre></div>
 </div>
 </li>
 <li><p class="first">Install the Catalyst inside the environment:</p>
-<div class="highlight-bash"><div class="highlight"><pre>pip install enigma-catalyst matplotlib
+<div class="highlight-bash"><div class="highlight"><pre><span></span>pip install enigma-catalyst matplotlib
 </pre></div>
 </div>
 </li>
 <li><p class="first">Verify that Catalyst is installed correctly:</p>
-<div class="highlight-bash"><div class="highlight"><pre>catalyst --version
+<div class="highlight-bash"><div class="highlight"><pre><span></span>catalyst --version
 </pre></div>
 </div>
 <p>which should display the current version.</p>
@@ -446,26 +325,26 @@ CPython header files for your Python installation.</li>
 numerical array computing in Python.  Numpy depends on having the <a class="reference external" href="http://www.netlib.org/lapack">LAPACK</a> linear algebra routines available.</li>
 </ol>
 <p>Because LAPACK and the CPython headers are non-Python dependencies, the
-correctway to install them varies from platform to platform.  If you&#8217;d rather
-use a single tool to install Python and non-Python dependencies, or if you&#8217;re
+correctway to install them varies from platform to platform.  If you’d rather
+use a single tool to install Python and non-Python dependencies, or if you’re
 already using <a class="reference external" href="http://continuum.io/downloads">Anaconda</a> as your Python
-distribution, refer to the <a class="reference internal" href="#conda"><span>Installing with Conda</span></a> section.</p>
+distribution, refer to the <a class="reference internal" href="#conda"><span class="std std-ref">Installing with Conda</span></a> section.</p>
 <p>If you use Python for anything other than Catalyst, we <strong>strongly</strong> recommend
-that you install in a <a class="reference external" href="https://virtualenv.readthedocs.org/en/latest">virtualenv</a>.  The <a class="reference external" href="http://docs.python-guide.org/en/latest/">Hitchhiker&#8217;s Guide to
-Python</a> provides an <a class="reference external" href="http://docs.python-guide.org/en/latest/dev/virtualenvs/">excellent tutorial on virtualenv</a>. Here&#8217;s a
+that you install in a <a class="reference external" href="https://virtualenv.readthedocs.org/en/latest">virtualenv</a>.  The <a class="reference external" href="http://docs.python-guide.org/en/latest/">Hitchhiker’s Guide to
+Python</a> provides an <a class="reference external" href="http://docs.python-guide.org/en/latest/dev/virtualenvs/">excellent tutorial on virtualenv</a>. Here’s a
 summarized version:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pip install virtualenv
-<span class="nv">$ </span>virtualenv catalyst-venv
-<span class="nv">$ </span><span class="nb">source</span> ./catalyst-venv/bin/activate
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ pip install virtualenv
+$ virtualenv catalyst-venv
+$ <span class="nb">source</span> ./catalyst-venv/bin/activate
 </pre></div>
 </div>
-<p>Once you&#8217;ve installed the necessary additional dependencies for your system
-(<a class="reference internal" href="#linux"><span>GNU/Linux Requirements</span></a>, <a class="reference internal" href="#macos"><span>MacOS Requirements</span></a> or <a class="reference internal" href="#windows"><span>Windows Requirements</span></a>) <strong>and have activated your virtualenv</strong>, you should be able to simply run</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pip install enigma-catalyst matplotlib
+<p>Once you’ve installed the necessary additional dependencies for your system
+(<a class="reference internal" href="#linux"><span class="std std-ref">GNU/Linux Requirements</span></a>, <a class="reference internal" href="#macos"><span class="std std-ref">MacOS Requirements</span></a> or <a class="reference internal" href="#windows"><span class="std std-ref">Windows Requirements</span></a>) <strong>and have activated your virtualenv</strong>, you should be able to simply run</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ pip install enigma-catalyst matplotlib
 </pre></div>
 </div>
 <p>Note that in the command above we install two different packages. The second
-one, <code class="docutils literal"><span class="pre">matplotlib</span></code> is a visualization library. While it&#8217;s not strictly
+one, <code class="docutils literal"><span class="pre">matplotlib</span></code> is a visualization library. While it’s not strictly
 required to run catalyst simulations or live trading, it comes in very handy
 to visualize the performance of your algorithms, and for this reason we
 recommend you install it, as well.</p>
@@ -476,11 +355,11 @@ recommend you install it, as well.</p>
 <dd>Package enigma-catalyst cannot be found</dd>
 <dt><strong>Solution</strong>:</dt>
 <dd><p class="first">Make sure you have the most up-to-date version of pip installed, by running:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pip install --upgrade pip
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ pip install --upgrade pip
 </pre></div>
 </div>
 <p>On Windows, the recommended command is:</p>
-<div class="last highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>python -m pip install --upgrade pip
+<div class="last highlight-bash"><div class="highlight"><pre><span></span>$ python -m pip install --upgrade pip
 </pre></div>
 </div>
 </dd>
@@ -490,10 +369,10 @@ recommend you install it, as well.</p>
 <dt><strong>Issue</strong>:</dt>
 <dd><p class="first">Package enigma-catalyst cannot still be found, even after upgrading pip
 (see above), with an error similar to:</p>
-<div class="last highlight-bash"><div class="highlight"><pre>Downloading/unpacking enigma-catalyst
+<div class="last highlight-bash"><div class="highlight"><pre><span></span>Downloading/unpacking enigma-catalyst
 Could not find a version that satisfies the requirement enigma-catalyst
-<span class="o">(</span>from versions: 0.1.dev9, 0.2.dev2, 0.1.dev4, 0.1.dev5, 0.1.dev3,
-0.2.dev1, 0.1.dev8, 0.1.dev6<span class="o">)</span>
+<span class="o">(</span>from versions: <span class="m">0</span>.1.dev9, <span class="m">0</span>.2.dev2, <span class="m">0</span>.1.dev4, <span class="m">0</span>.1.dev5, <span class="m">0</span>.1.dev3,
+<span class="m">0</span>.2.dev1, <span class="m">0</span>.1.dev8, <span class="m">0</span>.1.dev6<span class="o">)</span>
 Cleaning up...
 No distributions matching the version <span class="k">for</span> enigma-catalyst
 </pre></div>
@@ -503,9 +382,9 @@ No distributions matching the version <span class="k">for</span> enigma-catalyst
 <dd><p class="first">In some systems (this error has been reported in Ubuntu), pip is configured
 to only find stable versions by default. Since Catalyst is in alpha
 version, pip cannot find a matching version that satisfies the installation
-requirements. The solution is to include the <cite>&#8211;pre</cite> flag to include
+requirements. The solution is to include the <cite>–pre</cite> flag to include
 pre-release and development versions:</p>
-<div class="last highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pip install --pre enigma-catalyst
+<div class="last highlight-bash"><div class="highlight"><pre><span></span>$ pip install --pre enigma-catalyst
 </pre></div>
 </div>
 </dd>
@@ -516,7 +395,7 @@ pre-release and development versions:</p>
 <dd>Package enigma-catalyst fails to install because of outdated setuptools</dd>
 <dt><strong>Solution</strong>:</dt>
 <dd><p class="first">Upgrade to the most up-to-date setuptools package by running:</p>
-<div class="last highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pip install --upgrade pip setuptools
+<div class="last highlight-bash"><div class="highlight"><pre><span></span>$ pip install --upgrade pip setuptools
 </pre></div>
 </div>
 </dd>
@@ -527,9 +406,9 @@ pre-release and development versions:</p>
 <dd>Missing required packages</dd>
 <dt><strong>Solution</strong>:</dt>
 <dd><p class="first">Download <a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/etc/requirements.txt">requirements.txt</a>
-(click on the <em>Raw</em> button and Right click -&gt; Save As...) and use it to
+(click on the <em>Raw</em> button and Right click -&gt; Save As…) and use it to
 install all the required dependencies by running:</p>
-<div class="last highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pip install -r requirements.txt
+<div class="last highlight-bash"><div class="highlight"><pre><span></span>$ pip install -r requirements.txt
 </pre></div>
 </div>
 </dd>
@@ -544,7 +423,7 @@ install all the required dependencies by running:</p>
 for the proper build and installation of package dependencies. The solution
 is to install python-dev, which is independent of the virtual environment.
 In Ubuntu, you would need to run:</p>
-<div class="last highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo apt-get install python-dev
+<div class="last highlight-bash"><div class="highlight"><pre><span></span>$ sudo apt-get install python-dev
 </pre></div>
 </div>
 </dd>
@@ -555,21 +434,21 @@ In Ubuntu, you would need to run:</p>
 <span id="pipenv"></span><h2>Installing with <code class="docutils literal"><span class="pre">pipenv</span></code><a class="headerlink" href="#installing-with-pipenv" title="Permalink to this headline">¶</a></h2>
 <p>Installing Catalyst via <code class="docutils literal"><span class="pre">pipenv</span></code> is perhaps easier that installing it via
 <code class="docutils literal"><span class="pre">pip</span></code> itself but you need to install <code class="docutils literal"><span class="pre">pipenv</span></code> first via <code class="docutils literal"><span class="pre">pip</span></code>.</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pip install pipenv
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ pip install pipenv
 </pre></div>
 </div>
 <p>Once <code class="docutils literal"><span class="pre">pipenv</span></code> is installed you can proceed by creating a project folder and
 installing Catalyst on that project automagically as follows:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>mkdir project
-<span class="nv">$ </span><span class="nb">cd </span>project
-<span class="nv">$ </span>pipenv --two
-<span class="nv">$ </span>pipenv install enigma-catalyst matplotlib
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ mkdir project
+$ <span class="nb">cd</span> project
+$ pipenv --two
+$ pipenv install enigma-catalyst matplotlib
 </pre></div>
 </div>
 <p>Until now the workflow compared to <code class="docutils literal"><span class="pre">pip</span></code> is almost identical, the difference
-is that you don&#8217;t need to load manually any virtualenv however you need to use
+is that you don’t need to load manually any virtualenv however you need to use
 the <cite>pipenv run</cite> prefix to run the <cite>catalyst</cite> command as follows:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pipenv run catalyst --version
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ pipenv run catalyst --version
 </pre></div>
 </div>
 <p>If you want to know more about <code class="docutils literal"><span class="pre">pipenv</span></code> go to the <a class="reference external" href="https://github.com/pypa/pipenv">pipenv github repo</a></p>
@@ -578,29 +457,29 @@ the <cite>pipenv run</cite> prefix to run the <cite>catalyst</cite> command as f
 <span id="linux"></span><h2>GNU/Linux Requirements<a class="headerlink" href="#gnu-linux-requirements" title="Permalink to this headline">¶</a></h2>
 <p>On <a class="reference external" href="https://www.debian.org/misc/children-distros">Debian-derived</a> Linux distributions, you can acquire all the necessary
 binary dependencies from <code class="docutils literal"><span class="pre">apt</span></code> by running:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo apt-get install libatlas-base-dev python-dev gfortran pkg-config libfreetype6-dev
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ sudo apt-get install libatlas-base-dev python-dev gfortran pkg-config libfreetype6-dev
 </pre></div>
 </div>
 <p>On recent <a class="reference external" href="https://en.wikipedia.org/wiki/Red_Hat_Enterprise_Linux_derivatives">RHEL-derived</a> derived Linux distributions (e.g. Fedora), the
 following should be sufficient to acquire the necessary additional
 dependencies:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo dnf install atlas-devel gcc-c++ gcc-gfortran libgfortran python-devel redhat-rep-config
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ sudo dnf install atlas-devel gcc-c++ gcc-gfortran libgfortran python-devel redhat-rep-config
 </pre></div>
 </div>
 <p>On <a class="reference external" href="https://www.archlinux.org/">Arch Linux</a>, you can acquire the additional dependencies via <code class="docutils literal"><span class="pre">pacman</span></code>:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pacman -S lapack gcc gcc-fortran pkg-config
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ pacman -S lapack gcc gcc-fortran pkg-config
 </pre></div>
 </div>
 <div class="section" id="amazon-linux-ami-notes">
 <h3>Amazon Linux AMI Notes<a class="headerlink" href="#amazon-linux-ami-notes" title="Permalink to this headline">¶</a></h3>
 <p>The packages <code class="docutils literal"><span class="pre">pip</span></code> and <code class="docutils literal"><span class="pre">setuptools</span></code> that come shipped by default are very
 outdated. Thus, you first need to run:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pip install --upgrade pip setuptools
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ pip install --upgrade pip setuptools
 </pre></div>
 </div>
 <p>The default installation is also missing the C and C++ compilers, which you
 install by:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo yum install gcc gcc-c++
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ sudo yum install gcc gcc-c++
 </pre></div>
 </div>
 <p>Then you should follow the regular installation instructions outlined at the
@@ -610,21 +489,21 @@ beginning of this page.</p>
 <div class="section" id="macos-requirements">
 <span id="macos"></span><h2>MacOS Requirements<a class="headerlink" href="#macos-requirements" title="Permalink to this headline">¶</a></h2>
 <p>The version of Python shipped with MacOS by default is generally out of date,
-and has a number of quirks because it&#8217;s used directly by the operating system.
+and has a number of quirks because it’s used directly by the operating system.
 For these reasons, many developers choose to install and use a separate Python
-installation. The <a class="reference external" href="http://docs.python-guide.org/en/latest/">Hitchhiker&#8217;s Guide to Python</a> provides an excellent guide
+installation. The <a class="reference external" href="http://docs.python-guide.org/en/latest/">Hitchhiker’s Guide to Python</a> provides an excellent guide
 to <a class="reference external" href="http://docs.python-guide.org/en/latest/">Installing Python on MacOS</a>,
 which explains how to install Python with the <a class="reference external" href="http://brew.sh">Homebrew</a> manager.</p>
-<p>Assuming you&#8217;ve installed Python with Homebrew, you&#8217;ll also likely need the
+<p>Assuming you’ve installed Python with Homebrew, you’ll also likely need the
 following brew packages:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>brew install freetype pkg-config gcc openssl
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ brew install freetype pkg-config gcc openssl
 </pre></div>
 </div>
 <div class="section" id="macos-virtualenv-conda-matplotlib">
 <h3>MacOS + virtualenv/conda + matplotlib<a class="headerlink" href="#macos-virtualenv-conda-matplotlib" title="Permalink to this headline">¶</a></h3>
 <p>The first time that you try to run an algorithm that loads the <code class="docutils literal"><span class="pre">matplotlib</span></code>
 library, you may get the following error:</p>
-<div class="highlight-text"><div class="highlight"><pre>RuntimeError: Python is not installed as a framework. The Mac OS X backend
+<div class="highlight-text"><div class="highlight"><pre><span></span>RuntimeError: Python is not installed as a framework. The Mac OS X backend
 will not be able to function correctly if Python is not installed as a
 framework. See the Python documentation for more information on installing
 Python as a framework on Mac OS X. Please either reinstall Python as a
@@ -636,7 +515,7 @@ information.
 </div>
 <p>This is a <code class="docutils literal"><span class="pre">matplotlib</span></code>-specific error, that will go away once you run the
 following command:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;backend: TkAgg&quot;</span> &gt; ~/.matplotlib/matplotlibrc
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ <span class="nb">echo</span> <span class="s2">&quot;backend: TkAgg&quot;</span> &gt; ~/.matplotlib/matplotlibrc
 </pre></div>
 </div>
 <p>in order to override the default <code class="docutils literal"><span class="pre">MacOS</span></code> backend for your system, which
@@ -652,11 +531,11 @@ about matplotlib backends, please refer to the
 <p>In Windows, you will first need to install the <a class="reference external" href="https://www.microsoft.com/en-us/download/details.aspx?id=44266">Microsoft Visual C++ Compiler
 for Python 2.7</a>. This
 package contains the compiler and the set of system headers necessary for
-producing binary wheels for Python 2.7 packages. If it&#8217;s not already in your
+producing binary wheels for Python 2.7 packages. If it’s not already in your
 system, download it and install it before proceeding to the next step.</p>
 <p>Once you have the above compiler installed, the easiest and best supported way
-to install Catalyst in Windows is to use <a class="reference internal" href="#conda"><span>Conda</span></a>. If you didn&#8217;t
-any problems installing the compiler, jump to the <a class="reference internal" href="#conda"><span>Conda</span></a> section,
+to install Catalyst in Windows is to use <a class="reference internal" href="#conda"><span class="std std-ref">Conda</span></a>. If you didn’t
+any problems installing the compiler, jump to the <a class="reference internal" href="#conda"><span class="std std-ref">Conda</span></a> section,
 otherwise keep on reading to troubleshoot the C++ compiler installtion.</p>
 <p>Some problems we have encountered installing the <strong>Visual C++ Compiler</strong>
 mentioned above are as follows:</p>
@@ -664,7 +543,7 @@ mentioned above are as follows:</p>
 <li><p class="first"><strong>The system administrator has set policies to prevent this installation</strong>.</p>
 <p>In some systems, there is a default <em>Windows Software Restriction</em> policy
 that prevents the installation of some software packages like this one.
-You&#8217;ll have to change the Registry to circumvent this:</p>
+You’ll have to change the Registry to circumvent this:</p>
 <ul class="simple">
 <li>Click <code class="docutils literal"><span class="pre">Start</span></code>, and search for <code class="docutils literal"><span class="pre">regedit</span></code> and launch the
 <code class="docutils literal"><span class="pre">Registry</span> <span class="pre">Editor</span></code></li>
@@ -706,12 +585,12 @@ update Catalyst frequently. Once installed, Catalyst can easily be updated as a
 <code class="docutils literal"><span class="pre">pip</span></code> package regardless of the environemnt used for installation. Make sure
 you activate your environment first as you did in your first install, and then
 execute:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pip uninstall enigma-catalyst
-<span class="nv">$ </span>pip install enigma-catalyst
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ pip uninstall enigma-catalyst
+$ pip install enigma-catalyst
 </pre></div>
 </div>
 <p>Alternatively, you could update Catalyst issuing the following command:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pip install -U enigma-catalyst
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ pip install -U enigma-catalyst
 </pre></div>
 </div>
 <p>but this command will also upgrade all the Catalyst dependencies to the latest
@@ -741,15 +620,19 @@ and you get a hint on how to solve it.</li>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="beginner-tutorial.html" class="btn btn-neutral float-right" title="Catalyst Beginner Tutorial" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="beginner-tutorial.html" class="btn btn-neutral float-right" title="Catalyst Beginner Tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="index.html" class="btn btn-neutral" title="Overview" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral" title="Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -759,9 +642,10 @@ and you get a hint on how to solve it.</li>
   <div role="contentinfo">
     <p>
         &copy; Copyright 2018, Enigma MPC, Inc..
+
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -782,7 +666,8 @@ and you get a hint on how to solve it.</li>
             VERSION:'0.4',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>
