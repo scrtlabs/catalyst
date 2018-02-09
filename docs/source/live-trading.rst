@@ -38,6 +38,7 @@ that you should test any new algorithm.
 Once you are confident with the simulations that you have obtained with your
 algorithm in backtesting, you may switch to live trading, where you have two
 different modes:
+
 * *Paper Trading*: The simulated algorithm runs in real time, and fetches 
 pricing data in real time from the exchange, but the orders never reach the 
 exchange, and are instead kept within Catalyst and simulated. No real currency
