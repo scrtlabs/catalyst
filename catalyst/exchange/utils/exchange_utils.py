@@ -126,8 +126,8 @@ def get_exchange_symbols(exchange_name, is_local=False, environ=None):
     filename = get_exchange_symbols_filename(exchange_name, is_local)
 
     if not is_local and (not os.path.isfile(filename) or pd.Timedelta(
-                pd.Timestamp('now', tz='UTC') - last_modified_time(
-                filename)).days > 1):
+            pd.Timestamp('now', tz='UTC') - last_modified_time(
+            filename)).days > 1):
         try:
             download_exchange_symbols(exchange_name, environ)
         except Exception as e:
@@ -512,7 +512,7 @@ def get_common_assets(exchanges):
     return assets
 
 
-def resample_history_df(df, freq, field):
+def resample_history_df(df, freq, field, start_dt=None):
     """
     Resample the OHCLV DataFrame using the specified frequency.
 
@@ -541,6 +541,7 @@ def resample_history_df(df, freq, field):
         raise ValueError('Invalid field.')
 
     resampled_df = df.resample(freq, closed='left', label='left').agg(agg)
+    resampled_df = resampled_df[resampled_df.index >= start_dt]
     return resampled_df
 
 
@@ -567,7 +568,7 @@ def mixin_market_params(exchange_name, params, market):
         params['taker'] = 0.002
 
     elif 'maker' in market and 'taker' in market \
-            and market['maker'] is not None and market['taker'] is not None:
+        and market['maker'] is not None and market['taker'] is not None:
         params['maker'] = market['maker']
         params['taker'] = market['taker']
 
