@@ -5,17 +5,16 @@ from logging import Logger, WARNING
 from time import sleep
 
 import pandas as pd
-from catalyst.assets._assets import TradingPair
 from logbook import TestHandler
 
-from catalyst.exchange.exchange_errors import ExchangeRequestError
+from catalyst.assets._assets import TradingPair
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.utils.exchange_utils import get_exchange_folder
+from catalyst.exchange.utils.factory import get_exchanges
 from catalyst.exchange.utils.test_utils import select_random_exchanges, \
-    handle_exchange_error, select_random_assets
+    select_random_assets
 from catalyst.testing import ZiplineTestCase
 from catalyst.testing.fixtures import WithLogger
-from exchange.utils.factory import get_exchanges
 
 log = Logger('TestSuiteExchange')
 
