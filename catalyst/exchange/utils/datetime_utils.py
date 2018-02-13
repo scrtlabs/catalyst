@@ -302,16 +302,12 @@ def get_frequency(freq, data_frequency=None):
     elif unit.lower() == 'm' or unit == 'T':
         unit = 'T'
         alias = '{}T'.format(candle_size)
+        data_frequency = 'minute'
 
-        if data_frequency == 'daily':
-            data_frequency = 'minute'
-
-    # elif unit.lower() == 'h':
-    #     candle_size = candle_size * 60
-    #
-    #     alias = '{}T'.format(candle_size)
-    #     if data_frequency == 'daily':
-    #         data_frequency = 'minute'
+    elif unit.lower() == 'h':
+        candle_size = candle_size * 60
+        alias = '{}T'.format(candle_size)
+        data_frequency = 'minute'
 
     else:
         raise InvalidHistoryFrequencyAlias(freq=freq)
