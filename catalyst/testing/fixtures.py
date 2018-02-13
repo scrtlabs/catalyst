@@ -62,7 +62,7 @@ from catalyst.utils.paths import ensure_directory
 catalyst_dir = os.path.dirname(catalyst.__file__)
 
 
-class ZiplineTestCase(with_metaclass(FinalMeta, TestCase)):
+class CatalystTestCase(with_metaclass(FinalMeta, TestCase)):
     """
     Shared extensions to core unittest.TestCase.
 
@@ -92,7 +92,7 @@ class ZiplineTestCase(with_metaclass(FinalMeta, TestCase)):
             cls._base_init_fixtures_was_called = False
             cls.init_class_fixtures()
             assert cls._base_init_fixtures_was_called, (
-                "ZiplineTestCase.init_class_fixtures() was not called.\n"
+                "CatalystTestCase.init_class_fixtures() was not called.\n"
                 "This probably means that you overrode init_class_fixtures"
                 " without calling super()."
             )
@@ -170,7 +170,7 @@ class ZiplineTestCase(with_metaclass(FinalMeta, TestCase)):
             self._init_instance_fixtures_was_called = False
             self.init_instance_fixtures()
             assert self._init_instance_fixtures_was_called, (
-                "ZiplineTestCase.init_instance_fixtures() was not"
+                "CatalystTestCase.init_instance_fixtures() was not"
                 " called.\n"
                 "This probably means that you overrode"
                 " init_instance_fixtures without calling super()."
@@ -251,7 +251,7 @@ def alias(attr_name):
 
 class WithDefaultDateBounds(object):
     """
-    ZiplineTestCase mixin which makes it possible to synchronize date bounds
+    CatalystTestCase mixin which makes it possible to synchronize date bounds
     across fixtures.
 
     This fixture should always be the last fixture in bases of any fixture or
@@ -264,13 +264,13 @@ class WithDefaultDateBounds(object):
         The date bounds to be used for fixtures that want to have consistent
         dates.
     """
-    START_DATE = pd.Timestamp('2006-01-03', tz='utc')
-    END_DATE = pd.Timestamp('2006-12-29', tz='utc')
+    START_DATE = pd.Timestamp('2016-01-03', tz='utc')
+    END_DATE = pd.Timestamp('2016-12-29', tz='utc')
 
 
 class WithLogger(object):
     """
-    ZiplineTestCase mixin providing cls.log_handler as an instance-level
+    CatalystTestCase mixin providing cls.log_handler as an instance-level
     fixture.
 
     After init_instance_fixtures has been called `self.log_handler` will be a
@@ -295,7 +295,7 @@ class WithLogger(object):
 
 class WithAssetFinder(WithDefaultDateBounds):
     """
-    ZiplineTestCase mixin providing cls.asset_finder as a class-level fixture.
+    CatalystTestCase mixin providing cls.asset_finder as a class-level fixture.
 
     After init_class_fixtures has been called, `cls.asset_finder` is populated
     with an AssetFinder.
@@ -402,7 +402,7 @@ class WithAssetFinder(WithDefaultDateBounds):
 
 class WithTradingCalendars(object):
     """
-    ZiplineTestCase mixin providing cls.trading_calendar,
+    CatalystTestCase mixin providing cls.trading_calendar,
     cls.all_trading_calendars, cls.trading_calendar_for_asset_type as a
     class-level fixture.
 
@@ -423,7 +423,7 @@ class WithTradingCalendars(object):
         with that asset type.
     """
     TRADING_CALENDAR_STRS = ('NYSE',)
-    TRADING_CALENDAR_FOR_ASSET_TYPE = {Equity: 'NYSE', Future: 'us_futures'}
+    TRADING_CALENDAR_FOR_ASSET_TYPE = {Equity: 'NYSE', Future: 'us_futures', }
     TRADING_CALENDAR_FOR_EXCHANGE = {}
     # For backwards compatibility, exisitng tests and fixtures refer to
     # `trading_calendar` with the assumption that the value is the NYSE
@@ -460,7 +460,7 @@ class WithTradingEnvironment(WithAssetFinder,
                              WithTradingCalendars,
                              WithDefaultDateBounds):
     """
-    ZiplineTestCase mixin providing cls.env as a class-level fixture.
+    CatalystTestCase mixin providing cls.env as a class-level fixture.
 
     After ``init_class_fixtures`` has been called, `cls.env` is populated
     with a trading environment whose `asset_finder` is the result of
@@ -560,7 +560,7 @@ class WithTradingEnvironment(WithAssetFinder,
 
 class WithSimParams(WithTradingEnvironment):
     """
-    ZiplineTestCase mixin providing cls.sim_params as a class level fixture.
+    CatalystTestCase mixin providing cls.sim_params as a class level fixture.
 
     The arguments used to construct the trading environment may be overridded
     by putting ``SIM_PARAMS_{argname}`` in the class dict except for the
@@ -615,7 +615,7 @@ class WithSimParams(WithTradingEnvironment):
 
 class WithTradingSessions(WithTradingCalendars, WithDefaultDateBounds):
     """
-    ZiplineTestCase mixin providing cls.trading_days, cls.all_trading_sessions
+    CatalystTestCase mixin providing cls.trading_days, cls.all_trading_sessions
     as a class-level fixture.
 
     After init_class_fixtures has been called, `cls.all_trading_sessions`
@@ -668,7 +668,7 @@ class WithTradingSessions(WithTradingCalendars, WithDefaultDateBounds):
 
 class WithTmpDir(object):
     """
-    ZiplineTestCase mixing providing cls.tmpdir as a class-level fixture.
+    CatalystTestCase mixing providing cls.tmpdir as a class-level fixture.
 
     After init_class_fixtures has been called, `cls.tmpdir` is populated with
     a `testfixtures.TempDirectory` object whose path is `cls.TMP_DIR_PATH`.
@@ -691,7 +691,7 @@ class WithTmpDir(object):
 
 class WithInstanceTmpDir(object):
     """
-    ZiplineTestCase mixing providing self.tmpdir as an instance-level fixture.
+    CatalystTestCase mixing providing self.tmpdir as an instance-level fixture.
 
     After init_instance_fixtures has been called, `self.tmpdir` is populated
     with a `testfixtures.TempDirectory` object whose path is
@@ -714,7 +714,7 @@ class WithInstanceTmpDir(object):
 
 class WithEquityDailyBarData(WithTradingEnvironment):
     """
-    ZiplineTestCase mixin providing cls.make_equity_daily_bar_data.
+    CatalystTestCase mixin providing cls.make_equity_daily_bar_data.
 
     Attributes
     ----------
@@ -810,7 +810,7 @@ class WithEquityDailyBarData(WithTradingEnvironment):
 
 class WithBcolzEquityDailyBarReader(WithEquityDailyBarData, WithTmpDir):
     """
-    ZiplineTestCase mixin providing cls.bcolz_daily_bar_path,
+    CatalystTestCase mixin providing cls.bcolz_daily_bar_path,
     cls.bcolz_daily_bar_ctable, and cls.bcolz_equity_daily_bar_reader
     class level fixtures.
 
@@ -895,7 +895,7 @@ class WithBcolzEquityDailyBarReader(WithEquityDailyBarData, WithTmpDir):
 
 class WithBcolzEquityDailyBarReaderFromCSVs(WithBcolzEquityDailyBarReader):
     """
-    ZiplineTestCase mixin that provides
+    CatalystTestCase mixin that provides
     cls.bcolz_equity_daily_bar_reader from a mapping of sids to CSV
     file paths.
     """
@@ -925,7 +925,7 @@ class _WithMinuteBarDataBase(WithTradingEnvironment):
 
 class WithEquityMinuteBarData(_WithMinuteBarDataBase):
     """
-    ZiplineTestCase mixin providing cls.equity_minute_bar_days.
+    CatalystTestCase mixin providing cls.equity_minute_bar_days.
 
     After init_class_fixtures has been called:
     - `cls.equity_minute_bar_days` has the range over which data has been
@@ -984,7 +984,7 @@ class WithEquityMinuteBarData(_WithMinuteBarDataBase):
 
 class WithFutureMinuteBarData(_WithMinuteBarDataBase):
     """
-    ZiplineTestCase mixin providing cls.future_minute_bar_days.
+    CatalystTestCase mixin providing cls.future_minute_bar_days.
 
     After init_class_fixtures has been called:
     - `cls.future_minute_bar_days` has the range over which data has been
@@ -1044,7 +1044,7 @@ class WithFutureMinuteBarData(_WithMinuteBarDataBase):
 
 class WithBcolzEquityMinuteBarReader(WithEquityMinuteBarData, WithTmpDir):
     """
-    ZiplineTestCase mixin providing cls.bcolz_minute_bar_path,
+    CatalystTestCase mixin providing cls.bcolz_minute_bar_path,
     cls.bcolz_minute_bar_ctable, and cls.bcolz_equity_minute_bar_reader
     class level fixtures.
 
@@ -1103,7 +1103,7 @@ class WithBcolzEquityMinuteBarReader(WithEquityMinuteBarData, WithTmpDir):
 
 class WithBcolzFutureMinuteBarReader(WithFutureMinuteBarData, WithTmpDir):
     """
-    ZiplineTestCase mixin providing cls.bcolz_minute_bar_path,
+    CatalystTestCase mixin providing cls.bcolz_minute_bar_path,
     cls.bcolz_minute_bar_ctable, and cls.bcolz_equity_minute_bar_reader
     class level fixtures.
 
@@ -1227,7 +1227,7 @@ class WithConstantFutureMinuteBarData(WithFutureMinuteBarData):
 
 class WithAdjustmentReader(WithBcolzEquityDailyBarReader):
     """
-    ZiplineTestCase mixin providing cls.adjustment_reader as a class level
+    CatalystTestCase mixin providing cls.adjustment_reader as a class level
     fixture.
 
     After init_class_fixtures has been called, `cls.adjustment_reader` will be
@@ -1359,7 +1359,7 @@ class WithEquityPricingPipelineEngine(WithAdjustmentReader,
 
 class WithSeededRandomPipelineEngine(WithTradingSessions, WithAssetFinder):
     """
-    ZiplineTestCase mixin providing class-level fixtures for running pipelines
+    CatalystTestCase mixin providing class-level fixtures for running pipelines
     against deterministically-generated random data.
 
     Attributes
@@ -1434,7 +1434,7 @@ class WithDataPortal(WithAdjustmentReader,
                      WithBcolzEquityMinuteBarReader,
                      WithBcolzFutureMinuteBarReader):
     """
-    ZiplineTestCase mixin providing self.data_portal as an instance level
+    CatalystTestCase mixin providing self.data_portal as an instance level
     fixture.
 
     After init_instance_fixtures has been called, `self.data_portal` will be
@@ -1485,12 +1485,12 @@ class WithDataPortal(WithAdjustmentReader,
             self.env.asset_finder,
             self.trading_calendar,
             first_trading_day=self.DATA_PORTAL_FIRST_TRADING_DAY,
-            equity_daily_reader=(
+            daily_reader=(
                 self.bcolz_equity_daily_bar_reader
                 if self.DATA_PORTAL_USE_DAILY_DATA else
                 None
             ),
-            equity_minute_reader=(
+            minute_reader=(
                 self.bcolz_equity_minute_bar_reader
                 if self.DATA_PORTAL_USE_MINUTE_DATA else
                 None
@@ -1526,7 +1526,7 @@ class WithDataPortal(WithAdjustmentReader,
 
 class WithResponses(object):
     """
-    ZiplineTestCase mixin that provides self.responses as an instance
+    CatalystTestCase mixin that provides self.responses as an instance
     fixture.
 
     After init_instance_fixtures has been called, `self.responses` will be

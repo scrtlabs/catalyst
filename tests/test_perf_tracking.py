@@ -57,7 +57,7 @@ from catalyst.testing.fixtures import (
     WithSimParams,
     WithTmpDir,
     WithTradingEnvironment,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 from catalyst.utils.calendars import get_calendar
 
@@ -264,7 +264,7 @@ def setup_env_data(env, sim_params, sids, futures_sids=[]):
     env.write_data(futures_data=futures_data)
 
 
-class TestSplitPerformance(WithSimParams, WithTmpDir, ZiplineTestCase):
+class TestSplitPerformance(WithSimParams, WithTmpDir, CatalystTestCase):
     START_DATE = pd.Timestamp('2006-01-03', tz='utc')
     END_DATE = pd.Timestamp('2006-01-04', tz='utc')
     SIM_PARAMS_CAPITAL_BASE = 10e3
@@ -402,7 +402,7 @@ class TestSplitPerformance(WithSimParams, WithTmpDir, ZiplineTestCase):
 
 class TestDividendPerformance(WithSimParams,
                               WithInstanceTmpDir,
-                              ZiplineTestCase):
+                              CatalystTestCase):
     START_DATE = pd.Timestamp('2006-01-03', tz='utc')
     END_DATE = pd.Timestamp('2006-01-10', tz='utc')
     ASSET_FINDER_EQUITY_SIDS = 1, 2
@@ -1030,7 +1030,7 @@ class TestDividendPerformanceHolidayStyle(TestDividendPerformance):
 
 class TestPositionPerformance(WithInstanceTmpDir,
                               WithTradingEnvironment,
-                              ZiplineTestCase):
+                              CatalystTestCase):
 
     def create_environment_stuff(self,
                                  num_days=4,
@@ -1951,7 +1951,7 @@ shares in position"
 
 class TestPositionTracker(WithTradingEnvironment,
                           WithInstanceTmpDir,
-                          ZiplineTestCase):
+                          CatalystTestCase):
     ASSET_FINDER_EQUITY_SIDS = 1, 2
 
     @classmethod

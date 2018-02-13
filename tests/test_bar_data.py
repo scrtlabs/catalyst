@@ -38,7 +38,7 @@ from catalyst.testing import (
 from catalyst.testing.fixtures import (
     WithCreateBarData,
     WithDataPortal,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 from catalyst.utils.calendars import get_calendar
 from catalyst.utils.calendars.trading_calendar import days_at_time
@@ -108,7 +108,7 @@ class WithBarDataChecks(object):
 class TestMinuteBarData(WithCreateBarData,
                         WithBarDataChecks,
                         WithDataPortal,
-                        ZiplineTestCase):
+                        CatalystTestCase):
     START_DATE = pd.Timestamp('2016-01-05', tz='UTC')
     END_DATE = ASSET_FINDER_EQUITY_END_DATE = pd.Timestamp(
         '2016-01-07',
@@ -730,7 +730,7 @@ class TestMinuteBarData(WithCreateBarData,
 
 class TestMinuteBarDataFuturesCalendar(WithCreateBarData,
                                        WithBarDataChecks,
-                                       ZiplineTestCase):
+                                       CatalystTestCase):
 
     START_DATE = pd.Timestamp('2016-01-05', tz='UTC')
     END_DATE = ASSET_FINDER_EQUITY_END_DATE = pd.Timestamp(
@@ -857,7 +857,7 @@ class TestMinuteBarDataFuturesCalendar(WithCreateBarData,
 class TestDailyBarData(WithCreateBarData,
                        WithBarDataChecks,
                        WithDataPortal,
-                       ZiplineTestCase):
+                       CatalystTestCase):
     START_DATE = pd.Timestamp('2016-01-05', tz='UTC')
     END_DATE = ASSET_FINDER_EQUITY_END_DATE = pd.Timestamp(
         '2016-01-11',

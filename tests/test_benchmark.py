@@ -32,12 +32,12 @@ from catalyst.testing.fixtures import (
     WithDataPortal,
     WithSimParams,
     WithTradingCalendars,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 
 
 class TestBenchmark(WithDataPortal, WithSimParams, WithTradingCalendars,
-                    ZiplineTestCase):
+                    CatalystTestCase):
     START_DATE = pd.Timestamp('2006-01-03', tz='utc')
     END_DATE = pd.Timestamp('2006-12-29', tz='utc')
 

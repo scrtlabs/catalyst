@@ -7,7 +7,7 @@ import pandas as pd
 from catalyst.lib.labelarray import LabelArray
 from catalyst.pipeline import Classifier
 from catalyst.testing import parameter_space
-from catalyst.testing.fixtures import ZiplineTestCase
+from catalyst.testing.fixtures import CatalystTestCase
 from catalyst.testing.predicates import assert_equal
 from catalyst.utils.numpy_utils import (
     categorical_dtype,
@@ -585,7 +585,7 @@ class ClassifierTestCase(BasePipelineTestCase):
         self.assertEqual(result, expected)
 
 
-class TestPostProcessAndToWorkSpaceValue(ZiplineTestCase):
+class TestPostProcessAndToWorkSpaceValue(CatalystTestCase):
     def test_reversability_categorical(self):
         class F(Classifier):
             inputs = ()

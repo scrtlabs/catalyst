@@ -56,7 +56,7 @@ from catalyst.testing.fixtures import (
     WithAssetFinder,
     WithInstanceTmpDir,
     WithTradingCalendars,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 
 # Calendar is set to cover several half days, to check a case where half
@@ -69,7 +69,7 @@ TEST_CALENDAR_STOP = Timestamp('2016-12-31', tz='UTC')
 class BcolzMinuteBarTestCase(WithTradingCalendars,
                              WithAssetFinder,
                              WithInstanceTmpDir,
-                             ZiplineTestCase):
+                             CatalystTestCase):
 
     ASSET_FINDER_EQUITY_SIDS = 1, 2
 

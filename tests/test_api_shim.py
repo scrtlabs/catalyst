@@ -17,7 +17,7 @@ from catalyst.testing.fixtures import (
     WithCreateBarData,
     WithDataPortal,
     WithSimParams,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 from catalyst.catalyst_warnings import ZiplineDeprecationWarning
 
@@ -133,7 +133,7 @@ def handle_data(context, data):
 class TestAPIShim(WithCreateBarData,
                   WithDataPortal,
                   WithSimParams,
-                  ZiplineTestCase,
+                  CatalystTestCase,
                   ):
     START_DATE = pd.Timestamp("2016-01-05", tz='UTC')
     END_DATE = pd.Timestamp("2016-01-28", tz='UTC')

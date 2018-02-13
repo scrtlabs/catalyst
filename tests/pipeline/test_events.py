@@ -24,7 +24,7 @@ from catalyst.pipeline.loaders.utils import (
     normalize_timestamp_to_query_time,
     previous_event_indexer,
 )
-from catalyst.testing import check_arrays, ZiplineTestCase
+from catalyst.testing import check_arrays, CatalystTestCase
 from catalyst.testing.fixtures import (
     WithAssetFinder,
     WithTradingSessions,
@@ -148,7 +148,7 @@ def make_events(add_nulls):
     return pd.concat(event_frames, ignore_index=True)
 
 
-class EventIndexerTestCase(ZiplineTestCase):
+class EventIndexerTestCase(CatalystTestCase):
 
     @classmethod
     def init_class_fixtures(cls):
@@ -269,7 +269,7 @@ class EventIndexerTestCase(ZiplineTestCase):
 
 class EventsLoaderEmptyTestCase(WithAssetFinder,
                                 WithTradingSessions,
-                                ZiplineTestCase):
+                                CatalystTestCase):
     START_DATE = pd.Timestamp('2014-01-01')
     END_DATE = pd.Timestamp('2014-01-30')
 
@@ -351,7 +351,7 @@ class EventsLoaderEmptyTestCase(WithAssetFinder,
 
 class EventsLoaderTestCase(WithAssetFinder,
                            WithTradingSessions,
-                           ZiplineTestCase):
+                           CatalystTestCase):
 
     START_DATE = pd.Timestamp('2014-01-01')
     END_DATE = pd.Timestamp('2014-01-30')
@@ -586,7 +586,7 @@ class BlazeEventsLoaderTestCase(EventsLoaderTestCase):
         )
 
 
-class EventLoaderUtilsTestCase(ZiplineTestCase):
+class EventLoaderUtilsTestCase(CatalystTestCase):
     # These cases test the following:
     # 1. Shuffling timestamps in DST/EST produces the correct normalized
     # timestamps

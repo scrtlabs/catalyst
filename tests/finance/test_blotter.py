@@ -37,7 +37,7 @@ from catalyst.testing.fixtures import (
     WithDataPortal,
     WithLogger,
     WithSimParams,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 from catalyst.utils.classproperty import classproperty
 
@@ -46,7 +46,7 @@ class BlotterTestCase(WithCreateBarData,
                       WithLogger,
                       WithDataPortal,
                       WithSimParams,
-                      ZiplineTestCase):
+                      CatalystTestCase):
     START_DATE = pd.Timestamp('2006-01-05', tz='utc')
     END_DATE = pd.Timestamp('2006-01-06', tz='utc')
     ASSET_FINDER_EQUITY_SIDS = 24, 25

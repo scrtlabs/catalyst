@@ -37,7 +37,7 @@ from catalyst.pipeline.filters import (
     StaticAssets,
     StaticSids,
 )
-from catalyst.testing import parameter_space, permute_rows, ZiplineTestCase
+from catalyst.testing import parameter_space, permute_rows, CatalystTestCase
 from catalyst.testing.fixtures import WithSeededRandomPipelineEngine
 from catalyst.testing.predicates import assert_equal
 from catalyst.utils.numpy_utils import float64_dtype, int64_dtype
@@ -841,7 +841,7 @@ class SidFactor(CustomFactor):
 
 
 class SpecificAssetsTestCase(WithSeededRandomPipelineEngine,
-                             ZiplineTestCase):
+                             CatalystTestCase):
 
     ASSET_FINDER_EQUITY_SIDS = tuple(range(10))
 
@@ -887,7 +887,7 @@ class SpecificAssetsTestCase(WithSeededRandomPipelineEngine,
         )
 
 
-class TestPostProcessAndToWorkSpaceValue(ZiplineTestCase):
+class TestPostProcessAndToWorkSpaceValue(CatalystTestCase):
     def test_reversability(self):
         class F(Filter):
             inputs = ()

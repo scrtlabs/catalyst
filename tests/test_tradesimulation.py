@@ -31,7 +31,7 @@ from catalyst.testing.fixtures import (
     WithDataPortal,
     WithSimParams,
     WithTradingEnvironment,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 from catalyst.utils import factory
 from catalyst.testing.core import FakeDataPortal
@@ -53,7 +53,7 @@ class BeforeTradingAlgorithm(TradingAlgorithm):
 FREQUENCIES = {'daily': 0, 'minute': 1}  # daily is less frequent than minute
 
 
-class TestTradeSimulation(WithTradingEnvironment, ZiplineTestCase):
+class TestTradeSimulation(WithTradingEnvironment, CatalystTestCase):
 
     def fake_minutely_benchmark(self, dt):
         return 0.01
@@ -115,7 +115,7 @@ class BeforeTradingStartsOnlyClock(object):
 
 class TestBeforeTradingStartSimulationDt(WithSimParams,
                                          WithDataPortal,
-                                         ZiplineTestCase):
+                                         CatalystTestCase):
 
     def test_bts_simulation_dt(self):
         code = """

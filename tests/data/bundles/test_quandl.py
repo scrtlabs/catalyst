@@ -17,14 +17,14 @@ from catalyst.testing import (
     tmp_dir,
     patch_read_csv,
 )
-from catalyst.testing.fixtures import ZiplineTestCase
+from catalyst.testing.fixtures import CatalystTestCase
 from catalyst.testing.predicates import (
     assert_equal,
 )
 from catalyst.utils.functional import apply
 
 
-class QuandlBundleTestCase(ZiplineTestCase):
+class QuandlBundleTestCase(CatalystTestCase):
     symbols = 'AAPL', 'BRK_A', 'MSFT', 'ZEN'
     asset_start = pd.Timestamp('2014-01', tz='utc')
     asset_end = pd.Timestamp('2015-01', tz='utc')

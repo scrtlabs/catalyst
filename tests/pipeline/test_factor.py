@@ -40,7 +40,7 @@ from catalyst.testing import (
     parameter_space,
     permute_rows,
 )
-from catalyst.testing.fixtures import ZiplineTestCase
+from catalyst.testing.fixtures import CatalystTestCase
 from catalyst.testing.predicates import assert_equal
 from catalyst.utils.numpy_utils import (
     categorical_dtype,
@@ -1246,7 +1246,7 @@ class TestWindowSafety(TestCase):
         )
 
 
-class TestPostProcessAndToWorkSpaceValue(ZiplineTestCase):
+class TestPostProcessAndToWorkSpaceValue(CatalystTestCase):
     @parameter_space(dtype_=(float64_dtype, datetime64ns_dtype))
     def test_reversability(self, dtype_):
         class F(Factor):

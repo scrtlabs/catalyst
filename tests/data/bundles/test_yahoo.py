@@ -10,12 +10,12 @@ from catalyst.data.bundles.core import _make_bundle_core
 from catalyst.data.bundles import yahoo_equities
 from catalyst.lib.adjustment import Float64Multiply
 from catalyst.testing import test_resource_path, tmp_dir, read_compressed
-from catalyst.testing.fixtures import WithResponses, ZiplineTestCase
+from catalyst.testing.fixtures import WithResponses, CatalystTestCase
 from catalyst.testing.predicates import assert_equal
 from catalyst.utils.calendars import get_calendar
 
 
-class YahooBundleTestCase(WithResponses, ZiplineTestCase):
+class YahooBundleTestCase(WithResponses, CatalystTestCase):
     symbols = 'AAPL', 'IBM', 'MSFT'
     columns = 'open', 'high', 'low', 'close', 'volume'
     asset_start = pd.Timestamp('2014-01-02', tz='utc')

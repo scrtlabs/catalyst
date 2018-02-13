@@ -48,7 +48,7 @@ from catalyst.testing.fixtures import (
     WithDataPortal,
     WithSimParams,
     WithTradingEnvironment,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 from catalyst.utils.classproperty import classproperty
 
@@ -59,7 +59,7 @@ TestOrder = namedtuple('TestOrder', 'limit direction')
 class SlippageTestCase(WithCreateBarData,
                        WithSimParams,
                        WithDataPortal,
-                       ZiplineTestCase):
+                       CatalystTestCase):
     START_DATE = pd.Timestamp('2006-01-05 14:31', tz='utc')
     END_DATE = pd.Timestamp('2006-01-05 14:36', tz='utc')
     SIM_PARAMS_CAPITAL_BASE = 1.0e5
@@ -566,7 +566,7 @@ class SlippageTestCase(WithCreateBarData,
 class VolumeShareSlippageTestCase(WithCreateBarData,
                                   WithSimParams,
                                   WithDataPortal,
-                                  ZiplineTestCase):
+                                  CatalystTestCase):
 
     START_DATE = pd.Timestamp('2006-01-05 14:31', tz='utc')
     END_DATE = pd.Timestamp('2006-01-05 14:36', tz='utc')
@@ -743,7 +743,7 @@ class VolumeShareSlippageTestCase(WithCreateBarData,
 class VolatilityVolumeShareTestCase(WithCreateBarData,
                                     WithSimParams,
                                     WithDataPortal,
-                                    ZiplineTestCase):
+                                    CatalystTestCase):
 
     ASSET_START_DATE = pd.Timestamp('2006-02-10')
 
@@ -890,7 +890,7 @@ class VolatilityVolumeShareTestCase(WithCreateBarData,
         self.assertIsNone(amount)
 
 
-class MarketImpactTestCase(WithCreateBarData, ZiplineTestCase):
+class MarketImpactTestCase(WithCreateBarData, CatalystTestCase):
 
     ASSET_FINDER_EQUITY_SIDS = (1,)
 
@@ -947,7 +947,7 @@ class MarketImpactTestCase(WithCreateBarData, ZiplineTestCase):
 
 class OrdersStopTestCase(WithSimParams,
                          WithTradingEnvironment,
-                         ZiplineTestCase):
+                         CatalystTestCase):
 
     START_DATE = pd.Timestamp('2006-01-05 14:31', tz='utc')
     END_DATE = pd.Timestamp('2006-01-05 14:36', tz='utc')

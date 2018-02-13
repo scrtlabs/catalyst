@@ -42,7 +42,7 @@ from catalyst.testing import (
 from catalyst.testing.fixtures import (
     WithSeededRandomPipelineEngine,
     WithTradingEnvironment,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 from catalyst.utils.numpy_utils import (
     bool_dtype,
@@ -51,7 +51,7 @@ from catalyst.utils.numpy_utils import (
 )
 
 
-class StatisticalBuiltInsTestCase(WithTradingEnvironment, ZiplineTestCase):
+class StatisticalBuiltInsTestCase(WithTradingEnvironment, CatalystTestCase):
     sids = ASSET_FINDER_EQUITY_SIDS = Int64Index([1, 2, 3])
     START_DATE = Timestamp('2015-01-31', tz='UTC')
     END_DATE = Timestamp('2015-03-01', tz='UTC')
@@ -388,7 +388,7 @@ class StatisticalBuiltInsTestCase(WithTradingEnvironment, ZiplineTestCase):
 
 
 class StatisticalMethodsTestCase(WithSeededRandomPipelineEngine,
-                                 ZiplineTestCase):
+                                 CatalystTestCase):
     sids = ASSET_FINDER_EQUITY_SIDS = Int64Index([1, 2, 3])
     START_DATE = Timestamp('2015-01-31', tz='UTC')
     END_DATE = Timestamp('2015-03-01', tz='UTC')

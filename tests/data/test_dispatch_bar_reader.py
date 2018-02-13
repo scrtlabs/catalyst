@@ -37,7 +37,7 @@ from catalyst.testing.fixtures import (
     WithBcolzEquityDailyBarReader,
     WithBcolzFutureMinuteBarReader,
     WithTradingSessions,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 
 OHLC = ['open', 'high', 'low', 'close']
@@ -46,7 +46,7 @@ OHLC = ['open', 'high', 'low', 'close']
 class AssetDispatchSessionBarTestCase(WithBcolzEquityDailyBarReader,
                                       WithBcolzFutureMinuteBarReader,
                                       WithTradingSessions,
-                                      ZiplineTestCase):
+                                      CatalystTestCase):
 
     TRADING_CALENDAR_STRS = ('us_futures', 'NYSE')
     TRADING_CALENDAR_PRIMARY_CAL = 'us_futures'
@@ -175,7 +175,7 @@ class AssetDispatchSessionBarTestCase(WithBcolzEquityDailyBarReader,
 
 class AssetDispatchMinuteBarTestCase(WithBcolzEquityMinuteBarReader,
                                      WithBcolzFutureMinuteBarReader,
-                                     ZiplineTestCase):
+                                     CatalystTestCase):
 
     TRADING_CALENDAR_STRS = ('us_futures', 'NYSE')
     TRADING_CALENDAR_PRIMARY_CAL = 'us_futures'

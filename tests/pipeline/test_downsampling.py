@@ -13,7 +13,7 @@ from catalyst.pipeline import (
 from catalyst.pipeline.data.testing import TestingDataSet
 from catalyst.pipeline.factors.equity import SimpleMovingAverage
 from catalyst.pipeline.filters.smoothing import All
-from catalyst.testing import ZiplineTestCase, parameter_space
+from catalyst.testing import CatalystTestCase, parameter_space
 from catalyst.testing.fixtures import (
     WithTradingSessions,
     WithSeededRandomPipelineEngine,
@@ -44,7 +44,7 @@ class NDaysAgoClassifier(CustomClassifier):
         out[:] = cats[0]
 
 
-class ComputeExtraRowsTestcase(WithTradingSessions, ZiplineTestCase):
+class ComputeExtraRowsTestcase(WithTradingSessions, CatalystTestCase):
 
     DATA_MIN_DAY = pd.Timestamp('2012-06', tz='UTC')
     DATA_MAX_DAY = pd.Timestamp('2015', tz='UTC')
@@ -555,7 +555,7 @@ class ComputeExtraRowsTestcase(WithTradingSessions, ZiplineTestCase):
 
 
 class DownsampledPipelineTestCase(WithSeededRandomPipelineEngine,
-                                  ZiplineTestCase):
+                                  CatalystTestCase):
 
     # Extend into the last few days of 2013 to test year/quarter boundaries.
     START_DATE = pd.Timestamp('2013-12-15', tz='UTC')

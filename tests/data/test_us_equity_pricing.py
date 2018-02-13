@@ -50,7 +50,7 @@ from catalyst.testing.fixtures import (
     WithBcolzEquityDailyBarReader,
     WithTmpDir,
     WithTradingCalendars,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 from catalyst.utils.calendars import get_calendar
 
@@ -86,7 +86,7 @@ EQUITY_INFO['symbol'] = [chr(ord('A') + n) for n in range(len(EQUITY_INFO))]
 TEST_QUERY_ASSETS = EQUITY_INFO.index
 
 
-class BcolzDailyBarTestCase(WithBcolzEquityDailyBarReader, ZiplineTestCase):
+class BcolzDailyBarTestCase(WithBcolzEquityDailyBarReader, CatalystTestCase):
     EQUITY_DAILY_BAR_START_DATE = TEST_CALENDAR_START
     EQUITY_DAILY_BAR_END_DATE = TEST_CALENDAR_STOP
 
@@ -372,7 +372,7 @@ class BcolzDailyBarNeverReadAllTestCase(BcolzDailyBarTestCase):
 class BcolzDailyBarWriterMissingDataTestCase(WithAssetFinder,
                                              WithTmpDir,
                                              WithTradingCalendars,
-                                             ZiplineTestCase):
+                                             CatalystTestCase):
     # Sid 3 is active from 2015-06-02 to 2015-06-30.
     MISSING_DATA_SID = 3
     # Leave out data for a day in the middle of the query range.

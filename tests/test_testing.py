@@ -19,7 +19,7 @@ from catalyst.testing import (
 from catalyst.testing.fixtures import (
     WithConstantEquityMinuteBarData,
     WithDataPortal,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 from catalyst.testing.slippage import TestingSlippage
 from catalyst.utils.numpy_utils import bool_dtype
@@ -123,7 +123,7 @@ class TestMakeBooleanArray(TestCase):
 
 class TestTestingSlippage(WithConstantEquityMinuteBarData,
                           WithDataPortal,
-                          ZiplineTestCase):
+                          CatalystTestCase):
     ASSET_FINDER_EQUITY_SYMBOLS = ('A',)
     ASSET_FINDER_EQUITY_SIDS = (1,)
 

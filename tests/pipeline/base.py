@@ -18,7 +18,7 @@ from catalyst.testing import (
 from catalyst.testing.fixtures import (
     WithAssetFinder,
     WithTradingSessions,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 
 from catalyst.utils.functional import dzip_exact
@@ -54,7 +54,7 @@ with_default_shape = with_defaults(shape=lambda self: self.default_shape)
 
 class BasePipelineTestCase(WithTradingSessions,
                            WithAssetFinder,
-                           ZiplineTestCase):
+                           CatalystTestCase):
     START_DATE = Timestamp('2014', tz='UTC')
     END_DATE = Timestamp('2014-12-31', tz='UTC')
     ASSET_FINDER_EQUITY_SIDS = list(range(20))

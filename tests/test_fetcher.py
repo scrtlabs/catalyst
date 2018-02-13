@@ -26,7 +26,7 @@ from catalyst.testing import FetcherDataPortal
 from catalyst.testing.fixtures import (
     WithResponses,
     WithSimParams,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 from .resources.fetcher_inputs.fetcher_test_data import (
     AAPL_CSV_DATA,
@@ -45,7 +45,7 @@ from .resources.fetcher_inputs.fetcher_test_data import (
 
 class FetcherTestCase(WithResponses,
                       WithSimParams,
-                      ZiplineTestCase):
+                      CatalystTestCase):
 
     @classmethod
     def make_equity_info(cls):

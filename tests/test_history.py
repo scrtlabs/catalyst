@@ -37,7 +37,7 @@ from catalyst.testing import (
 from catalyst.testing.fixtures import (
     WithCreateBarData,
     WithDataPortal,
-    ZiplineTestCase,
+    CatalystTestCase,
     alias,
 )
 
@@ -530,7 +530,7 @@ MINUTE_FIELD_INFO = {
 }
 
 
-class MinuteEquityHistoryTestCase(WithHistory, ZiplineTestCase):
+class MinuteEquityHistoryTestCase(WithHistory, CatalystTestCase):
 
     EQUITY_DAILY_BAR_SOURCE_FROM_MINUTE = True
     DATA_PORTAL_FIRST_TRADING_DAY = alias('TRADING_START_DT')
@@ -1598,7 +1598,7 @@ class NoPrefetchMinuteEquityHistoryTestCase(MinuteEquityHistoryTestCase):
     DATA_PORTAL_DAILY_HISTORY_PREFETCH = 0
 
 
-class DailyEquityHistoryTestCase(WithHistory, ZiplineTestCase):
+class DailyEquityHistoryTestCase(WithHistory, CatalystTestCase):
     CREATE_BARDATA_DATA_FREQUENCY = 'daily'
 
     @classmethod

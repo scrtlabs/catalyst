@@ -16,7 +16,7 @@ from catalyst.testing import (
 from catalyst.testing.fixtures import (
     WithLogger,
     WithTradingEnvironment,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 from catalyst.utils import factory
 from catalyst.utils.security_list import (
@@ -84,7 +84,7 @@ class IterateRLAlgo(TradingAlgorithm):
 
 class SecurityListTestCase(WithLogger,
                            WithTradingEnvironment,
-                           ZiplineTestCase):
+                           CatalystTestCase):
 
     @classmethod
     def init_class_fixtures(cls):

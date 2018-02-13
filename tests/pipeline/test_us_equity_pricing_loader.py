@@ -55,7 +55,7 @@ from catalyst.testing import (
 )
 from catalyst.testing.fixtures import (
     WithAdjustmentReader,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 
 # Test calendar ranges over the month of June 2015
@@ -258,7 +258,7 @@ DIVIDENDS_EXPECTED = DataFrame(
 
 
 class USEquityPricingLoaderTestCase(WithAdjustmentReader,
-                                    ZiplineTestCase):
+                                    CatalystTestCase):
     START_DATE = TEST_CALENDAR_START
     END_DATE = TEST_CALENDAR_STOP
     asset_ids = 1, 2, 3

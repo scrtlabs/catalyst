@@ -34,7 +34,7 @@ from catalyst.pipeline.loaders.blaze.core import (
     NonPipelineField,
 )
 from catalyst.testing import (
-    ZiplineTestCase,
+    CatalystTestCase,
     parameter_space,
     tmp_asset_finder,
 )
@@ -77,7 +77,7 @@ def _utc_localize_index_level_0(df):
     return df
 
 
-class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
+class BlazeToPipelineTestCase(WithAssetFinder, CatalystTestCase):
     START_DATE = pd.Timestamp(0)
     END_DATE = pd.Timestamp('2015')
 
@@ -1927,7 +1927,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
         )
 
 
-class MiscTestCase(ZiplineTestCase):
+class MiscTestCase(CatalystTestCase):
     def test_exprdata_repr(self):
         strd = set()
 

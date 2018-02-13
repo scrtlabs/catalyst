@@ -55,4 +55,4 @@ from .core import (  # noqa
     write_bcolz_minute_data,
     write_compressed,
 )
-from .fixtures import ZiplineTestCase  # noqa
+from .fixtures import CatalystTestCase  # noqa

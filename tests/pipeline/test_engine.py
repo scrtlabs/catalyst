@@ -81,7 +81,7 @@ from catalyst.testing.fixtures import (
     WithEquityPricingPipelineEngine,
     WithSeededRandomPipelineEngine,
     WithTradingEnvironment,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 from catalyst.testing.predicates import assert_equal
 from catalyst.utils.memoize import lazyval
@@ -199,7 +199,7 @@ class WithConstantInputs(WithTradingEnvironment):
         cls.assets = cls.asset_finder.retrieve_all(cls.asset_ids)
 
 
-class ConstantInputTestCase(WithConstantInputs, ZiplineTestCase):
+class ConstantInputTestCase(WithConstantInputs, CatalystTestCase):
     def test_bad_dates(self):
         loader = self.loader
         engine = SimplePipelineEngine(
@@ -816,7 +816,7 @@ class ConstantInputTestCase(WithConstantInputs, ZiplineTestCase):
                                                   Loader2DataSet.col2)})
 
 
-class FrameInputTestCase(WithTradingEnvironment, ZiplineTestCase):
+class FrameInputTestCase(WithTradingEnvironment, CatalystTestCase):
     asset_ids = ASSET_FINDER_EQUITY_SIDS = 1, 2, 3
     start = START_DATE = Timestamp('2015-01-01', tz='utc')
     end = END_DATE = Timestamp('2015-01-31', tz='utc')
@@ -921,7 +921,7 @@ class FrameInputTestCase(WithTradingEnvironment, ZiplineTestCase):
 
 
 class SyntheticBcolzTestCase(WithAdjustmentReader,
-                             ZiplineTestCase):
+                             CatalystTestCase):
     first_asset_start = Timestamp('2015-04-01', tz='UTC')
     START_DATE = Timestamp('2015-01-01', tz='utc')
     END_DATE = Timestamp('2015-08-01', tz='utc')
@@ -1079,7 +1079,7 @@ class SyntheticBcolzTestCase(WithAdjustmentReader,
         assert_frame_equal(expected, result)
 
 
-class ParameterizedFactorTestCase(WithTradingEnvironment, ZiplineTestCase):
+class ParameterizedFactorTestCase(WithTradingEnvironment, CatalystTestCase):
     sids = ASSET_FINDER_EQUITY_SIDS = Int64Index([1, 2, 3])
     START_DATE = Timestamp('2015-01-31', tz='UTC')
     END_DATE = Timestamp('2015-03-01', tz='UTC')
@@ -1297,7 +1297,7 @@ class ParameterizedFactorTestCase(WithTradingEnvironment, ZiplineTestCase):
 
 
 class StringColumnTestCase(WithSeededRandomPipelineEngine,
-                           ZiplineTestCase):
+                           CatalystTestCase):
 
     def test_string_classifiers_produce_categoricals(self):
         """
@@ -1327,7 +1327,7 @@ class StringColumnTestCase(WithSeededRandomPipelineEngine,
 
 
 class WindowSafetyPropagationTestCase(WithSeededRandomPipelineEngine,
-                                      ZiplineTestCase):
+                                      CatalystTestCase):
 
     SEEDED_RANDOM_PIPELINE_SEED = 5
 
@@ -1378,7 +1378,7 @@ class WindowSafetyPropagationTestCase(WithSeededRandomPipelineEngine,
             assert_equal(expected_result, results[colname])
 
 
-class PopulateInitialWorkspaceTestCase(WithConstantInputs, ZiplineTestCase):
+class PopulateInitialWorkspaceTestCase(WithConstantInputs, CatalystTestCase):
 
     @parameter_space(window_length=[3, 5], pipeline_length=[5, 10])
     def test_populate_initial_workspace(self, window_length, pipeline_length):
@@ -1503,7 +1503,7 @@ class PopulateInitialWorkspaceTestCase(WithConstantInputs, ZiplineTestCase):
 
 
 class ChunkedPipelineTestCase(WithEquityPricingPipelineEngine,
-                              ZiplineTestCase):
+                              CatalystTestCase):
 
     PIPELINE_START_DATE = Timestamp('2006-01-05', tz='UTC')
     END_DATE = Timestamp('2006-12-29', tz='UTC')

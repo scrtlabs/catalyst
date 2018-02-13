@@ -6,12 +6,12 @@ from catalyst.errors import (
     CyclicCalendarAlias,
     InvalidCalendarName,
 )
-from catalyst.testing import ZiplineTestCase
+from catalyst.testing import CatalystTestCase
 from catalyst.utils.calendars.calendar_utils import TradingCalendarDispatcher
 from catalyst.utils.calendars.exchange_calendar_ice import ICEExchangeCalendar
 
 
-class CalendarAliasTestCase(ZiplineTestCase):
+class CalendarAliasTestCase(CatalystTestCase):
 
     @classmethod
     def init_class_fixtures(cls):

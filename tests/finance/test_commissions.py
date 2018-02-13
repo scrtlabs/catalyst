@@ -19,7 +19,7 @@ from catalyst.finance.commission import (
 )
 from catalyst.finance.order import Order
 from catalyst.finance.transaction import Transaction
-from catalyst.testing import ZiplineTestCase, trades_by_sid_to_dfs
+from catalyst.testing import CatalystTestCase, trades_by_sid_to_dfs
 from catalyst.testing.fixtures import (
     WithAssetFinder,
     WithSimParams,
@@ -28,7 +28,7 @@ from catalyst.testing.fixtures import (
 from catalyst.utils import factory
 
 
-class CommissionUnitTests(WithAssetFinder, ZiplineTestCase):
+class CommissionUnitTests(WithAssetFinder, CatalystTestCase):
     ASSET_FINDER_EQUITY_SIDS = 1, 2
 
     @classmethod
@@ -272,7 +272,7 @@ class CommissionUnitTests(WithAssetFinder, ZiplineTestCase):
         self.assertAlmostEqual(15.3, model.calculate(order, txns[2]))
 
 
-class CommissionAlgorithmTests(WithDataPortal, WithSimParams, ZiplineTestCase):
+class CommissionAlgorithmTests(WithDataPortal, WithSimParams, CatalystTestCase):
     # make sure order commissions are properly incremented
 
     sidint, = ASSET_FINDER_EQUITY_SIDS = (133,)

@@ -22,14 +22,14 @@ from catalyst.test_algorithms import (
 from catalyst.testing.fixtures import (
     WithDataPortal,
     WithSimParams,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 
 DEFAULT_TIMEOUT = 15  # seconds
 EXTENDED_TIMEOUT = 90
 
 
-class ExceptionTestCase(WithDataPortal, WithSimParams, ZiplineTestCase):
+class ExceptionTestCase(WithDataPortal, WithSimParams, CatalystTestCase):
     START_DATE = pd.Timestamp('2006-01-03', tz='utc')
     START_DATE = pd.Timestamp('2006-01-07', tz='utc')
 

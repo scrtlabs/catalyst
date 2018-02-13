@@ -60,7 +60,7 @@ from catalyst.testing.fixtures import (
     WithAdjustmentReader,
     WithBcolzEquityDailyBarReaderFromCSVs,
     WithDataPortal,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 from catalyst.utils.calendars import get_calendar
 
@@ -84,7 +84,7 @@ def rolling_vwap(df, length):
     return Series(out, index=df.index)
 
 
-class ClosesOnly(WithDataPortal, ZiplineTestCase):
+class ClosesOnly(WithDataPortal, CatalystTestCase):
     sids = 1, 2, 3
     START_DATE = pd.Timestamp('2014-01-01', tz='utc')
     END_DATE = pd.Timestamp('2014-02-01', tz='utc')
@@ -355,7 +355,7 @@ class MockDailyBarSpotReader(object):
 
 class PipelineAlgorithmTestCase(WithBcolzEquityDailyBarReaderFromCSVs,
                                 WithAdjustmentReader,
-                                ZiplineTestCase):
+                                CatalystTestCase):
     AAPL = 1
     MSFT = 2
     BRK_A = 3

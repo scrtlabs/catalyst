@@ -80,7 +80,7 @@ from catalyst.testing import (
 from catalyst.testing.predicates import assert_equal
 from catalyst.testing.fixtures import (
     WithAssetFinder,
-    ZiplineTestCase,
+    CatalystTestCase,
     WithTradingCalendars,
 )
 from catalyst.utils.range import range
@@ -345,7 +345,7 @@ class AssetTestCase(TestCase):
                 'a' < self.asset3
 
 
-class TestFuture(WithAssetFinder, ZiplineTestCase):
+class TestFuture(WithAssetFinder, CatalystTestCase):
     @classmethod
     def make_futures_info(cls):
         return pd.DataFrame.from_dict(
@@ -458,7 +458,7 @@ class TestFuture(WithAssetFinder, ZiplineTestCase):
             TestFuture.asset_finder.lookup_future_symbol('XXX99')
 
 
-class AssetFinderTestCase(WithTradingCalendars, ZiplineTestCase):
+class AssetFinderTestCase(WithTradingCalendars, CatalystTestCase):
     asset_finder_type = AssetFinder
 
     def write_assets(self, **kwargs):
@@ -1395,7 +1395,7 @@ class AssetFinderTestCase(WithTradingCalendars, ZiplineTestCase):
             )
 
 
-class TestAssetDBVersioning(ZiplineTestCase):
+class TestAssetDBVersioning(CatalystTestCase):
 
     def init_instance_fixtures(self):
         super(TestAssetDBVersioning, self).init_instance_fixtures()
@@ -1533,7 +1533,7 @@ class TestAssetDBVersioning(ZiplineTestCase):
         assert_equal(expected_data, actual_data)
 
 
-class TestVectorizedSymbolLookup(WithAssetFinder, ZiplineTestCase):
+class TestVectorizedSymbolLookup(WithAssetFinder, CatalystTestCase):
 
     @classmethod
     def make_equity_info(cls):

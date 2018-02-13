@@ -41,7 +41,7 @@ from catalyst.testing.fixtures import (
     WithDataPortal,
     WithBcolzFutureMinuteBarReader,
     WithSimParams,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 
 
@@ -49,7 +49,7 @@ class ContinuousFuturesTestCase(WithCreateBarData,
                                 WithDataPortal,
                                 WithSimParams,
                                 WithBcolzFutureMinuteBarReader,
-                                ZiplineTestCase):
+                                CatalystTestCase):
 
     START_DATE = pd.Timestamp('2015-01-05', tz='UTC')
     END_DATE = pd.Timestamp('2016-10-19', tz='UTC')
@@ -1285,7 +1285,7 @@ def record_current_contract(algo, data):
 
 
 class OrderedContractsTestCase(WithAssetFinder,
-                               ZiplineTestCase):
+                               CatalystTestCase):
 
     @classmethod
     def make_root_symbols_info(self):
