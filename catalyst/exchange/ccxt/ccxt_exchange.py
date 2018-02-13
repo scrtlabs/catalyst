@@ -426,25 +426,18 @@ class CCXT(Exchange):
             )
 
         if start_dt is None:
-            # TODO: determine why binance is failing
-            if end_dt is None and self.name not in ['binance']:
+            if end_dt is None:
                 end_dt = pd.Timestamp.utcnow()
 
-            if end_dt is not None:
-                dt_range = get_periods_range(
-                    end_dt=end_dt,
-                    periods=bar_count,
-                    freq=freq,
-                )
-                start_dt = dt_range[0]
+            dt_range = get_periods_range(
+                end_dt=end_dt,
+                periods=bar_count,
+                freq=freq,
+            )
+            start_dt = dt_range[0]
 
-        if start_dt is not None:
-            # Convert out start date to a UNIX timestamp, then translate to
-            # milliseconds
-            delta = start_dt - get_epoch()
-            since = int(delta.total_seconds()) * 1000
-        else:
-            since = None
+        delta = start_dt - get_epoch()
+        since = int(delta.total_seconds()) * 1000
 
         candles = dict()
         for index, asset in enumerate(assets):
