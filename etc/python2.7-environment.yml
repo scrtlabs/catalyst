@@ -59,4 +59,4 @@ dependencies:
   - tables==3.4.2
   - toolz==0.8.2
   - urllib3==1.22
-  - enigma-catalyst>=0.3
+  - enigma-catalyst>=0.5
