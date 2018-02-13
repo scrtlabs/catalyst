@@ -540,8 +540,16 @@ def resample_history_df(df, freq, field, start_dt=None):
     else:
         raise ValueError('Invalid field.')
 
-    resampled_df = df.resample(freq, closed='left', label='left').agg(agg)
-    resampled_df = resampled_df[resampled_df.index >= start_dt]
+    resampled_df = df.resample(
+        freq, closed='left', label='left'
+    ).agg(agg)  # type: pd.DataFrame
+
+    # Because the samples are closed left, we get one more candle at
+    # the beginning then the requested number for bars. Removing this
+    # candle to avoid confusion.
+    if start_dt and not resampled_df.empty:
+        resampled_df = resampled_df[resampled_df.index >= start_dt]
+
     return resampled_df
 
 
