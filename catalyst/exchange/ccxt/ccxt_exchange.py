@@ -43,7 +43,8 @@ SUPPORTED_EXCHANGES = dict(
 
 
 class CCXT(Exchange):
-    def __init__(self, exchange_name, key, secret, base_currency):
+    def __init__(self, exchange_name, key,
+                 secret, password, base_currency):
         log.debug(
             'finding {} in CCXT exchanges:\n{}'.format(
                 exchange_name, ccxt.exchanges
@@ -60,6 +61,7 @@ class CCXT(Exchange):
             self.api = exchange_attr({
                 'apiKey': key,
                 'secret': secret,
+                'password': password,
             })
             self.api.enableRateLimit = True
 
