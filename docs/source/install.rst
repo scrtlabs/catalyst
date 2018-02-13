@@ -47,8 +47,10 @@ you can install MiniConda, which is a smaller footprint (fewer packages and
 smaller size) than its big brother Anaconda, but it still contains all the 
 main packages needed. To install MiniConda, you can follow these steps:
 
-1. Download `MiniConda <https://conda.io/miniconda.html>`_. Select Python 2.7 
-   for your Operating System.
+1. Download `MiniConda <https://conda.io/miniconda.html>`_. Select either 
+   Python 3.6 (recommended) or Python 2.7 for your Operating System. The 
+   `Enigma Data Marketplace <https://enigmampc.github.io/marketplace/>`_ will 
+   require Python3, that's why we are recommending to opt for the newer version.
 2. Install MiniConda. See the `Installation Instructions 
    <https://conda.io/docs/user-guide/install/index.html>`_ if you need help.
 3. Ensure the correct installation by running ``conda list`` in a Terminal 
@@ -64,21 +66,30 @@ main packages needed. To install MiniConda, you can follow these steps:
 
 Once either Conda or MiniConda has been set up you can install Catalyst:
 
-1. Download the file `python2.7-environment.yml 
-   <https://github.com/enigmampc/catalyst/blob/master/etc/python2.7-environment.yml>`_.
+1. Download the file `python3.6-environment.yml 
+   <https://github.com/enigmampc/catalyst/blob/master/etc/python3.6-environment.yml>`_ 
+   (recommended) or `python2.7-environment.yml 
+   <https://github.com/enigmampc/catalyst/blob/master/etc/python2.7-environment.yml>`_ 
+   matching your Conda installation from step #1 above.
 
      To download, simply click on the 'Raw' button and save the file locally 
      to a folder you can remember. Make sure that the file gets saved with the
      ``.yml`` extension, and nothing like a ``.txt`` file or anything else.
 
 2. Open a Terminal window and enter [``cd/dir``] into the directory where you 
-   saved the above ``python2.7-environment.yml`` file.
+   saved the above ``.yml`` file.
 
 3. Install using this file. This step can take about 5-10 minutes to install.
 
    .. code-block:: bash
 
-      conda env create -f python2.7-environment.yml
+      conda env create -f python3.6-environment.yml
+
+  or
+
+   .. code-block:: bash
+
+    conda env create -f python2.7-environment.yml
 
 4. Activate the environment (which you need to do every time you start a new 
    session to run Catalyst):
