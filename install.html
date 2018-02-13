@@ -219,8 +219,10 @@ you can install MiniConda, which is a smaller footprint (fewer packages and
 smaller size) than its big brother Anaconda, but it still contains all the
 main packages needed. To install MiniConda, you can follow these steps:</p>
 <ol class="arabic simple">
-<li>Download <a class="reference external" href="https://conda.io/miniconda.html">MiniConda</a>. Select Python 2.7
-for your Operating System.</li>
+<li>Download <a class="reference external" href="https://conda.io/miniconda.html">MiniConda</a>. Select either
+Python 3.6 (recommended) or Python 2.7 for your Operating System. The
+<a class="reference external" href="https://enigmampc.github.io/marketplace/">Enigma Data Marketplace</a> will
+require Python3, that’s why we are recommending to opt for the newer version.</li>
 <li>Install MiniConda. See the <a class="reference external" href="https://conda.io/docs/user-guide/install/index.html">Installation Instructions</a> if you need help.</li>
 <li>Ensure the correct installation by running <code class="docutils literal"><span class="pre">conda</span> <span class="pre">list</span></code> in a Terminal
 window, which should print the list of packages installed with Conda.</li>
@@ -235,7 +237,9 @@ a regular <code class="docutils literal"><span class="pre">Command</span> <span 
 available from the Start menu.</div></blockquote>
 <p>Once either Conda or MiniConda has been set up you can install Catalyst:</p>
 <ol class="arabic">
-<li><p class="first">Download the file <a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/etc/python2.7-environment.yml">python2.7-environment.yml</a>.</p>
+<li><p class="first">Download the file <a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/etc/python3.6-environment.yml">python3.6-environment.yml</a>
+(recommended) or <a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/etc/python2.7-environment.yml">python2.7-environment.yml</a>
+matching your Conda installation from step #1 above.</p>
 <blockquote>
 <div><p>To download, simply click on the ‘Raw’ button and save the file locally
 to a folder you can remember. Make sure that the file gets saved with the
@@ -243,13 +247,23 @@ to a folder you can remember. Make sure that the file gets saved with the
 </div></blockquote>
 </li>
 <li><p class="first">Open a Terminal window and enter [<code class="docutils literal"><span class="pre">cd/dir</span></code>] into the directory where you
-saved the above <code class="docutils literal"><span class="pre">python2.7-environment.yml</span></code> file.</p>
+saved the above <code class="docutils literal"><span class="pre">.yml</span></code> file.</p>
 </li>
 <li><p class="first">Install using this file. This step can take about 5-10 minutes to install.</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>conda env create -f python2.7-environment.yml
+<div class="highlight-bash"><div class="highlight"><pre><span></span>conda env create -f python3.6-environment.yml
 </pre></div>
 </div>
 </li>
+</ol>
+<blockquote>
+<div><p>or</p>
+<blockquote>
+<div><div class="highlight-bash"><div class="highlight"><pre><span></span>conda env create -f python2.7-environment.yml
+</pre></div>
+</div>
+</div></blockquote>
+</div></blockquote>
+<ol class="arabic" start="4">
 <li><p class="first">Activate the environment (which you need to do every time you start a new
 session to run Catalyst):</p>
 <p><strong>Linux or MacOS:</strong></p>

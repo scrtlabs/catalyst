@@ -335,6 +335,12 @@ trading pairs of your algorithm must match this value.</li>
 <li><code class="docutils literal"><span class="pre">simulate_orders</span></code>: Enables the paper trading mode, in which orders are
 simulated in Catalyst instead of processed on the exchange. It defaults to
 <code class="docutils literal"><span class="pre">True</span></code>.</li>
+<li><code class="docutils literal"><span class="pre">end_date</span></code>: When setting the end_date to a time in the <strong>future</strong>,
+it will schedule the live algo to finish gracefully at the specified date.</li>
+<li><code class="docutils literal"><span class="pre">start_date</span></code>: (<strong>Will be implemented in the future</strong>)
+The live algo starts by default in the present, as mentioned above.
+by setting the start_date to a time in the future, the algorithm would
+essentially sleep and when the predefined time comes, it would start executing.</li>
 </ul>
 <p>Here is a complete algorithm for reference:
 <a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/buy_low_sell_high_live.py">Buy Low and Sell High</a></p>
