@@ -33,6 +33,8 @@ def get_exchange(exchange_name, base_currency=None, must_authenticate=False,
         exchange_name=exchange_name,
         key=exchange_auth['key'],
         secret=exchange_auth['secret'],
+        password=exchange_auth['password'] if 'password'
+                                              in exchange_auth.keys() else '',
         base_currency=base_currency,
     )
     exchange_cache[key] = exchange
