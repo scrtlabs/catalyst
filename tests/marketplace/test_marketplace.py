@@ -21,7 +21,7 @@ class TestMarketplace(WithLogger, ZiplineTestCase):
 
     def test_ingest(self):
         marketplace = Marketplace()
-        ds_def = marketplace.ingest('marketcap1234')
+        ds_def = marketplace.ingest('github')
         pass
 
     def test_publish(self):
