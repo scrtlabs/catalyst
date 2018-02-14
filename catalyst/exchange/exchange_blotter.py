@@ -238,9 +238,12 @@ class ExchangeBlotter(Blotter):
                 else:
                     delta = pd.Timestamp.utcnow() - order.dt
                     log.info(
-                        'order {order_id} still open after {delta}'.format(
+                        '{exchange} order {order_id} for {symbol} still open '
+                        'after {delta}'.format(
+                            exchange=exchange.name,
                             order_id=order.id,
-                            delta=delta
+                            delta=delta,
+                            symbol=order.asset.symbol,
                         )
                     )
 
