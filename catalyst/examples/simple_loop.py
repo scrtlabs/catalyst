@@ -26,7 +26,7 @@ def handle_data(context, data):
         context.asset,
         fields='price',
         bar_count=20,
-        frequency='1H'
+        frequency='2H'
     )
     last_traded = prices.index[-1]
     log.info('last candle date: {}'.format(last_traded))
