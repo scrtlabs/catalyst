@@ -502,7 +502,7 @@ class Exchange:
 
         """
         freq, candle_size, unit, data_frequency = get_frequency(
-            frequency, data_frequency
+            frequency, data_frequency, supported_freqs=['T', 'D', 'H']
         )
         # The get_history method supports multiple asset
         candles = self.get_candles(
@@ -523,8 +523,9 @@ class Exchange:
                 field=field,
             )
 
+            delta_candle_size = candle_size * 60 if unit == 'H' else candle_size
             # Checking to make sure that the dates match
-            delta = get_delta(candle_size, data_frequency)
+            delta = get_delta(delta_candle_size, data_frequency)
             adj_end_dt = end_dt - delta
             last_traded = asset_series.index[-1]
 

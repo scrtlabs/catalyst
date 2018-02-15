@@ -26,7 +26,7 @@ def handle_data(context, data):
         context.asset,
         fields='price',
         bar_count=20,
-        frequency='30T'
+        frequency='1H'
     )
     last_traded = prices.index[-1]
     log.info('last candle date: {}'.format(last_traded))
@@ -114,7 +114,7 @@ def analyze(context, perf):
 
 
 if __name__ == '__main__':
-    mode = 'backtest'
+    mode = 'live'
 
     if mode == 'backtest':
         run_algorithm(
