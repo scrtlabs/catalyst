@@ -591,8 +591,6 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             if base_currency is None:
                 base_currency = exchange.base_currency
 
-            # Don't check the cash if there are open orders. This could
-            # results in false positives.
             orders = []
             for asset in self.blotter.open_orders:
                 asset_orders = self.blotter.open_orders[asset]
@@ -602,6 +600,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             required_cash = self.portfolio.cash if not orders else None
             cash, positions_value = exchange.sync_positions(
                 positions=exchange_positions,
+                open_orders=orders,
                 check_balances=check_balances,
                 cash=required_cash,
             )
