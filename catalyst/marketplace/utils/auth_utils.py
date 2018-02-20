@@ -47,11 +47,11 @@ def get_key_secret(pubAddr, wallet='mew'):
     if wallet == 'mew':
         print('\nObtaining a key/secret pair to streamline all future '
               'requests with the authentication server.\n'
-              'Visit https://www.myetherwallet.com/signmsg.html and sign the'
+              'Visit https://www.myetherwallet.com/signmsg.html and sign the '
               'following message:\n{}'.format(nonce))
         signature = input('Copy and Paste the "sig" field from '
                           'the signature here (without the double quotes, '
-                          'only the HEX value:\n')
+                          'only the HEX value):\n')
     else:
         raise MarketplaceWalletNotSupported(wallet=wallet)
 
