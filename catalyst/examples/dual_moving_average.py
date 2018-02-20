@@ -21,7 +21,7 @@ def initialize(context):
 def handle_data(context, data):
     # define the windows for the moving averages
     short_window = 2
-    long_window = 2
+    long_window = 3
 
     # Skip as many bars as long_window to properly compute the average
     context.i += 1
