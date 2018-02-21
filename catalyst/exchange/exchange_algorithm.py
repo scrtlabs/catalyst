@@ -16,7 +16,7 @@ import signal
 import sys
 from datetime import timedelta
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join, exists
 
 import catalyst.protocol as zp
 import logbook
@@ -36,9 +36,11 @@ from catalyst.exchange.utils.exchange_utils import (
     get_algo_folder,
     get_algo_df,
     save_algo_df,
+    clear_frame_stats_directory,
+    remove_old_files,
     group_assets_by_exchange, )
-from catalyst.exchange.utils.stats_utils import get_pretty_stats, stats_to_s3, \
-    stats_to_algo_folder
+from catalyst.exchange.utils.stats_utils import \
+    get_pretty_stats, stats_to_s3, stats_to_algo_folder
 from catalyst.finance.execution import MarketOrder
 from catalyst.finance.performance import PerformanceTracker
 from catalyst.finance.performance.period import calc_period_stats
@@ -67,8 +69,8 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
 
         self.current_day = None
 
-        if self.simulate_orders is None \
-            and self.sim_params.arena == 'backtest':
+        if self.simulate_orders is None and \
+                self.sim_params.arena == 'backtest':
             self.simulate_orders = True
 
         # Operations with retry features
@@ -118,7 +120,7 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
             # be in-line with CXXT and many exchanges. We'll consider
             # adding more order types in the future.
             if not isinstance(style, ExchangeLimitOrder) or \
-                not isinstance(style, MarketOrder):
+                    not isinstance(style, MarketOrder):
                 raise OrderTypeNotSupported(
                     order_type=style.__class__.__name__
                 )
@@ -368,6 +370,11 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         self._clock = None
         self.frame_stats = list()
 
+        # erase the frame_stats folder to avoid overloading the disk
+        error = clear_frame_stats_directory(self.algo_namespace)
+        if error:
+            log.warning(error)
+
         self.pnl_stats = get_algo_df(self.algo_namespace, 'pnl_stats')
 
         self.custom_signals_stats = \
@@ -392,6 +399,19 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                      "Exit should be handled by the user.")
 
     def interrupt_algorithm(self):
+        """
+
+        when algorithm comes to an end this function is called.
+        extracts the stats and calls analyze.
+        after finishing, it exits the run.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         self.is_running = False
 
         if self._analyze is None:
@@ -401,21 +421,31 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             log.info('Exiting the algorithm. Calling `analyze()` '
                      'before exiting the algorithm.')
 
+            # add the last day stats which is not saved in the directory
+            current_stats = pd.DataFrame(self.frame_stats)
+            current_stats.set_index('period_close', drop=False, inplace=True)
+
+            # get the location of the directory
             algo_folder = get_algo_folder(self.algo_namespace)
-            folder = join(algo_folder, 'daily_performance')
-            files = [f for f in listdir(folder) if isfile(join(folder, f))]
+            folder = join(algo_folder, 'frame_stats')
 
-            daily_perf_list = []
-            for item in files:
-                filename = join(folder, item)
+            if exists(folder):
+                files = [f for f in listdir(folder) if isfile(join(folder, f))]
 
-                with open(filename, 'rb') as handle:
-                    perf_period = pickle.load(handle)
-                    perf_period_dict = perf_period.to_dict()
-                    daily_perf_list.append(perf_period_dict)
+                period_stats_list = []
+                for item in files:
+                    filename = join(folder, item)
 
-            stats = pd.DataFrame(daily_perf_list)
-            stats.set_index('period_close', drop=False, inplace=True)
+                    with open(filename, 'rb') as handle:
+                        perf_period = pickle.load(handle)
+                        period_stats_list.extend(perf_period)
+
+                stats = pd.DataFrame(period_stats_list)
+                stats.set_index('period_close', drop=False, inplace=True)
+
+                stats = pd.concat([stats, current_stats])
+            else:
+                stats = current_stats
 
             self.analyze(stats)
 
@@ -709,6 +739,37 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             self.algo_namespace, 'exposure_stats', self.exposure_stats
         )
 
+    def nullify_frame_stats(self, now):
+        """
+
+        Save all period_stats to local directory
+        erase old files from the folder and nullify
+        self.frame_stats
+
+        Parameters
+        ----------
+        now: Timestamp
+
+        Returns
+        -------
+
+        """
+        save_algo_object(
+            algo_name=self.algo_namespace,
+            key=now.floor('1D').strftime('%Y-%m-%d'),
+            obj=self.frame_stats,
+            rel_path='frame_stats'
+        )
+        error = remove_old_files(
+            algo_name=self.algo_namespace,
+            today=now,
+            rel_path='frame_stats'
+        )
+        if error:
+            log.warning(error)
+
+        self.frame_stats = list()
+
     def handle_data(self, data):
         """
         Wrapper around the handle_data method of each algo.
@@ -728,7 +789,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         # Resetting the frame stats every day to minimize memory footprint
         today = data.current_dt.floor('1D')
         if self.current_day is not None and today > self.current_day:
-            self.frame_stats = list()
+            self.nullify_frame_stats(now=data.current_dt)
 
         self.performance_needs_update = False
         orders = list(self.perf_tracker.todays_performance.orders_by_id.keys())
@@ -808,6 +869,8 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         # Saving the last hour in memory
         self.frame_stats.append(frame_stats)
 
+        # creating and saving the pnl_stats into the local
+        # directory
         self.add_pnl_stats(frame_stats)
         if self.recorded_vars:
             self.add_custom_signals_stats(frame_stats)

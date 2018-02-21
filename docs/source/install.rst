@@ -454,12 +454,22 @@ about matplotlib backends, please refer to the
 Windows Requirements
 --------------------
 
-In Windows, you will first need to install the `Microsoft Visual C++ Compiler 
-for Python 2.7 
-<https://www.microsoft.com/en-us/download/details.aspx?id=44266>`_. This 
-package contains the compiler and the set of system headers necessary for 
-producing binary wheels for Python 2.7 packages. If it's not already in your 
-system, download it and install it before proceeding to the next step.
+In Windows, you will first need to install the Microsoft Visual C++ Compiler, 
+which is different depending on the version of Python that you plan to use:
+
+* Python 3.5, 3.6: `Visual C++ 2015 Build Tools 
+  <http://landinghub.visualstudio.com/visual-cpp-build-tools>`_, 
+  which installs Visual C++ version 14.0. **This is the recommended version**
+
+* Python 2.7: `Microsoft Visual C++ Compiler for Python 2.7 
+  <https://www.microsoft.com/en-us/download/details.aspx?id=44266>`_, which 
+  installs version Visual C++ version 9.0
+
+This package contains the compiler and the set of system headers necessary for 
+producing binary wheels for Python packages. If it's not already in your 
+system, download it and install it before proceeding to the next step. If you 
+need additional help, or are looking for other versions of Visual C++ for 
+Windows (only advanced users), follow `this link <https://wiki.python.org/moin/WindowsCompilers>`_.
 
 Once you have the above compiler installed, the easiest and best supported way 
 to install Catalyst in Windows is to use :ref:`Conda <conda>`. If you didn't 
