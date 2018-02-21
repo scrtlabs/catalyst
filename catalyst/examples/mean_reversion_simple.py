@@ -37,8 +37,8 @@ def initialize(context):
     context.base_price = None
     context.current_day = None
 
-    context.RSI_OVERSOLD = 40
-    context.RSI_OVERBOUGHT = 60
+    context.RSI_OVERSOLD = 60
+    context.RSI_OVERBOUGHT = 70
     context.CANDLE_SIZE = '15T'
 
     context.start_time = time.time()
