@@ -656,8 +656,12 @@ class Exchange:
 
         return df
 
-    def _check_low_balance(self, currency, balances, amount):
+    def _check_low_balance(self, currency, balances, amount, open_orders=None):
         free = balances[currency]['free'] if currency in balances else 0.0
+
+        if open_orders:
+            # TODO: make sure that this works
+            free += sum([order.amount for order in open_orders])
 
         if free < amount:
             return free, True
@@ -665,7 +669,8 @@ class Exchange:
         else:
             return free, False
 
-    def sync_positions(self, positions, cash=None, check_balances=False):
+    def sync_positions(self, positions, open_orders=None, cash=None,
+                       check_balances=False):
         """
         Update the portfolio cash and position balances based on the
         latest ticker prices.
@@ -694,7 +699,7 @@ class Exchange:
                     balances=balances,
                     amount=cash,
                 )
-                if is_lower:
+                if is_lower and not open_orders:
                     raise NotEnoughCashError(
                         currency=self.base_currency,
                         exchange=self.name,
