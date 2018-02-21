@@ -542,11 +542,19 @@ about matplotlib backends, please refer to the
 </div>
 <div class="section" id="windows-requirements">
 <span id="windows"></span><h2>Windows Requirements<a class="headerlink" href="#windows-requirements" title="Permalink to this headline">¶</a></h2>
-<p>In Windows, you will first need to install the <a class="reference external" href="https://www.microsoft.com/en-us/download/details.aspx?id=44266">Microsoft Visual C++ Compiler
-for Python 2.7</a>. This
-package contains the compiler and the set of system headers necessary for
-producing binary wheels for Python 2.7 packages. If it’s not already in your
-system, download it and install it before proceeding to the next step.</p>
+<p>In Windows, you will first need to install the Microsoft Visual C++ Compiler,
+which is different depending on the version of Python that you plan to use:</p>
+<ul class="simple">
+<li>Python 3.5, 3.6: <a class="reference external" href="http://landinghub.visualstudio.com/visual-cpp-build-tools">Visual C++ 2015 Build Tools</a>,
+which installs Visual C++ version 14.0. <strong>This is the recommended version</strong></li>
+<li>Python 2.7: <a class="reference external" href="https://www.microsoft.com/en-us/download/details.aspx?id=44266">Microsoft Visual C++ Compiler for Python 2.7</a>, which
+installs version Visual C++ version 9.0</li>
+</ul>
+<p>This package contains the compiler and the set of system headers necessary for
+producing binary wheels for Python packages. If it’s not already in your
+system, download it and install it before proceeding to the next step. If you
+need additional help, or are looking for other versions of Visual C++ for
+Windows (only advanced users), follow <a class="reference external" href="https://wiki.python.org/moin/WindowsCompilers">this link</a>.</p>
 <p>Once you have the above compiler installed, the easiest and best supported way
 to install Catalyst in Windows is to use <a class="reference internal" href="#conda"><span class="std std-ref">Conda</span></a>. If you didn’t
 any problems installing the compiler, jump to the <a class="reference internal" href="#conda"><span class="std std-ref">Conda</span></a> section,
