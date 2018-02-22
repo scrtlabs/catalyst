@@ -126,11 +126,11 @@ def get_exchange_symbols(exchange_name, is_local=False, environ=None):
     filename = get_exchange_symbols_filename(exchange_name, is_local)
 
     if not is_local and (not os.path.isfile(filename) or pd.Timedelta(
-                pd.Timestamp('now', tz='UTC') - last_modified_time(
-                filename)).days > 1):
+            pd.Timestamp('now', tz='UTC') - last_modified_time(
+            filename)).days > 1):
         try:
             download_exchange_symbols(exchange_name, environ)
-        except Exception as e:
+        except Exception:
             pass
 
     if os.path.isfile(filename):
@@ -273,6 +273,7 @@ def get_algo_object(algo_name, key, environ=None, rel_path=None, how='pickle'):
     key: str
     environ:
     rel_path: str
+    how: str
 
     Returns
     -------
@@ -316,6 +317,7 @@ def save_algo_object(algo_name, key, obj, environ=None, rel_path=None,
     obj: Object
     environ:
     rel_path: str
+    how: str
 
     """
     folder = get_algo_folder(algo_name, environ)
@@ -390,6 +392,67 @@ def save_algo_df(algo_name, key, df, environ=None, rel_path=None):
 
     with open(filename, 'wt') as handle:
         df.to_csv(handle, encoding='UTF_8')
+
+
+def clear_frame_stats_directory(algo_name):
+    """
+    remove the outdated directory
+    to avoid overloading the disk
+
+    Parameters
+    ----------
+    algo_name: str
+
+    Returns
+    -------
+    error: str
+
+    """
+    error = None
+    algo_folder = get_algo_folder(algo_name)
+    folder = os.path.join(algo_folder, 'frame_stats')
+    if os.path.exists(folder):
+        try:
+            shutil.rmtree(folder)
+        except OSError:
+            error = 'unable to remove {}, the analyze ' \
+                    'data will be inconsistent'.format(folder)
+    return error
+
+
+def remove_old_files(algo_name, today, rel_path):
+    """
+    remove old files from a directory
+    to avoid overloading the disk
+
+    Parameters
+    ----------
+    algo_name: str
+    today: Timestamp
+    rel_path: str
+
+    Returns
+    -------
+    error: str
+
+    """
+    error = None
+    algo_folder = get_algo_folder(algo_name)
+    folder = os.path.join(algo_folder, rel_path)
+
+    # run on all files in the folder
+    for f in os.listdir(folder):
+        creation_unix = os.path.getctime(f)
+        creation_time = pd.to_datetime(creation_unix, unit='s', )
+
+        # if the file is older than 30 days erase it
+        if today - pd.DateOffset(30) > creation_time:
+            try:
+                os.unlink(f)
+            except OSError:
+                error = 'unable to erase files in {}'.format(folder)
+
+    return error
 
 
 def get_exchange_minute_writer_root(exchange_name, environ=None):
@@ -512,7 +575,7 @@ def get_common_assets(exchanges):
     return assets
 
 
-def resample_history_df(df, freq, field):
+def resample_history_df(df, freq, field, start_dt=None):
     """
     Resample the OHCLV DataFrame using the specified frequency.
 
@@ -540,7 +603,16 @@ def resample_history_df(df, freq, field):
     else:
         raise ValueError('Invalid field.')
 
-    resampled_df = df.resample(freq).agg(agg)
+    resampled_df = df.resample(
+        freq, closed='left', label='left'
+    ).agg(agg)  # type: pd.DataFrame
+
+    # Because the samples are closed left, we get one more candle at
+    # the beginning then the requested number for bars. Removing this
+    # candle to avoid confusion.
+    if start_dt and not resampled_df.empty:
+        resampled_df = resampled_df[resampled_df.index >= start_dt]
+
     return resampled_df
 
 
@@ -566,8 +638,9 @@ def mixin_market_params(exchange_name, params, market):
         params['maker'] = 0.001
         params['taker'] = 0.002
 
-    elif 'maker' in market and 'taker' in market \
-            and market['maker'] is not None and market['taker'] is not None:
+    elif 'maker' in market and 'taker' in market and \
+            market['maker'] is not None and market['taker'] is not None:
+
         params['maker'] = market['maker']
         params['taker'] = market['taker']
 

@@ -43,7 +43,8 @@ SUPPORTED_EXCHANGES = dict(
 
 
 class CCXT(Exchange):
-    def __init__(self, exchange_name, key, secret, base_currency):
+    def __init__(self, exchange_name, key,
+                 secret, password, base_currency):
         log.debug(
             'finding {} in CCXT exchanges:\n{}'.format(
                 exchange_name, ccxt.exchanges
@@ -60,6 +61,7 @@ class CCXT(Exchange):
             self.api = exchange_attr({
                 'apiKey': key,
                 'secret': secret,
+                'password': password,
             })
             self.api.enableRateLimit = True
 
@@ -425,26 +427,19 @@ class CCXT(Exchange):
                 'Please provide either start_dt or end_dt, not both.'
             )
 
-        elif end_dt is not None:
-            # Make sure that end_dt really wants data in the past
-            # if it's close to now, we skip the 'since' parameters to
-            # lower the probability of error
-            bars_to_now = pd.date_range(
-                end_dt, pd.Timestamp.utcnow(), freq=freq
-            )
-            # See: https://github.com/ccxt/ccxt/issues/1360
-            if len(bars_to_now) > 1 or self.name in ['poloniex']:
-                dt_range = get_periods_range(
-                    end_dt=end_dt,
-                    periods=bar_count,
-                    freq=freq,
-                )
-                start_dt = dt_range[0]
+        if start_dt is None:
+            if end_dt is None:
+                end_dt = pd.Timestamp.utcnow()
 
-        since = None
-        if start_dt is not None:
-            delta = start_dt - get_epoch()
-            since = int(delta.total_seconds()) * 1000
+            dt_range = get_periods_range(
+                end_dt=end_dt,
+                periods=bar_count,
+                freq=freq,
+            )
+            start_dt = dt_range[0]
+
+        delta = start_dt - get_epoch()
+        since = int(delta.total_seconds()) * 1000
 
         candles = dict()
         for index, asset in enumerate(assets):
@@ -877,6 +872,7 @@ class CCXT(Exchange):
         order.commission = exc_order.commission
         order.filled = exc_order.amount
 
+        transactions = []
         if exc_order.status == ORDER_STATUS.FILLED:
             if order.amount > exc_order.amount:
                 log.warn(
@@ -898,7 +894,9 @@ class CCXT(Exchange):
                 order_id=order.id,
                 commission=order.commission,
             )
-        return [transaction]
+            transactions.append(transaction)
+
+        return transactions
 
     def process_order(self, order):
         # TODO: move to parent class after tracking features in the parent

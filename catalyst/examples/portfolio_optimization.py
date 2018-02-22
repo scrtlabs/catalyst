@@ -146,4 +146,5 @@ if __name__ == '__main__':
                             start=start,
                             end=end,
                             exchange_name='poloniex',
-                            capital_base=100000, )
+                            capital_base=100000,
+                            base_currency='usdt', )

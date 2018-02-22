@@ -502,7 +502,7 @@ class Exchange:
 
         """
         freq, candle_size, unit, data_frequency = get_frequency(
-            frequency, data_frequency
+            frequency, data_frequency, supported_freqs=['T', 'D', 'H']
         )
         # The get_history method supports multiple asset
         candles = self.get_candles(
@@ -523,8 +523,9 @@ class Exchange:
                 field=field,
             )
 
+            delta_candle_size = candle_size * 60 if unit == 'H' else candle_size
             # Checking to make sure that the dates match
-            delta = get_delta(candle_size, data_frequency)
+            delta = get_delta(delta_candle_size, data_frequency)
             adj_end_dt = end_dt - delta
             last_traded = asset_series.index[-1]
 
@@ -655,8 +656,12 @@ class Exchange:
 
         return df
 
-    def _check_low_balance(self, currency, balances, amount):
+    def _check_low_balance(self, currency, balances, amount, open_orders=None):
         free = balances[currency]['free'] if currency in balances else 0.0
+
+        if open_orders:
+            # TODO: make sure that this works
+            free += sum([order.amount for order in open_orders])
 
         if free < amount:
             return free, True
@@ -664,7 +669,8 @@ class Exchange:
         else:
             return free, False
 
-    def sync_positions(self, positions, cash=None, check_balances=False):
+    def sync_positions(self, positions, open_orders=None, cash=None,
+                       check_balances=False):
         """
         Update the portfolio cash and position balances based on the
         latest ticker prices.
@@ -693,7 +699,7 @@ class Exchange:
                     balances=balances,
                     amount=cash,
                 )
-                if is_lower:
+                if is_lower and not open_orders:
                     raise NotEnoughCashError(
                         currency=self.base_currency,
                         exchange=self.name,

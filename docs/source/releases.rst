@@ -2,6 +2,38 @@
 Release Notes
 =============
 
+Version 0.5.3
+^^^^^^^^^^^^^
+**Release Date**: 2018-02-09
+
+Bug Fixes
+~~~~~~~~~
+- Fixed an issue with last candle in backtesting :issue:`219`
+
+Version 0.5.2
+^^^^^^^^^^^^^
+**Release Date**: 2018-02-08
+
+Bug Fixes
+~~~~~~~~~
+- Fixed an issue with live candle values :issue:`216` and :issue:`199`
+
+Version 0.5.1
+^^^^^^^^^^^^^
+**Release Date**: 2018-02-07
+
+Bug Fixes
+~~~~~~~~~
+- Fixed an issue with orders that stay open :issue:`211`
+- Fixed Jupyter issues :issue:`179`
+- Fetching multiple tickers in one call to minimize rate limit risks :issue:`174`
+- Improved live state presentation :issue:`171`
+
+
+Build
+~~~~~
+- Introducing the Enigma Marketplace
+
 Version 0.4.7
 ^^^^^^^^^^^^^
 **Release Date**: 2018-01-19

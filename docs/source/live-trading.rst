@@ -30,22 +30,24 @@ Paper Trading vs Live Trading modes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Catalyst currently supports three different modes in which you can execute your
-trading algorithm. The first is backtesting, which is covered extensively in the 
-tutorial, and uses historical data to run your algorithm. There is no 
+trading algorithm. The first is **backtesting**, which is covered extensively in
+the tutorial, and uses historical data to run your algorithm. There is no 
 interaction with the exchange in backtesting mode, and this is the first mode 
 that you should test any new algorithm.
 
 Once you are confident with the simulations that you have obtained with your
 algorithm in backtesting, you may switch to live trading, where you have two
 different modes:
-* *Paper Trading*: The simulated algorithm runs in real time, and fetches 
-pricing data in real time from the exchange, but the orders never reach the 
-exchange, and are instead kept within Catalyst and simulated. No real currency
-is bought or sold. Think of it as a `backtesting happening in real time`.
-* *Live Trading*: This is the proper live trading mode in which an algorithm
-runs in real time, fetching pricing data from live exchanges and placing orders 
-against the exchange. Real currency is transacted on the exchange driven by the 
-algorithm.
+
+* **Paper Trading**: The simulated algorithm runs in real time, and fetches 
+  pricing data in real time from the exchange, but the orders never reach the 
+  exchange, and are instead kept within Catalyst and simulated. No real currency
+  is bought or sold. Think of it as a `backtesting happening in real time`.
+
+* **Live Trading**: This is the proper live trading mode in which an algorithm
+  runs in real time, fetching pricing data from live exchanges and placing 
+  orders against the exchange. Real currency is transacted on the exchange 
+  driven by the algorithm.
 
 These three modes are controlled by the following variables:
 
@@ -113,7 +115,7 @@ Currency symbols (e.g. btc, eth, ltc) follow the Bittrex convention.
 
 Here are some examples:
 
-.. code-block:: json
+.. code:: python
 
   # With Bitfinex
   bitcoin_usd_asset = symbol('btc_usd')
@@ -174,6 +176,13 @@ Here is the breakdown of the new arguments:
 - ``simulate_orders``: Enables the paper trading mode, in which orders are
   simulated in Catalyst instead of processed on the exchange. It defaults to 
   ``True``.
+- ``end_date``: When setting the end_date to a time in the **future**,
+  it will schedule the live algo to finish gracefully at the specified date.
+- ``start_date``: (**Will be implemented in the future**)
+  The live algo starts by default in the present, as mentioned above.
+  by setting the start_date to a time in the future, the algorithm would
+  essentially sleep and when the predefined time comes, it would start executing.
+
 
 
 The `catalyst live` command offers additional parameters.

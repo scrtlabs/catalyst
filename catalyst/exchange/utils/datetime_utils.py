@@ -92,7 +92,7 @@ def get_periods_range(freq, start_dt=None, end_dt=None, periods=None):
         adj_periods = periods * unit_periods
 
         # TODO: standardize time aliases to avoid any mapping
-        unit = 'd' if unit == 'D' else 'm'
+        unit = 'd' if unit == 'D' else 'h' if unit == 'H' else 'm'
         delta = pd.Timedelta(adj_periods, unit)
 
         if start_dt is not None:
@@ -248,7 +248,7 @@ def get_year_start_end(dt, first_day=None, last_day=None):
     return year_start, year_end
 
 
-def get_frequency(freq, data_frequency=None):
+def get_frequency(freq, data_frequency=None, supported_freqs=['D', 'T']):
     """
     Get the frequency parameters.
 
@@ -302,16 +302,17 @@ def get_frequency(freq, data_frequency=None):
     elif unit.lower() == 'm' or unit == 'T':
         unit = 'T'
         alias = '{}T'.format(candle_size)
+        data_frequency = 'minute'
 
-        if data_frequency == 'daily':
+    elif unit.lower() == 'h':
+        if 'H' in supported_freqs:
+            unit = 'H'
+            alias = '{}H'.format(candle_size)
+
+        else:
+            candle_size = candle_size * 60
+            alias = '{}T'.format(candle_size)
             data_frequency = 'minute'
-
-    # elif unit.lower() == 'h':
-    #     candle_size = candle_size * 60
-    #
-    #     alias = '{}T'.format(candle_size)
-    #     if data_frequency == 'daily':
-    #         data_frequency = 'minute'
 
     else:
         raise InvalidHistoryFrequencyAlias(freq=freq)
