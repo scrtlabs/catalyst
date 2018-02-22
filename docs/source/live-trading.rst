@@ -190,7 +190,7 @@ You can learn more by running the following from the command line:
 
 .. code-block:: bash
 
-catalyst live --help
+    catalyst live --help
 
 
 Here is a complete algorithm for reference:
