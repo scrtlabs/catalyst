@@ -1,22 +1,17 @@
 name: catalyst
 channels:
 - defaults
+- conda-forge
 dependencies:
 - ca-certificates=2017.08.26
 - certifi=2018.1.18
 - intel-openmp=2018.0.0
-- libcxx=4.0.1
-- libcxxabi=4.0.1
-- libedit=3.1
-- libffi=3.2.1
-- libgfortran=3.0.1
 - mkl=2018.0.1
-- ncurses=6.0
 - numpy=1.14.0
 - openssl=1.0.2n
+- matplotlib=2.1.2=py36_0
 - pip=9.0.1
 - python=3.6.4
-- readline=7.0
 - scipy=1.0.0
 - setuptools=38.4.0=py36_0
 - sqlite=3.22.0
