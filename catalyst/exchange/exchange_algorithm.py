@@ -388,6 +388,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         self.stats_minutes = 1
 
         self._last_orders = []
+        self._last_open_orders = []
         self.trading_client = None
 
         super(ExchangeTradingAlgorithmLive, self).__init__(*args, **kwargs)
@@ -791,12 +792,17 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             self.nullify_frame_stats(now=data.current_dt)
 
         self.performance_needs_update = False
-        orders = list(self.perf_tracker.todays_performance.orders_by_id.keys())
-        if orders != self._last_orders:
+        last_orders_list = list(self.blotter.orders.keys())
+        open_orders_list = list(self.blotter.open_orders.keys())
+
+        if last_orders_list != self._last_orders or \
+                open_orders_list != self._last_open_orders:
             self.performance_needs_update = True
 
-        # Saving current orders to detect changes in the next frame
-        self._last_orders = copy.deepcopy(orders)
+        # Saving current order positions
+        # to detect changes in the next frame
+        self._last_orders = copy.deepcopy(last_orders_list)
+        self._last_open_orders = copy.deepcopy(open_orders_list)
 
         if self.performance_needs_update:
             self.perf_tracker.update_performance()
@@ -1011,13 +1017,19 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             args=(order_id,))
 
     @api_method
-    def cancel_order(self, order_param, exchange_name):
+    def cancel_order(self, order_param, exchange_name,
+                     symbol=None, params={}):
         """Cancel an open order.
 
         Parameters
         ----------
         order_param : str or Order
             The order_id or order object to cancel.
+
+        exchange_name: name of exchange from
+                        which you want to cancel the order
+        symbol:
+        params:
         """
         exchange = self.exchanges[exchange_name]
 
@@ -1031,4 +1043,4 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             sleeptime=self.attempts['retry_sleeptime'],
             retry_exceptions=(ExchangeRequestError,),
             cleanup=lambda: log.warn('cancelling order again.'),
-            args=(order_id,))
+            args=(order_id, symbol, params))

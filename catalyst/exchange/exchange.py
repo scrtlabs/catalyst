@@ -705,7 +705,7 @@ class Exchange:
                     balances=balances,
                     amount=cash,
                 )
-                if is_lower and not open_orders:
+                if is_lower:
                     raise NotEnoughCashError(
                         currency=self.base_currency,
                         exchange=self.name,
@@ -932,7 +932,8 @@ class Exchange:
         """
 
     @abstractmethod
-    def cancel_order(self, order_param, symbol_or_asset=None):
+    def cancel_order(self, order_param,
+                     symbol_or_asset=None, params={}):
         """Cancel an open order.
 
         Parameters
@@ -941,6 +942,7 @@ class Exchange:
             The order_id or order object to cancel.
         symbol_or_asset: str|TradingPair
             The catalyst symbol, some exchanges need this
+        params:
         """
         pass
 
