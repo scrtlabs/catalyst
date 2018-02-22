@@ -722,12 +722,14 @@ def get_candles_df(candles, field, freq, bar_count, end_dt,
         values = [candle[field] for candle in candles[asset]]
         series = pd.Series(values, index=dates)
 
+        """
         series = series.reindex(
             periods,
             method='ffill',
             fill_value=previous_value,
         )
         series.sort_index(inplace=True)
+        """
         all_series[asset] = series
 
     df = pd.DataFrame(all_series)
