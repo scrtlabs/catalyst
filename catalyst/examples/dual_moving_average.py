@@ -20,8 +20,8 @@ def initialize(context):
 
 def handle_data(context, data):
     # define the windows for the moving averages
-    short_window = 2
-    long_window = 2
+    short_window = 50
+    long_window = 200
 
     # Skip as many bars as long_window to properly compute the average
     context.i += 1
@@ -150,27 +150,16 @@ def analyze(context, perf):
 
 
 if __name__ == '__main__':
+    
     run_algorithm(
-        capital_base=1000,
-        data_frequency='minute',
-        initialize=initialize,
-        handle_data=handle_data,
-        analyze=analyze,
-        exchange_name='bitfinex',
-        algo_namespace=NAMESPACE,
-        base_currency='usd',
-        simulate_orders=True,
-        live=True,
-    )
-    # run_algorithm(
-    #         capital_base=1000,
-    #         data_frequency='minute',
-    #         initialize=initialize,
-    #         handle_data=handle_data,
-    #         analyze=analyze,
-    #         exchange_name='bitfinex',
-    #         algo_namespace=NAMESPACE,
-    #         base_currency='usd',
-    #         start=pd.to_datetime('2017-9-22', utc=True),
-    #         end=pd.to_datetime('2017-9-23', utc=True),
-    #     )
+            capital_base=1000,
+            data_frequency='minute',
+            initialize=initialize,
+            handle_data=handle_data,
+            analyze=analyze,
+            exchange_name='bitfinex',
+            algo_namespace=NAMESPACE,
+            base_currency='usd',
+            start=pd.to_datetime('2017-9-22', utc=True),
+            end=pd.to_datetime('2017-9-23', utc=True),
+        )
