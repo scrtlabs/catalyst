@@ -638,6 +638,15 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                 if asset_orders:
                     orders += asset_orders
 
+            required_cash = self.portfolio.cash if not orders else None
+            cash, positions_value = exchange.sync_positions(
+                positions=exchange_positions,
+                check_balances=check_balances,
+                cash=required_cash,
+            )
+            total_cash += cash
+            total_positions_value += positions_value
+
             # Applying modifications to the original positions
             for position in exchange_positions:
                 tracker.update_position(
@@ -646,16 +655,6 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                     last_sale_date=position.last_sale_date,
                     last_sale_price=position.last_sale_price,
                 )
-
-            required_cash = self.portfolio.cash if not orders else None
-            cash, positions_value = exchange.sync_positions(
-                positions=exchange_positions,
-                open_orders=orders,
-                check_balances=check_balances,
-                cash=required_cash,
-            )
-            total_cash += cash
-            total_positions_value += positions_value
 
         if not check_balances:
             total_cash = self.portfolio.cash
