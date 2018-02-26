@@ -375,13 +375,23 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         if error:
             log.warning(error)
 
-        self.pnl_stats = get_algo_df(self.algo_namespace, 'pnl_stats')
+        # in order to save paper & live files separately
+        self.mode_name = 'paper' if kwargs['simulate_orders'] else 'live'
 
-        self.custom_signals_stats = \
-            get_algo_df(self.algo_namespace, 'custom_signals_stats')
+        self.pnl_stats = get_algo_df(
+                self.algo_namespace,
+                'pnl_stats_{}'.format(self.mode_name),
+            )
 
-        self.exposure_stats = \
-            get_algo_df(self.algo_namespace, 'exposure_stats')
+        self.custom_signals_stats = get_algo_df(
+                self.algo_namespace,
+                'custom_signals_stats_{}'.format(self.mode_name)
+            )
+
+        self.exposure_stats = get_algo_df(
+                self.algo_namespace,
+                'exposure_stats_{}'.format(self.mode_name)
+            )
 
         self.is_running = True
 
@@ -515,7 +525,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         """
         self.state = get_algo_object(
             algo_name=self.algo_namespace,
-            key='context.state',
+            key='context.state_{}'.format(self.mode_name),
         )
         if self.state is None:
             self.state = {}
@@ -538,7 +548,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             # Unpacking the perf_tracker and positions if available
             cum_perf = get_algo_object(
                 algo_name=self.algo_namespace,
-                key='cumulative_performance',
+                key='cumulative_performance_{}'.format(self.mode_name),
             )
             if cum_perf is not None:
                 tracker.cumulative_performance = cum_perf
@@ -549,7 +559,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             todays_perf = get_algo_object(
                 algo_name=self.algo_namespace,
                 key=today.strftime('%Y-%m-%d'),
-                rel_path='daily_performance',
+                rel_path='daily_performance_{}'.format(self.mode_name),
             )
             if todays_perf is not None:
                 # Ensure single common position tracker
@@ -686,7 +696,11 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         )
         self.pnl_stats = pd.concat([self.pnl_stats, df])
 
-        save_algo_df(self.algo_namespace, 'pnl_stats', self.pnl_stats)
+        save_algo_df(
+            self.algo_namespace,
+            'pnl_stats_{}'.format(self.mode_name),
+            self.pnl_stats,
+        )
 
     def add_custom_signals_stats(self, period_stats):
         """
@@ -707,8 +721,11 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         )
         self.custom_signals_stats = pd.concat([self.custom_signals_stats, df])
 
-        save_algo_df(self.algo_namespace, 'custom_signals_stats',
-                     self.custom_signals_stats)
+        save_algo_df(
+            self.algo_namespace,
+            'custom_signals_stats_{}'.format(self.mode_name),
+            self.custom_signals_stats,
+        )
 
     def add_exposure_stats(self, period_stats):
         """
@@ -735,7 +752,9 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         self.exposure_stats = pd.concat([self.exposure_stats, df])
 
         save_algo_df(
-            self.algo_namespace, 'exposure_stats', self.exposure_stats
+            self.algo_namespace,
+            'exposure_stats_{}'.format(self.mode_name),
+            self.exposure_stats
         )
 
     def nullify_frame_stats(self, now):
@@ -759,6 +778,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             obj=self.frame_stats,
             rel_path='frame_stats'
         )
+
         error = remove_old_files(
             algo_name=self.algo_namespace,
             today=now,
@@ -843,7 +863,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         log.debug('saving cumulative performance object')
         save_algo_object(
             algo_name=self.algo_namespace,
-            key='cumulative_performance',
+            key='cumulative_performance_{}'.format(self.mode_name),
             obj=self.perf_tracker.cumulative_performance,
         )
         log.debug('saving todays performance object')
@@ -851,12 +871,12 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             algo_name=self.algo_namespace,
             key=today.strftime('%Y-%m-%d'),
             obj=self.perf_tracker.todays_performance,
-            rel_path='daily_performance'
+            rel_path='daily_performance_{}'.format(self.mode_name)
         )
         log.debug('saving context.state object')
         save_algo_object(
             algo_name=self.algo_namespace,
-            key='context.state',
+            key='context.state_{}'.format(self.mode_name),
             obj=self.state)
 
     def _process_stats(self, data):
@@ -912,6 +932,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             csv_bytes = stats_to_algo_folder(
                 stats=self.frame_stats,
                 algo_namespace=self.algo_namespace,
+                folder_name='stats_{}'.format(self.mode_name),
                 recorded_cols=recorded_cols,
             )
         except Exception as e:
