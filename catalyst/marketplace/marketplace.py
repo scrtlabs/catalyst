@@ -40,6 +40,13 @@ else:
 
 log = logbook.Logger('Marketplace', level=LOG_LEVEL)
 
+def first_line_from_url(url):
+    request = urllib.urlopen(url)
+    first_line = request.readline()
+    if sys.version_info.major >= 3:
+        charset = request.info().get_content_charset()
+        first_line = first_line.decode(charset)
+    return first_line.strip()
 
 class Marketplace:
     def __init__(self):
@@ -57,10 +64,8 @@ class Marketplace:
 
         self.web3 = Web3(HTTPProvider(ETH_REMOTE_NODE))
 
-        contract_url = urllib.urlopen(MARKETPLACE_CONTRACT)
-
         self.mkt_contract_address = Web3.toChecksumAddress(
-            contract_url.readline().strip())
+            first_line_from_url(MARKETPLACE_CONTRACT))
 
         abi_url = urllib.urlopen(MARKETPLACE_CONTRACT_ABI)
         abi = json.load(abi_url)
@@ -70,10 +75,8 @@ class Marketplace:
             abi=abi,
         )
 
-        contract_url = urllib.urlopen(ENIGMA_CONTRACT)
-
         self.eng_contract_address = Web3.toChecksumAddress(
-            contract_url.readline().strip())
+            first_line_from_url(ENIGMA_CONTRACT))
 
         abi_url = urllib.urlopen(ENIGMA_CONTRACT_ABI)
         abi = json.load(abi_url)
