@@ -33,12 +33,12 @@ def initialize(context):
     # parameters or values you're going to use.
 
     # In our example, we're looking at Neo in Ether.
-    context.market = symbol('bnb_eth')
+    context.market = symbol('eth_btc')
     context.base_price = None
     context.current_day = None
 
-    context.RSI_OVERSOLD = 60
-    context.RSI_OVERBOUGHT = 70
+    context.RSI_OVERSOLD = 55
+    context.RSI_OVERBOUGHT = 60
     context.CANDLE_SIZE = '15T'
 
     context.start_time = time.time()
@@ -248,14 +248,14 @@ if __name__ == '__main__':
 
     if live:
         run_algorithm(
-            capital_base=0.1,
+            capital_base=0.03,
             initialize=initialize,
             handle_data=handle_data,
             analyze=analyze,
-            exchange_name='binance',
+            exchange_name='poloniex',
             live=True,
             algo_namespace=NAMESPACE,
-            base_currency='eth',
+            base_currency='btc',
             live_graph=False,
             simulate_orders=False,
             stats_output=None,
@@ -274,7 +274,7 @@ if __name__ == '__main__':
         #    -x bitfinex -s 2017-10-1 -e 2017-11-10 -c usdt -n mean-reversion \
         #   --data-frequency minute --capital-base 10000
         run_algorithm(
-            capital_base=0.035,
+            capital_base=0.1,
             data_frequency='minute',
             initialize=initialize,
             handle_data=handle_data,
