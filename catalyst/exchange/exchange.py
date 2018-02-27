@@ -5,6 +5,7 @@ from time import sleep
 
 import numpy as np
 import pandas as pd
+from logbook import Logger
 
 from catalyst.constants import LOG_LEVEL
 from catalyst.data.data_portal import BASE_FIELDS
@@ -19,7 +20,6 @@ from catalyst.exchange.utils.datetime_utils import get_delta, \
     get_periods, get_start_dt, get_frequency
 from catalyst.exchange.utils.exchange_utils import \
     resample_history_df, has_bundle
-from logbook import Logger
 
 log = Logger('Exchange', level=LOG_LEVEL)
 

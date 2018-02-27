@@ -18,9 +18,11 @@ from datetime import timedelta
 from os import listdir
 from os.path import isfile, join, exists
 
-import catalyst.protocol as zp
 import logbook
 import pandas as pd
+from redo import retry
+
+import catalyst.protocol as zp
 from catalyst.algorithm import TradingAlgorithm
 from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.exchange_blotter import ExchangeBlotter
@@ -50,7 +52,6 @@ from catalyst.utils.api_support import api_method
 from catalyst.utils.input_validation import error_keywords, ensure_upper_case
 from catalyst.utils.math_utils import round_nearest
 from catalyst.utils.preprocess import preprocess
-from redo import retry
 
 log = logbook.Logger('exchange_algorithm', level=LOG_LEVEL)
 

@@ -4,8 +4,14 @@ from collections import defaultdict
 import ccxt
 import pandas as pd
 import six
-from catalyst.algorithm import MarketOrder
 from catalyst.assets._assets import TradingPair
+from ccxt import InvalidOrder, NetworkError, \
+    ExchangeError
+from logbook import Logger
+from redo import retry
+from six import string_types
+
+from catalyst.algorithm import MarketOrder
 from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.exchange import Exchange
 from catalyst.exchange.exchange_bundle import ExchangeBundle
@@ -19,13 +25,9 @@ from catalyst.exchange.utils.ccxt_utils import get_exchange_config
 from catalyst.exchange.utils.datetime_utils import from_ms_timestamp, \
     get_epoch, \
     get_periods_range
+from catalyst.exchange.utils.exchange_utils import get_catalyst_symbol
 from catalyst.finance.order import Order, ORDER_STATUS
 from catalyst.finance.transaction import Transaction
-from ccxt import InvalidOrder, NetworkError, \
-    ExchangeError
-from logbook import Logger
-from redo import retry
-from six import string_types
 
 log = Logger('CCXT', level=LOG_LEVEL)
 
@@ -488,8 +490,8 @@ class CCXT(Exchange):
             params['taker'] = 0.002
 
         elif 'maker' in market and 'taker' in market \
-                and market['maker'] is not None \
-                and market['taker'] is not None:
+            and market['maker'] is not None \
+            and market['taker'] is not None:
             params['maker'] = market['maker']
             params['taker'] = market['taker']
 
