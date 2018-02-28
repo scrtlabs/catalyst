@@ -667,6 +667,9 @@ cdef class TradingPair(Asset):
         else:
             self.end_daily = dt
 
+    def set_start_date(self, dt):
+        self.start_date = dt
+
     cpdef __reduce__(self):
         """
         Function used by pickle to determine how to serialize/deserialize this
