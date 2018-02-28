@@ -322,17 +322,3 @@ class BalanceTooLowError(ZiplineError):
         'add positions to hold a free amount greater than {amount}, or clean '
         'the state of this algo and restart.'
     ).strip()
-
-
-class MarketsNotFoundError(ZiplineError):
-    msg = (
-        'Exchange {exchange} contains no valid market so it is unusable in '
-        'Catalyst.'
-    ).strip()
-
-
-class InvalidMarketError(ZiplineError):
-    msg = (
-        'Exchange {exchange} contains at least one incorrectly structured '
-        'market: {market}, so it is unusable in Catalyst.'
-    ).strip()

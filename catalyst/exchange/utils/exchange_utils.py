@@ -11,14 +11,11 @@ from six import string_types
 from six.moves.urllib import request
 
 from catalyst.constants import DATE_FORMAT, SYMBOLS_URL
-from catalyst.exchange.exchange_errors import ExchangeSymbolsNotFound, \
-    InvalidHistoryFrequencyError, InvalidHistoryFrequencyAlias
+from catalyst.exchange.exchange_errors import ExchangeSymbolsNotFound
 from catalyst.exchange.utils.serialization_utils import ExchangeJSONEncoder, \
-    ExchangeJSONDecoder, ConfigJSONEncoder
+    ExchangeJSONDecoder
 from catalyst.utils.paths import data_root, ensure_directory, \
     last_modified_time
-from six import string_types
-from six.moves.urllib import request
 
 
 def get_sid(symbol):
@@ -72,7 +69,7 @@ def is_blacklist(exchange_name, environ=None):
     return os.path.exists(filename)
 
 
-def get_exchange_config_filename(exchange_name, environ=None):
+def get_exchange_symbols_filename(exchange_name, is_local=False, environ=None):
     """
     The absolute path of the exchange's symbol.json file.
 
@@ -86,12 +83,12 @@ def get_exchange_config_filename(exchange_name, environ=None):
     str
 
     """
-    name = 'config.json'
+    name = 'symbols.json' if not is_local else 'symbols_local.json'
     exchange_folder = get_exchange_folder(exchange_name, environ)
     return os.path.join(exchange_folder, name)
 
 
-def download_exchange_config(exchange_name, filename, environ=None):
+def download_exchange_symbols(exchange_name, environ=None):
     """
     Downloads the exchange's symbols.json from the repository.
 
@@ -105,13 +102,15 @@ def download_exchange_config(exchange_name, filename, environ=None):
     str
 
     """
-    url = EXCHANGE_CONFIG_URL.format(exchange=exchange_name)
-    request.urlretrieve(url=url, filename=filename)
+    filename = get_exchange_symbols_filename(exchange_name)
+    url = SYMBOLS_URL.format(exchange=exchange_name)
+    response = request.urlretrieve(url=url, filename=filename)
+    return response
 
 
-def get_exchange_config(exchange_name, filename=None, environ=None):
+def get_exchange_symbols(exchange_name, is_local=False, environ=None):
     """
-    The de-serialized content of the exchange's config.json.
+    The de-serialized content of the exchange's symbols.json.
 
     Parameters
     ----------
@@ -124,47 +123,55 @@ def get_exchange_config(exchange_name, filename=None, environ=None):
     Object
 
     """
-    if filename is None:
-        filename = get_exchange_config_filename(exchange_name)
+    filename = get_exchange_symbols_filename(exchange_name, is_local)
+
+    if not is_local and (not os.path.isfile(filename) or pd.Timedelta(
+            pd.Timestamp('now', tz='UTC') - last_modified_time(
+            filename)).days > 1):
+        try:
+            download_exchange_symbols(exchange_name, environ)
+        except Exception:
+            pass
 
     if os.path.isfile(filename):
-        now = pd.Timestamp.utcnow()
-        limit = pd.Timedelta('2H')
-        if pd.Timedelta(now - last_modified_time(filename)) > limit:
-            download_exchange_config(exchange_name, filename, environ)
+        with open(filename) as data_file:
+            try:
+                data = json.load(data_file, cls=ExchangeJSONDecoder)
+                return data
 
+            except ValueError:
+                return dict()
     else:
-        download_exchange_config(exchange_name, filename, environ)
+        raise ExchangeSymbolsNotFound(
+            exchange=exchange_name,
+            filename=filename
+        )
 
-    with open(filename) as data_file:
-        try:
-            data = json.load(data_file, cls=ExchangeJSONDecoder)
-            return data
 
-        except ValueError:
-            return dict()
-
-def save_exchange_config(exchange_name, config, filename=None, environ=None):
+def save_exchange_symbols(exchange_name, assets, is_local=False, environ=None):
     """
-    Save assets into an exchange_config file.
+    Save assets into an exchange_symbols file.
 
     Parameters
     ----------
     exchange_name: str
-    config
+    assets: list[dict[str, object]]
+    is_local: bool
     environ
 
     Returns
     -------
 
     """
-    if filename is None:
-        name = 'config.json'
-        exchange_folder = get_exchange_folder(exchange_name, environ)
-        filename = os.path.join(exchange_folder, name)
+    asset_dicts = dict()
+    for symbol in assets:
+        asset_dicts[symbol] = assets[symbol].to_dict()
 
-    with open(filename, 'w+') as handle:
-        json.dump(config, handle, indent=4, cls=ConfigJSONEncoder)
+    filename = get_exchange_symbols_filename(
+        exchange_name, is_local, environ
+    )
+    with open(filename, 'wt') as handle:
+        json.dump(asset_dicts, handle, indent=4, default=symbols_serial)
 
 
 def get_symbols_string(assets):
@@ -413,7 +420,7 @@ def clear_frame_stats_directory(algo_name):
     return error
 
 
-def remove_old_files(algo_name, today, rel_path):
+def remove_old_files(algo_name, today, rel_path, environ=None):
     """
     remove old files from a directory
     to avoid overloading the disk
@@ -423,27 +430,31 @@ def remove_old_files(algo_name, today, rel_path):
     algo_name: str
     today: Timestamp
     rel_path: str
+    environ:
 
     Returns
     -------
     error: str
 
     """
+
     error = None
-    algo_folder = get_algo_folder(algo_name)
+    algo_folder = get_algo_folder(algo_name, environ)
     folder = os.path.join(algo_folder, rel_path)
+    ensure_directory(folder)
 
     # run on all files in the folder
     for f in os.listdir(folder):
-        creation_unix = os.path.getctime(f)
-        creation_time = pd.to_datetime(creation_unix, unit='s', )
+        try:
+            file_path = os.path.join(folder, f)
+            creation_unix = os.path.getctime(file_path)
+            creation_time = pd.to_datetime(creation_unix, unit='s', utc=True)
 
-        # if the file is older than 30 days erase it
-        if today - pd.DateOffset(30) > creation_time:
-            try:
-                os.unlink(f)
-            except OSError:
-                error = 'unable to erase files in {}'.format(folder)
+            # if the file is older than 30 days erase it
+            if today - pd.DateOffset(30) > creation_time:
+                os.unlink(file_path)
+        except OSError:
+            error = 'unable to erase files in {}'.format(folder)
 
     return error
 
@@ -499,6 +510,25 @@ def has_bundle(exchange_name, data_frequency, environ=None):
     folder = os.path.join(exchange_folder, folder_name)
 
     return os.path.isdir(folder)
+
+
+def symbols_serial(obj):
+    """
+    JSON serializer for objects not serializable by default json code
+
+    Parameters
+    ----------
+    obj: Object
+
+    Returns
+    -------
+    str
+
+    """
+    if isinstance(obj, (datetime, date)):
+        return obj.floor('1D').strftime(DATE_FORMAT)
+
+    raise TypeError("Type %s not serializable" % type(obj))
 
 
 def perf_serial(obj):
@@ -590,12 +620,46 @@ def resample_history_df(df, freq, field, start_dt=None):
     return resampled_df
 
 
-def from_ms_timestamp(ms):
-    return pd.to_datetime(ms, unit='ms', utc=True)
+def mixin_market_params(exchange_name, params, market):
+    """
+    Applies a CCXT market dict to parameters of TradingPair init.
 
+    Parameters
+    ----------
+    params: dict[Object]
+    market: dict[Object]
 
-def get_epoch():
-    return pd.to_datetime('1970-1-1', utc=True)
+    Returns
+    -------
+
+    """
+    # TODO: make this more externalized / configurable
+    if 'lot' in market:
+        params['min_trade_size'] = market['lot']
+        params['lot'] = market['lot']
+
+    if exchange_name == 'bitfinex':
+        params['maker'] = 0.001
+        params['taker'] = 0.002
+
+    elif 'maker' in market and 'taker' in market and \
+            market['maker'] is not None and market['taker'] is not None:
+
+        params['maker'] = market['maker']
+        params['taker'] = market['taker']
+
+    else:
+        # TODO: default commission, make configurable
+        params['maker'] = 0.0015
+        params['taker'] = 0.0025
+
+    info = market['info'] if 'info' in market else None
+    if info:
+        if 'minimum_order_size' in info:
+            params['min_trade_size'] = float(info['minimum_order_size'])
+
+            if 'lot' not in params:
+                params['lot'] = params['min_trade_size']
 
 
 def group_assets_by_exchange(assets):
@@ -662,12 +726,14 @@ def get_candles_df(candles, field, freq, bar_count, end_dt,
         values = [candle[field] for candle in candles[asset]]
         series = pd.Series(values, index=dates)
 
+        """
         series = series.reindex(
             periods,
             method='ffill',
             fill_value=previous_value,
         )
         series.sort_index(inplace=True)
+        """
         all_series[asset] = series
 
     df = pd.DataFrame(all_series)

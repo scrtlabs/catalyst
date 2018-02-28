@@ -18,11 +18,9 @@ from datetime import timedelta
 from os import listdir
 from os.path import isfile, join, exists
 
+import catalyst.protocol as zp
 import logbook
 import pandas as pd
-from redo import retry
-
-import catalyst.protocol as zp
 from catalyst.algorithm import TradingAlgorithm
 from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.exchange_blotter import ExchangeBlotter
@@ -52,6 +50,7 @@ from catalyst.utils.api_support import api_method
 from catalyst.utils.input_validation import error_keywords, ensure_upper_case
 from catalyst.utils.math_utils import round_nearest
 from catalyst.utils.preprocess import preprocess
+from redo import retry
 
 log = logbook.Logger('exchange_algorithm', level=LOG_LEVEL)
 
@@ -376,19 +375,30 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         if error:
             log.warning(error)
 
-        self.pnl_stats = get_algo_df(self.algo_namespace, 'pnl_stats')
+        # in order to save paper & live files separately
+        self.mode_name = 'paper' if kwargs['simulate_orders'] else 'live'
 
-        self.custom_signals_stats = \
-            get_algo_df(self.algo_namespace, 'custom_signals_stats')
+        self.pnl_stats = get_algo_df(
+                self.algo_namespace,
+                'pnl_stats_{}'.format(self.mode_name),
+            )
 
-        self.exposure_stats = \
-            get_algo_df(self.algo_namespace, 'exposure_stats')
+        self.custom_signals_stats = get_algo_df(
+                self.algo_namespace,
+                'custom_signals_stats_{}'.format(self.mode_name)
+            )
+
+        self.exposure_stats = get_algo_df(
+                self.algo_namespace,
+                'exposure_stats_{}'.format(self.mode_name)
+            )
 
         self.is_running = True
 
         self.stats_minutes = 1
 
         self._last_orders = []
+        self._last_open_orders = []
         self.trading_client = None
 
         super(ExchangeTradingAlgorithmLive, self).__init__(*args, **kwargs)
@@ -515,7 +525,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         """
         self.state = get_algo_object(
             algo_name=self.algo_namespace,
-            key='context.state',
+            key='context.state_{}'.format(self.mode_name),
         )
         if self.state is None:
             self.state = {}
@@ -538,7 +548,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             # Unpacking the perf_tracker and positions if available
             cum_perf = get_algo_object(
                 algo_name=self.algo_namespace,
-                key='cumulative_performance',
+                key='cumulative_performance_{}'.format(self.mode_name),
             )
             if cum_perf is not None:
                 tracker.cumulative_performance = cum_perf
@@ -549,7 +559,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             todays_perf = get_algo_object(
                 algo_name=self.algo_namespace,
                 key=today.strftime('%Y-%m-%d'),
-                rel_path='daily_performance',
+                rel_path='daily_performance_{}'.format(self.mode_name),
             )
             if todays_perf is not None:
                 # Ensure single common position tracker
@@ -641,7 +651,6 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             required_cash = self.portfolio.cash if not orders else None
             cash, positions_value = exchange.sync_positions(
                 positions=exchange_positions,
-                open_orders=orders,
                 check_balances=check_balances,
                 cash=required_cash,
             )
@@ -687,7 +696,11 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         )
         self.pnl_stats = pd.concat([self.pnl_stats, df])
 
-        save_algo_df(self.algo_namespace, 'pnl_stats', self.pnl_stats)
+        save_algo_df(
+            self.algo_namespace,
+            'pnl_stats_{}'.format(self.mode_name),
+            self.pnl_stats,
+        )
 
     def add_custom_signals_stats(self, period_stats):
         """
@@ -708,8 +721,11 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         )
         self.custom_signals_stats = pd.concat([self.custom_signals_stats, df])
 
-        save_algo_df(self.algo_namespace, 'custom_signals_stats',
-                     self.custom_signals_stats)
+        save_algo_df(
+            self.algo_namespace,
+            'custom_signals_stats_{}'.format(self.mode_name),
+            self.custom_signals_stats,
+        )
 
     def add_exposure_stats(self, period_stats):
         """
@@ -736,7 +752,9 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         self.exposure_stats = pd.concat([self.exposure_stats, df])
 
         save_algo_df(
-            self.algo_namespace, 'exposure_stats', self.exposure_stats
+            self.algo_namespace,
+            'exposure_stats_{}'.format(self.mode_name),
+            self.exposure_stats
         )
 
     def nullify_frame_stats(self, now):
@@ -760,6 +778,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             obj=self.frame_stats,
             rel_path='frame_stats'
         )
+
         error = remove_old_files(
             algo_name=self.algo_namespace,
             today=now,
@@ -792,12 +811,17 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             self.nullify_frame_stats(now=data.current_dt)
 
         self.performance_needs_update = False
-        orders = list(self.perf_tracker.todays_performance.orders_by_id.keys())
-        if orders != self._last_orders:
+        last_orders_list = list(self.blotter.orders.keys())
+        open_orders_list = list(self.blotter.open_orders.keys())
+
+        if last_orders_list != self._last_orders or \
+                open_orders_list != self._last_open_orders:
             self.performance_needs_update = True
 
-        # Saving current orders to detect changes in the next frame
-        self._last_orders = copy.deepcopy(orders)
+        # Saving current order positions
+        # to detect changes in the next frame
+        self._last_orders = copy.deepcopy(last_orders_list)
+        self._last_open_orders = copy.deepcopy(open_orders_list)
 
         if self.performance_needs_update:
             self.perf_tracker.update_performance()
@@ -839,7 +863,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         log.debug('saving cumulative performance object')
         save_algo_object(
             algo_name=self.algo_namespace,
-            key='cumulative_performance',
+            key='cumulative_performance_{}'.format(self.mode_name),
             obj=self.perf_tracker.cumulative_performance,
         )
         log.debug('saving todays performance object')
@@ -847,12 +871,12 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             algo_name=self.algo_namespace,
             key=today.strftime('%Y-%m-%d'),
             obj=self.perf_tracker.todays_performance,
-            rel_path='daily_performance'
+            rel_path='daily_performance_{}'.format(self.mode_name)
         )
         log.debug('saving context.state object')
         save_algo_object(
             algo_name=self.algo_namespace,
-            key='context.state',
+            key='context.state_{}'.format(self.mode_name),
             obj=self.state)
 
     def _process_stats(self, data):
@@ -908,6 +932,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             csv_bytes = stats_to_algo_folder(
                 stats=self.frame_stats,
                 algo_namespace=self.algo_namespace,
+                folder_name='stats_{}'.format(self.mode_name),
                 recorded_cols=recorded_cols,
             )
         except Exception as e:
@@ -1012,13 +1037,19 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             args=(order_id,))
 
     @api_method
-    def cancel_order(self, order_param, exchange_name):
+    def cancel_order(self, order_param, exchange_name,
+                     symbol=None, params={}):
         """Cancel an open order.
 
         Parameters
         ----------
         order_param : str or Order
             The order_id or order object to cancel.
+
+        exchange_name: name of exchange from
+                        which you want to cancel the order
+        symbol:
+        params:
         """
         exchange = self.exchanges[exchange_name]
 
@@ -1032,4 +1063,4 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             sleeptime=self.attempts['retry_sleeptime'],
             retry_exceptions=(ExchangeRequestError,),
             cleanup=lambda: log.warn('cancelling order again.'),
-            args=(order_id,))
+            args=(order_id, symbol, params))

@@ -1,12 +1,11 @@
 import abc
+import pytz
 from abc import ABCMeta, abstractmethod, abstractproperty
 from datetime import timedelta
 from time import sleep
 
 import numpy as np
 import pandas as pd
-from logbook import Logger
-
 from catalyst.constants import LOG_LEVEL
 from catalyst.data.data_portal import BASE_FIELDS
 from catalyst.exchange.exchange_bundle import ExchangeBundle
@@ -18,8 +17,9 @@ from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
 from catalyst.exchange.utils.datetime_utils import get_delta, \
     get_periods_range, \
     get_periods, get_start_dt, get_frequency
-from catalyst.exchange.utils.exchange_utils import \
+from catalyst.exchange.utils.exchange_utils import get_exchange_symbols, \
     resample_history_df, has_bundle
+from logbook import Logger
 
 log = Logger('Exchange', level=LOG_LEVEL)
 
@@ -291,6 +291,16 @@ class Exchange:
         log.debug('found asset: {}'.format(asset))
         return asset
 
+    def fetch_symbol_map(self, is_local=False):
+        index = 1 if is_local else 0
+        if self._symbol_maps[index] is not None:
+            return self._symbol_maps[index]
+
+        else:
+            symbol_map = get_exchange_symbols(self.name, is_local)
+            self._symbol_maps[index] = symbol_map
+            return symbol_map
+
     @abstractmethod
     def init(self):
         """
@@ -302,13 +312,24 @@ class Exchange:
         """
 
     @abstractmethod
-    def create_exchange_config(self):
+    def load_assets(self, is_local=False):
         """
-        Fetch the exchange market data and generate a config object
-        Returns
-        -------
+        Populate the 'assets' attribute with a dictionary of Assets.
+        The key of the resulting dictionary is the exchange specific
+        currency pair symbol. The universal symbol is contained in the
+        'symbol' attribute of each asset.
+
+        Notes
+        -----
+        The sid of each asset is calculated based on a numeric hash of the
+        universal symbol. This simple approach avoids maintaining a mapping
+        of sids.
+
+        This method can be omerridden if an exchange offers equivalent data
+        via its api.
 
         """
+        pass
 
     def get_spot_value(self, assets, field, dt=None, data_frequency='minute'):
         """
@@ -494,32 +515,37 @@ class Exchange:
 
         series = dict()
         for asset in candles:
-            first_candle = candles[asset][0]
-            asset_series = self.get_series_from_candles(
-                candles=candles[asset],
-                start_dt=first_candle['last_traded'],
-                end_dt=end_dt,
-                data_frequency=frequency,
-                field=field,
-            )
-
-            delta_candle_size = candle_size * 60 if unit == 'H' else candle_size
-            # Checking to make sure that the dates match
-            delta = get_delta(delta_candle_size, data_frequency)
-            adj_end_dt = end_dt - delta
-            last_traded = asset_series.index[-1]
-
-            if last_traded < adj_end_dt:
-                raise LastCandleTooEarlyError(
-                    last_traded=last_traded,
-                    end_dt=adj_end_dt,
-                    exchange=self.name,
+            if candles[asset]:
+                first_candle = candles[asset][0]
+                asset_series = self.get_series_from_candles(
+                    candles=candles[asset],
+                    start_dt=first_candle['last_traded'],
+                    end_dt=end_dt,
+                    data_frequency=frequency,
+                    field=field,
                 )
+
+                delta_candle_size = candle_size * 60 if unit == 'H' else candle_size
+                # Checking to make sure that the dates match
+                delta = get_delta(delta_candle_size, data_frequency)
+                adj_end_dt = end_dt - delta
+                last_traded = asset_series.index[-1]
+
+                if last_traded < adj_end_dt:
+                    raise LastCandleTooEarlyError(
+                        last_traded=last_traded,
+                        end_dt=adj_end_dt,
+                        exchange=self.name,
+                    )
+            else: # empty candle received
+                # because other assets are tz-aware, we need its tz to be set as well
+                asset_series = pd.Series([], index=pd.DatetimeIndex([], tz=pytz.utc))
+
 
             series[asset] = asset_series
 
         df = pd.DataFrame(series)
-        df.dropna(inplace=True)
+        #df.dropna(inplace=True) # commented out due to issue 236
 
         return df
 
@@ -636,12 +662,8 @@ class Exchange:
 
         return df
 
-    def _check_low_balance(self, currency, balances, amount, open_orders=None):
+    def _check_low_balance(self, currency, balances, amount):
         free = balances[currency]['free'] if currency in balances else 0.0
-
-        if open_orders:
-            # TODO: make sure that this works
-            free += sum([order.amount for order in open_orders])
 
         if free < amount:
             return free, True
@@ -649,7 +671,7 @@ class Exchange:
         else:
             return free, False
 
-    def sync_positions(self, positions, open_orders=None, cash=None,
+    def sync_positions(self, positions, cash=None,
                        check_balances=False):
         """
         Update the portfolio cash and position balances based on the
@@ -679,7 +701,7 @@ class Exchange:
                     balances=balances,
                     amount=cash,
                 )
-                if is_lower and not open_orders:
+                if is_lower:
                     raise NotEnoughCashError(
                         currency=self.base_currency,
                         exchange=self.name,
@@ -906,7 +928,8 @@ class Exchange:
         """
 
     @abstractmethod
-    def cancel_order(self, order_param, symbol_or_asset=None):
+    def cancel_order(self, order_param,
+                     symbol_or_asset=None, params={}):
         """Cancel an open order.
 
         Parameters
@@ -915,6 +938,7 @@ class Exchange:
             The order_id or order object to cancel.
         symbol_or_asset: str|TradingPair
             The catalyst symbol, some exchanges need this
+        params:
         """
         pass
 

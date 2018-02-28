@@ -5,28 +5,63 @@ from logging import Logger, WARNING
 from time import sleep
 
 import pandas as pd
+from catalyst.assets._assets import TradingPair
 from logbook import TestHandler
 
-from catalyst.assets._assets import TradingPair
+from catalyst.exchange.exchange_errors import ExchangeRequestError
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.utils.exchange_utils import get_exchange_folder
-from catalyst.exchange.utils.factory import get_exchanges, get_exchange
 from catalyst.exchange.utils.test_utils import select_random_exchanges, \
-    select_random_assets
+    handle_exchange_error, select_random_assets
 from catalyst.testing import ZiplineTestCase
 from catalyst.testing.fixtures import WithLogger
+from catalyst.exchange.utils.factory import get_exchanges, get_exchange
 
 log = Logger('TestSuiteExchange')
 
 
 class TestSuiteExchange(WithLogger, ZiplineTestCase):
+    def _test_markets_exchange(self, exchange, attempts=0):
+        assets = None
+        try:
+            exchange.init()
+
+            # Verify that the assets and markets are populated
+            if not exchange.markets:
+                raise ValueError(
+                    'no markets found'
+                )
+            if not exchange.assets:
+                raise ValueError(
+                    'no assets derived from markets'
+                )
+            assets = exchange.assets
+
+        except ExchangeRequestError as e:
+            sleep(5)
+
+            if attempts > 5:
+                handle_exchange_error(exchange, e)
+
+            else:
+                print(
+                    're-trying an exchange request {} {}'.format(
+                        exchange.name, attempts
+                    )
+                )
+                self._test_markets_exchange(exchange, attempts + 1)
+
+        except Exception as e:
+            handle_exchange_error(exchange, e)
+
+        return assets
+
     def test_markets(self):
         population = 3
         results = dict()
 
         exchanges = select_random_exchanges(population)  # Type: list[Exchange]
         for exchange in exchanges:
-            exchange.init()
             assets = self._test_markets_exchange(exchange)
 
             if assets is not None:

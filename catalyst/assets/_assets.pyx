@@ -433,7 +433,7 @@ cdef class TradingPair(Asset):
         'taker',
         'trading_state',
         'data_source',
-        'decimals',
+        'decimals'
     })
     def __init__(self,
                  object symbol,
@@ -455,7 +455,7 @@ cdef class TradingPair(Asset):
                  float taker=0.0025,
                  float lot=0,
                  int decimals = 8,
-                 int trading_state=1,
+                 int trading_state=0,
                  object data_source='catalyst'):
         """
         Replicates the Asset constructor with some built-in conventions
@@ -600,51 +600,14 @@ cdef class TradingPair(Asset):
     cpdef to_dict(self):
         """
         Convert to a python dict.
-        
-        Repeat constructor params:
-             object symbol,
-             object exchange,
-             object start_date=None,
-             object asset_name=None,
-             int sid=0,
-             float leverage=1.0,
-             object end_daily=None,
-             object end_minute=None,
-             object end_date=None,
-             object exchange_symbol=None,
-             object first_traded=None,
-             object auto_close_date=None,
-             object exchange_full=None,
-             float min_trade_size=0.0001,
-             float max_trade_size=1000000,
-             float maker=0.0015,
-             float taker=0.0025,
-             float lot=0,
-             int decimals = 8,
-             int trading_state=1,
-             object data_source='catalyst',
         """
-        trading_pair_dict = dict(
-            symbol=self.symbol,
-            exchange=self.exchange,
-            start_date=self.start_date,
-            asset_name=self.asset_name,
-            leverage=self.leverage,
-            end_daily=self.end_daily,
-            end_minute=self.end_minute,
-            end_date=self.end_date,
-            exchange_symbol=self.exchange_symbol,
-            exchange_full=self.exchange_full,
-            min_trade_size=self.min_trade_size,
-            max_trade_size=self.max_trade_size,
-            maker=self.maker,
-            taker=self.taker,
-            lot=self.lot,
-            decimals=self.decimals,
-            trading_state=self.trading_state,
-            data_source=self.data_source,
-        )
-        return trading_pair_dict
+        #TODO: missing fields
+        super_dict = super(TradingPair, self).to_dict()
+        super_dict['end_daily'] = self.end_daily
+        super_dict['end_minute'] = self.end_minute
+        super_dict['leverage'] = self.leverage
+        super_dict['min_trade_size'] = self.min_trade_size
+        return super_dict
 
     def is_exchange_open(self, dt_minute):
         """
@@ -659,16 +622,6 @@ cdef class TradingPair(Asset):
         """
         #TODO: make more dymanic to catch holds
         return True
-
-    def set_end_date(self, dt, data_frequency):
-        if data_frequency == 'minute':
-            self.end_minute = dt
-
-        else:
-            self.end_daily = dt
-
-    def set_start_date(self, dt):
-        self.start_date = dt
 
     cpdef __reduce__(self):
         """
@@ -693,9 +646,7 @@ cdef class TradingPair(Asset):
                                  self.lot,
                                  self.decimals,
                                  self.taker,
-                                 self.maker,
-                                 self.trading_state,
-                                 self.data_source))
+                                 self.maker))
 
 def make_asset_array(int size, Asset asset):
     cdef np.ndarray out = np.empty([size], dtype=object)

@@ -184,5 +184,14 @@ Here is the breakdown of the new arguments:
   essentially sleep and when the predefined time comes, it would start executing.
 
 
+
+The `catalyst live` command offers additional parameters.
+You can learn more by running the following from the command line:
+
+.. code-block:: bash
+
+    catalyst live --help
+
+
 Here is a complete algorithm for reference:
 `Buy Low and Sell High <https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/buy_low_sell_high_live.py>`_
