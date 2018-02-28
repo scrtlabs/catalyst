@@ -194,7 +194,7 @@ class CCXT(Exchange):
         return TradingPair(**params)
 
     def load_assets(self):
-        if self._config is None:
+        if self._config is None or 'error' in self._config:
             raise ValueError('Exchange config not available.')
 
         self.assets = []

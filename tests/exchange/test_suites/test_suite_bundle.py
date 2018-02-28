@@ -197,7 +197,7 @@ class TestSuiteBundle:
         #     population=exchange_population,
         #     features=[bundle],
         # )  # Type: list[Exchange]
-        exchanges = [get_exchange('poloniex', skip_init=True)]
+        exchanges = [get_exchange('binance', skip_init=True)]
 
         data_portal = TestSuiteBundle.get_data_portal(exchanges)
         for exchange in exchanges:
