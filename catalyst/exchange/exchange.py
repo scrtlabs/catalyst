@@ -5,6 +5,7 @@ from time import sleep
 
 import numpy as np
 import pandas as pd
+from logbook import Logger
 
 from catalyst.constants import LOG_LEVEL
 from catalyst.data.data_portal import BASE_FIELDS

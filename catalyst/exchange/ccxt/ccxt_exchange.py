@@ -4,6 +4,9 @@ from collections import defaultdict
 import ccxt
 import pandas as pd
 import six
+from catalyst.assets._assets import TradingPair
+from redo import retry
+
 from catalyst.algorithm import MarketOrder
 from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.exchange import Exchange
@@ -11,7 +14,8 @@ from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import InvalidHistoryFrequencyError, \
     ExchangeSymbolsNotFound, ExchangeRequestError, InvalidOrderStyle, \
     UnsupportedHistoryFrequencyError, \
-    ExchangeNotFoundError, CreateOrderError, InvalidHistoryTimeframeError
+    ExchangeNotFoundError, CreateOrderError, InvalidHistoryTimeframeError, \
+    MarketsNotFoundError, InvalidMarketError
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.utils.ccxt_utils import get_exchange_config
 from catalyst.exchange.utils.datetime_utils import from_ms_timestamp, \

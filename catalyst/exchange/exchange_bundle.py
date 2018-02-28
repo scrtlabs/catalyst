@@ -1,3 +1,4 @@
+import copy
 import os
 import shutil
 from datetime import timedelta
@@ -5,12 +6,15 @@ from functools import partial
 from itertools import chain
 from operator import is_not
 
-import copy
 import numpy as np
 import pandas as pd
 import pytz
-from catalyst import get_calendar
 from catalyst.assets._assets import TradingPair
+from logbook import Logger
+from pytz import UTC
+from six import itervalues
+
+from catalyst import get_calendar
 from catalyst.constants import DATE_TIME_FORMAT, AUTO_INGEST
 from catalyst.constants import LOG_LEVEL
 from catalyst.data.minute_bars import BcolzMinuteOverlappingData, \
@@ -23,15 +27,11 @@ from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
     PricingDataNotLoadedError, DataCorruptionError, PricingDataValueError
 from catalyst.exchange.utils.bundle_utils import range_in_bundle, \
     get_bcolz_chunk, get_df_from_arrays, get_assets
-from catalyst.exchange.utils.datetime_utils import get_delta, get_start_dt, \
+from catalyst.exchange.utils.datetime_utils import get_start_dt, \
     get_period_label, get_month_start_end, get_year_start_end
-from catalyst.exchange.utils.exchange_utils import get_exchange_folder, \
-    get_catalyst_symbol
+from catalyst.exchange.utils.exchange_utils import get_exchange_folder
 from catalyst.utils.cli import maybe_show_progress
 from catalyst.utils.paths import ensure_directory
-from logbook import Logger
-from pytz import UTC
-from six import itervalues
 
 log = Logger('exchange_bundle', level=LOG_LEVEL)
 
