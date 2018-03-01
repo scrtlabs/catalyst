@@ -716,25 +716,30 @@ def save_asset_data(folder, df, decimals=8):
             )
 
 
-def get_candles_df(candles, field, freq, bar_count, end_dt,
-                   previous_value=None):
+def forward_fill_df_if_needed(df, periods):
+    df = df.reindex(periods)
+    df['volume'] = df['volume'].fillna(0.0)# volume should always be 0 (if there were no trades in this interval)
+    df['close'] = df.fillna(method='pad')  # ie pull the last close into this close
+    # now copy the close that was pulled down from the last timestep into this row, across into o/h/l
+    df['open'] = df['open'].fillna(df['close'])
+    df['low'] = df['low'].fillna(df['close'])
+    df['high'] = df['high'].fillna(df['close'])
+    return df
+
+
+def transform_candles_to_df(candles):
+    return pd.DataFrame(candles).set_index('last_traded')
+
+
+def get_candles_df(candles, field, freq, bar_count, end_dt=None):
     all_series = dict()
+
     for asset in candles:
+        asset_df = transform_candles_to_df(candles[asset])
         periods = pd.date_range(end=end_dt, periods=bar_count, freq=freq)
+        asset_df = forward_fill_df_if_needed(asset_df, periods)
 
-        dates = [candle['last_traded'] for candle in candles[asset]]
-        values = [candle[field] for candle in candles[asset]]
-        series = pd.Series(values, index=dates)
-
-        """
-        series = series.reindex(
-            periods,
-            method='ffill',
-            fill_value=previous_value,
-        )
-        series.sort_index(inplace=True)
-        """
-        all_series[asset] = series
+        all_series[asset] = pd.Series(asset_df[field])
 
     df = pd.DataFrame(all_series)
     df.dropna(inplace=True)
