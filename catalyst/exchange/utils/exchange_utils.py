@@ -752,8 +752,6 @@ def get_candles_df(candles, field, freq, bar_count, end_dt=None):
         elif rounded_end_dt <= end_dt:
             periods = periods[1:]
 
-        print rounded_end_dt
-        print periods
         # periods = pd.date_range(end=end_dt, periods=bar_count, freq=freq)
         asset_df = forward_fill_df_if_needed(asset_df, periods)
 
