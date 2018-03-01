@@ -2,7 +2,7 @@ from catalyst.exchange.utils.exchange_utils import transform_candles_to_df, \
     forward_fill_df_if_needed, get_candles_df
 
 from catalyst.testing.fixtures import WithLogger, ZiplineTestCase
-from pandas import Timestamp, DataFrame
+from pandas import Timestamp, DataFrame, concat
 
 import numpy as np
 
@@ -15,9 +15,11 @@ class TestExchangeUtils(WithLogger, ZiplineTestCase):
         new_df.index.name = None
         return new_df
 
-    def test_transform_candles_to_series(self):
+    def test_get_candles_df(self):
         asset = 'btc_usdt'
+        asset2 = 'eth_usdt'
 
+        # test forward fill in the end
         candles = [{'high': 595, 'volume': 10, 'low': 594,
                     'close': 595, 'open': 594,
                     'last_traded': Timestamp('2018-03-01 09:45:00+0000',
@@ -57,13 +59,14 @@ class TestExchangeUtils(WithLogger, ZiplineTestCase):
         assert (expected_df.equals(observed_df))
 
         for field in ['volume', 'open', 'close', 'high', 'low']:
-            field_dt = self.get_specific_field_from_df(observed_df,
+            field_dt = self.get_specific_field_from_df(expected_df,
                                                        field,
                                                        asset)
             assert (field_dt.equals(get_candles_df({asset: candles},
                                                    field, '5T', 3,
                                                    end_dt=periods[2])))
 
+        # test forward fill in the middle
         candles = [{'high': 595, 'volume': 10, 'low': 594,
                     'close': 595, 'open': 594,
                     'last_traded': Timestamp('2018-03-01 09:45:00+0000',
@@ -93,17 +96,28 @@ class TestExchangeUtils(WithLogger, ZiplineTestCase):
 
         df = transform_candles_to_df(candles)
         observed_df = forward_fill_df_if_needed(df, periods)
+        expected_df = transform_candles_to_df(expected)
 
-        assert (transform_candles_to_df(expected).equals(observed_df))
+        assert (expected_df.equals(observed_df))
 
         for field in ['volume', 'open', 'close', 'high', 'low']:
-            field_dt = self.get_specific_field_from_df(observed_df,
-                                                       field,
-                                                       asset)
-            assert(field_dt.equals(get_candles_df({asset: candles},
-                                                  field, '5T', 3,
-                                                  end_dt=periods[2])))
+            # test several assets as well
+            observed_df = get_candles_df({asset: candles,
+                                          asset2: candles},
+                                         field, '5T', 3,
+                                         end_dt=periods[2])
 
+            field_dt_a1 = self.get_specific_field_from_df(expected_df,
+                                                          field,
+                                                          asset)
+            field_dt_a2 = self.get_specific_field_from_df(expected_df,
+                                                          field,
+                                                          asset2)
+
+            assert(observed_df.equals(concat([field_dt_a1, field_dt_a2],
+                                             axis=1)))
+
+        # test "forward fill" at the beginning
         candles = [{'high': 595, 'volume': 10, 'low': 594,
                     'close': 595, 'open': 594,
                     'last_traded': Timestamp('2018-03-01 09:50:00+0000',
@@ -133,8 +147,9 @@ class TestExchangeUtils(WithLogger, ZiplineTestCase):
 
         df = transform_candles_to_df(candles)
         observed_df = forward_fill_df_if_needed(df, periods)
+        expected_df = transform_candles_to_df(expected)
 
-        assert (transform_candles_to_df(expected).equals(observed_df))
+        assert (expected_df.equals(observed_df))
         # Not the same due to dropna - commenting out for now
         """
                 for field in ['volume', 'open', 'close', 'high', 'low']:
