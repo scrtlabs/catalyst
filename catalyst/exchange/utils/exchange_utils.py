@@ -671,6 +671,7 @@ def get_candles_df(candles, field, freq, bar_count, end_dt,
         all_series[asset] = series
 
     df = pd.DataFrame(all_series)
+
     df.dropna(inplace=True)
 
     return df
