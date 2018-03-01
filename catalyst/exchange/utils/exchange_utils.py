@@ -446,13 +446,12 @@ def remove_old_files(algo_name, today, rel_path, environ=None):
     # run on all files in the folder
     for f in os.listdir(folder):
         try:
-            file_path = os.path.join(folder, f)
-            creation_unix = os.path.getctime(file_path)
-            creation_time = pd.to_datetime(creation_unix, unit='s', utc=True)
+            creation_unix = os.path.getctime(os.path.join(folder, f))
+            creation_time = pd.to_datetime(creation_unix, unit='s', )
 
             # if the file is older than 30 days erase it
             if today - pd.DateOffset(30) > creation_time:
-                os.unlink(file_path)
+                    os.unlink(f)
         except OSError:
             error = 'unable to erase files in {}'.format(folder)
 
