@@ -107,14 +107,14 @@ class TestSuiteBundle:
             print('saved {} test results: {}'.format(end_dt, folder))
 
             assert_frame_equal(
-                right=data['bundle'],
-                left=data['exchange'],
+                right=data['bundle'][:-1],
+                left=data['exchange'][:-1],
                 check_less_precise=1,
             )
             try:
                 assert_frame_equal(
-                    right=data['bundle'],
-                    left=data['exchange'],
+                    right=data['bundle'][:-1],
+                    left=data['exchange'][:-1],
                     check_less_precise=min([a.decimals for a in assets]),
                 )
             except Exception as e:
