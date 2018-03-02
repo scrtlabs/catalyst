@@ -17,8 +17,7 @@ from catalyst.exchange.utils.serialization_utils import ExchangeJSONEncoder, \
     ExchangeJSONDecoder, ConfigJSONEncoder
 from catalyst.utils.paths import data_root, ensure_directory, \
     last_modified_time
-from six import string_types
-from six.moves.urllib import request
+from catalyst.exchange.utils.datetime_utils import get_periods_range
 
 
 def get_sid(symbol):
@@ -439,12 +438,13 @@ def remove_old_files(algo_name, today, rel_path, environ=None):
     # run on all files in the folder
     for f in os.listdir(folder):
         try:
-            creation_unix = os.path.getctime(os.path.join(folder, f))
-            creation_time = pd.to_datetime(creation_unix, unit='s', )
+            file_path = os.path.join(folder, f)
+            creation_unix = os.path.getctime(file_path)
+            creation_time = pd.to_datetime(creation_unix, unit='s', utc=True)
 
             # if the file is older than 30 days erase it
             if today - pd.DateOffset(30) > creation_time:
-                    os.unlink(f)
+                os.unlink(file_path)
         except OSError:
             error = 'unable to erase files in {}'.format(folder)
 
@@ -655,25 +655,45 @@ def save_asset_data(folder, df, decimals=8):
             )
 
 
-def get_candles_df(candles, field, freq, bar_count, end_dt,
-                   previous_value=None):
+def forward_fill_df_if_needed(df, periods):
+    df = df.reindex(periods)
+    # volume should always be 0 (if there were no trades in this interval)
+    df['volume'] = df['volume'].fillna(0.0)
+    # ie pull the last close into this close
+    df['close'] = df.fillna(method='pad')
+    # now copy the close that was pulled down from the last timestep
+    # into this row, across into o/h/l
+    df['open'] = df['open'].fillna(df['close'])
+    df['low'] = df['low'].fillna(df['close'])
+    df['high'] = df['high'].fillna(df['close'])
+    return df
+
+
+def transform_candles_to_df(candles):
+    return pd.DataFrame(candles).set_index('last_traded')
+
+
+def get_candles_df(candles, field, freq, bar_count, end_dt=None):
     all_series = dict()
+
     for asset in candles:
-        periods = pd.date_range(end=end_dt, periods=bar_count, freq=freq)
+        asset_df = transform_candles_to_df(candles[asset])
+        rounded_end_dt = end_dt.round(freq)
 
-        dates = [candle['last_traded'] for candle in candles[asset]]
-        values = [candle[field] for candle in candles[asset]]
-        series = pd.Series(values, index=dates)
-
-        """
-        series = series.reindex(
-            periods,
-            method='ffill',
-            fill_value=previous_value,
+        periods = get_periods_range(
+            start_dt=None, end_dt=rounded_end_dt,
+            freq=freq, periods=bar_count
         )
-        series.sort_index(inplace=True)
-        """
-        all_series[asset] = series
+
+        if rounded_end_dt > end_dt:
+            periods = periods[:-1]
+        elif rounded_end_dt <= end_dt:
+            periods = periods[1:]
+
+        # periods = pd.date_range(end=end_dt, periods=bar_count, freq=freq)
+        asset_df = forward_fill_df_if_needed(asset_df, periods)
+
+        all_series[asset] = pd.Series(asset_df[field])
 
     df = pd.DataFrame(all_series)
 

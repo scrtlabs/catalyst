@@ -89,7 +89,7 @@ Once either Conda or MiniConda has been set up you can install Catalyst:
 
    .. code-block:: bash
 
-    conda env create -f python2.7-environment.yml
+      conda env create -f python2.7-environment.yml
 
 4. Activate the environment (which you need to do every time you start a new 
    session to run Catalyst):
@@ -132,6 +132,14 @@ with the following steps:
       conda env remove --name catalyst
 
 2. Create the environment:
+
+   for python 2.7:
+
+   .. code-block:: bash
+
+      conda create --name catalyst python=2.7 scipy zlib
+
+  or for python 3.6:
 
    .. code-block:: bash
 
