@@ -623,7 +623,7 @@ class Marketplace:
             )
 
         except Exception as e:
-            print('Unable to subscribe to data source: {}'.format(e))
+            print('Unable to register the requested dataset: {}'.format(e))
             return
 
         self.check_transaction(tx_hash)
