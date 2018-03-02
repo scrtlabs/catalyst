@@ -413,7 +413,7 @@ def clear_frame_stats_directory(algo_name):
     return error
 
 
-def remove_old_files(algo_name, today, rel_path):
+def remove_old_files(algo_name, today, rel_path, environ=None):
     """
     remove old files from a directory
     to avoid overloading the disk
@@ -423,27 +423,30 @@ def remove_old_files(algo_name, today, rel_path):
     algo_name: str
     today: Timestamp
     rel_path: str
+    environ:
 
     Returns
     -------
     error: str
 
     """
+
     error = None
-    algo_folder = get_algo_folder(algo_name)
+    algo_folder = get_algo_folder(algo_name, environ)
     folder = os.path.join(algo_folder, rel_path)
+    ensure_directory(folder)
 
     # run on all files in the folder
     for f in os.listdir(folder):
-        creation_unix = os.path.getctime(f)
-        creation_time = pd.to_datetime(creation_unix, unit='s', )
+        try:
+            creation_unix = os.path.getctime(os.path.join(folder, f))
+            creation_time = pd.to_datetime(creation_unix, unit='s', )
 
-        # if the file is older than 30 days erase it
-        if today - pd.DateOffset(30) > creation_time:
-            try:
-                os.unlink(f)
-            except OSError:
-                error = 'unable to erase files in {}'.format(folder)
+            # if the file is older than 30 days erase it
+            if today - pd.DateOffset(30) > creation_time:
+                    os.unlink(f)
+        except OSError:
+            error = 'unable to erase files in {}'.format(folder)
 
     return error
 
@@ -662,12 +665,14 @@ def get_candles_df(candles, field, freq, bar_count, end_dt,
         values = [candle[field] for candle in candles[asset]]
         series = pd.Series(values, index=dates)
 
+        """
         series = series.reindex(
             periods,
             method='ffill',
             fill_value=previous_value,
         )
         series.sort_index(inplace=True)
+        """
         all_series[asset] = series
 
     df = pd.DataFrame(all_series)

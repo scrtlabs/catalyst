@@ -865,7 +865,8 @@ class CCXT(Exchange):
             )
             raise ExchangeRequestError(error=e)
 
-    def cancel_order(self, order_param, asset_or_symbol=None):
+    def cancel_order(self, order_param,
+                     asset_or_symbol=None, params={}):
         order_id = order_param.id \
             if isinstance(order_param, Order) else order_param
 
@@ -877,7 +878,8 @@ class CCXT(Exchange):
         try:
             symbol = self.get_symbol(asset_or_symbol) \
                 if asset_or_symbol is not None else None
-            self.api.cancel_order(id=order_id, symbol=symbol)
+            self.api.cancel_order(id=order_id,
+                                  symbol=symbol, params= params)
 
         except (ExchangeError, NetworkError) as e:
             log.warn(

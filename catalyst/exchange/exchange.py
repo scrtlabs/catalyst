@@ -1,4 +1,5 @@
 import abc
+import pytz
 from abc import ABCMeta, abstractmethod, abstractproperty
 from datetime import timedelta
 from time import sleep
@@ -494,32 +495,37 @@ class Exchange:
 
         series = dict()
         for asset in candles:
-            first_candle = candles[asset][0]
-            asset_series = self.get_series_from_candles(
-                candles=candles[asset],
-                start_dt=first_candle['last_traded'],
-                end_dt=end_dt,
-                data_frequency=frequency,
-                field=field,
-            )
-
-            delta_candle_size = candle_size * 60 if unit == 'H' else candle_size
-            # Checking to make sure that the dates match
-            delta = get_delta(delta_candle_size, data_frequency)
-            adj_end_dt = end_dt - delta
-            last_traded = asset_series.index[-1]
-
-            if last_traded < adj_end_dt:
-                raise LastCandleTooEarlyError(
-                    last_traded=last_traded,
-                    end_dt=adj_end_dt,
-                    exchange=self.name,
+            if candles[asset]:
+                first_candle = candles[asset][0]
+                asset_series = self.get_series_from_candles(
+                    candles=candles[asset],
+                    start_dt=first_candle['last_traded'],
+                    end_dt=end_dt,
+                    data_frequency=frequency,
+                    field=field,
                 )
+
+                delta_candle_size = candle_size * 60 if unit == 'H' else candle_size
+                # Checking to make sure that the dates match
+                delta = get_delta(delta_candle_size, data_frequency)
+                adj_end_dt = end_dt - delta
+                last_traded = asset_series.index[-1]
+
+                if last_traded < adj_end_dt:
+                    raise LastCandleTooEarlyError(
+                        last_traded=last_traded,
+                        end_dt=adj_end_dt,
+                        exchange=self.name,
+                    )
+            else: # empty candle received
+                # because other assets are tz-aware, we need its tz to be set as well
+                asset_series = pd.Series([], index=pd.DatetimeIndex([], tz=pytz.utc))
+
 
             series[asset] = asset_series
 
         df = pd.DataFrame(series)
-        df.dropna(inplace=True)
+        #df.dropna(inplace=True) # commented out due to issue 236
 
         return df
 
@@ -906,7 +912,8 @@ class Exchange:
         """
 
     @abstractmethod
-    def cancel_order(self, order_param, symbol_or_asset=None):
+    def cancel_order(self, order_param,
+                     symbol_or_asset=None, params={}):
         """Cancel an open order.
 
         Parameters
@@ -915,6 +922,7 @@ class Exchange:
             The order_id or order object to cancel.
         symbol_or_asset: str|TradingPair
             The catalyst symbol, some exchanges need this
+        params:
         """
         pass
 

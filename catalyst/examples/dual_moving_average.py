@@ -4,8 +4,7 @@ import pandas as pd
 from logbook import Logger
 
 from catalyst import run_algorithm
-from catalyst.api import (record, symbol, order_target_percent,
-                          get_open_orders)
+from catalyst.api import (record, symbol, order_target_percent,)
 from catalyst.exchange.utils.stats_utils import extract_transactions
 
 NAMESPACE = 'dual_moving_average'
@@ -20,8 +19,8 @@ def initialize(context):
 
 def handle_data(context, data):
     # define the windows for the moving averages
-    short_window = 2
-    long_window = 3
+    short_window = 50
+    long_window = 200
 
     # Skip as many bars as long_window to properly compute the average
     context.i += 1
@@ -63,7 +62,7 @@ def handle_data(context, data):
 
     # Since we are using limit orders, some orders may not execute immediately
     # we wait until all orders are executed before considering more trades.
-    orders = get_open_orders(context.asset)
+    orders = context.blotter.open_orders
     if len(orders) > 0:
         return
 
@@ -150,27 +149,16 @@ def analyze(context, perf):
 
 
 if __name__ == '__main__':
+    
     run_algorithm(
-        capital_base=1000,
-        data_frequency='minute',
-        initialize=initialize,
-        handle_data=handle_data,
-        analyze=analyze,
-        exchange_name='bitfinex',
-        algo_namespace=NAMESPACE,
-        base_currency='usd',
-        simulate_orders=True,
-        live=True,
-    )
-    # run_algorithm(
-    #         capital_base=1000,
-    #         data_frequency='minute',
-    #         initialize=initialize,
-    #         handle_data=handle_data,
-    #         analyze=analyze,
-    #         exchange_name='bitfinex',
-    #         algo_namespace=NAMESPACE,
-    #         base_currency='usd',
-    #         start=pd.to_datetime('2017-9-22', utc=True),
-    #         end=pd.to_datetime('2017-9-23', utc=True),
-    #     )
+            capital_base=1000,
+            data_frequency='minute',
+            initialize=initialize,
+            handle_data=handle_data,
+            analyze=analyze,
+            exchange_name='bitfinex',
+            algo_namespace=NAMESPACE,
+            base_currency='usd',
+            start=pd.to_datetime('2017-9-22', utc=True),
+            end=pd.to_datetime('2017-9-23', utc=True),
+        )
