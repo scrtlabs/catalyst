@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Enigma</title>
+
+	<!-- Stylesheet -->
+	<link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700|Roboto:300,400,500,700" rel="stylesheet" type="text/css" />
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" type="text/css" />
+
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" type="text/css" />
+	<link rel="stylesheet" href="https://s3.amazonaws.com/enigmaco-website/css/style.css" type="text/css" />
+
+	<!-- One Page Module Specific Stylesheet -->
+	<!--link rel="stylesheet" href="/css/onepage.css" type="text/css" /-->
+	<!-- / -->
+
+	<link rel="stylesheet" href="https://s3.amazonaws.com/enigmaco-website/css/dark.css" type="text/css" />
+	<link rel="stylesheet" href="https://s3.amazonaws.com/enigmaco-website/css/font-icons.css" type="text/css" />
+	<!--link rel="stylesheet" href="/css/et-line.css" type="text/css" /-->
+	<!--link rel="stylesheet" href="/css/animate.css" type="text/css" /-->
+	<!--link rel="stylesheet" href="/css/magnific-popup.css" type="text/css" /-->
+
+	<link rel="stylesheet" href="https://s3.amazonaws.com/enigmaco-website/css/fonts.css" type="text/css" />
+
+	<link rel="stylesheet" href="https://s3.amazonaws.com/enigmaco-website/css/responsive.css" type="text/css" />
+	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.css"></link>
+	<!--link rel="stylesheet" href="/css/ReactToastify.min.css" type="text/css" /-->
+	<!--link rel="stylesheet" href="/css/catalystapp.css" type="text/css" /-->
+
+	<link rel='stylesheet prefetch' href='https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css'>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+	<link rel="import" href="http://data.enigma.co/catalyst/status">
+
+	<meta property="og:url" content="https://www.enigma.co/catalyst" />
+	<meta property="og:title" content="Enigma | Catalyst (Alpha)" />
+	<meta property="og:description" content="Create your own crypto hedge-fund and earn ENG tokens" />
+	<meta property="og:image" content="https://www.enigma.co/images/enigmafb.png" /-->
+
+	<!--[if lt IE 9]>
+		<script src="http://css3-mediaqueries-js.googlecode.com/svn/trunk/css3-mediaqueries.js"></script>
+	<![endif]-->
+<!-- start Mixpanel --><script type="text/javascript">(function(e,a){if(!a.__SV){var b=window;try{var c,l,i,j=b.location,g=j.hash;c=function(a,b){return(l=a.match(RegExp(b+"=([^&]*)")))?l[1]:null};g&&c(g,"state")&&(i=JSON.parse(decodeURIComponent(c(g,"state"))),"mpeditor"===i.action&&(b.sessionStorage.setItem("_mpcehash",g),history.replaceState(i.desiredHash||"",e.title,j.pathname+j.search)))}catch(m){}var k,h;window.mixpanel=a;a._i=[];a.init=function(b,c,f){function e(b,a){var c=a.split(".");2==c.length&&(b=b[c[0]],a=c[1]);b[a]=function(){b.push([a].concat(Array.prototype.slice.call(arguments,
+0)))}}var d=a;"undefined"!==typeof f?d=a[f]=[]:f="mixpanel";d.people=d.people||[];d.toString=function(b){var a="mixpanel";"mixpanel"!==f&&(a+="."+f);b||(a+=" (stub)");return a};d.people.toString=function(){return d.toString(1)+".people (stub)"};k="disable time_event track track_pageview track_links track_forms register register_once alias unregister identify name_tag set_config reset people.set people.set_once people.increment people.append people.union people.track_charge people.clear_charges people.delete_user".split(" ");
+for(h=0;h<k.length;h++)e(d,k[h]);a._i.push([b,c,f])};a.__SV=1.2;b=e.createElement("script");b.type="text/javascript";b.async=!0;b.src="undefined"!==typeof MIXPANEL_CUSTOM_LIB_URL?MIXPANEL_CUSTOM_LIB_URL:"file:"===e.location.protocol&&"//cdn.mxpnl.com/libs/mixpanel-2-latest.min.js".match(/^\/\//)?"https://cdn.mxpnl.com/libs/mixpanel-2-latest.min.js":"//cdn.mxpnl.com/libs/mixpanel-2-latest.min.js";c=e.getElementsByTagName("script")[0];c.parentNode.insertBefore(b,c)}})(document,window.mixpanel||[]);
+mixpanel.init("b34e64ebf20c8d50ba1f21649286bd56");</script><!-- end Mixpanel -->
+
+
+</head>
+<body >
+	<!--div id="main" class="clearfix"-->
+	<!--div id="wrapper" class="clearfix"-->
+			<div style="background:url('https://s3.amazonaws.com/enigmaco-website/images/enigma-background-splash.jpg') center no-repeat; height: 200px;background-size: 100% auto;">
+						<div class="center dark">
+							<h2 class="t600 ls4 uppercase bottommargin-sm" style="font-size: 72px; text-shadow: rgb(51, 51, 51) 2px 2px;padding-top: 60px;">Catalyst</h2>
+						</div>
+			</div>
+		<section id="content" style="background-color: rgb(238, 238, 238);">
+			<div class="nopadding">
+				<div class="page-section nopadding">
+					<div class="container clearfix" style="padding-top: 60px; padding-bottom:40px;" id="status">
+					</div>
+				</div>
+			</div>
+		</section>
+	</div>
+	</div>
+	<script type="text/javascript">
+		var link = document.querySelector('link[rel="import"]');
+		var c = link.import
+    	if(c){
+    		var content = c.querySelector('#content');
+    		document.querySelector('#status').appendChild(content.cloneNode(true));
+    	}else{
+    		var e = document.createElement('script');
+    		e.src = 'https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/1.0.14/webcomponents-lite.js';
+    		document.body.appendChild(e);
+    		window.addEventListener('HTMLImportsLoaded', function() {
+        		var link = document.querySelector('link[rel=import]');
+        		var content = link.import.querySelector('#content');
+        		document.querySelector('#status').appendChild(content.cloneNode(true));
+      		});
+    	}
+	</script>
+
+
+</body>
+</html>
