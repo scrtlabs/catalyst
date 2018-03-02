@@ -57,6 +57,8 @@ class Marketplace:
 
         self.web3 = Web3(HTTPProvider(ETH_REMOTE_NODE))
 
+        contract_url = urllib.urlopen(MARKETPLACE_CONTRACT)
+        
         self.mkt_contract_address = Web3.toChecksumAddress(
             contract_url.readline().decode(
                 contract_url.info().get_content_charset()).strip())
@@ -69,6 +71,8 @@ class Marketplace:
             abi=abi,
         )
 
+        contract_url = urllib.urlopen(ENIGMA_CONTRACT)
+  
         self.eng_contract_address = Web3.toChecksumAddress(
             contract_url.readline().decode(
                 contract_url.info().get_content_charset()).strip())
