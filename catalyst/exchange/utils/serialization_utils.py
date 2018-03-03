@@ -37,7 +37,13 @@ class ExchangeJSONEncoder(json.JSONEncoder):
             return obj.strftime(DATE_TIME_FORMAT)
 
         elif isinstance(obj, TradingPair):
-            return obj.to_dict()
+            asset = obj.to_dict()
+            asset['maker'] = round(asset['maker'], asset['decimals'])
+            asset['taker'] = round(asset['taker'], asset['decimals'])
+            asset['lot'] = round(asset['lot'], 4)
+            asset['min_trade_size'] = round(asset['min_trade_size'], 4)
+            asset['max_trade_size'] = round(asset['max_trade_size'], 4)
+            return asset
 
         # Let the base class default method raise the TypeError
         return JSONEncoder.default(self, obj)
