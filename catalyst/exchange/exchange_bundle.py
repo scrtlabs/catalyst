@@ -843,6 +843,7 @@ class ExchangeBundle:
         field: str
         data_frequency: str
         algo_end_dt: pd.Timestamp
+        force_auto_ingest: 
 
         Returns
         -------
