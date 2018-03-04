@@ -68,7 +68,7 @@ class TradingPairFeeSchedule(CommissionModel):
             multiplier = maker \
                 if ((order.amount > 0 and order.limit < transaction.price)
                     or (order.amount < 0 and order.limit > transaction.price)) \
-                   and order.limit_reached else taker
+                and order.limit_reached else taker
 
         fee = cost * multiplier
         return fee
