@@ -28,7 +28,8 @@ from catalyst.exchange.exchange_errors import EmptyValuesInBundleError, \
 from catalyst.exchange.utils.bundle_utils import range_in_bundle, \
     get_bcolz_chunk, get_df_from_arrays, get_assets
 from catalyst.exchange.utils.datetime_utils import get_start_dt, \
-    get_period_label, get_month_start_end, get_year_start_end
+    get_period_label, get_month_start_end, get_year_start_end, get_period, \
+    timestr_to_dt
 from catalyst.exchange.utils.exchange_utils import get_exchange_folder
 from catalyst.utils.cli import maybe_show_progress
 from catalyst.utils.paths import ensure_directory
@@ -513,8 +514,8 @@ class ExchangeBundle:
                 continue
 
             dates = pd.date_range(
-                start=get_period_label(adj_start, data_frequency),
-                end=get_period_label(adj_end, data_frequency),
+                start=get_period(adj_start, data_frequency),
+                end=get_period(adj_end, data_frequency),
                 freq='MS' if data_frequency == 'minute' else 'AS',
                 tz=UTC
             )
@@ -553,7 +554,9 @@ class ExchangeBundle:
 
             # We sort the chunks by end date to ingest most recent data first
             chunks[asset].sort(
-                key=lambda chunk: pd.to_datetime(chunk['period'])
+                key=lambda chunk: timestr_to_dt(
+                    chunk['period'], data_frequency
+                )
             )
 
         return chunks
@@ -608,7 +611,8 @@ class ExchangeBundle:
                         exchange=self.exchange_name,
                         frequency=data_frequency,
                         symbol=asset.symbol
-                    )) as it:
+                    )
+                ) as it:
                     for chunk in it:
                         problems += self.ingest_ctable(
                             asset=chunk['asset'],
@@ -623,16 +627,19 @@ class ExchangeBundle:
 
             # We sort the chunks by end date to ingest most recent data first
             all_chunks.sort(
-                key=lambda chunk: pd.to_datetime(chunk['period'])
+                key=lambda chunk: timestr_to_dt(
+                    chunk['period'], data_frequency
+                )
             )
             with maybe_show_progress(
-                    all_chunks,
-                    show_progress,
-                    label='Ingesting {frequency} price data on '
-                          '{exchange}'.format(
-                            exchange=self.exchange_name,
-                            frequency=data_frequency,
-                    )) as it:
+                all_chunks,
+                show_progress,
+                label='Ingesting {frequency} price data on '
+                      '{exchange}'.format(
+                    exchange=self.exchange_name,
+                    frequency=data_frequency,
+                )
+            ) as it:
                 for chunk in it:
                     problems += self.ingest_ctable(
                         asset=chunk['asset'],

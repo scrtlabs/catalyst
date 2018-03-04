@@ -11,8 +11,10 @@ LOG_LEVEL = int(os.environ.get('CATALYST_LOG_LEVEL', logbook.INFO))
 
 SYMBOLS_URL = 'https://s3.amazonaws.com/enigmaco/catalyst-exchanges/' \
               '{exchange}/symbols.json'
-EXCHANGE_CONFIG_URL = 'https://s3.amazonaws.com/enigmaco/exchanges/' \
+EXCHANGE_CONFIG_URL = 'https://s3.amazonaws.com/enigmaco/ohlcv/' \
                       '{exchange}/config.json'
+BUNDLE_URL = 'https://s3.amazonaws.com/enigmaco/ohlcv/' \
+              '{exchange}/{data_frequency}/{name}.tar.gz'
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M'
 DATE_FORMAT = '%Y-%m-%d'
 

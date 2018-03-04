@@ -11,10 +11,11 @@ from catalyst.exchange.exchange_bundle import ExchangeBundle, \
     BUNDLE_NAME_TEMPLATE
 from catalyst.exchange.utils.bundle_utils import get_bcolz_chunk, \
     get_df_from_arrays
-from exchange.utils.datetime_utils import get_start_dt
+from catalyst.exchange.utils.datetime_utils import get_start_dt
 from catalyst.exchange.utils.exchange_utils import get_exchange_folder
 from catalyst.exchange.utils.factory import get_exchange
-from catalyst.exchange.utils.stats_utils import df_to_string
+from catalyst.exchange.utils.stats_utils import df_to_string, \
+    set_print_settings
 from catalyst.utils.paths import ensure_directory
 
 log = getLogger('test_exchange_bundle')
@@ -42,16 +43,16 @@ class TestExchangeBundle:
 
     def test_ingest_minute(self):
         data_frequency = 'minute'
-        exchange_name = 'poloniex'
+        exchange_name = 'binance'
 
         exchange = get_exchange(exchange_name)
-        exchange_bundle = ExchangeBundle(exchange)
+        exchange_bundle = ExchangeBundle(exchange_name)
         assets = [
-            exchange.get_asset('eth_btc')
+            exchange.get_asset('eng_eth')
         ]
 
-        start = pd.to_datetime('2016-03-01', utc=True)
-        end = pd.to_datetime('2017-11-1', utc=True)
+        start = pd.to_datetime('2018-02-01', utc=True)
+        end = pd.to_datetime('2018-02-10', utc=True)
 
         log.info('ingesting exchange bundle {}'.format(exchange_name))
         exchange_bundle.ingest(
@@ -61,7 +62,8 @@ class TestExchangeBundle:
             exclude_symbols=None,
             start=start,
             end=end,
-            show_progress=True
+            show_progress=False,
+            show_breakdown=False
         )
 
         reader = exchange_bundle.get_reader(data_frequency)
@@ -72,9 +74,15 @@ class TestExchangeBundle:
                 start_dt=start,
                 end_dt=end
             )
-            print('found {} rows for {} ingestion\n{}'.format(
-                len(arrays[0]), asset.symbol, arrays[0])
+            periods = exchange_bundle.get_calendar_periods_range(
+                start, end, data_frequency
             )
+
+            dx = get_df_from_arrays(arrays[0], periods)
+            set_print_settings()
+            print('found {} rows for last ingestion:\n{}\n{}'.format(
+                len(dx), dx.head(1000), dx.tail(1000)
+            ))
         pass
 
     def test_ingest_minute_all(self):
@@ -222,9 +230,14 @@ class TestExchangeBundle:
                 start_dt=start,
                 end_dt=end
             )
-            print('found {} rows for {} ingestion\n{}'.format(
-                len(arrays[0]), asset.symbol, arrays[0])
+            periods = exchange_bundle.get_calendar_periods_range(
+                start, end, data_frequency
             )
+
+            dx = get_df_from_arrays(arrays, periods)
+            print('found {} rows for last ingestion'.format(
+                len(dx)
+            ))
         pass
 
     def test_daily_data_to_minute_table(self):
@@ -290,17 +303,22 @@ class TestExchangeBundle:
         for asset in assets:
             sid = asset.sid
 
-            daily_values = reader.load_raw_arrays(
+            arrays = reader.load_raw_arrays(
                 fields=['open', 'high', 'low', 'close', 'volume'],
                 start_dt=start,
                 end_dt=end,
                 sids=[sid],
             )
 
-            print('found {} rows for last ingestion'.format(
-                len(daily_values[0]))
+            periods = exchange_bundle.get_calendar_periods_range(
+                start, end, data_frequency
             )
-        pass
+
+            dx = get_df_from_arrays(arrays, periods)
+            print('found {} rows for last ingestion'.format(
+                len(dx)
+            ))
+            pass
 
     def test_minute_bundle(self):
         # exchange_name = 'poloniex'

@@ -164,7 +164,33 @@ def get_start_dt(end_dt, bar_count, data_frequency, include_first=True):
     return start_dt
 
 
+def timestr_to_dt(timestr, data_frequency):
+    dt_format = '%Y' if data_frequency == 'daily' else '%Y%m'
+    dt = pd.to_datetime(timestr, format=dt_format, utc=True)
+    return dt
+
+
 def get_period_label(dt, data_frequency):
+    """
+    The period label for the specified date and frequency.
+
+    Parameters
+    ----------
+    dt: datetime
+    data_frequency: str
+
+    Returns
+    -------
+    str
+
+    """
+    if data_frequency == 'minute':
+        return '{}{:02d}'.format(dt.year, dt.month)
+    else:
+        return '{}'.format(dt.year)
+
+
+def get_period(dt, data_frequency):
     """
     The period label for the specified date and frequency.
 

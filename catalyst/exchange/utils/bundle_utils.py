@@ -5,6 +5,7 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
+from catalyst.constants import BUNDLE_URL
 from catalyst.data.bundles.core import download_without_progress
 from catalyst.exchange.utils.exchange_utils import get_exchange_bundles_folder
 import os
@@ -48,10 +49,11 @@ def get_bcolz_chunk(exchange_name, symbol, data_frequency, period):
     path = os.path.join(root, name)
 
     if not os.path.isdir(path):
-        url = 'https://s3.amazonaws.com/enigmaco/catalyst-bundles/' \
-              'exchange-{exchange}/{name}.tar.gz'.format(
+        url = BUNDLE_URL.format(
             exchange=exchange_name,
-            name=name)
+            data_frequency=data_frequency,
+            name=name,
+        )
 
         bytes = download_without_progress(url)
         with tarfile.open('r', fileobj=bytes) as tar:
@@ -75,8 +77,7 @@ def get_df_from_arrays(arrays, periods):
 
     """
     ohlcv = dict()
-    for index, field in enumerate(
-            ['open', 'high', 'low', 'close', 'volume']):
+    for index, field in enumerate(['open', 'high', 'low', 'close', 'volume']):
         ohlcv[field] = arrays[index].flatten()
 
     df = pd.DataFrame(
