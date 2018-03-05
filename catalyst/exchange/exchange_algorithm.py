@@ -163,6 +163,25 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
                                                         style)
         return amount, style
 
+    def _calculate_order_target_amount(self, asset, target):
+        """
+        removes order amounts so we won't run into issues
+        when two orders are placed one after the other.
+        it then proceeds to removing positions amount at TradingAlgorithm
+        :param asset:
+        :param target:
+        :return: target
+        """
+        if asset in self.blotter.open_orders:
+            for open_order in self.blotter.open_orders[asset]:
+                current_amount = open_order.amount
+                target -= current_amount
+
+        target = super(ExchangeTradingAlgorithmBase, self). \
+            _calculate_order_target_amount(asset, target)
+
+        return target
+
     def round_order(self, amount, asset):
         """
         We need fractions with cryptocurrencies
