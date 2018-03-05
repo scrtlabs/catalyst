@@ -509,6 +509,8 @@ class Exchange:
 
         # we want to avoid receiving empty candles
         # so we request more than needed
+        # TODO: consider defining a const per asset
+        # and/or some retry mechanism (in each iteration request more data)
         requested_bar_count = bar_count + 30
         # The get_history method supports multiple asset
         candles = self.get_candles(
