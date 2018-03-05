@@ -14,6 +14,7 @@ from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.utils.exchange_utils import delete_algo_folder
 from catalyst.utils.cli import Date, Timestamp
 from catalyst.utils.run_algo import _run, load_extensions
+from catalyst.utils.run_server import run_server
 
 try:
     __IPYTHON__
@@ -505,6 +506,166 @@ def live(ctx,
     return perf
 
 
+@main.command(name='serve-live')
+@click.option(
+    '-f',
+    '--algofile',
+    default=None,
+    type=click.File('r'),
+    help='The file that contains the algorithm to run.',
+)
+@click.option(
+    '--capital-base',
+    type=float,
+    show_default=True,
+    help='The amount of capital (in base_currency) allocated to trading.',
+)
+@click.option(
+    '-t',
+    '--algotext',
+    help='The algorithm script to run.',
+)
+@click.option(
+    '-D',
+    '--define',
+    multiple=True,
+    help="Define a name to be bound in the namespace before executing"
+         " the algotext. For example '-Dname=value'. The value may be"
+         " any python expression. These are evaluated in order so they"
+         " may refer to previously defined names.",
+)
+@click.option(
+    '-o',
+    '--output',
+    default='-',
+    metavar='FILENAME',
+    show_default=True,
+    help="The location to write the perf data. If this is '-' the perf will"
+         " be written to stdout.",
+)
+@click.option(
+    '--print-algo/--no-print-algo',
+    is_flag=True,
+    default=False,
+    help='Print the algorithm to stdout.',
+)
+@ipython_only(click.option(
+    '--local-namespace/--no-local-namespace',
+    is_flag=True,
+    default=None,
+    help='Should the algorithm methods be resolved in the local namespace.'
+))
+@click.option(
+    '-x',
+    '--exchange-name',
+    help='The name of the targeted exchange.',
+)
+@click.option(
+    '-n',
+    '--algo-namespace',
+    help='A label assigned to the algorithm for data storage purposes.'
+)
+@click.option(
+    '-c',
+    '--base-currency',
+    help='The base currency used to calculate statistics '
+         '(e.g. usd, btc, eth).',
+)
+@click.option(
+    '-e',
+    '--end',
+    type=Date(tz='utc', as_timestamp=True),
+    help='An optional end date at which to stop the execution.',
+)
+@click.option(
+    '--live-graph/--no-live-graph',
+    is_flag=True,
+    default=False,
+    help='Display live graph.',
+)
+@click.option(
+    '--simulate-orders/--no-simulate-orders',
+    is_flag=True,
+    default=True,
+    help='Simulating orders enable the paper trading mode. No orders will be '
+         'sent to the exchange unless set to false.',
+)
+@click.option(
+    '--auth-aliases',
+    default=None,
+    help='Authentication file aliases for the specified exchanges. By default,'
+         'each exchange uses the "auth.json" file in the exchange folder. '
+         'Specifying an "auth2" alias would use "auth2.json". It should be '
+         'specified like this: "[exchange_name],[alias],..." For example, '
+         '"binance,auth2" or "binance,auth2,bittrex,auth2".',
+)
+@click.pass_context
+def serve_live(ctx,
+               algofile,
+               capital_base,
+               algotext,
+               define,
+               output,
+               print_algo,
+               local_namespace,
+               exchange_name,
+               algo_namespace,
+               base_currency,
+               end,
+               live_graph,
+               auth_aliases,
+               simulate_orders):
+    """Trade live with the given algorithm on the server.
+    """
+    if (algotext is not None) == (algofile is not None):
+        ctx.fail(
+            "must specify exactly one of '-f' / '--algofile' or"
+            " '-t' / '--algotext'",
+        )
+
+    if exchange_name is None:
+        ctx.fail("must specify an exchange name '-x'")
+
+    if algo_namespace is None:
+        ctx.fail("must specify an algorithm name '-n' in live execution mode")
+
+    if base_currency is None:
+        ctx.fail("must specify a base currency '-c' in live execution mode")
+
+    if capital_base is None:
+        ctx.fail("must specify a capital base with '--capital-base'")
+
+    if simulate_orders:
+        click.echo('Running in paper trading mode.', sys.stdout)
+
+    else:
+        click.echo('Running in live trading mode.', sys.stdout)
+
+    perf = run_server(
+        algofile=algofile,
+        algotext=algotext,
+        define=define,
+        capital_base=capital_base,
+        end=end,
+        output=output,
+        print_algo=print_algo,
+        live=False,
+        exchange=exchange_name,
+        algo_namespace=algo_namespace,
+        base_currency=base_currency,
+        live_graph=live_graph,
+        simulate_orders=simulate_orders,
+        auth_aliases=auth_aliases,
+    )
+
+    if output == '-':
+        click.echo(str(perf), sys.stdout)
+    elif output != os.devnull:  # make the catalyst magic not write any data
+        perf.to_pickle(output)
+
+    return perf
+
+
 @main.command(name='ingest-exchange')
 @click.option(
     '-x',
@@ -767,18 +928,12 @@ def bundles():
 @main.group()
 @click.pass_context
 def marketplace(ctx):
-    """Access the Enigma Data Marketplace to:\n
-    - Register and Publish new datasets (seller-side)\n
-    - Subscribe and Ingest premium datasets (buyer-side)\n
-    """
     pass
 
 
 @marketplace.command()
 @click.pass_context
 def ls(ctx):
-    """List all available datasets.
-    """
     click.echo('Listing of available data sources on the marketplace:',
                sys.stdout)
     marketplace = Marketplace()
@@ -793,8 +948,6 @@ def ls(ctx):
 )
 @click.pass_context
 def subscribe(ctx, dataset):
-    """Subscribe to an exisiting dataset.
-    """
     if dataset is None:
         ctx.fail("must specify a dataset to subscribe to with '--dataset'\n"
                  "List available dataset on the marketplace with "
@@ -833,8 +986,6 @@ def subscribe(ctx, dataset):
 )
 @click.pass_context
 def ingest(ctx, dataset, data_frequency, start, end):
-    """Ingest a dataset (requires subscription).
-    """
     if dataset is None:
         ctx.fail("must specify a dataset to clean with '--dataset'\n"
                  "List available dataset on the marketplace with "
@@ -852,10 +1003,8 @@ def ingest(ctx, dataset, data_frequency, start, end):
 )
 @click.pass_context
 def clean(ctx, dataset):
-    """Clean/Remove local data for a given dataset.
-    """
     if dataset is None:
-        ctx.fail("must specify a dataset to clean up with '--dataset'\n"
+        ctx.fail("must specify a dataset to ingest with '--dataset'\n"
                  "List available dataset on the marketplace with "
                  "'catalyst marketplace ls'")
     click.echo('Cleaning data source: {}'.format(dataset), sys.stdout)
@@ -867,8 +1016,6 @@ def clean(ctx, dataset):
 @marketplace.command()
 @click.pass_context
 def register(ctx):
-    """Register a new dataset.
-    """
     marketplace = Marketplace()
     marketplace.register()
 
@@ -892,8 +1039,6 @@ def register(ctx):
 )
 @click.pass_context
 def publish(ctx, dataset, datadir, watch):
-    """Publish data for a registered dataset.
-    """
     marketplace = Marketplace()
     if dataset is None:
         ctx.fail("must specify a dataset to publish data for "
