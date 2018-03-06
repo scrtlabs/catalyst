@@ -84,6 +84,7 @@ def get_df_from_arrays(arrays, periods):
         data=ohlcv,
         index=periods
     )
+    df.index.name = 'last_traded'
     return df
 
 
