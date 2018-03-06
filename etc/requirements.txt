@@ -81,7 +81,7 @@ empyrical==0.2.1
 tables==3.3.0
 
 #Catalyst dependencies
-ccxt==1.10.1094
+ccxt==1.11.22
 boto3==1.4.8
 redo==1.6
 web3==4.0.0b11; python_version > '3.4'

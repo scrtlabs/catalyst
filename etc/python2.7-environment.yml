@@ -22,7 +22,7 @@ dependencies:
   - bcolz==0.12.1
   - bottleneck==1.2.1
   - chardet==3.0.4
-  - ccxt==1.10.1094
+  - ccxt==1.11.22
 # The Enigma Data Marketplace requires Python3 because it depends on
 # web3, which requires Python3, as building its dependencies breaks in Python2
 #  - web3==4.0.0b7
