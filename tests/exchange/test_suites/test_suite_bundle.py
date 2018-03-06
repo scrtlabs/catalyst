@@ -215,8 +215,8 @@ class TestSuiteBundle:
             # assets = select_random_assets(
             #     exchange.assets, asset_population
             # )
-            assets = [exchange.get_asset('eng_eth')]
-            end_dt = None
+            assets = [exchange.get_asset('bat_btc')]
+            end_dt = pd.to_datetime('2018-03-03', utc=True)
             for asset in assets:
                 attribute = 'end_{}'.format(data_frequency)
                 asset_end_dt = getattr(asset, attribute)

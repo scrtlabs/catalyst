@@ -48,13 +48,13 @@ class TestExchangeBundle:
         exchange = get_exchange(exchange_name)
         exchange_bundle = ExchangeBundle(exchange_name)
         assets = [
-            exchange.get_asset('eng_eth')
+            exchange.get_asset('bat_btc')
         ]
 
-        # start = pd.to_datetime('2018-02-01', utc=True)
-        # end = pd.to_datetime('2018-02-28', utc=True)
-        start = None
-        end = None
+        start = pd.to_datetime('2018-03-01', utc=True)
+        end = pd.to_datetime('2018-03-04', utc=True)
+        # start = None
+        # end = None
 
         log.info('ingesting exchange bundle {}'.format(exchange_name))
         exchange_bundle.ingest(
@@ -62,8 +62,8 @@ class TestExchangeBundle:
             include_symbols=','.join([asset.symbol for asset in assets]),
             # include_symbols=None,
             exclude_symbols=None,
-            start=None,
-            end=None,
+            start=start,
+            end=end,
             show_progress=False,
             show_breakdown=False
         )
@@ -83,7 +83,7 @@ class TestExchangeBundle:
             dx = get_df_from_arrays(arrays[0], periods)
             set_print_settings()
             print('found {} rows for last ingestion:\n{}\n{}'.format(
-                len(dx), dx.head(1000), dx.tail(1000)
+                len(dx), dx.head(10), dx.tail(10)
             ))
         pass
 
