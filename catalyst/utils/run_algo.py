@@ -10,6 +10,7 @@ import click
 import pandas as pd
 from six import string_types
 
+import catalyst
 from catalyst.data.bundles import load
 from catalyst.data.data_portal import DataPortal
 from catalyst.exchange.exchange_pricing_loader import ExchangePricingLoader, \
@@ -23,7 +24,7 @@ try:
     from pygments.formatters import TerminalFormatter
 
     PYGMENTS = True
-except:
+except ImportError:
     PYGMENTS = False
 from toolz import valfilter, concatv
 from functools import partial
@@ -151,6 +152,7 @@ def _run(handle_data,
         'We encourage you to report any issue on GitHub: '
         'https://github.com/enigmampc/catalyst/issues'
     )
+    log.info('Catalyst version {}'.format(catalyst.__version__))
     sleep(3)
 
     if live:
