@@ -208,7 +208,7 @@ class TestSuiteBundle:
             freq = random.sample(frequencies, 1)[0]
             rnd = random.SystemRandom()
             # field = rnd.choice(['open', 'high', 'low', 'close', 'volume'])
-            field = rnd.choice(['close', 'volume'])
+            field = rnd.choice(['close'])
 
             bar_count = random.randint(3, 6)
 
