@@ -197,6 +197,7 @@ class TestSuiteBundle:
         #     population=exchange_population,
         #     features=[bundle],
         # )  # Type: list[Exchange]
+        # TODO: currently focusing on Binance, try other exchanges
         exchanges = [get_exchange('binance', skip_init=True)]
 
         data_portal = TestSuiteBundle.get_data_portal(exchanges)
@@ -207,13 +208,14 @@ class TestSuiteBundle:
             freq = random.sample(frequencies, 1)[0]
             rnd = random.SystemRandom()
             # field = rnd.choice(['open', 'high', 'low', 'close', 'volume'])
-            field = rnd.choice(['volume'])
+            field = rnd.choice(['close', 'volume'])
 
             bar_count = random.randint(3, 6)
 
-            assets = select_random_assets(
-                exchange.assets, asset_population
-            )
+            # assets = select_random_assets(
+            #     exchange.assets, asset_population
+            # )
+            assets = [exchange.get_asset('eng_eth')]
             end_dt = None
             for asset in assets:
                 attribute = 'end_{}'.format(data_frequency)
