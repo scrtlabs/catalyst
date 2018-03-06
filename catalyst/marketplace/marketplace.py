@@ -23,7 +23,7 @@ from catalyst.exchange.utils.stats_utils import set_print_settings
 from catalyst.marketplace.marketplace_errors import (
     MarketplacePubAddressEmpty, MarketplaceDatasetNotFound,
     MarketplaceNoAddressMatch, MarketplaceHTTPRequest,
-    MarketplaceNoCSVFiles)
+    MarketplaceNoCSVFiles, MarketplaceRequiresPython3)
 from catalyst.marketplace.utils.auth_utils import get_key_secret, \
     get_signed_headers
 from catalyst.marketplace.utils.bundle_utils import merge_bundles
@@ -44,7 +44,10 @@ log = logbook.Logger('Marketplace', level=LOG_LEVEL)
 class Marketplace:
     def __init__(self):
         global Web3
-        from web3 import Web3, HTTPProvider
+        try:
+            from web3 import Web3, HTTPProvider
+        except ImportError:
+            raise MarketplaceRequiresPython3()
 
         self.addresses = get_user_pubaddr()
 
@@ -60,7 +63,8 @@ class Marketplace:
         contract_url = urllib.urlopen(MARKETPLACE_CONTRACT)
 
         self.mkt_contract_address = Web3.toChecksumAddress(
-            contract_url.readline().strip())
+            contract_url.readline().decode(
+                contract_url.info().get_content_charset()).strip())
 
         abi_url = urllib.urlopen(MARKETPLACE_CONTRACT_ABI)
         abi = json.load(abi_url)
@@ -73,7 +77,8 @@ class Marketplace:
         contract_url = urllib.urlopen(ENIGMA_CONTRACT)
 
         self.eng_contract_address = Web3.toChecksumAddress(
-            contract_url.readline().strip())
+            contract_url.readline().decode(
+                contract_url.info().get_content_charset()).strip())
 
         abi_url = urllib.urlopen(ENIGMA_CONTRACT_ABI)
         abi = json.load(abi_url)
@@ -148,13 +153,13 @@ class Marketplace:
               'Gas Price:\t\t[Accept the default value]\n'
               'Nonce:\t\t\t{nonce}\n'
               'Data:\t\t\t{data}\n'.format(
-            _from=from_address,
-            to=tx['to'],
-            value=tx['value'],
-            gas=tx['gas'],
-            nonce=tx['nonce'],
-            data=tx['data'], )
-        )
+                _from=from_address,
+                to=tx['to'],
+                value=tx['value'],
+                gas=tx['gas'],
+                nonce=tx['nonce'],
+                data=tx['data'], )
+              )
 
         signed_tx = input('Copy and Paste the "Signed Transaction" '
                           'field here:\n')
@@ -259,14 +264,14 @@ class Marketplace:
                   'buy: {} ENG. Get enough ENG to cover the costs of the '
                   'monthly\nsubscription for what you are trying to buy, '
                   'and try again.'.format(
-                address, from_grains(balance), price))
+                    address, from_grains(balance), price))
             return
 
         while True:
             agree_pay = input('Please confirm that you agree to pay {} ENG '
                               'for a monthly subscription to the dataset "{}" '
                               'starting today. [default: Y] '.format(
-                price, dataset)) or 'y'
+                                price, dataset)) or 'y'
             if agree_pay.lower() not in ('y', 'n'):
                 print("Please answer Y or N.")
             else:
@@ -369,7 +374,7 @@ class Marketplace:
               'You can now ingest this dataset anytime during the '
               'next month by running the following command:\n'
               'catalyst marketplace ingest --dataset={}'.format(
-            dataset, address, dataset))
+                dataset, address, dataset))
 
     def process_temp_bundle(self, ds_name, path):
         """
@@ -426,10 +431,10 @@ class Marketplace:
             print('Your subscription to dataset "{}" expired on {} UTC.'
                   'Please renew your subscription by running:\n'
                   'catalyst marketplace subscribe --dataset={}'.format(
-                ds_name,
-                pd.to_datetime(check_sub[4], unit='s', utc=True),
-                ds_name)
-            )
+                    ds_name,
+                    pd.to_datetime(check_sub[4], unit='s', utc=True),
+                    ds_name)
+                  )
 
         if 'key' in self.addresses[address_i]:
             key = self.addresses[address_i]['key']
@@ -621,7 +626,7 @@ class Marketplace:
             )
 
         except Exception as e:
-            print('Unable to subscribe to data source: {}'.format(e))
+            print('Unable to register the requested dataset: {}'.format(e))
             return
 
         self.check_transaction(tx_hash)

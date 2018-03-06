@@ -17,7 +17,6 @@ from catalyst.exchange.utils.serialization_utils import ExchangeJSONEncoder, \
     ExchangeJSONDecoder, ConfigJSONEncoder
 from catalyst.utils.paths import data_root, ensure_directory, \
     last_modified_time
-from catalyst.exchange.utils.datetime_utils import get_periods_range
 
 
 def get_sid(symbol):
@@ -673,24 +672,15 @@ def transform_candles_to_df(candles):
     return pd.DataFrame(candles).set_index('last_traded')
 
 
-def get_candles_df(candles, field, freq, bar_count, end_dt=None):
+def get_candles_df(candles, field, freq, bar_count, end_dt):
     all_series = dict()
 
     for asset in candles:
         asset_df = transform_candles_to_df(candles[asset])
-        rounded_end_dt = end_dt.round(freq)
-
-        periods = get_periods_range(
-            start_dt=None, end_dt=rounded_end_dt,
-            freq=freq, periods=bar_count
-        )
-
-        if rounded_end_dt > end_dt:
-            periods = periods[:-1]
-        elif rounded_end_dt <= end_dt:
-            periods = periods[1:]
-
-        # periods = pd.date_range(end=end_dt, periods=bar_count, freq=freq)
+        rounded_end_dt = end_dt.floor(freq)
+        periods = pd.date_range(end=rounded_end_dt,
+                                periods=bar_count,
+                                freq=freq)
         asset_df = forward_fill_df_if_needed(asset_df, periods)
 
         all_series[asset] = pd.Series(asset_df[field])

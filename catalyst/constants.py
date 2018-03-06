@@ -30,20 +30,20 @@ AUTH_SERVER = 'https://data.enigma.co'
 # TODO: switch to mainnet
 ETH_REMOTE_NODE = 'https://ropsten.infura.io/'
 
-# TODO: move to MASTER branch on github
+
 MARKETPLACE_CONTRACT = 'https://raw.githubusercontent.com/enigmampc/' \
-                       'catalyst/develop/catalyst/marketplace/' \
+                       'catalyst/master/catalyst/marketplace/' \
                        'contract_marketplace_address.txt'
 
 MARKETPLACE_CONTRACT_ABI = 'https://raw.githubusercontent.com/enigmampc/' \
-                           'catalyst/develop/catalyst/marketplace/' \
+                           'catalyst/master/catalyst/marketplace/' \
                            'contract_marketplace_abi.json'
 
 # TODO: switch to mainnet
 ENIGMA_CONTRACT = 'https://raw.githubusercontent.com/enigmampc/catalyst/' \
-                  'develop/catalyst/marketplace/' \
+                  'master/catalyst/marketplace/' \
                   'contract_enigma_address.txt'
 
 ENIGMA_CONTRACT_ABI = 'https://raw.githubusercontent.com/enigmampc/' \
-                      'catalyst/develop/catalyst/marketplace/' \
+                      'catalyst/master/catalyst/marketplace/' \
                       'contract_enigma_abi.json'

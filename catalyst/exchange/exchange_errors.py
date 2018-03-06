@@ -324,6 +324,13 @@ class BalanceTooLowError(ZiplineError):
     ).strip()
 
 
+class NoCandlesReceivedFromExchange(ZiplineError):
+    msg = (
+        'Although requesting {bar_count} candles until {end_dt} of asset {asset}, '
+        'an empty list of candles was received for {exchange}.'
+    ).strip()
+
+
 class MarketsNotFoundError(ZiplineError):
     msg = (
         'Exchange {exchange} contains no valid market so it is unusable in '

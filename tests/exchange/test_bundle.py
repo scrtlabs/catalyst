@@ -51,8 +51,10 @@ class TestExchangeBundle:
             exchange.get_asset('eng_eth')
         ]
 
-        start = pd.to_datetime('2018-02-01', utc=True)
-        end = pd.to_datetime('2018-02-10', utc=True)
+        # start = pd.to_datetime('2018-02-01', utc=True)
+        # end = pd.to_datetime('2018-02-28', utc=True)
+        start = None
+        end = None
 
         log.info('ingesting exchange bundle {}'.format(exchange_name))
         exchange_bundle.ingest(
@@ -60,8 +62,8 @@ class TestExchangeBundle:
             include_symbols=','.join([asset.symbol for asset in assets]),
             # include_symbols=None,
             exclude_symbols=None,
-            start=start,
-            end=end,
+            start=None,
+            end=None,
             show_progress=False,
             show_breakdown=False
         )

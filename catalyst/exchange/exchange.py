@@ -1,5 +1,4 @@
 import abc
-import pytz
 from abc import ABCMeta, abstractmethod, abstractproperty
 from datetime import timedelta
 from time import sleep
@@ -14,7 +13,8 @@ from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     SymbolNotFoundOnExchange, \
     PricingDataNotLoadedError, \
-    NoDataAvailableOnExchange, NoValueForField, LastCandleTooEarlyError, \
+    NoDataAvailableOnExchange, NoValueForField, \
+    NoCandlesReceivedFromExchange, \
     TickerNotFoundError, NotEnoughCashError
 from catalyst.exchange.utils.datetime_utils import get_delta, \
     get_periods_range, \
@@ -257,7 +257,8 @@ class Exchange:
             elif data_frequency is not None:
                 applies = (
                     (
-                        data_frequency == 'minute' and a.end_minute is not None)
+                        data_frequency == 'minute' and
+                        a.end_minute is not None)
                     or (
                         data_frequency == 'daily' and a.end_daily is not None)
                 )
@@ -485,49 +486,52 @@ class Exchange:
         freq, candle_size, unit, data_frequency = get_frequency(
             frequency, data_frequency, supported_freqs=['T', 'D', 'H']
         )
+
+        # we want to avoid receiving empty candles
+        # so we request more than needed
+        # TODO: consider defining a const per asset
+        # and/or some retry mechanism (in each iteration request more data)
+        requested_bar_count = bar_count + 30
         # The get_history method supports multiple asset
         candles = self.get_candles(
             freq=freq,
             assets=assets,
-            bar_count=bar_count,
+            bar_count=requested_bar_count,
             end_dt=end_dt if not is_current else None,
         )
 
-        series = dict()
+        # candles sanity check - verify no empty candles were received:
         for asset in candles:
-            if candles[asset]:
-                first_candle = candles[asset][0]
-                asset_series = self.get_series_from_candles(
-                    candles=candles[asset],
-                    start_dt=first_candle['last_traded'],
+            if not candles[asset]:
+                raise NoCandlesReceivedFromExchange(
+                    bar_count=requested_bar_count,
                     end_dt=end_dt,
-                    data_frequency=frequency,
-                    field=field,
-                )
+                    asset=asset,
+                    exchange=self.name)
 
-                delta_candle_size = candle_size * 60 if unit == 'H' else candle_size
-                # Checking to make sure that the dates match
-                delta = get_delta(delta_candle_size, data_frequency)
-                adj_end_dt = end_dt - delta
-                last_traded = asset_series.index[-1]
+        series = get_candles_df(candles=candles,
+                                field=field,
+                                freq=frequency,
+                                bar_count=requested_bar_count,
+                                end_dt=end_dt)
 
-                if last_traded < adj_end_dt:
-                    raise LastCandleTooEarlyError(
-                        last_traded=last_traded,
-                        end_dt=adj_end_dt,
-                        exchange=self.name,
-                    )
-            else: # empty candle received
-                # because other assets are tz-aware, we need its tz to be set as well
-                asset_series = pd.Series([], index=pd.DatetimeIndex([], tz=pytz.utc))
-
-
-            series[asset] = asset_series
+        # TODO: consider how to approach this edge case
+        # delta_candle_size = candle_size * 60 if unit == 'H' else candle_size
+        # Checking to make sure that the dates match
+        # delta = get_delta(delta_candle_size, data_frequency)
+        # adj_end_dt = end_dt - delta
+        # last_traded = asset_series.index[-1]
+        # if last_traded < adj_end_dt:
+        #    raise LastCandleTooEarlyError(
+        #        last_traded=last_traded,
+        #        end_dt=adj_end_dt,
+        #        exchange=self.name,
+        #    )
 
         df = pd.DataFrame(series)
-        #df.dropna(inplace=True) # commented out due to issue 236
+        df.dropna(inplace=True)
 
-        return df
+        return df.tail(bar_count)
 
     def get_history_window_with_bundle(self,
                                        assets,
@@ -575,7 +579,8 @@ class Exchange:
             A dataframe containing the requested data.
 
         """
-        # TODO: this function needs some work, we're currently using it just for benchmark data
+        # TODO: this function needs some work,
+        # we're currently using it just for benchmark data
         freq, candle_size, unit, data_frequency = get_frequency(
             frequency, data_frequency
         )
@@ -601,7 +606,7 @@ class Exchange:
                 start_dt = get_start_dt(end_dt, adj_bar_count, data_frequency)
                 trailing_dt = \
                     series[asset].index[-1] + get_delta(1, data_frequency) \
-                        if asset in series else start_dt
+                    if asset in series else start_dt
 
                 # The get_history method supports multiple asset
                 # Use the original frequency to let each api optimize
