@@ -795,10 +795,6 @@ def ls(ctx):
 def subscribe(ctx, dataset):
     """Subscribe to an exisiting dataset.
     """
-    if dataset is None:
-        ctx.fail("must specify a dataset to subscribe to with '--dataset'\n"
-                 "List available dataset on the marketplace with "
-                 "'catalyst marketplace ls'")
     marketplace = Marketplace()
     marketplace.subscribe(dataset)
 
