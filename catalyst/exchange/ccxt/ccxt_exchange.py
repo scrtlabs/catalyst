@@ -232,6 +232,21 @@ class CCXT(Exchange):
 
         return frequencies
 
+    def substitute_currency_code(self, currency, source='catalyst'):
+        if source == 'catalyst':
+            currency = currency.upper()
+
+            key = self.api.common_currency_code(currency).lower()
+            self._common_symbols[key] = currency.lower()
+            return key
+
+        else:
+            if currency in self._common_symbols:
+                return self._common_symbols[currency]
+
+            else:
+                return currency.lower()
+
     def get_symbol(self, asset_or_symbol, source='catalyst'):
         """
         The CCXT symbol.
