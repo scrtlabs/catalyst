@@ -4,16 +4,15 @@ import base64
 import requests
 import pandas as pd
 import json
-from flask import (
-                    Flask, jsonify, abort,
-                    make_response, request,
-                    url_for,
-                )
-
-from catalyst.utils.run_algo import _run
 
 
 def convert_date(date):
+    """
+    when transferring dates by json,
+    converts it to str
+    :param date:
+    :return: str(date)
+    """
     if isinstance(date, pd.Timestamp):
         return date.__str__()
 
@@ -48,6 +47,10 @@ def run_server(
         stats_output,
         ):
 
+    # address to send
+    url = 'http://127.0.0.1:5000/api/catalyst/serve'
+
+    # argument preparation - encode the file for transfer
     if algotext:
         algotext = base64.b64encode(algotext)
     else:
@@ -84,98 +87,9 @@ def run_server(
         'auth_aliases': auth_aliases,
     }}
 
-    url = 'http://127.0.0.1:5000/api/v1.0/tasks'
-    response = requests.post(url, json=json.dumps(
-        json_file, default=convert_date))
-
-
-app = Flask(__name__)
-
-
-def exec_catalyst(arguments):
-    arguments['algotext'] = base64.b64decode(arguments['algotext'])
-    if arguments['start'] is not None:
-        arguments['start'] = pd.Timestamp(arguments['start'])
-    if arguments['end'] is not None:
-        arguments['end'] = pd.Timestamp(arguments['end'])
-    _run(**arguments)
-
-
-def make_public_task(task):
-    new_task = {}
-    for field in task:
-        if field == 'id':
-            new_task['uri'] = url_for('get_task', task_id=task['id'], _external=True)
-        else:
-            new_task[field] = task[field]
-    return new_task
-
-
-# @app.route('/')
-# def index():
-#     return "Hello, World!"
-
-
-# @app.route('/api/v1.0/tasks/<int:task_id>', methods=['GET'])
-# def get_task(task_id):
-#     task = [task for task in tasks if task['id'] == task_id]
-#     if len(task) == 0:
-#         abort(404)
-#     return jsonify({'task': make_public_task(task[0])})
-#
-#
-# @app.route('/api/v1.0/tasks', methods=['GET'])
-# def get_tasks():
-#     return jsonify({'tasks': [make_public_task(task) for task in tasks]})
-
-
-@app.errorhandler(404)
-def not_found(error):
-    return make_response(jsonify({'error': 'Not found'}), 400)
-
-
-@app.route('/api/v1.0/tasks', methods=['POST'])
-def create_task():
-    if not request.json or 'arguments' not in request.json:
-        abort(400)
-    arguments = json.loads(request.json)['arguments']
-    exec_catalyst(arguments)
-    # task = {
-    #     'id': tasks[-1]['id'] + 1,
-    #     'arguments': request.json['arguments'],
-    #     'done': False
-    # }
-    # tasks.append(task)
-    #
-    # return jsonify({'task': [make_public_task(task)]}), 201
-    return jsonify({"success": "man"}), 201
-
-# @app.route('/api/v1.0/tasks/<int:task_id>', methods=['PUT'])
-# def update_task(task_id):
-#     task = [task for task in tasks if task['id'] == task_id]
-#     if len(task) == 0:
-#         abort(404)
-#     if not request.json:
-#         abort(400)
-#     if 'arguments' in request.json and type(request.json['arguments']) != unicode:
-#         abort(400)
-#     if 'description' in request.json and type(request.json['description']) is not unicode:
-#         abort(400)
-#     if 'done' in request.json and type(request.json['done']) is not bool:
-#         abort(400)
-#     task[0]['arguments'] = request.json.get('arguments', task[0]['arguments'])
-#     task[0]['done'] = request.json.get('done', task[0]['done'])
-#     return jsonify({'task': [make_public_task(task[0])]})
-#
-#
-# @app.route('/api/v1.0/tasks/<int:task_id>', methods=['DELETE'])
-# def delete_task(task_id):
-#     task = [task for task in tasks if task['id'] == task_id]
-#     if len(task) == 0:
-#         abort(404)
-#     tasks.remove(task[0])
-#     return jsonify({'result': True})
-
-
-if __name__ == '__main__':
-    app.run(debug=True, threaded=True)
+    response = requests.post(url,
+                             json=json.dumps(
+                                    json_file,
+                                    default=convert_date
+                                )
+                             )
