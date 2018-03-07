@@ -386,7 +386,7 @@ class CCXT(Exchange):
         )
 
     def get_candles(self, freq, assets, bar_count=1, start_dt=None,
-                    end_dt=None):
+                    end_dt=None, floor_dates=True):
         is_single = (isinstance(assets, TradingPair))
         if is_single:
             assets = [assets]
@@ -433,16 +433,20 @@ class CCXT(Exchange):
 
             candles[asset] = []
             for ohlcv in ohlcvs:
-                candles[asset].append(dict(
-                    last_traded=pd.to_datetime(
-                        ohlcv[0], unit='ms', utc=True
-                    ),
-                    open=ohlcv[1],
-                    high=ohlcv[2],
-                    low=ohlcv[3],
-                    close=ohlcv[4],
-                    volume=ohlcv[5]
-                ))
+                dt = pd.to_datetime(ohlcv[0], unit='ms', utc=True)
+                if floor_dates:
+                    dt = dt.floor('1T')
+
+                candles[asset].append(
+                    dict(
+                        last_traded=dt,
+                        open=ohlcv[1],
+                        high=ohlcv[2],
+                        low=ohlcv[3],
+                        close=ohlcv[4],
+                        volume=ohlcv[5],
+                    )
+                )
             candles[asset] = sorted(
                 candles[asset], key=lambda c: c['last_traded']
             )
@@ -879,7 +883,7 @@ class CCXT(Exchange):
             symbol = self.get_symbol(asset_or_symbol) \
                 if asset_or_symbol is not None else None
             self.api.cancel_order(id=order_id,
-                                  symbol=symbol, params= params)
+                                  symbol=symbol, params=params)
 
         except (ExchangeError, NetworkError) as e:
             log.warn(
