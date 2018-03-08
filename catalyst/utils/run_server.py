@@ -48,7 +48,7 @@ def run_server(
         ):
 
     # address to send
-    url = 'http://127.0.0.1:5000/api/catalyst/serve'
+    url = 'http://sandbox.enigma.co/api/catalyst/serve'
 
     # argument preparation - encode the file for transfer
     if algotext:
