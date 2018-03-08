@@ -48,11 +48,11 @@ class TestExchangeBundle:
         exchange = get_exchange(exchange_name)
         exchange_bundle = ExchangeBundle(exchange_name)
         assets = [
-            exchange.get_asset('bat_btc')
+            exchange.get_asset('cmt_bnb')
         ]
 
         start = pd.to_datetime('2018-03-01', utc=True)
-        end = pd.to_datetime('2018-03-04', utc=True)
+        end = pd.to_datetime('2018-03-07', utc=True)
         # start = None
         # end = None
 

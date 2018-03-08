@@ -205,18 +205,20 @@ class TestSuiteBundle:
             exchange.init()
 
             frequencies = exchange.get_candle_frequencies(data_frequency)
-            freq = random.sample(frequencies, 1)[0]
+            # freq = random.sample(frequencies, 1)[0]
+            freq = '15T'
             rnd = random.SystemRandom()
             # field = rnd.choice(['open', 'high', 'low', 'close', 'volume'])
             field = rnd.choice(['close'])
 
-            bar_count = random.randint(3, 6)
+            # bar_count = random.randint(3, 6)
+            bar_count = 5
 
             # assets = select_random_assets(
             #     exchange.assets, asset_population
             # )
-            assets = [exchange.get_asset('bat_btc')]
-            end_dt = pd.to_datetime('2018-03-03', utc=True)
+            assets = [exchange.get_asset('cmt_bnb')]
+            end_dt = pd.to_datetime('2018-03-07', utc=True)
             for asset in assets:
                 attribute = 'end_{}'.format(data_frequency)
                 asset_end_dt = getattr(asset, attribute)
