@@ -43,16 +43,16 @@ class TestExchangeBundle:
 
     def test_ingest_minute(self):
         data_frequency = 'minute'
-        exchange_name = 'binance'
+        exchange_name = 'poloniex'
 
         exchange = get_exchange(exchange_name)
         exchange_bundle = ExchangeBundle(exchange_name)
         assets = [
-            exchange.get_asset('cmt_bnb')
+            exchange.get_asset('bch_eth')
         ]
 
-        start = pd.to_datetime('2018-03-01', utc=True)
-        end = pd.to_datetime('2018-03-07', utc=True)
+        start = pd.to_datetime('2018-01-01', utc=True)
+        end = pd.to_datetime('2018-03-01', utc=True)
         # start = None
         # end = None
 

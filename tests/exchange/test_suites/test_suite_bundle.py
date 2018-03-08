@@ -198,7 +198,7 @@ class TestSuiteBundle:
         #     features=[bundle],
         # )  # Type: list[Exchange]
         # TODO: currently focusing on Binance, try other exchanges
-        exchanges = [get_exchange('binance', skip_init=True)]
+        exchanges = [get_exchange('poloniex', skip_init=True)]
 
         data_portal = TestSuiteBundle.get_data_portal(exchanges)
         for exchange in exchanges:
@@ -206,7 +206,7 @@ class TestSuiteBundle:
 
             frequencies = exchange.get_candle_frequencies(data_frequency)
             # freq = random.sample(frequencies, 1)[0]
-            freq = '15T'
+            freq = '5T'
             rnd = random.SystemRandom()
             # field = rnd.choice(['open', 'high', 'low', 'close', 'volume'])
             field = rnd.choice(['close'])
@@ -217,8 +217,8 @@ class TestSuiteBundle:
             # assets = select_random_assets(
             #     exchange.assets, asset_population
             # )
-            assets = [exchange.get_asset('cmt_bnb')]
-            end_dt = pd.to_datetime('2018-03-07', utc=True)
+            assets = [exchange.get_asset('bch_eth')]
+            end_dt = pd.to_datetime('2018-03-01', utc=True)
             for asset in assets:
                 attribute = 'end_{}'.format(data_frequency)
                 asset_end_dt = getattr(asset, attribute)
