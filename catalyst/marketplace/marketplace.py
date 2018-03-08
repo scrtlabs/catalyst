@@ -233,7 +233,6 @@ class Marketplace:
                             df_sets.size-1))
                     else:
                         dataset = df_sets.iloc[dataset_num]['dataset']
-                        print(dataset)
                         break
 
         dataset = dataset.lower()
@@ -437,7 +436,33 @@ class Marketplace:
 
         pass
 
-    def ingest(self, ds_name, start=None, end=None, force_download=False):
+    def ingest(self, ds_name=None, start=None, end=None, force_download=False):
+
+        if ds_name is None:
+
+            df_sets = self._list()
+            if df_sets.empty:
+                print('There are no datasets available yet.')
+                return
+
+            set_print_settings()
+            while True:
+                print(df_sets)
+                dataset_num = input('Choose the dataset you want to '
+                                    'ingest [0..{}]: '.format(
+                                        df_sets.size-1))
+                try:
+                    dataset_num = int(dataset_num)
+                except ValueError:
+                    print('Enter a number between 0 and {}'.format(
+                        df_sets.size-1))
+                else:
+                    if dataset_num not in range(0, df_sets.size):
+                        print('Enter a number between 0 and {}'.format(
+                            df_sets.size-1))
+                    else:
+                        ds_name = df_sets.iloc[dataset_num]['dataset']
+                        break
 
         # ds_name = ds_name.lower()
 

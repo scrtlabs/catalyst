@@ -831,11 +831,6 @@ def subscribe(ctx, dataset):
 def ingest(ctx, dataset, data_frequency, start, end):
     """Ingest a dataset (requires subscription).
     """
-    if dataset is None:
-        ctx.fail("must specify a dataset to clean with '--dataset'\n"
-                 "List available dataset on the marketplace with "
-                 "'catalyst marketplace ls'")
-    click.echo('Ingesting data: {}'.format(dataset), sys.stdout)
     marketplace = Marketplace()
     marketplace.ingest(dataset, data_frequency, start, end)
 
