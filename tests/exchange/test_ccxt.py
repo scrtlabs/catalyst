@@ -5,7 +5,8 @@ from catalyst.exchange.utils.stats_utils import set_print_settings
 from .base import BaseExchangeTestCase
 from catalyst.exchange.ccxt.ccxt_exchange import CCXT
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
-from catalyst.exchange.utils.exchange_utils import get_exchange_auth
+from catalyst.exchange.utils.exchange_utils import get_exchange_auth, \
+    get_trades_df, candles_from_trades
 from catalyst.finance.order import Order
 
 log = Logger('test_ccxt')
@@ -14,12 +15,13 @@ log = Logger('test_ccxt')
 class TestCCXT(BaseExchangeTestCase):
     @classmethod
     def setup(self):
-        exchange_name = 'bittrex'
+        exchange_name = 'binance'
         auth = get_exchange_auth(exchange_name)
         self.exchange = CCXT(
             exchange_name=exchange_name,
             key=auth['key'],
             secret=auth['secret'],
+            password=None,
             base_currency='usdt',
         )
         self.exchange.init()
@@ -88,6 +90,37 @@ class TestCCXT(BaseExchangeTestCase):
 
         trades = self.exchange.get_trades(asset)
         assert trades
+        pass
+
+    def test_validate_volume(self):
+        asset = self.exchange.get_asset('eng_eth')
+        candles = self.exchange.get_candles(
+            freq='1T',
+            assets=[asset],
+            bar_count=10,
+        )
+        df = pd.DataFrame(candles[asset])
+        df.set_index('last_traded', drop=True, inplace=True)
+
+        df.drop_duplicates()
+        df.sort_index(inplace=True, ascending=False)
+        assert candles
+
+        start_dt = df.index[-1]
+        trades = self.exchange.get_trades(
+            asset, start_dt=start_dt, my_trades=False
+        )
+        assert trades
+
+        trades_df = get_trades_df(trades)
+        df2 = candles_from_trades(trades_df, '1T')
+
+        set_print_settings()
+        log.info(
+            'comparing candles / resampled trades:\n{}\n{}'.format(
+                df, df2
+            )
+        )
         pass
 
     def test_get_executed_order(self):

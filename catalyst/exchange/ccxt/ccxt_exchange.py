@@ -1016,19 +1016,27 @@ class CCXT(Exchange):
         return result
 
     def get_trades(self, asset, my_trades=True, start_dt=None, limit=100):
-        if not my_trades:
-            raise NotImplemented(
-                'get_trades only supports "my trades"'
-            )
-
         # TODO: is it possible to sort this? Limit is useless otherwise.
         ccxt_symbol = self.get_symbol(asset)
+        if start_dt:
+            delta = start_dt - get_epoch()
+            since = int(delta.total_seconds()) * 1000
+        else:
+            since = None
+
         try:
-            trades = self.api.fetch_my_trades(
-                symbol=ccxt_symbol,
-                since=start_dt,
-                limit=limit,
-            )
+            if my_trades:
+                trades = self.api.fetch_my_trades(
+                    symbol=ccxt_symbol,
+                    since=since,
+                    limit=limit,
+                )
+            else:
+                trades = self.api.fetch_trades(
+                    symbol=ccxt_symbol,
+                    since=since,
+                    limit=limit,
+                )
         except (ExchangeError, NetworkError) as e:
             log.warn(
                 'unable to fetch trades {} / {}: {}'.format(

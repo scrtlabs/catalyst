@@ -1,18 +1,16 @@
 import hashlib
-import json
 import os
-import pickle
 import shutil
-from datetime import date, datetime
 
+import json
 import pandas as pd
+import pickle
 from catalyst.assets._assets import TradingPair
+from datetime import date, datetime
 from six import string_types
 from six.moves.urllib import request
 
-from catalyst.constants import DATE_FORMAT, SYMBOLS_URL
-from catalyst.exchange.exchange_errors import ExchangeSymbolsNotFound, \
-    InvalidHistoryFrequencyError, InvalidHistoryFrequencyAlias
+from catalyst.constants import EXCHANGE_CONFIG_URL
 from catalyst.exchange.utils.serialization_utils import ExchangeJSONEncoder, \
     ExchangeJSONDecoder, ConfigJSONEncoder
 from catalyst.utils.paths import data_root, ensure_directory, \
@@ -141,6 +139,7 @@ def get_exchange_config(exchange_name, filename=None, environ=None):
 
         except ValueError:
             return dict()
+
 
 def save_exchange_config(exchange_name, config, filename=None, environ=None):
     """
@@ -688,5 +687,35 @@ def get_candles_df(candles, field, freq, bar_count, end_dt):
     df = pd.DataFrame(all_series)
 
     df.dropna(inplace=True)
+
+    return df
+
+
+def get_trades_df(trades):
+    df = pd.DataFrame(trades)
+    df.index = pd.to_datetime(df.pop('datetime'))
+    df.index = df.index.tz_localize('UTC')
+
+    return df
+
+
+def candles_from_trades(trades_df, freq):
+    """
+    Calculate OHLCV from candles.
+
+    Parameters
+    ----------
+    trades_df
+    freq
+
+    Returns
+    -------
+
+    """
+    df = trades_df['price'].resample(freq).ohlc()  # type: pd.DataFrame
+    df['volume'] = trades_df['amount'].resample(freq).sum()
+
+    df.dropna(axis=0, how='all', inplace=True)
+    df.sort_index(inplace=True, ascending=False)
 
     return df
