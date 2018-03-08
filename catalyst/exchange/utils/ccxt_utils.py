@@ -71,7 +71,7 @@ def scan_exchange_configs(features=None, history=None, is_authenticated=False,
 
 
 def get_exchange_config(exchange_name, path=None, environ=None,
-                        expiry='2H'):
+                        expiry='1H'):
     """
     The de-serialized content of the exchange's config.json.
     Parameters

@@ -13,6 +13,7 @@ from six.moves.urllib import request
 from catalyst.constants import EXCHANGE_CONFIG_URL
 from catalyst.exchange.utils.serialization_utils import ExchangeJSONEncoder, \
     ExchangeJSONDecoder, ConfigJSONEncoder
+from catalyst.utils.deprecate import deprecated
 from catalyst.utils.paths import data_root, ensure_directory, \
     last_modified_time
 
@@ -105,6 +106,7 @@ def download_exchange_config(exchange_name, filename, environ=None):
     request.urlretrieve(url=url, filename=filename)
 
 
+@deprecated
 def get_exchange_config(exchange_name, filename=None, environ=None):
     """
     The de-serialized content of the exchange's config.json.
