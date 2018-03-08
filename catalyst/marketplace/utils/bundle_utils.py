@@ -29,7 +29,7 @@ def merge_bundles(zsource, ztarget):
 
     dirname = os.path.basename(ztarget.rootdir)
     bak_dir = ztarget.rootdir.replace(dirname, '.{}'.format(dirname))
-    os.rename(ztarget.rootdir, bak_dir)
+    shutil.move(ztarget.rootdir, bak_dir)
 
     z = bcolz.ctable.fromdataframe(df=df, rootdir=ztarget.rootdir)
     shutil.rmtree(bak_dir)

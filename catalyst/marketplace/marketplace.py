@@ -7,6 +7,7 @@ import re
 import shutil
 import sys
 import time
+import webbrowser
 
 import bcolz
 import logbook
@@ -141,10 +142,10 @@ class Marketplace:
 
         return address, address_i
 
-    def sign_transaction(self, from_address, tx):
+    def sign_transaction(self, tx):
 
-        print('\nVisit https://www.myetherwallet.com/#offline-transaction and '
-              'enter the following parameters:\n\n'
+        url = 'https://www.myetherwallet.com/#offline-transaction'
+        print('\nVisit {url} and enter the following parameters:\n\n'
               'From Address:\t\t{_from}\n'
               '\n\tClick the "Generate Information" button\n\n'
               'To Address:\t\t{to}\n'
@@ -153,13 +154,16 @@ class Marketplace:
               'Gas Price:\t\t[Accept the default value]\n'
               'Nonce:\t\t\t{nonce}\n'
               'Data:\t\t\t{data}\n'.format(
-                _from=from_address,
+                url=url,
+                _from=tx['from'],
                 to=tx['to'],
                 value=tx['value'],
                 gas=tx['gas'],
                 nonce=tx['nonce'],
                 data=tx['data'], )
               )
+
+        webbrowser.open_new(url)
 
         signed_tx = input('Copy and Paste the "Signed Transaction" '
                           'field here:\n')
@@ -180,8 +184,7 @@ class Marketplace:
         print('\nYou can check the outcome of your transaction here:\n'
               '{}\n\n'.format(etherscan))
 
-    def list(self):
-
+    def _list(self):
         data_sources = self.mkt_contract.functions.getAllProviders().call()
 
         data = []
@@ -193,15 +196,44 @@ class Marketplace:
                             dataset=self.to_text(data_source)
                         )
                     )
+        return pd.DataFrame(data)
 
-        df = pd.DataFrame(data)
+    def list(self):
+        df = self._list()
+
         set_print_settings()
         if df.empty:
             print('There are no datasets available yet.')
         else:
             print(df)
 
-    def subscribe(self, dataset):
+    def subscribe(self, dataset=None):
+
+        if dataset is None:
+
+            df_sets = self._list()
+            if df_sets.empty:
+                print('There are no datasets available yet.')
+                return
+
+            set_print_settings()
+            while True:
+                print(df_sets)
+                dataset_num = input('Choose the dataset you want to '
+                                    'subscribe to [0..{}]: '.format(
+                                        df_sets.size-1))
+                try:
+                    dataset_num = int(dataset_num)
+                except ValueError:
+                    print('Enter a number between 0 and {}'.format(
+                        df_sets.size-1))
+                else:
+                    if dataset_num not in range(0, df_sets.size):
+                        print('Enter a number between 0 and {}'.format(
+                            df_sets.size-1))
+                    else:
+                        dataset = df_sets.iloc[dataset_num]['dataset']
+                        break
 
         dataset = dataset.lower()
 
@@ -292,13 +324,14 @@ class Marketplace:
             self.mkt_contract_address,
             grains,
         ).buildTransaction(
-            {'nonce': self.web3.eth.getTransactionCount(address)}
+            {'from': address,
+             'nonce': self.web3.eth.getTransactionCount(address)}
         )
 
         if 'ropsten' in ETH_REMOTE_NODE:
             tx['gas'] = min(int(tx['gas'] * 1.5), 4700000)
 
-        signed_tx = self.sign_transaction(address, tx)
+        signed_tx = self.sign_transaction(tx)
         try:
             tx_hash = '0x{}'.format(
                 bin_hex(self.web3.eth.sendRawTransaction(signed_tx))
@@ -332,14 +365,15 @@ class Marketplace:
               'Now processing second transaction.')
 
         tx = self.mkt_contract.functions.subscribe(
-            Web3.toHex(dataset),
-        ).buildTransaction(
-            {'nonce': self.web3.eth.getTransactionCount(address)})
+                Web3.toHex(dataset),
+                ).buildTransaction({
+                    'from': address,
+                    'nonce': self.web3.eth.getTransactionCount(address)})
 
         if 'ropsten' in ETH_REMOTE_NODE:
             tx['gas'] = min(int(tx['gas'] * 1.5), 4700000)
 
-        signed_tx = self.sign_transaction(address, tx)
+        signed_tx = self.sign_transaction(tx)
 
         try:
             tx_hash = '0x{}'.format(bin_hex(
@@ -402,7 +436,33 @@ class Marketplace:
 
         pass
 
-    def ingest(self, ds_name, start=None, end=None, force_download=False):
+    def ingest(self, ds_name=None, start=None, end=None, force_download=False):
+
+        if ds_name is None:
+
+            df_sets = self._list()
+            if df_sets.empty:
+                print('There are no datasets available yet.')
+                return
+
+            set_print_settings()
+            while True:
+                print(df_sets)
+                dataset_num = input('Choose the dataset you want to '
+                                    'ingest [0..{}]: '.format(
+                                        df_sets.size-1))
+                try:
+                    dataset_num = int(dataset_num)
+                except ValueError:
+                    print('Enter a number between 0 and {}'.format(
+                        df_sets.size-1))
+                else:
+                    if dataset_num not in range(0, df_sets.size):
+                        print('Enter a number between 0 and {}'.format(
+                            df_sets.size-1))
+                    else:
+                        ds_name = df_sets.iloc[dataset_num]['dataset']
+                        break
 
         # ds_name = ds_name.lower()
 
@@ -609,13 +669,14 @@ class Marketplace:
             grains,
             address,
         ).buildTransaction(
-            {'nonce': self.web3.eth.getTransactionCount(address)}
+            {'from': address,
+             'nonce': self.web3.eth.getTransactionCount(address)}
         )
 
         if 'ropsten' in ETH_REMOTE_NODE:
             tx['gas'] = min(int(tx['gas'] * 1.5), 4700000)
 
-        signed_tx = self.sign_transaction(address, tx)
+        signed_tx = self.sign_transaction(tx)
 
         try:
             tx_hash = '0x{}'.format(
