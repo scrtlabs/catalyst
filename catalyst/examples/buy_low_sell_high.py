@@ -7,7 +7,6 @@ from catalyst.api import (
     order_target_percent,
     symbol,
     record,
-    get_open_orders,
 )
 from catalyst.exchange.utils.stats_utils import get_pretty_stats
 from catalyst.utils.run_algo import run_algorithm

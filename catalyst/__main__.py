@@ -845,14 +845,8 @@ def ingest(ctx, dataset, data_frequency, start, end):
 def clean(ctx, dataset):
     """Clean/Remove local data for a given dataset.
     """
-    if dataset is None:
-        ctx.fail("must specify a dataset to clean up with '--dataset'\n"
-                 "List available dataset on the marketplace with "
-                 "'catalyst marketplace ls'")
-    click.echo('Cleaning data source: {}'.format(dataset), sys.stdout)
     marketplace = Marketplace()
     marketplace.clean(dataset)
-    click.echo('Done', sys.stdout)
 
 
 @marketplace.command()
