@@ -426,10 +426,7 @@ class Marketplace:
 
         """
         tmp_bundle = extract_bundle(path)
-        bundle_folder = os.path.join(
-            get_data_source_folder(ds_name), 'bundle'
-        )
-
+        bundle_folder = get_data_source_folder(ds_name)
         ensure_directory(bundle_folder)
         if os.listdir(bundle_folder):
             zsource = bcolz.ctable(rootdir=tmp_bundle, mode='r')
