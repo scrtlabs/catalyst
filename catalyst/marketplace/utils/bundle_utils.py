@@ -47,8 +47,10 @@ def sanitize_df(df):
     # large datasets
     if len(df) > 100:
         indexes = random.sample(range(0, len(df) - 1), 100)
-    else:
+    elif len(df) > 1:
         indexes = range(0, len(df) - 1)
+    else:
+        indexes = [0, ]
 
     for column in df.columns:
         is_date = False
