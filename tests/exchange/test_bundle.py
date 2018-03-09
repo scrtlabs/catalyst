@@ -43,7 +43,7 @@ class TestExchangeBundle:
 
     def test_ingest_minute(self):
         data_frequency = 'minute'
-        exchange_name = 'poloniex'
+        exchange_name = 'binance'
 
         exchange = get_exchange(exchange_name)
         exchange_bundle = ExchangeBundle(exchange_name)
@@ -51,10 +51,8 @@ class TestExchangeBundle:
             exchange.get_asset('bch_eth')
         ]
 
-        start = pd.to_datetime('2018-01-01', utc=True)
-        end = pd.to_datetime('2018-03-01', utc=True)
-        # start = None
-        # end = None
+        start = pd.to_datetime('2018-03-01', utc=True)
+        end = pd.to_datetime('2018-03-8', utc=True)
 
         log.info('ingesting exchange bundle {}'.format(exchange_name))
         exchange_bundle.ingest(
@@ -111,7 +109,7 @@ class TestExchangeBundle:
         # data_frequency = 'daily'
         # include_symbols = 'neo_btc,bch_btc,eth_btc'
 
-        exchange_name = 'bitfinex'
+        exchange_name = 'binance'
         data_frequency = 'minute'
 
         exchange = get_exchange(exchange_name)
