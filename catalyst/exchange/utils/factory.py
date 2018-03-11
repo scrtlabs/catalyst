@@ -17,6 +17,9 @@ def get_exchange(exchange_name, base_currency=None, must_authenticate=False,
                  skip_init=False, auth_alias=None, config=None):
     key = (exchange_name, base_currency)
     if key in exchange_cache:
+        if not skip_init:
+            exchange_cache[key].init()
+
         return exchange_cache[key]
 
     exchange_auth = get_exchange_auth(exchange_name, alias=auth_alias)
