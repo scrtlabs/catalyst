@@ -1,4 +1,5 @@
 import calendar
+import math
 import re
 from datetime import datetime, timedelta, date
 
@@ -326,3 +327,33 @@ def from_ms_timestamp(ms):
 
 def get_epoch():
     return pd.to_datetime('1970-1-1', utc=True)
+
+
+def get_candles_number_from_minutes(unit, candle_size, minutes):
+    """
+    Get the number of bars needed for the given time interval
+    in minutes.
+
+    Notes
+    -----
+    Supports only "T", "D" and "H" units
+
+    Parameters
+    ----------
+    unit: str
+    candle_size : int
+    minutes: int
+
+    Returns
+    -------
+    int
+
+    """
+    if unit == "T":
+        res = (float(minutes) / candle_size)
+    elif unit == "H":
+        res = (minutes / 60.0) / candle_size
+    else:  # unit == "D"
+        res = (minutes / 1440.0) / candle_size
+
+    return int(math.ceil(res))

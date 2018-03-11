@@ -16,7 +16,8 @@ from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     TickerNotFoundError, NotEnoughCashError
 from catalyst.exchange.utils.datetime_utils import get_delta, \
     get_periods_range, \
-    get_periods, get_start_dt, get_frequency
+    get_periods, get_start_dt, get_frequency, \
+    get_candles_number_from_minutes
 from catalyst.exchange.utils.exchange_utils import get_exchange_symbols, \
     resample_history_df, has_bundle, get_candles_df
 from logbook import Logger
@@ -511,7 +512,12 @@ class Exchange:
         # so we request more than needed
         # TODO: consider defining a const per asset
         # and/or some retry mechanism (in each iteration request more data)
-        requested_bar_count = bar_count + 30
+        kExtra_minutes_candles = 150
+        requested_bar_count = bar_count + \
+            get_candles_number_from_minutes(unit,
+                                            candle_size,
+                                            kExtra_minutes_candles)
+
         # The get_history method supports multiple asset
         candles = self.get_candles(
             freq=freq,
@@ -529,11 +535,14 @@ class Exchange:
                     asset=asset,
                     exchange=self.name)
 
+        # for avoiding unnecessary forward fill end_dt is taken back one second
+        forward_fill_till_dt = end_dt - timedelta(seconds=1)
+
         series = get_candles_df(candles=candles,
                                 field=field,
                                 freq=frequency,
                                 bar_count=requested_bar_count,
-                                end_dt=end_dt)
+                                end_dt=forward_fill_till_dt)
 
         # TODO: consider how to approach this edge case
         # delta_candle_size = candle_size * 60 if unit == 'H' else candle_size
