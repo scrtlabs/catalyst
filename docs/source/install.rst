@@ -314,6 +314,16 @@ Troubleshooting ``pip`` Install
 
       $ sudo apt-get install python-dev
 
+----
+
+**Issue**:
+   Missing TA_Lib
+
+**Solution**:
+   Follow `these instructions
+   <https://mrjbq7.github.io/ta-lib/install.html>`_ to install the TA_Lib Python wrapper
+   (and if needed, its underlying C library as well).
+
 .. _pipenv:
 
 Installing with ``pipenv``
