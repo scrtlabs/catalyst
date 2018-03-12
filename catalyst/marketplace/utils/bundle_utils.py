@@ -88,5 +88,7 @@ def safely_reduce_dtype(ser):  # pandas.Series or numpy.array
         new_itemsize = np.min_scalar_type(val).itemsize
         if mx < new_itemsize:
             mx = new_itemsize
+        if orig_dtype == 'int':
+            mx = max(mx, 4)
     new_dtype = orig_dtype + str(mx * 8)
     return ser.astype(new_dtype)
