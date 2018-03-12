@@ -93,3 +93,9 @@ def run_server(
                                     default=convert_date
                                 )
                              )
+    if response.status_code == 500:
+        raise Exception("issues with cloud connections, "
+                        "unable to run catalyst on the cloud")
+    recieved_data = response.json()
+    cloud_log_tail = base64.b64decode(recieved_data["logs"])
+    print(cloud_log_tail)
