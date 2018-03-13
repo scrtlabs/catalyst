@@ -13,6 +13,7 @@ from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     PricingDataNotLoadedError, \
     NoDataAvailableOnExchange, NoValueForField, \
     NoCandlesReceivedFromExchange, \
+    InvalidHistoryFrequencyAlias,  \
     TickerNotFoundError, NotEnoughCashError
 from catalyst.exchange.utils.datetime_utils import get_delta, \
     get_periods_range, \
@@ -507,6 +508,10 @@ class Exchange:
         freq, candle_size, unit, data_frequency = get_frequency(
             frequency, data_frequency, supported_freqs=['T', 'D', 'H']
         )
+
+        if unit == 'H':
+            raise InvalidHistoryFrequencyAlias(
+                freq=frequency)
 
         # we want to avoid receiving empty candles
         # so we request more than needed
