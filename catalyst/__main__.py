@@ -793,7 +793,7 @@ def ls(ctx):
 )
 @click.pass_context
 def subscribe(ctx, dataset):
-    """Subscribe to an exisiting dataset.
+    """Subscribe to an existing dataset.
     """
     marketplace = Marketplace()
     marketplace.subscribe(dataset)
