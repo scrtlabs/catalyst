@@ -177,10 +177,12 @@ class Marketplace:
     def check_transaction(self, tx_hash):
 
         if 'ropsten' in ETH_REMOTE_NODE:
-            etherscan = 'https://ropsten.etherscan.io/tx/{}'.format(
-                tx_hash)
+            etherscan = 'https://ropsten.etherscan.io/tx/'
+        elif 'rinkeby' in ETH_REMOTE_NODE:
+            etherscan = 'https://rinkeby.etherscan.io/tx/'
         else:
-            etherscan = 'https://etherscan.io/tx/{}'.format(tx_hash)
+            etherscan = 'https://etherscan.io/tx/'
+        etherscan = '{}{}'.format(etherscan, tx_hash)
 
         print('\nYou can check the outcome of your transaction here:\n'
               '{}\n\n'.format(etherscan))
@@ -329,9 +331,6 @@ class Marketplace:
              'nonce': self.web3.eth.getTransactionCount(address)}
         )
 
-        if 'ropsten' in ETH_REMOTE_NODE:
-            tx['gas'] = min(int(tx['gas'] * 1.5), 4700000)
-
         signed_tx = self.sign_transaction(tx)
         try:
             tx_hash = '0x{}'.format(
@@ -370,9 +369,6 @@ class Marketplace:
         ).buildTransaction({
             'from': address,
             'nonce': self.web3.eth.getTransactionCount(address)})
-
-        if 'ropsten' in ETH_REMOTE_NODE:
-            tx['gas'] = min(int(tx['gas'] * 1.5), 4700000)
 
         signed_tx = self.sign_transaction(tx)
 
@@ -700,9 +696,6 @@ class Marketplace:
             {'from': address,
              'nonce': self.web3.eth.getTransactionCount(address)}
         )
-
-        if 'ropsten' in ETH_REMOTE_NODE:
-            tx['gas'] = min(int(tx['gas'] * 1.5), 4700000)
 
         signed_tx = self.sign_transaction(tx)
 
