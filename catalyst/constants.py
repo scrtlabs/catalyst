@@ -28,18 +28,18 @@ AUTH_SERVER = 'https://data.enigma.co'
 ETH_REMOTE_NODE = 'https://rinkeby.infura.io/'
 
 MARKETPLACE_CONTRACT = 'https://raw.githubusercontent.com/enigmampc/' \
-                       'catalyst/rinkeby/catalyst/marketplace/' \
+                       'catalyst/master/catalyst/marketplace/' \
                        'contract_marketplace_address.txt'
 
 MARKETPLACE_CONTRACT_ABI = 'https://raw.githubusercontent.com/enigmampc/' \
-                           'catalyst/rinkeby/catalyst/marketplace/' \
+                           'catalyst/master/catalyst/marketplace/' \
                            'contract_marketplace_abi.json'
 
 # TODO: switch to mainnet
 ENIGMA_CONTRACT = 'https://raw.githubusercontent.com/enigmampc/' \
-                  'catalyst/rinkeby/catalyst/marketplace/' \
+                  'catalyst/master/catalyst/marketplace/' \
                   'contract_enigma_address.txt'
 
 ENIGMA_CONTRACT_ABI = 'https://raw.githubusercontent.com/enigmampc/' \
-                      'catalyst/rinkeby/catalyst/marketplace/' \
+                      'catalyst/master/catalyst/marketplace/' \
                       'contract_enigma_abi.json'
