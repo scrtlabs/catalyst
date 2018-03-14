@@ -49,6 +49,7 @@ def run_server(
 
     # address to send
     url = 'http://sandbox.enigma.co/api/catalyst/serve'
+    # url = 'http://127.0.0.1:5000/api/catalyst/serve'
 
     # argument preparation - encode the file for transfer
     if algotext:
@@ -93,9 +94,10 @@ def run_server(
                                     default=convert_date
                                 )
                              )
+
     if response.status_code == 500:
         raise Exception("issues with cloud connections, "
                         "unable to run catalyst on the cloud")
     recieved_data = response.json()
-    cloud_log_tail = base64.b64decode(recieved_data["logs"])
+    cloud_log_tail = base64.b64decode(recieved_data["log"])
     print(cloud_log_tail)
