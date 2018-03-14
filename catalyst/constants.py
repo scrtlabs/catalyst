@@ -25,8 +25,7 @@ AUTO_INGEST = False
 AUTH_SERVER = 'https://data.enigma.co'
 
 # TODO: switch to mainnet
-ETH_REMOTE_NODE = 'https://ropsten.infura.io/'
-
+ETH_REMOTE_NODE = 'https://rinkeby.infura.io/'
 
 MARKETPLACE_CONTRACT = 'https://raw.githubusercontent.com/enigmampc/' \
                        'catalyst/master/catalyst/marketplace/' \
@@ -37,8 +36,8 @@ MARKETPLACE_CONTRACT_ABI = 'https://raw.githubusercontent.com/enigmampc/' \
                            'contract_marketplace_abi.json'
 
 # TODO: switch to mainnet
-ENIGMA_CONTRACT = 'https://raw.githubusercontent.com/enigmampc/catalyst/' \
-                  'master/catalyst/marketplace/' \
+ENIGMA_CONTRACT = 'https://raw.githubusercontent.com/enigmampc/' \
+                  'catalyst/master/catalyst/marketplace/' \
                   'contract_enigma_address.txt'
 
 ENIGMA_CONTRACT_ABI = 'https://raw.githubusercontent.com/enigmampc/' \

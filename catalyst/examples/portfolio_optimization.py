@@ -66,7 +66,7 @@ def handle_data(context, data):
         # Define portfolio optimization parameters
         n_portfolios = 50000
         results_array = np.zeros((3 + context.nassets, n_portfolios))
-        for p in xrange(n_portfolios):
+        for p in range(n_portfolios):
             weights = np.random.random(context.nassets)
             weights /= np.sum(weights)
             w = np.asmatrix(weights)
@@ -146,4 +146,5 @@ if __name__ == '__main__':
                             start=start,
                             end=end,
                             exchange_name='poloniex',
-                            capital_base=100000, )
+                            capital_base=100000,
+                            base_currency='usdt', )

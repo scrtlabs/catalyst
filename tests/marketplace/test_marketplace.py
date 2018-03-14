@@ -1,6 +1,5 @@
 from catalyst.marketplace.marketplace import Marketplace
 from catalyst.testing.fixtures import WithLogger, ZiplineTestCase
-import pandas as pd
 
 
 class TestMarketplace(WithLogger, ZiplineTestCase):
@@ -16,12 +15,12 @@ class TestMarketplace(WithLogger, ZiplineTestCase):
 
     def test_subscribe(self):
         marketplace = Marketplace()
-        marketplace.subscribe('marketcap2222')
+        marketplace.subscribe('marketcap')
         pass
 
     def test_ingest(self):
         marketplace = Marketplace()
-        ds_def = marketplace.ingest('marketcap1234')
+        ds_def = marketplace.ingest('marketcap')
         pass
 
     def test_publish(self):

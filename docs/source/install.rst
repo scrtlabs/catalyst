@@ -47,8 +47,10 @@ you can install MiniConda, which is a smaller footprint (fewer packages and
 smaller size) than its big brother Anaconda, but it still contains all the 
 main packages needed. To install MiniConda, you can follow these steps:
 
-1. Download `MiniConda <https://conda.io/miniconda.html>`_. Select Python 2.7 
-   for your Operating System.
+1. Download `MiniConda <https://conda.io/miniconda.html>`_. Select either 
+   Python 3.6 (recommended) or Python 2.7 for your Operating System. The 
+   `Enigma Data Marketplace <https://enigmampc.github.io/marketplace/>`_ will 
+   require Python3, that's why we are recommending to opt for the newer version.
 2. Install MiniConda. See the `Installation Instructions 
    <https://conda.io/docs/user-guide/install/index.html>`_ if you need help.
 3. Ensure the correct installation by running ``conda list`` in a Terminal 
@@ -64,17 +66,26 @@ main packages needed. To install MiniConda, you can follow these steps:
 
 Once either Conda or MiniConda has been set up you can install Catalyst:
 
-1. Download the file `python2.7-environment.yml 
-   <https://github.com/enigmampc/catalyst/blob/master/etc/python2.7-environment.yml>`_.
+1. Download the file `python3.6-environment.yml 
+   <https://github.com/enigmampc/catalyst/blob/master/etc/python3.6-environment.yml>`_ 
+   (recommended) or `python2.7-environment.yml 
+   <https://github.com/enigmampc/catalyst/blob/master/etc/python2.7-environment.yml>`_ 
+   matching your Conda installation from step #1 above.
 
      To download, simply click on the 'Raw' button and save the file locally 
      to a folder you can remember. Make sure that the file gets saved with the
      ``.yml`` extension, and nothing like a ``.txt`` file or anything else.
 
 2. Open a Terminal window and enter [``cd/dir``] into the directory where you 
-   saved the above ``python2.7-environment.yml`` file.
+   saved the above ``.yml`` file.
 
 3. Install using this file. This step can take about 5-10 minutes to install.
+
+   .. code-block:: bash
+
+      conda env create -f python3.6-environment.yml
+
+  or
 
    .. code-block:: bash
 
@@ -121,6 +132,14 @@ with the following steps:
       conda env remove --name catalyst
 
 2. Create the environment:
+
+   for python 2.7:
+
+   .. code-block:: bash
+
+      conda create --name catalyst python=2.7 scipy zlib
+
+  or for python 3.6:
 
    .. code-block:: bash
 
@@ -295,6 +314,16 @@ Troubleshooting ``pip`` Install
 
       $ sudo apt-get install python-dev
 
+----
+
+**Issue**:
+   Missing TA_Lib
+
+**Solution**:
+   Follow `these instructions
+   <https://mrjbq7.github.io/ta-lib/install.html>`_ to install the TA_Lib Python wrapper
+   (and if needed, its underlying C library as well).
+
 .. _pipenv:
 
 Installing with ``pipenv``
@@ -443,12 +472,22 @@ about matplotlib backends, please refer to the
 Windows Requirements
 --------------------
 
-In Windows, you will first need to install the `Microsoft Visual C++ Compiler 
-for Python 2.7 
-<https://www.microsoft.com/en-us/download/details.aspx?id=44266>`_. This 
-package contains the compiler and the set of system headers necessary for 
-producing binary wheels for Python 2.7 packages. If it's not already in your 
-system, download it and install it before proceeding to the next step.
+In Windows, you will first need to install the Microsoft Visual C++ Compiler, 
+which is different depending on the version of Python that you plan to use:
+
+* Python 3.5, 3.6: `Visual C++ 2015 Build Tools 
+  <http://landinghub.visualstudio.com/visual-cpp-build-tools>`_, 
+  which installs Visual C++ version 14.0. **This is the recommended version**
+
+* Python 2.7: `Microsoft Visual C++ Compiler for Python 2.7 
+  <https://www.microsoft.com/en-us/download/details.aspx?id=44266>`_, which 
+  installs version Visual C++ version 9.0
+
+This package contains the compiler and the set of system headers necessary for 
+producing binary wheels for Python packages. If it's not already in your 
+system, download it and install it before proceeding to the next step. If you 
+need additional help, or are looking for other versions of Visual C++ for 
+Windows (only advanced users), follow `this link <https://wiki.python.org/moin/WindowsCompilers>`_.
 
 Once you have the above compiler installed, the easiest and best supported way 
 to install Catalyst in Windows is to use :ref:`Conda <conda>`. If you didn't 

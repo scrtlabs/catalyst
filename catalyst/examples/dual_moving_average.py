@@ -4,8 +4,7 @@ import pandas as pd
 from logbook import Logger
 
 from catalyst import run_algorithm
-from catalyst.api import (record, symbol, order_target_percent,
-                          get_open_orders)
+from catalyst.api import (record, symbol, order_target_percent,)
 from catalyst.exchange.utils.stats_utils import extract_transactions
 
 NAMESPACE = 'dual_moving_average'
@@ -63,7 +62,7 @@ def handle_data(context, data):
 
     # Since we are using limit orders, some orders may not execute immediately
     # we wait until all orders are executed before considering more trades.
-    orders = get_open_orders(context.asset)
+    orders = context.blotter.open_orders
     if len(orders) > 0:
         return
 

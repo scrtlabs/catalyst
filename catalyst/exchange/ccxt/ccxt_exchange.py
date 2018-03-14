@@ -43,7 +43,8 @@ SUPPORTED_EXCHANGES = dict(
 
 
 class CCXT(Exchange):
-    def __init__(self, exchange_name, key, secret, base_currency):
+    def __init__(self, exchange_name, key,
+                 secret, password, base_currency):
         log.debug(
             'finding {} in CCXT exchanges:\n{}'.format(
                 exchange_name, ccxt.exchanges
@@ -60,6 +61,7 @@ class CCXT(Exchange):
             self.api = exchange_attr({
                 'apiKey': key,
                 'secret': secret,
+                'password': password,
             })
             self.api.enableRateLimit = True
 
@@ -426,25 +428,18 @@ class CCXT(Exchange):
             )
 
         if start_dt is None:
-            # TODO: determine why binance is failing
-            if end_dt is None and self.name not in ['binance']:
+            if end_dt is None:
                 end_dt = pd.Timestamp.utcnow()
 
-            if end_dt is not None:
-                dt_range = get_periods_range(
-                    end_dt=end_dt,
-                    periods=bar_count,
-                    freq=freq,
-                )
-                start_dt = dt_range[0]
+            dt_range = get_periods_range(
+                end_dt=end_dt,
+                periods=bar_count,
+                freq=freq,
+            )
+            start_dt = dt_range[0]
 
-        if start_dt is not None:
-            # Convert out start date to a UNIX timestamp, then translate to
-            # milliseconds
-            delta = start_dt - get_epoch()
-            since = int(delta.total_seconds()) * 1000
-        else:
-            since = None
+        delta = start_dt - get_epoch()
+        since = int(delta.total_seconds()) * 1000
 
         candles = dict()
         for index, asset in enumerate(assets):
@@ -985,7 +980,8 @@ class CCXT(Exchange):
             )
             raise ExchangeRequestError(error=e)
 
-    def cancel_order(self, order_param, asset_or_symbol=None):
+    def cancel_order(self, order_param,
+                     asset_or_symbol=None, params={}):
         order_id = order_param.id \
             if isinstance(order_param, Order) else order_param
 
@@ -997,7 +993,8 @@ class CCXT(Exchange):
         try:
             symbol = self.get_symbol(asset_or_symbol) \
                 if asset_or_symbol is not None else None
-            self.api.cancel_order(id=order_id, symbol=symbol)
+            self.api.cancel_order(id=order_id,
+                                  symbol=symbol, params= params)
 
         except (ExchangeError, NetworkError) as e:
             log.warn(

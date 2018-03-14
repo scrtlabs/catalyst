@@ -396,7 +396,8 @@ def email_error(algo_name, dt, e, environ=None):
             )})
 
 
-def stats_to_algo_folder(stats, algo_namespace, recorded_cols=None):
+def stats_to_algo_folder(stats, algo_namespace,
+                         folder_name, recorded_cols=None):
     """
     Saves the performance stats to the algo local folder.
 
@@ -404,6 +405,7 @@ def stats_to_algo_folder(stats, algo_namespace, recorded_cols=None):
     ----------
     stats: list[Object]
     algo_namespace: str
+    folder_name: str
     recorded_cols: list[str]
 
     Returns
@@ -416,7 +418,7 @@ def stats_to_algo_folder(stats, algo_namespace, recorded_cols=None):
     timestr = time.strftime('%Y%m%d')
     folder = get_algo_folder(algo_namespace)
 
-    stats_folder = os.path.join(folder, 'stats')
+    stats_folder = os.path.join(folder, folder_name)
     ensure_directory(stats_folder)
 
     filename = os.path.join(stats_folder, '{}.csv'.format(timestr))

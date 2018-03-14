@@ -37,7 +37,7 @@ class TestSuiteBundle:
         return data_portal
 
     def compare_bundle_with_exchange(self, exchange, assets, end_dt, bar_count,
-                                     freq, data_frequency, data_portal):
+                                     freq, data_frequency, data_portal, field):
         """
         Creates DataFrames from the bundle and exchange for the specified
         data set.
@@ -62,8 +62,8 @@ class TestSuiteBundle:
         with log_catcher:
             symbols = [asset.symbol for asset in assets]
             print(
-                'comparing data for {}/{} with {} timeframe until {}'.format(
-                    exchange.name, symbols, freq, end_dt
+                'comparing {} for {}/{} with {} timeframe until {}'.format(
+                    field, exchange.name, symbols, freq, end_dt
                 )
             )
             data['bundle'] = data_portal.get_history_window(
@@ -71,13 +71,13 @@ class TestSuiteBundle:
                 end_dt=end_dt,
                 bar_count=bar_count,
                 frequency=freq,
-                field='close',
+                field=field,
                 data_frequency=data_frequency,
             )
             set_print_settings()
             print(
-                'the bundle first / last row:\n{}'.format(
-                    data['bundle'].iloc[[-1, 0]]
+                'the bundle data:\n{}'.format(
+                    data['bundle']
                 )
             )
             candles = exchange.get_candles(
@@ -88,14 +88,14 @@ class TestSuiteBundle:
             )
             data['exchange'] = get_candles_df(
                 candles=candles,
-                field='close',
+                field=field,
                 freq=freq,
                 bar_count=bar_count,
                 end_dt=end_dt,
             )
             print(
-                'the exchange first / last row:\n{}'.format(
-                    data['exchange'].iloc[[-1, 0]]
+                'the exchange data:\n{}'.format(
+                    data['exchange']
                 )
             )
             for source in data:
@@ -107,19 +107,21 @@ class TestSuiteBundle:
             print('saved {} test results: {}'.format(end_dt, folder))
 
             assert_frame_equal(
-                right=data['bundle'],
-                left=data['exchange'],
+                right=data['bundle'][:-1],
+                left=data['exchange'][:-1],
                 check_less_precise=1,
             )
             try:
                 assert_frame_equal(
-                    right=data['bundle'],
-                    left=data['exchange'],
+                    right=data['bundle'][:-1],
+                    left=data['exchange'][:-1],
                     check_less_precise=min([a.decimals for a in assets]),
                 )
             except Exception as e:
-                print('Some differences were found within a 1 decimal point '
-                      'interval of confidence: {}'.format(e))
+                print(
+                    'Some differences were found within a 1 decimal point '
+                    'interval of confidence: {}'.format(e)
+                )
                 with open(os.path.join(folder, 'compare.txt'), 'w+') as handle:
                     handle.write(e.args[0])
 
@@ -203,8 +205,11 @@ class TestSuiteBundle:
 
             frequencies = exchange.get_candle_frequencies(data_frequency)
             freq = random.sample(frequencies, 1)[0]
+            rnd = random.SystemRandom()
+            # field = rnd.choice(['open', 'high', 'low', 'close', 'volume'])
+            field = rnd.choice(['volume'])
 
-            bar_count = random.randint(1, 10)
+            bar_count = random.randint(3, 6)
 
             assets = select_random_assets(
                 exchange.assets, asset_population
@@ -229,6 +234,7 @@ class TestSuiteBundle:
                 freq=freq,
                 data_frequency=data_frequency,
                 data_portal=data_portal,
+                field=field,
             )
         pass
 

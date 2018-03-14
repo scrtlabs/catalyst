@@ -68,7 +68,7 @@ class TradingPairFeeSchedule(CommissionModel):
             multiplier = maker \
                 if ((order.amount > 0 and order.limit < transaction.price)
                     or (order.amount < 0 and order.limit > transaction.price)) \
-                   and order.limit_reached else taker
+                and order.limit_reached else taker
 
         fee = cost * multiplier
         return fee
@@ -238,9 +238,12 @@ class ExchangeBlotter(Blotter):
                 else:
                     delta = pd.Timestamp.utcnow() - order.dt
                     log.info(
-                        'order {order_id} still open after {delta}'.format(
+                        '{exchange} order {order_id} for {symbol} still open '
+                        'after {delta}'.format(
+                            exchange=exchange.name,
                             order_id=order.id,
-                            delta=delta
+                            delta=delta,
+                            symbol=order.asset.symbol,
                         )
                     )
 

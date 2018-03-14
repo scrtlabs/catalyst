@@ -114,7 +114,7 @@ def analyze(context, perf):
 
 
 if __name__ == '__main__':
-    mode = 'backtest'
+    mode = 'live'
 
     if mode == 'backtest':
         run_algorithm(

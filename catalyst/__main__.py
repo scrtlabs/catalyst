@@ -767,12 +767,18 @@ def bundles():
 @main.group()
 @click.pass_context
 def marketplace(ctx):
+    """Access the Enigma Data Marketplace to:\n
+    - Register and Publish new datasets (seller-side)\n
+    - Subscribe and Ingest premium datasets (buyer-side)\n
+    """
     pass
 
 
 @marketplace.command()
 @click.pass_context
 def ls(ctx):
+    """List all available datasets.
+    """
     click.echo('Listing of available data sources on the marketplace:',
                sys.stdout)
     marketplace = Marketplace()
@@ -787,10 +793,8 @@ def ls(ctx):
 )
 @click.pass_context
 def subscribe(ctx, dataset):
-    if dataset is None:
-        ctx.fail("must specify a dataset to subscribe to with '--dataset'\n"
-                 "List available dataset on the marketplace with "
-                 "'catalyst marketplace ls'")
+    """Subscribe to an existing dataset.
+    """
     marketplace = Marketplace()
     marketplace.subscribe(dataset)
 
@@ -825,11 +829,8 @@ def subscribe(ctx, dataset):
 )
 @click.pass_context
 def ingest(ctx, dataset, data_frequency, start, end):
-    if dataset is None:
-        ctx.fail("must specify a dataset to clean with '--dataset'\n"
-                 "List available dataset on the marketplace with "
-                 "'catalyst marketplace ls'")
-    click.echo('Ingesting data: {}'.format(dataset), sys.stdout)
+    """Ingest a dataset (requires subscription).
+    """
     marketplace = Marketplace()
     marketplace.ingest(dataset, data_frequency, start, end)
 
@@ -842,19 +843,17 @@ def ingest(ctx, dataset, data_frequency, start, end):
 )
 @click.pass_context
 def clean(ctx, dataset):
-    if dataset is None:
-        ctx.fail("must specify a dataset to ingest with '--dataset'\n"
-                 "List available dataset on the marketplace with "
-                 "'catalyst marketplace ls'")
-    click.echo('Cleaning data source: {}'.format(dataset), sys.stdout)
+    """Clean/Remove local data for a given dataset.
+    """
     marketplace = Marketplace()
     marketplace.clean(dataset)
-    click.echo('Done', sys.stdout)
 
 
 @marketplace.command()
 @click.pass_context
 def register(ctx):
+    """Register a new dataset.
+    """
     marketplace = Marketplace()
     marketplace.register()
 
@@ -878,6 +877,8 @@ def register(ctx):
 )
 @click.pass_context
 def publish(ctx, dataset, datadir, watch):
+    """Publish data for a registered dataset.
+    """
     marketplace = Marketplace()
     if dataset is None:
         ctx.fail("must specify a dataset to publish data for "
