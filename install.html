@@ -297,10 +297,21 @@ step #2:</p>
 </div>
 </li>
 <li><p class="first">Create the environment:</p>
+<p>for python 2.7:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span></span>conda create --name catalyst <span class="nv">python</span><span class="o">=</span><span class="m">2</span>.7 scipy zlib
 </pre></div>
 </div>
 </li>
+</ol>
+<blockquote>
+<div><p>or for python 3.6:</p>
+<blockquote>
+<div><div class="highlight-bash"><div class="highlight"><pre><span></span>conda create --name catalyst <span class="nv">python</span><span class="o">=</span><span class="m">2</span>.7 scipy zlib
+</pre></div>
+</div>
+</div></blockquote>
+</div></blockquote>
+<ol class="arabic" start="3">
 <li><p class="first">Activate the environment:</p>
 <p><strong>Linux or MacOS:</strong></p>
 <div class="highlight-bash"><div class="highlight"><pre><span></span><span class="nb">source</span> activate catalyst
@@ -441,6 +452,14 @@ In Ubuntu, you would need to run:</p>
 </pre></div>
 </div>
 </dd>
+</dl>
+<hr class="docutils" />
+<dl class="docutils">
+<dt><strong>Issue</strong>:</dt>
+<dd>Missing TA_Lib</dd>
+<dt><strong>Solution</strong>:</dt>
+<dd>Follow <a class="reference external" href="https://mrjbq7.github.io/ta-lib/install.html">these instructions</a> to install the TA_Lib Python wrapper
+(and if needed, its underlying C library as well).</dd>
 </dl>
 </div>
 </div>
