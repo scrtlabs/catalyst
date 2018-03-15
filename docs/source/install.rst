@@ -143,7 +143,7 @@ with the following steps:
 
    .. code-block:: bash
 
-      conda create --name catalyst python=2.7 scipy zlib
+      conda create --name catalyst python=3.6 scipy zlib
 
 3. Activate the environment:
 
