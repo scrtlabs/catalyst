@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import webbrowser
 
 import requests
 import time
@@ -45,10 +46,17 @@ def get_key_secret(pubAddr, wallet='mew'):
     nonce = '0x{}'.format(d['nonce'])
 
     if wallet == 'mew':
+        url = 'https://www.myetherwallet.com/signmsg.html'
+
         print('\nObtaining a key/secret pair to streamline all future '
               'requests with the authentication server.\n'
-              'Visit https://www.myetherwallet.com/signmsg.html and sign the '
-              'following message:\n{}'.format(nonce))
+              'Visit {url} and sign the '
+              'following message:\n{nonce}'.format(
+                url=url,
+                nonce=nonce))
+
+        webbrowser.open_new(url)
+
         signature = input('Copy and Paste the "sig" field from '
                           'the signature here (without the double quotes, '
                           'only the HEX value):\n')
