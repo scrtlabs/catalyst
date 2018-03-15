@@ -830,3 +830,17 @@ def get_dataset(ds_name, start=None, end=None):
     -------
 
     """
+
+
+def get_open_orders(asset):
+    """
+    List open orders on the exchange regardless who placed them.
+
+    Parameters
+    ----------
+    asset: Asset
+
+    Returns
+    -------
+    orders : list[Order]
+    """
