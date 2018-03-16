@@ -430,8 +430,11 @@ class Marketplace:
             merge_bundles(zsource, ztarget)
 
         else:
-            os.rename(tmp_bundle, bundle_folder)
-
+            try:
+                os.rename(tmp_bundle, bundle_folder)
+            except WindowsError:
+                shutil.rmtree(bundle_folder)
+                os.rename(tmp_bundle, bundle_folder)
         pass
 
     def ingest(self, ds_name=None, start=None, end=None, force_download=False):
