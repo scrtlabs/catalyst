@@ -509,10 +509,6 @@ class Exchange:
             frequency, data_frequency, supported_freqs=['T', 'D', 'H']
         )
 
-        if unit == 'H':
-            raise InvalidHistoryFrequencyAlias(
-                freq=frequency)
-
         # we want to avoid receiving empty candles
         # so we request more than needed
         # TODO: consider defining a const per asset
