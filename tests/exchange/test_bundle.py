@@ -11,7 +11,7 @@ from catalyst.exchange.exchange_bundle import ExchangeBundle, \
     BUNDLE_NAME_TEMPLATE
 from catalyst.exchange.utils.bundle_utils import get_bcolz_chunk, \
     get_df_from_arrays
-from exchange.utils.datetime_utils import get_start_dt
+from catalyst.exchange.utils.datetime_utils import get_start_dt
 from catalyst.exchange.utils.exchange_utils import get_exchange_folder
 from catalyst.exchange.utils.factory import get_exchange
 from catalyst.exchange.utils.stats_utils import df_to_string
@@ -42,7 +42,7 @@ class TestExchangeBundle:
 
     def test_ingest_minute(self):
         data_frequency = 'minute'
-        exchange_name = 'poloniex'
+        exchange_name = 'binance'
 
         exchange = get_exchange(exchange_name)
         exchange_bundle = ExchangeBundle(exchange)
@@ -50,8 +50,8 @@ class TestExchangeBundle:
             exchange.get_asset('eth_btc')
         ]
 
-        start = pd.to_datetime('2016-03-01', utc=True)
-        end = pd.to_datetime('2017-11-1', utc=True)
+        start = pd.to_datetime('2018-03-01', utc=True)
+        end = pd.to_datetime('2018-03-8', utc=True)
 
         log.info('ingesting exchange bundle {}'.format(exchange_name))
         exchange_bundle.ingest(
@@ -101,7 +101,7 @@ class TestExchangeBundle:
         # data_frequency = 'daily'
         # include_symbols = 'neo_btc,bch_btc,eth_btc'
 
-        exchange_name = 'bitfinex'
+        exchange_name = 'binance'
         data_frequency = 'minute'
 
         exchange = get_exchange(exchange_name)

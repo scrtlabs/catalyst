@@ -43,7 +43,8 @@ SUPPORTED_EXCHANGES = dict(
 
 
 class CCXT(Exchange):
-    def __init__(self, exchange_name, key, secret, base_currency):
+    def __init__(self, exchange_name, key,
+                 secret, password, base_currency):
         log.debug(
             'finding {} in CCXT exchanges:\n{}'.format(
                 exchange_name, ccxt.exchanges
@@ -60,6 +61,7 @@ class CCXT(Exchange):
             self.api = exchange_attr({
                 'apiKey': key,
                 'secret': secret,
+                'password': password,
             })
             self.api.enableRateLimit = True
 
@@ -186,6 +188,9 @@ class CCXT(Exchange):
 
                 # TODO: support all frequencies
                 if data_frequency == 'minute' and not freq.endswith('T'):
+                    continue
+
+                elif data_frequency == 'hourly' and not freq.endswith('D'):
                     continue
 
                 elif data_frequency == 'daily' and not freq.endswith('D'):
@@ -425,26 +430,19 @@ class CCXT(Exchange):
                 'Please provide either start_dt or end_dt, not both.'
             )
 
-        elif end_dt is not None:
-            # Make sure that end_dt really wants data in the past
-            # if it's close to now, we skip the 'since' parameters to
-            # lower the probability of error
-            bars_to_now = pd.date_range(
-                end_dt, pd.Timestamp.utcnow(), freq=freq
-            )
-            # See: https://github.com/ccxt/ccxt/issues/1360
-            if len(bars_to_now) > 1 or self.name in ['poloniex']:
-                dt_range = get_periods_range(
-                    end_dt=end_dt,
-                    periods=bar_count,
-                    freq=freq,
-                )
-                start_dt = dt_range[0]
+        if start_dt is None:
+            if end_dt is None:
+                end_dt = pd.Timestamp.utcnow()
 
-        since = None
-        if start_dt is not None:
-            delta = start_dt - get_epoch()
-            since = int(delta.total_seconds()) * 1000
+            dt_range = get_periods_range(
+                end_dt=end_dt,
+                periods=bar_count,
+                freq=freq,
+            )
+            start_dt = dt_range[0]
+
+        delta = start_dt - get_epoch()
+        since = int(delta.total_seconds()) * 1000
 
         candles = dict()
         for index, asset in enumerate(assets):
@@ -765,7 +763,7 @@ class CCXT(Exchange):
                 self.api.load_markets()
 
             # https://github.com/ccxt/ccxt/issues/1483
-            adj_amount = abs(amount)
+            adj_amount = round(abs(amount), asset.decimals)
             market = self.api.markets[symbol]
             if 'lots' in market and market['lots'] > amount:
                 raise CreateOrderError(
@@ -776,7 +774,7 @@ class CCXT(Exchange):
                 )
 
         else:
-            adj_amount = abs(amount)
+            adj_amount = round(abs(amount), asset.decimals)
 
         try:
             result = self.api.create_order(
@@ -797,6 +795,22 @@ class CCXT(Exchange):
                 )
             )
             raise ExchangeRequestError(error=e)
+
+        exchange_amount = None
+        if 'amount' in result and result['amount'] != adj_amount:
+            exchange_amount = result['amount']
+
+        elif 'info' in result:
+            if 'origQty' in result['info']:
+                exchange_amount = float(result['info']['origQty'])
+
+        if exchange_amount:
+            log.info(
+                'order amount adjusted by {} from {} to {}'.format(
+                    self.name, adj_amount, exchange_amount
+                )
+            )
+            adj_amount = exchange_amount
 
         if 'info' not in result:
             raise ValueError('cannot use order without info attribute')
@@ -858,31 +872,38 @@ class CCXT(Exchange):
             order.id, order.asset, return_price=True
         )
         order.status = exc_order.status
-
         order.commission = exc_order.commission
-        if order.amount != exc_order.amount:
-            log.warn(
-                'executed order amount {} differs '
-                'from original'.format(
-                    exc_order.amount, order.amount
-                )
-            )
-            order.amount = exc_order.amount
+        order.filled = exc_order.amount
 
-        if order.status == ORDER_STATUS.FILLED:
+        transactions = []
+        if exc_order.status == ORDER_STATUS.FILLED:
+            if order.amount > exc_order.amount:
+                log.warn(
+                    'executed order amount {} differs '
+                    'from original'.format(
+                        exc_order.amount, order.amount
+                    )
+                )
+
+            order.check_triggers(
+                price=price,
+                dt=exc_order.dt,
+            )
             transaction = Transaction(
                 asset=order.asset,
                 amount=order.amount,
                 dt=pd.Timestamp.utcnow(),
                 price=price,
                 order_id=order.id,
-                commission=order.commission
+                commission=order.commission,
             )
-        return [transaction]
+            transactions.append(transaction)
+
+        return transactions
 
     def process_order(self, order):
         # TODO: move to parent class after tracking features in the parent
-        if not self.api.hasFetchMyTrades:
+        if not self.api.has['fetchMyTrades']:
             return self._process_order_fallback(order)
 
         try:
@@ -962,7 +983,8 @@ class CCXT(Exchange):
             )
             raise ExchangeRequestError(error=e)
 
-    def cancel_order(self, order_param, asset_or_symbol=None):
+    def cancel_order(self, order_param,
+                     asset_or_symbol=None, params={}):
         order_id = order_param.id \
             if isinstance(order_param, Order) else order_param
 
@@ -974,7 +996,8 @@ class CCXT(Exchange):
         try:
             symbol = self.get_symbol(asset_or_symbol) \
                 if asset_or_symbol is not None else None
-            self.api.cancel_order(id=order_id, symbol=symbol)
+            self.api.cancel_order(id=order_id,
+                                  symbol=symbol, params= params)
 
         except (ExchangeError, NetworkError) as e:
             log.warn(
@@ -998,13 +1021,13 @@ class CCXT(Exchange):
 
         """
         if len(assets) == 1:
-            symbol = self.get_symbol(assets[0])
             try:
+                symbol = self.get_symbol(assets[0])
                 log.debug('fetching single ticker: {}'.format(symbol))
                 results = dict()
                 results[symbol] = self.api.fetch_ticker(symbol=symbol)
 
-            except (ExchangeError, NetworkError) as e:
+            except (ExchangeError, NetworkError,) as e:
                 log.warn(
                     'unable to fetch ticker {} / {}: {}'.format(
                         self.name, symbol, e
@@ -1091,7 +1114,7 @@ class CCXT(Exchange):
 
         return result
 
-    def get_trades(self, asset, my_trades=True, start_dt=None, limit=None):
+    def get_trades(self, asset, my_trades=True, start_dt=None, limit=100):
         if not my_trades:
             raise NotImplemented(
                 'get_trades only supports "my trades"'

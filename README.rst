@@ -1,4 +1,4 @@
-.. image:: https://s3.amazonaws.com/enigmaco-docs/enigma-catalyst.jpg
+.. image:: https://s3.amazonaws.com/enigmaco-docs/enigma-catalyst.png
     :target: https://enigmampc.github.io/catalyst
     :align: center
     :alt: Enigma | Catalyst
@@ -17,9 +17,7 @@ insights regarding a particular strategy's performance. Catalyst also supports
 live-trading of crypto-assets starting with three exchanges (Bitfinex, Bittrex, 
 and Poloniex) with more being added over time. Catalyst empowers users to share 
 and curate data and build profitable, data-driven investment strategies. Please 
-visit `enigma.co <https://www.enigma.co>`_ to learn more about Catalyst, or 
-refer to the `whitepaper <https://www.enigma.co/enigma_catalyst.pdf>`_ for 
-further technical details.
+visit `enigma.co <https://www.enigma.co>`_ to learn more about Catalyst.
 
 Catalyst builds on top of the well-established 
 `Zipline <https://github.com/quantopian/zipline>`_ project. We did our best to 

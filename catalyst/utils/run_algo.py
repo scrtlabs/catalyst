@@ -10,6 +10,7 @@ import click
 import pandas as pd
 from six import string_types
 
+import catalyst
 from catalyst.data.bundles import load
 from catalyst.data.data_portal import DataPortal
 from catalyst.exchange.exchange_pricing_loader import ExchangePricingLoader, \
@@ -23,7 +24,7 @@ try:
     from pygments.formatters import TerminalFormatter
 
     PYGMENTS = True
-except:
+except ImportError:
     PYGMENTS = False
 from toolz import valfilter, concatv
 from functools import partial
@@ -55,6 +56,7 @@ class _RunAlgoError(click.ClickException, ValueError):
     ----------
     pyfunc_msg : str
         The message that will be shown when called as a python function.
+
     cmdline_msg : str
         The message that will be shown on the command line.
     """
@@ -150,6 +152,7 @@ def _run(handle_data,
         'We encourage you to report any issue on GitHub: '
         'https://github.com/enigmampc/catalyst/issues'
     )
+    log.info('Catalyst version {}'.format(catalyst.__version__))
     sleep(3)
 
     if live:
@@ -259,6 +262,15 @@ def _run(handle_data,
         # Instead, we should center this data around exchanges.
         # We still need to support bundles for other misc data, but we
         # can handle this later.
+
+        if start != pd.tslib.normalize_date(start) or \
+                        end != pd.tslib.normalize_date(end):
+            # todo: add to Sim_Params the option to start & end at specific times 
+            log.warn(
+                "Catalyst currently starts and ends on the start and "
+                "end of the dates specified, respectively. We hope to "
+                "Modify this and support specific times in a future release."
+            )
 
         data = DataPortalExchangeBacktest(
             exchange_names=[exchange_name for exchange_name in exchanges],
@@ -416,7 +428,8 @@ def run_algorithm(initialize,
                   auth_aliases=None,
                   stats_output=None,
                   output=os.devnull):
-    """Run a trading algorithm.
+    """
+    Run a trading algorithm.
 
     Parameters
     ----------
@@ -458,7 +471,7 @@ def run_algorithm(initialize,
         This argument is mutually exclusive with ``data``.
     default_extension : bool, optional
         Should the default catalyst extension be loaded. This is found at
-        ``$ZIPLINE_ROOT/extension.py``
+        ``$CATALYST_ROOT/extension.py``
     extensions : iterable[str], optional
         The names of any other extensions to load. Each element may either be
         a dotted module path like ``a.b.c`` or a path to a python file ending
@@ -469,12 +482,8 @@ def run_algorithm(initialize,
     environ : mapping[str -> str], optional
         The os environment to use. Many extensions use this to get parameters.
         This defaults to ``os.environ``.
-    live: execute live trading
-    exchange_conn: The exchange connection parameters
-
-    Supported Exchanges
-    -------------------
-    bitfinex
+    live : bool, optional
+        Execute algorithm in live trading mode.
 
     Returns
     -------

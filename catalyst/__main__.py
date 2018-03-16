@@ -6,6 +6,7 @@ import click
 import sys
 import logbook
 import pandas as pd
+from catalyst.marketplace.marketplace import Marketplace
 from six import text_type
 
 from catalyst.data import bundles as bundles_module
@@ -579,7 +580,8 @@ def ingest_exchange(ctx, exchange_name, data_frequency, start, end,
 
     exchange_bundle = ExchangeBundle(exchange_name)
 
-    click.echo('Ingesting exchange bundle {}...'.format(exchange_name), sys.stdout)
+    click.echo('Ingesting exchange bundle {}...'.format(exchange_name),
+               sys.stdout)
     exchange_bundle.ingest(
         data_frequency=data_frequency,
         include_symbols=include_symbols,
@@ -633,7 +635,8 @@ def clean_exchange(ctx, exchange_name, data_frequency):
 
     exchange_bundle = ExchangeBundle(exchange_name)
 
-    click.echo('Cleaning exchange bundle {}...'.format(exchange_name), sys.stdout)
+    click.echo('Cleaning exchange bundle {}...'.format(exchange_name),
+               sys.stdout)
     exchange_bundle.clean(
         data_frequency=data_frequency,
     )
@@ -759,6 +762,131 @@ def bundles():
         # no ingestions have yet been made.
         for timestamp in ingestions or ["<no ingestions>"]:
             click.echo("%s %s" % (bundle, timestamp), sys.stdout)
+
+
+@main.group()
+@click.pass_context
+def marketplace(ctx):
+    """Access the Enigma Data Marketplace to:\n
+    - Register and Publish new datasets (seller-side)\n
+    - Subscribe and Ingest premium datasets (buyer-side)\n
+    """
+    pass
+
+
+@marketplace.command()
+@click.pass_context
+def ls(ctx):
+    """List all available datasets.
+    """
+    click.echo('Listing of available data sources on the marketplace:',
+               sys.stdout)
+    marketplace = Marketplace()
+    marketplace.list()
+
+
+@marketplace.command()
+@click.option(
+    '--dataset',
+    default=None,
+    help='The name of the dataset to ingest from the Data Marketplace.',
+)
+@click.pass_context
+def subscribe(ctx, dataset):
+    """Subscribe to an existing dataset.
+    """
+    marketplace = Marketplace()
+    marketplace.subscribe(dataset)
+
+
+@marketplace.command()
+@click.option(
+    '--dataset',
+    default=None,
+    help='The name of the dataset to ingest from the Data Marketplace.',
+)
+@click.option(
+    '-f',
+    '--data-frequency',
+    type=click.Choice({'daily', 'minute', 'daily,minute', 'minute,daily'}),
+    default='daily',
+    show_default=True,
+    help='The data frequency of the desired OHLCV bars.',
+)
+@click.option(
+    '-s',
+    '--start',
+    default=None,
+    type=Date(tz='utc', as_timestamp=True),
+    help='The start date of the data range. (default: one year from end date)',
+)
+@click.option(
+    '-e',
+    '--end',
+    default=None,
+    type=Date(tz='utc', as_timestamp=True),
+    help='The end date of the data range. (default: today)',
+)
+@click.pass_context
+def ingest(ctx, dataset, data_frequency, start, end):
+    """Ingest a dataset (requires subscription).
+    """
+    marketplace = Marketplace()
+    marketplace.ingest(dataset, data_frequency, start, end)
+
+
+@marketplace.command()
+@click.option(
+    '--dataset',
+    default=None,
+    help='The name of the dataset to ingest from the Data Marketplace.',
+)
+@click.pass_context
+def clean(ctx, dataset):
+    """Clean/Remove local data for a given dataset.
+    """
+    marketplace = Marketplace()
+    marketplace.clean(dataset)
+
+
+@marketplace.command()
+@click.pass_context
+def register(ctx):
+    """Register a new dataset.
+    """
+    marketplace = Marketplace()
+    marketplace.register()
+
+
+@marketplace.command()
+@click.option(
+    '--dataset',
+    default=None,
+    help='The name of the Marketplace dataset to publish data for.',
+)
+@click.option(
+    '--datadir',
+    default=None,
+    help='The folder that contains the CSV data files to publish.',
+)
+@click.option(
+    '--watch/--no-watch',
+    is_flag=True,
+    default=False,
+    help='Whether to watch the datadir for live data.',
+)
+@click.pass_context
+def publish(ctx, dataset, datadir, watch):
+    """Publish data for a registered dataset.
+    """
+    marketplace = Marketplace()
+    if dataset is None:
+        ctx.fail("must specify a dataset to publish data for "
+                 " with '--dataset'\n")
+    if datadir is None:
+        ctx.fail("must specify a datadir where to find the files to publish "
+                 " with '--datadir'\n")
+    marketplace.publish(dataset, datadir, watch)
 
 
 if __name__ == '__main__':

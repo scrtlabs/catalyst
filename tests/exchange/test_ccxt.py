@@ -1,8 +1,7 @@
 import pandas as pd
 from logbook import Logger
 
-from catalyst.testing import ZiplineTestCase
-from catalyst.testing.fixtures import WithLogger
+from catalyst.exchange.utils.stats_utils import set_print_settings
 from .base import BaseExchangeTestCase
 from catalyst.exchange.ccxt.ccxt_exchange import CCXT
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
@@ -15,7 +14,7 @@ log = Logger('test_ccxt')
 class TestCCXT(BaseExchangeTestCase):
     @classmethod
     def setup(self):
-        exchange_name = 'binance'
+        exchange_name = 'bittrex'
         auth = get_exchange_auth(exchange_name)
         self.exchange = CCXT(
             exchange_name=exchange_name,
@@ -58,15 +57,20 @@ class TestCCXT(BaseExchangeTestCase):
     def test_get_candles(self):
         log.info('retrieving candles')
         candles = self.exchange.get_candles(
-            freq='30T',
+            freq='1T',
             assets=[self.exchange.get_asset('eth_btc')],
             bar_count=200,
-            start_dt=pd.to_datetime('2017-09-01', utc=True)
+            # start_dt=pd.to_datetime('2017-09-01', utc=True),
         )
 
         for asset in candles:
             df = pd.DataFrame(candles[asset])
             df.set_index('last_traded', drop=True, inplace=True)
+
+        set_print_settings()
+        print('got {} candles'.format(len(df)))
+        print(df.head(10))
+        print(df.tail(10))
         pass
 
     def test_tickers(self):

@@ -34,6 +34,7 @@ def attach_pipeline(pipeline, name, chunks=None):
     :func:`catalyst.api.pipeline_output`
     """
 
+
 def batch_market_order(share_counts):
     """Place a batch market order for multiple assets.
 
@@ -48,6 +49,7 @@ def batch_market_order(share_counts):
         Index of ids for newly-created orders.
     """
 
+
 def cancel_order(order_param):
     """Cancel an open order.
 
@@ -57,7 +59,9 @@ def cancel_order(order_param):
         The order_id or order object to cancel.
     """
 
-def continuous_future(root_symbol_str, offset=0, roll='volume', adjustment='mul'):
+
+def continuous_future(root_symbol_str, offset=0, roll='volume',
+                      adjustment='mul'):
     """Create a specifier for a continuous contract.
 
     Parameters
@@ -81,7 +85,10 @@ def continuous_future(root_symbol_str, offset=0, roll='volume', adjustment='mul'
         The continuous future specifier.
     """
 
-def fetch_csv(url, pre_func=None, post_func=None, date_column='date', date_format=None, timezone='UTC', symbol=None, mask=True, symbol_column=None, special_params_checker=None, **kwargs):
+
+def fetch_csv(url, pre_func=None, post_func=None, date_column='date',
+              date_format=None, timezone='UTC', symbol=None, mask=True,
+              symbol_column=None, special_params_checker=None, **kwargs):
     """Fetch a csv from a remote url and register the data so that it is
     queryable from the ``data`` object.
 
@@ -125,6 +132,7 @@ def fetch_csv(url, pre_func=None, post_func=None, date_column='date', date_forma
         A requests source that will pull data from the url specified.
     """
 
+
 def future_symbol(symbol):
     """Lookup a futures contract with a given symbol.
 
@@ -144,6 +152,7 @@ def future_symbol(symbol):
         Raised when no contract named 'symbol' is found.
     """
 
+
 def get_datetime(tz=None):
     """
 Returns the current simulation datetime.
@@ -158,6 +167,7 @@ Returns
 dt : datetime
     The current simulation datetime converted to ``tz``.
     """
+
 
 def get_environment(field='platform'):
     """Query the execution environment.
@@ -198,6 +208,7 @@ def get_environment(field='platform'):
         Raised when ``field`` is not a valid option.
     """
 
+
 def get_order(order_id):
     """Lookup an order based on the order id returned from one of the
     order functions.
@@ -213,9 +224,11 @@ def get_order(order_id):
         The order object.
     """
 
+
 def history(bar_count, frequency, field, ffill=True):
     """DEPRECATED: use ``data.history`` instead.
     """
+
 
 def order(asset, amount, limit_price=None, stop_price=None, style=None):
     """Place an order.
@@ -258,7 +271,9 @@ def order(asset, amount, limit_price=None, stop_price=None, style=None):
     :func:`catalyst.api.order_percent`
     """
 
-def order_percent(asset, percent, limit_price=None, stop_price=None, style=None):
+
+def order_percent(asset, percent, limit_price=None, stop_price=None,
+                  style=None):
     """Place an order in the specified asset corresponding to the given
     percent of the current portfolio value.
 
@@ -292,6 +307,7 @@ def order_percent(asset, percent, limit_price=None, stop_price=None, style=None)
     :func:`catalyst.api.order`
     :func:`catalyst.api.order_value`
     """
+
 
 def order_target(asset, target, limit_price=None, stop_price=None, style=None):
     """Place an order to adjust a position to a target number of shares. If
@@ -344,7 +360,9 @@ def order_target(asset, target, limit_price=None, stop_price=None, style=None):
     :func:`catalyst.api.order_target_value`
     """
 
-def order_target_percent(asset, target, limit_price=None, stop_price=None, style=None):
+
+def order_target_percent(asset, target, limit_price=None, stop_price=None,
+                         style=None):
     """Place an order to adjust a position to a target percent of the
     current portfolio value. If the position doesn't already exist, this is
     equivalent to placing a new order. If the position does exist, this is
@@ -396,7 +414,9 @@ def order_target_percent(asset, target, limit_price=None, stop_price=None, style
     :func:`catalyst.api.order_target_value`
     """
 
-def order_target_value(asset, target, limit_price=None, stop_price=None, style=None):
+
+def order_target_value(asset, target, limit_price=None, stop_price=None,
+                       style=None):
     """Place an order to adjust a position to a target value. If
     the position doesn't already exist, this is equivalent to placing a new
     order. If the position does exist, this is equivalent to placing an
@@ -448,6 +468,7 @@ def order_target_value(asset, target, limit_price=None, stop_price=None, style=N
     :func:`catalyst.api.order_target_percent`
     """
 
+
 def order_value(asset, value, limit_price=None, stop_price=None, style=None):
     """Place an order by desired value rather than desired number of
     shares.
@@ -488,6 +509,7 @@ def order_value(asset, value, limit_price=None, stop_price=None, style=None):
     :func:`catalyst.api.order_percent`
     """
 
+
 def pipeline_output(name):
     """Get the results of the pipeline that was attached with the name:
     ``name``.
@@ -514,6 +536,7 @@ def pipeline_output(name):
     :meth:`catalyst.pipeline.engine.PipelineEngine.run_pipeline`
     """
 
+
 def record(*args, **kwargs):
     """Track and record values each day.
 
@@ -529,7 +552,9 @@ def record(*args, **kwargs):
     :func:`~catalyst.run_algorithm`.
     """
 
-def schedule_function(func, date_rule=None, time_rule=None, half_days=True, calendar=None):
+
+def schedule_function(func, date_rule=None, time_rule=None, half_days=True,
+                      calendar=None):
     """Schedules a function to be called according to some timed rules.
 
     Parameters
@@ -549,6 +574,7 @@ def schedule_function(func, date_rule=None, time_rule=None, half_days=True, cale
     :class:`catalyst.api.time_rules`
     """
 
+
 def set_asset_restrictions(restrictions, on_error='fail'):
     """Set a restriction on which assets can be ordered.
 
@@ -561,6 +587,7 @@ def set_asset_restrictions(restrictions, on_error='fail'):
     --------
     catalyst.finance.asset_restrictions.Restrictions
     """
+
 
 def set_benchmark(benchmark):
     """Set the benchmark asset.
@@ -576,6 +603,7 @@ def set_benchmark(benchmark):
     automatically reinvested.
     """
 
+
 def set_cancel_policy(cancel_policy):
     """Sets the order cancellation policy for the simulation.
 
@@ -589,6 +617,7 @@ def set_cancel_policy(cancel_policy):
     :class:`catalyst.api.EODCancel`
     :class:`catalyst.api.NeverCancel`
     """
+
 
 def set_commission(commission):
     """Sets the commission model for the simulation.
@@ -605,6 +634,7 @@ def set_commission(commission):
     :class:`catalyst.finance.commission.PerDollar`
     """
 
+
 def set_do_not_order_list(restricted_list, on_error='fail'):
     """Set a restriction on which assets can be ordered.
 
@@ -614,10 +644,12 @@ def set_do_not_order_list(restricted_list, on_error='fail'):
         The assets that cannot be ordered.
     """
 
+
 def set_long_only(on_error='fail'):
     """Set a rule specifying that this algorithm cannot take short
     positions.
     """
+
 
 def set_max_leverage(max_leverage):
     """Set a limit on the maximum leverage of the algorithm.
@@ -629,6 +661,7 @@ def set_max_leverage(max_leverage):
         be no maximum.
     """
 
+
 def set_max_order_count(max_count, on_error='fail'):
     """Set a limit on the number of orders that can be placed in a single
     day.
@@ -639,7 +672,9 @@ def set_max_order_count(max_count, on_error='fail'):
         The maximum number of orders that can be placed on any single day.
     """
 
-def set_max_order_size(asset=None, max_shares=None, max_notional=None, on_error='fail'):
+
+def set_max_order_size(asset=None, max_shares=None, max_notional=None,
+                       on_error='fail'):
     """Set a limit on the number of shares and/or dollar value of any single
     order placed for sid.  Limits are treated as absolute values and are
     enforced at the time that the algo attempts to place an order for sid.
@@ -658,7 +693,9 @@ def set_max_order_size(asset=None, max_shares=None, max_notional=None, on_error=
         The maximum value that can be ordered at one time.
     """
 
-def set_max_position_size(asset=None, max_shares=None, max_notional=None, on_error='fail'):
+
+def set_max_position_size(asset=None, max_shares=None, max_notional=None,
+                          on_error='fail'):
     """Set a limit on the number of shares and/or dollar value held for the
     given sid. Limits are treated as absolute values and are enforced at
     the time that the algo attempts to place an order for sid. This means
@@ -681,6 +718,7 @@ def set_max_position_size(asset=None, max_shares=None, max_notional=None, on_err
         The maximum value to hold for an asset.
     """
 
+
 def set_slippage(slippage):
     """Set the slippage model for the simulation.
 
@@ -694,6 +732,7 @@ def set_slippage(slippage):
     :class:`catalyst.finance.slippage.SlippageModel`
     """
 
+
 def set_symbol_lookup_date(dt):
     """Set the date for which symbols will be resolved to their assets
     (symbols may map to different firms or underlying assets at
@@ -704,6 +743,7 @@ def set_symbol_lookup_date(dt):
     dt : datetime
         The new symbol lookup date.
     """
+
 
 def sid(sid):
     """Lookup an Asset by its unique asset identifier.
@@ -723,6 +763,7 @@ def sid(sid):
     SidsNotFound
         When a requested ``sid`` does not map to any asset.
     """
+
 
 def symbol(symbol_str):
     """Lookup an Equity by its ticker symbol.
@@ -747,6 +788,7 @@ def symbol(symbol_str):
     --------
     :func:`catalyst.api.set_symbol_lookup_date`
     """
+
 
 def symbols(*args):
     """Lookup multuple Equities as a list.
@@ -773,3 +815,18 @@ def symbols(*args):
     :func:`catalyst.api.set_symbol_lookup_date`
     """
 
+
+def get_dataset(ds_name, start=None, end=None):
+    """
+    Lookup a data source from the marketplace
+
+    Parameters
+    ----------
+    ds_name: str
+    start: pd.Timestamp
+    end: pd.Timestamp
+
+    Returns
+    -------
+
+    """
