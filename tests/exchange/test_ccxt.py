@@ -60,9 +60,9 @@ class TestCCXT(BaseExchangeTestCase):
         log.info('retrieving candles')
         candles = self.exchange.get_candles(
             freq='1T',
-            assets=[self.exchange.get_asset('eth_btc')],
+            assets=[self.exchange.get_asset('eng_eth')],
             bar_count=200,
-            # start_dt=pd.to_datetime('2017-09-01', utc=True),
+            start_dt=pd.to_datetime('2017-09-01', utc=True),
         )
 
         for asset in candles:
