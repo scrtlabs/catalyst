@@ -249,7 +249,7 @@ def get_year_start_end(dt, first_day=None, last_day=None):
     return year_start, year_end
 
 
-def get_frequency(freq, data_frequency=None, supported_freqs=['D', 'T']):
+def get_frequency(freq, data_frequency=None, supported_freqs=['D', 'H', 'T']):
     """
     Get the frequency parameters.
 
@@ -309,6 +309,7 @@ def get_frequency(freq, data_frequency=None, supported_freqs=['D', 'T']):
         if 'H' in supported_freqs:
             unit = 'H'
             alias = '{}H'.format(candle_size)
+            data_frequency = 'hourly'
 
         else:
             candle_size = candle_size * 60
