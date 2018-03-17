@@ -251,7 +251,10 @@ def get_year_start_end(dt, first_day=None, last_day=None):
 
 def get_frequency(freq, data_frequency=None, supported_freqs=['D', 'H', 'T']):
     """
-    Get the frequency parameters.
+    Takes an arbitrary candle size (e.g. 15T) and converts to the lowest
+    common denominator supported by the data bundles (e.g. 1T). The data
+    bundles only support 1T and 1D frequencies. If another frequency
+    is requested, Catalyst must request the underlying data and resample.
 
     Notes
     -----
