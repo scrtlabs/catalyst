@@ -312,7 +312,7 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
             algo_end_dt=self._last_available_session,
         )
 
-        start_dt = get_start_dt(end_dt, adj_bar_count, data_frequency)
+        start_dt = get_start_dt(end_dt, adj_bar_count, adj_data_frequency)
         df = resample_history_df(pd.DataFrame(series), freq, field, start_dt)
         return df
 
