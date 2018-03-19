@@ -20,6 +20,7 @@ from requests_toolbelt.multipart.decoder import \
 from catalyst.constants import (
     LOG_LEVEL, AUTH_SERVER, ETH_REMOTE_NODE, MARKETPLACE_CONTRACT,
     MARKETPLACE_CONTRACT_ABI, ENIGMA_CONTRACT, ENIGMA_CONTRACT_ABI)
+from catalyst.utils.cli import maybe_show_progress
 from catalyst.exchange.utils.stats_utils import set_print_settings
 from catalyst.marketplace.marketplace_errors import (
     MarketplacePubAddressEmpty, MarketplaceDatasetNotFound,
@@ -501,17 +502,24 @@ class Marketplace:
             key, secret = get_key_secret(address)
 
         headers = get_signed_headers(ds_name, key, secret)
-        log.debug('Starting download of dataset for ingestion...')
+        log.info('Starting download of dataset for ingestion...')
         r = requests.post(
             '{}/marketplace/ingest'.format(AUTH_SERVER),
             headers=headers,
             stream=True,
         )
         if r.status_code == 200:
+            log.info('Dataset downloaded successfully. Processing dataset...')
             target_path = get_temp_bundles_folder()
             try:
                 decoder = MultipartDecoder.from_response(r)
+                # with maybe_show_progress(
+                #     iter(decoder.parts), 
+                #     True,
+                #     label='Processing files') as part:
+                counter = 0 
                 for part in decoder.parts:
+                    log.info("Processing file {} of {}".format(counter, len(decoder.parts)))
                     h = part.headers[b'Content-Disposition'].decode('utf-8')
                     # Extracting the filename from the header
                     name = re.search(r'filename="(.*)"', h).group(1)
@@ -525,6 +533,7 @@ class Marketplace:
                         f.write(part.content)
 
                     self.process_temp_bundle(ds_name, filename)
+                    counter += 1
 
             except NonMultipartContentTypeException:
                 response = r.json()
