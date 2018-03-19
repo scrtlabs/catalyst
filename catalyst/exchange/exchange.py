@@ -13,7 +13,6 @@ from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
     PricingDataNotLoadedError, \
     NoDataAvailableOnExchange, NoValueForField, \
     NoCandlesReceivedFromExchange, \
-    InvalidHistoryFrequencyAlias,  \
     TickerNotFoundError, NotEnoughCashError
 from catalyst.exchange.utils.datetime_utils import get_delta, \
     get_periods_range, \
@@ -612,7 +611,7 @@ class Exchange:
         # TODO: this function needs some work,
         # we're currently using it just for benchmark data
         freq, candle_size, unit, data_frequency = get_frequency(
-            frequency, data_frequency
+            frequency, data_frequency, supported_freqs=['T', 'D']
         )
         adj_bar_count = candle_size * bar_count
         try:

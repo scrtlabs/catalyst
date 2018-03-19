@@ -296,7 +296,7 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
         bundle = self.exchange_bundles[exchange_name]  # type: ExchangeBundle
 
         freq, candle_size, unit, adj_data_frequency = get_frequency(
-            frequency, data_frequency
+            frequency, data_frequency, supported_freqs=['T', 'D']
         )
         adj_bar_count = candle_size * bar_count
 
