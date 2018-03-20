@@ -199,12 +199,8 @@ class Exchange:
                 )
                 assets.append(asset)
 
-            except SymbolNotFoundOnExchange:
-                log.debug(
-                    'skipping non-existent market {} {}'.format(
-                        self.name, symbol
-                    )
-                )
+            except SymbolNotFoundOnExchange as e:
+                log.warn(e)
         return assets
 
     def get_asset(self, symbol, data_frequency=None, is_exchange_symbol=False,

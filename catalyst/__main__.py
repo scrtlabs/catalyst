@@ -580,7 +580,7 @@ def ingest_exchange(ctx, exchange_name, data_frequency, start, end,
 
     exchange_bundle = ExchangeBundle(exchange_name)
 
-    click.echo('Ingesting exchange bundle {}...'.format(exchange_name),
+    click.echo('Trying to ingest exchange bundle {}...'.format(exchange_name),
                sys.stdout)
     exchange_bundle.ingest(
         data_frequency=data_frequency,
