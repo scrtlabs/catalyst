@@ -55,7 +55,7 @@ def run_server(
     if algotext:
         algotext = base64.b64encode(algotext)
     else:
-        algotext = base64.b64encode(algofile.read())
+        algotext = base64.b64encode(bytes(algofile.read(), 'utf-8')).decode('utf-8')
         algofile = None
 
     json_file = {'arguments': {
@@ -98,6 +98,6 @@ def run_server(
     if response.status_code == 500:
         raise Exception("issues with cloud connections, "
                         "unable to run catalyst on the cloud")
-    recieved_data = response.json()
-    cloud_log_tail = base64.b64decode(recieved_data["log"])
+    received_data = response.json()
+    cloud_log_tail = base64.b64decode(received_data["log"])
     print(cloud_log_tail)
