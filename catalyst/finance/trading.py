@@ -95,11 +95,24 @@ class TradingEnvironment(object):
         if not trading_calendar:
             trading_calendar = get_calendar("NYSE")
 
-        self.benchmark_returns, self.treasury_curves = load(
-            trading_calendar.day,
-            trading_calendar.schedule.index,
-            self.bm_symbol,
-        )
+        # todo: uncomment and add a well defined benchmark
+        # self.benchmark_returns, self.treasury_curves = load(
+        #     trading_calendar.day,
+        #     trading_calendar.schedule.index,
+        #     self.bm_symbol,
+        #     exchange=exchange,
+        # )
+
+        start_data = get_calendar('OPEN').first_trading_session
+        end_data = pd.Timestamp.utcnow()
+        treasure_cols = ['1month', '3month', '6month', '1year', '2year',
+                         '3year', '5year', '7year', '10year', '20year', '30year']
+        self.benchmark_returns = pd.DataFrame(data=0.001,
+                                              index=pd.date_range(start_data, end_data),
+                                              columns=['close'])
+        self.treasury_curves = pd.DataFrame(data=0.001,
+                                            index=pd.date_range(start_data, end_data),
+                                            columns=treasure_cols)
 
         self.exchange_tz = exchange_tz
 
