@@ -130,7 +130,7 @@ class Marketplace:
                     print('{}\t{}\t{}\t{}'.format(
                         i,
                         self.addresses[i]['pubAddr'],
-                        self.addresses[i]['wallet'],
+                        self.addresses[i]['wallet'].ljust(10),
                         self.addresses[i]['desc'])
                     )
                 address_i = int(input('Choose your address associated with '
