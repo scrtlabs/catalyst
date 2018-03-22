@@ -63,7 +63,7 @@ class Bitfinex(Exchange):
 
         # Max is 90 but playing it safe
         # https://www.bitfinex.com/posts/188
-        self.max_requests_per_minute = 80
+        self.max_requests_per_minute = 9
         self.request_cpt = dict()
 
         self.bundle = ExchangeBundle(self.name)
@@ -586,10 +586,9 @@ class Bitfinex(Exchange):
     def generate_symbols_json(self, filename=None, source_dates=False):
         symbol_map = {}
 
-        if not source_dates:
-            fn, r = download_exchange_symbols(self.name)
-            with open(fn) as data_file:
-                cached_symbols = json.load(data_file)
+        fn, r = download_exchange_symbols(self.name)
+        with open(fn) as data_file:
+            cached_symbols = json.load(data_file)
 
         response = self._request('symbols', None)
 
@@ -643,6 +642,7 @@ class Bitfinex(Exchange):
 
         try:
             self.ask_request()
+            time.sleep(60 / self.max_requests_per_minute)
             response = requests.get(url)
         except Exception as e:
             raise ExchangeRequestError(error=e)
@@ -654,7 +654,7 @@ class Bitfinex(Exchange):
             +/- 31 days
         """
         if (len(response.json())):
-            startmonth = response.json()[-1][0]
+            startmonth = int(response.json()[-1][0])
         else:
             startmonth = int((time.time() - 15 * 24 * 3600) * 1000)
 
