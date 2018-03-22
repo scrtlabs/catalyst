@@ -2,6 +2,24 @@
 Release Notes
 =============
 
+Version 0.5.6
+^^^^^^^^^^^^^
+**Release Date**: 2018-03-22
+
+Build
+~~~~~
+- Data Marketplace: ensures compatibility across wallets, now fully supporting 
+`ledger`, `trezor`, `keystore`, `private key`. Partial support for `metamask` 
+(includes sign_msg, but not sign_tx). Current support for `Digital Bitbox` is 
+unknown.
+- Data Marketplace: Switched online provider from MyEtherWallet to MyCrypto.
+- Data Marketplace: Added progress indicator for data ingestion.
+
+Bug Fixes
+~~~~~~~~~
+- Changed benchmark to be constant, so it doesn't ingest data at all. Temporary
+  fix for :issue:`271`, :issue:`285`
+
 Version 0.5.5
 ^^^^^^^^^^^^^
 **Release Date**: 2018-03-19

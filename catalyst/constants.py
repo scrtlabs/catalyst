@@ -43,3 +43,6 @@ ENIGMA_CONTRACT = 'https://raw.githubusercontent.com/enigmampc/' \
 ENIGMA_CONTRACT_ABI = 'https://raw.githubusercontent.com/enigmampc/' \
                       'catalyst/master/catalyst/marketplace/' \
                       'contract_enigma_abi.json'
+
+SUPPORTED_WALLETS = ['metamask', 'ledger', 'trezor', 'bitbox', 'keystore',
+                     'key']
