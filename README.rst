@@ -22,9 +22,11 @@ visit `enigma.co <https://www.enigma.co>`_ to learn more about Catalyst.
 Catalyst builds on top of the well-established 
 `Zipline <https://github.com/quantopian/zipline>`_ project. We did our best to 
 minimize structural changes to the general API to maximize compatibility with 
-existing trading algorithms, developer knowledge, and tutorials. Join us on 
-`Discord <https://discord.gg/SJK32GY>`_ where we have a *#catalyst_dev* channel 
-for questions around Catalyst, algorithmic trading and technical support.
+existing trading algorithms, developer knowledge, and tutorials. Join us on the 
+`Catalyst Forum <https://catalyst.enigma.co/>`_ for questions around Catalyst, 
+algorithmic trading and technical support. We also have a 
+`Discord <https://discord.gg/SJK32GY>`_ group with the *#catalyst_dev* and 
+*#catalyst_setup* dedicated channels.
 
 Overview
 ========
