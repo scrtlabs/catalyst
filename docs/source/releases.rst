@@ -9,9 +9,9 @@ Version 0.5.6
 Build
 ~~~~~
 - Data Marketplace: ensures compatibility across wallets, now fully supporting 
-`ledger`, `trezor`, `keystore`, `private key`. Partial support for `metamask` 
-(includes sign_msg, but not sign_tx). Current support for `Digital Bitbox` is 
-unknown.
+  ``ledger``, ``trezor``, ``keystore``, ``private key``. Partial support for 
+  ``metamask`` (includes sign_msg, but not sign_tx). Current support for 
+  ``Digital Bitbox`` is unknown, but believed to be supported.
 - Data Marketplace: Switched online provider from MyEtherWallet to MyCrypto.
 - Data Marketplace: Added progress indicator for data ingestion.
 
