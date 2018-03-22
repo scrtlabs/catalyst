@@ -430,12 +430,8 @@ class Marketplace:
             merge_bundles(zsource, ztarget)
 
         else:
-            try:
-                os.rename(tmp_bundle, bundle_folder)
-            except WindowsError:
-                shutil.rmtree(bundle_folder)
-                os.rename(tmp_bundle, bundle_folder)
-        pass
+            shutil.rmtree(bundle_folder, ignore_errors=True)
+            os.rename(tmp_bundle, bundle_folder)
 
     def ingest(self, ds_name=None, start=None, end=None, force_download=False):
 
@@ -595,7 +591,6 @@ class Marketplace:
             folder = get_bundle_folder(ds_name, data_frequency)
 
         shutil.rmtree(folder)
-        pass
 
     def create_metadata(self, key, secret, ds_name, data_frequency, desc,
                         has_history=True, has_live=True):
