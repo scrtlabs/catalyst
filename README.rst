@@ -5,6 +5,7 @@
 
 |version tag|
 |version status|
+|forum|
 |discord|
 |twitter|
 
@@ -60,6 +61,9 @@ Go to our `Documentation Website <https://enigmampc.github.io/catalyst/>`_.
 
 .. |version status| image:: https://img.shields.io/pypi/pyversions/enigma-catalyst.svg
    :target: https://pypi.python.org/pypi/enigma-catalyst
+   
+.. |forum| image:: https://img.shields.io/badge/forum-join-green.svg
+   :target: https://catalyst.enigma.co/
 
 .. |discord| image:: https://img.shields.io/badge/discord-join%20chat-green.svg
    :target: https://discordapp.com/invite/SJK32GY
