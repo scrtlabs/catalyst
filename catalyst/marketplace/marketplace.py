@@ -127,9 +127,10 @@ class Marketplace:
         else:
             while True:
                 for i in range(0, len(self.addresses)):
-                    print('{}\t{}\t{}'.format(
+                    print('{}\t{}\t{}\t{}'.format(
                         i,
                         self.addresses[i]['pubAddr'],
+                        self.addresses[i]['wallet'],
                         self.addresses[i]['desc'])
                     )
                 address_i = int(input('Choose your address associated with '
@@ -146,7 +147,7 @@ class Marketplace:
 
     def sign_transaction(self, tx):
 
-        url = 'https://www.myetherwallet.com/#offline-transaction'
+        url = 'https://www.mycrypto.com/#offline-transaction'
         print('\nVisit {url} and enter the following parameters:\n\n'
               'From Address:\t\t{_from}\n'
               '\n\tClick the "Generate Information" button\n\n'
@@ -499,7 +500,8 @@ class Marketplace:
             key = self.addresses[address_i]['key']
             secret = self.addresses[address_i]['secret']
         else:
-            key, secret = get_key_secret(address)
+            key, secret = get_key_secret(address,
+                                         self.addresses[address_i]['wallet'])
 
         headers = get_signed_headers(ds_name, key, secret)
         log.info('Starting download of dataset for ingestion...')
@@ -514,12 +516,13 @@ class Marketplace:
             try:
                 decoder = MultipartDecoder.from_response(r)
                 # with maybe_show_progress(
-                #     iter(decoder.parts), 
+                #     iter(decoder.parts),
                 #     True,
                 #     label='Processing files') as part:
-                counter = 0 
+                counter = 0
                 for part in decoder.parts:
-                    log.info("Processing file {} of {}".format(counter, len(decoder.parts)))
+                    log.info("Processing file {} of {}".format(
+                        counter, len(decoder.parts)))
                     h = part.headers[b'Content-Disposition'].decode('utf-8')
                     # Extracting the filename from the header
                     name = re.search(r'filename="(.*)"', h).group(1)
@@ -693,7 +696,8 @@ class Marketplace:
             key = self.addresses[address_i]['key']
             secret = self.addresses[address_i]['secret']
         else:
-            key, secret = get_key_secret(address)
+            key, secret = get_key_secret(address,
+                                         self.addresses[address_i]['wallet'])
 
         grains = to_grains(price)
 
@@ -774,7 +778,7 @@ class Marketplace:
             key = match['key']
             secret = match['secret']
         else:
-            key, secret = get_key_secret(provider_info[0])
+            key, secret = get_key_secret(provider_info[0], match['wallet'])
 
         headers = get_signed_headers(dataset, key, secret)
         filenames = glob.glob(os.path.join(datadir, '*.csv'))

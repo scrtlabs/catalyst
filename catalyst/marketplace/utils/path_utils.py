@@ -2,6 +2,7 @@ import os
 import json
 import tarfile
 
+from catalyst.constants import SUPPORTED_WALLETS
 from catalyst.utils.deprecate import deprecated
 from catalyst.utils.paths import data_root, ensure_directory
 from catalyst.marketplace.marketplace_errors import MarketplaceJSONError
@@ -131,15 +132,61 @@ def get_user_pubaddr(environ=None):
             try:
                 d = data[0]['pubAddr']
             except Exception as e:
-                return [data, ]
+                data = [data, ]
+
+            changed = False
+
+            for idx, d in enumerate(data):
+                try:
+                    if d['wallet'] not in SUPPORTED_WALLETS:
+                        data[idx]['wallet'] = _choose_wallet(
+                            d['pubAddr'], False)
+                        changed = True
+                except KeyError:
+                    data[idx]['wallet'] = _choose_wallet(
+                        d['pubAddr'], True)
+                    changed = True
+
+            if changed:
+                save_user_pubaddr(data)
+
             return data
+
     else:
         data = []
-        data.append(dict(pubAddr='', desc=''))
+        data.append(dict(pubAddr='', desc='', wallet=''))
         with open(filename, 'w') as f:
             json.dump(data, f, sort_keys=False, indent=2,
                       separators=(',', ':'))
             return data
+
+
+def _choose_wallet(pubAddr, missing):
+    while True:
+        if missing:
+            print('\nYou need to specify a wallet for address '
+                  '{}.'.format(pubAddr))
+        else:
+            print('\nThe wallet specified for address {} is not '
+                  'supported.'.format(pubAddr))
+
+        print('Please choose among the following options:')
+        for idx, wallet in enumerate(SUPPORTED_WALLETS):
+            print('{}\t{}'.format(idx, wallet))
+
+        lw = len(SUPPORTED_WALLETS)-1
+        w = input('Choose a number between 0 and {}: '.format(
+                    lw))
+        try:
+            w = int(w)
+        except ValueError:
+            print('Enter a number between 0 and {}'.format(lw))
+        else:
+            if w not in range(0, lw+1):
+                print('Enter a number between 0 and '
+                      '{}'.format(lw))
+            else:
+                return SUPPORTED_WALLETS[w]
 
 
 def save_user_pubaddr(data, environ=None):
