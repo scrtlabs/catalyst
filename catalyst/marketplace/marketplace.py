@@ -70,7 +70,10 @@ class Marketplace:
                 contract_url.info().get_content_charset()).strip())
 
         abi_url = urllib.urlopen(MARKETPLACE_CONTRACT_ABI)
-        abi = json.load(abi_url)
+        abi_url = abi_url.read().decode(
+                abi_url.info().get_content_charset())
+
+        abi = json.loads(abi_url)
 
         self.mkt_contract = self.web3.eth.contract(
             self.mkt_contract_address,
@@ -84,7 +87,10 @@ class Marketplace:
                 contract_url.info().get_content_charset()).strip())
 
         abi_url = urllib.urlopen(ENIGMA_CONTRACT_ABI)
-        abi = json.load(abi_url)
+        abi_url = abi_url.read().decode(
+                abi_url.info().get_content_charset())
+
+        abi = json.loads(abi_url)
 
         self.eng_contract = self.web3.eth.contract(
             self.eng_contract_address,
