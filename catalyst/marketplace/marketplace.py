@@ -644,7 +644,7 @@ class Marketplace:
     def register(self):
         while True:
             desc = input('Enter the name of the dataset to register: ')
-            dataset = desc.lower()
+            dataset = desc.lower().strip()
             provider_info = self.mkt_contract.functions.getDataProviderInfo(
                 Web3.toHex(dataset)
             ).call()
