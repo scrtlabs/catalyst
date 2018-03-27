@@ -2,6 +2,33 @@
 Release Notes
 =============
 
+Version 0.5.6
+^^^^^^^^^^^^^
+**Release Date**: 2018-03-22
+
+Build
+~~~~~
+- Data Marketplace: ensures compatibility across wallets, now fully supporting 
+  ``ledger``, ``trezor``, ``keystore``, ``private key``. Partial support for 
+  ``metamask`` (includes sign_msg, but not sign_tx). Current support for 
+  ``Digital Bitbox`` is unknown, but believed to be supported.
+- Data Marketplace: Switched online provider from MyEtherWallet to MyCrypto.
+- Data Marketplace: Added progress indicator for data ingestion.
+
+Bug Fixes
+~~~~~~~~~
+- Changed benchmark to be constant, so it doesn't ingest data at all. Temporary
+  fix for :issue:`271`, :issue:`285`
+
+Version 0.5.5
+^^^^^^^^^^^^^
+**Release Date**: 2018-03-19
+
+Bug Fixes
+~~~~~~~~~
+- Fixed an issue with the data history in daily frequency :issue:`274`
+- Fix hourly frequency issues :issue:`227` and :issue:`114`
+
 Version 0.5.4
 ^^^^^^^^^^^^^
 **Release Date**: 2018-03-14
@@ -27,7 +54,7 @@ Bug Fixes
   :issue:`253`
 - Upgraded Data Marketplace to Web3==4.0.0b11, which was breaking some 
   functionality from prior version 4.0.0b7 :issue:`257`
-- Always request more data to avoid empty bars and always give the exact bar  
+- Always request more data to avoid empty bars and always give the exact bar
   number :issue:`260`
 
 Documentation
