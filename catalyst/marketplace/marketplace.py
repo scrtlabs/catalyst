@@ -523,7 +523,7 @@ class Marketplace:
                 #     iter(decoder.parts),
                 #     True,
                 #     label='Processing files') as part:
-                counter = 0
+                counter = 1
                 for part in decoder.parts:
                     log.info("Processing file {} of {}".format(
                         counter, len(decoder.parts)))
@@ -791,7 +791,7 @@ class Marketplace:
         files = []
         for idx, file in enumerate(filenames):
             log.info('Uploading file {} of {}: {}'.format(
-                idx, len(filenames), file))
+                idx+1, len(filenames), file))
             files = []
             files.append(('file', open(file, 'rb')))
 
