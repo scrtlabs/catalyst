@@ -2,6 +2,15 @@
 Release Notes
 =============
 
+Version 0.5.8
+^^^^^^^^^^^^^
+**Release Date**: 2018-03-29
+
+Bug Fixes
+~~~~~~~~~
+- Fix proper release of Data Marketplace on mainnet.
+
+
 Version 0.5.7
 ^^^^^^^^^^^^^
 **Release Date**: 2018-03-29
