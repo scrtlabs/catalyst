@@ -20,7 +20,6 @@ from requests_toolbelt.multipart.decoder import \
 from catalyst.constants import (
     LOG_LEVEL, AUTH_SERVER, ETH_REMOTE_NODE, MARKETPLACE_CONTRACT,
     MARKETPLACE_CONTRACT_ABI, ENIGMA_CONTRACT, ENIGMA_CONTRACT_ABI)
-from catalyst.utils.cli import maybe_show_progress
 from catalyst.exchange.utils.stats_utils import set_print_settings
 from catalyst.marketplace.marketplace_errors import (
     MarketplacePubAddressEmpty, MarketplaceDatasetNotFound,
@@ -70,7 +69,10 @@ class Marketplace:
                 contract_url.info().get_content_charset()).strip())
 
         abi_url = urllib.urlopen(MARKETPLACE_CONTRACT_ABI)
-        abi = json.load(abi_url)
+        abi_url = abi_url.read().decode(
+                abi_url.info().get_content_charset())
+
+        abi = json.loads(abi_url)
 
         self.mkt_contract = self.web3.eth.contract(
             self.mkt_contract_address,
@@ -84,7 +86,10 @@ class Marketplace:
                 contract_url.info().get_content_charset()).strip())
 
         abi_url = urllib.urlopen(ENIGMA_CONTRACT_ABI)
-        abi = json.load(abi_url)
+        abi_url = abi_url.read().decode(
+                abi_url.info().get_content_charset())
+
+        abi = json.loads(abi_url)
 
         self.eng_contract = self.web3.eth.contract(
             self.eng_contract_address,
@@ -518,7 +523,7 @@ class Marketplace:
                 #     iter(decoder.parts),
                 #     True,
                 #     label='Processing files') as part:
-                counter = 0
+                counter = 1
                 for part in decoder.parts:
                     log.info("Processing file {} of {}".format(
                         counter, len(decoder.parts)))
@@ -638,7 +643,7 @@ class Marketplace:
     def register(self):
         while True:
             desc = input('Enter the name of the dataset to register: ')
-            dataset = desc.lower()
+            dataset = desc.lower().strip()
             provider_info = self.mkt_contract.functions.getDataProviderInfo(
                 Web3.toHex(dataset)
             ).call()
@@ -778,26 +783,32 @@ class Marketplace:
         else:
             key, secret = get_key_secret(provider_info[0], match['wallet'])
 
-        headers = get_signed_headers(dataset, key, secret)
         filenames = glob.glob(os.path.join(datadir, '*.csv'))
 
         if not filenames:
             raise MarketplaceNoCSVFiles(datadir=datadir)
 
         files = []
-        for file in filenames:
+        for idx, file in enumerate(filenames):
+            log.info('Uploading file {} of {}: {}'.format(
+                idx+1, len(filenames), file))
+            files = []
             files.append(('file', open(file, 'rb')))
 
-        r = requests.post('{}/marketplace/publish'.format(AUTH_SERVER),
-                          files=files,
-                          headers=headers)
+            headers = get_signed_headers(dataset, key, secret)
+            r = requests.post('{}/marketplace/publish'.format(AUTH_SERVER),
+                              files=files,
+                              headers=headers)
 
-        if r.status_code != 200:
-            raise MarketplaceHTTPRequest(request='upload file',
-                                         error=r.status_code)
+            if r.status_code != 200:
+                raise MarketplaceHTTPRequest(request='upload file',
+                                             error=r.status_code)
 
-        if 'error' in r.json():
-            raise MarketplaceHTTPRequest(request='upload file',
-                                         error=r.json()['error'])
+            if 'error' in r.json():
+                raise MarketplaceHTTPRequest(request='upload file',
+                                             error=r.json()['error'])
 
-        print('Dataset {} uploaded successfully.'.format(dataset))
+            log.info('File processed successfully.')
+
+        print('\nDataset {} uploaded and processed successfully.'.format(
+            dataset))

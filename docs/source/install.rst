@@ -562,6 +562,10 @@ If after following the instructions above, and going through the
 *Troubleshooting* sections, you still experience problems installing Catalyst,
 you can seek additional help through the following channels:
 
+- Join our `Catalyst Forum <https://catalyst.enigma.co/>`_, and browse a variety
+  of topics and conversations around common issues that others face when using
+  Catalyst, and how to resolve them. And join the conversation!
+
 - Join our `Discord community <https://discord.gg/SJK32GY>`_, and head over 
   the #catalyst_dev channel where many other users (as well as the project 
   developers) hang out, and can assist you with your particular issue. The 

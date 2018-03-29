@@ -630,23 +630,28 @@ cdef class TradingPair(Asset):
         and whose second element is a tuple of all the attributes that should
         be serialized/deserialized during pickling.
         """
-        #TODO: make sure that all fields set there
+        # added arguments for catalyst
         return (self.__class__, (self.symbol,
                                  self.exchange,
                                  self.start_date,
                                  self.asset_name,
                                  self.sid,
                                  self.leverage,
+                                 self.end_daily,
+                                 self.end_minute,
                                  self.end_date,
+                                 self.exchange_symbol,
                                  self.first_traded,
                                  self.auto_close_date,
                                  self.exchange_full,
                                  self.min_trade_size,
                                  self.max_trade_size,
+                                 self.maker,
+                                 self.taker,
                                  self.lot,
                                  self.decimals,
-                                 self.taker,
-                                 self.maker))
+                                 self.trading_state,
+                                 self.data_source))
 
 def make_asset_array(int size, Asset asset):
     cdef np.ndarray out = np.empty([size], dtype=object)

@@ -123,7 +123,7 @@ def get_signed_headers(ds_name, key, secret):
     -------
 
     """
-    nonce = str(int(time.time()))
+    nonce = str(int(time.time() * 1000))
 
     signature = hmac.new(
         secret.encode('utf-8'),
