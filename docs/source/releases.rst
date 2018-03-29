@@ -2,6 +2,21 @@
 Release Notes
 =============
 
+Version 0.5.7
+^^^^^^^^^^^^^
+**Release Date**: 2018-03-29
+
+Build
+~~~~~
+- Data Marketplace deployed on mainnet.
+- Added progress indicators for publishing data, and made the data publishing
+  synchronous to provide feedback to the publisher.
+
+Bug Fixes
+~~~~~~~~~
+- Added arguments to the ``reduce`` function in tha Asset class :issue:`214`, 
+  :issue:`287`
+
 Version 0.5.6
 ^^^^^^^^^^^^^
 **Release Date**: 2018-03-22
