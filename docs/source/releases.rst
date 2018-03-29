@@ -14,7 +14,7 @@ Build
 
 Bug Fixes
 ~~~~~~~~~
-- Added arguments to the ``reduce`` function in tha Asset class :issue:`214`, 
+- fixes in storing and loading the state :issue:`214`, 
   :issue:`287`
 
 Version 0.5.6
