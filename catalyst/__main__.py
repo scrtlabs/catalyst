@@ -401,7 +401,7 @@ def catalyst_magic(line, cell=None):
 @click.option(
     '-e',
     '--end',
-    type=Date(tz='utc', as_timestamp=True),
+    type=Date(tz='utc', as_timestamp=False),
     help='An optional end date at which to stop the execution.',
 )
 @click.option(
@@ -765,7 +765,7 @@ def run(ctx,
 @click.option(
     '-e',
     '--end',
-    type=Date(tz='utc', as_timestamp=True),
+    type=Date(tz='utc', as_timestamp=False),
     help='An optional end date at which to stop the execution.',
 )
 @click.option(

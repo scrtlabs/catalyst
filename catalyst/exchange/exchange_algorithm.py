@@ -163,6 +163,25 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
                                                         style)
         return amount, style
 
+    def _calculate_order_target_amount(self, asset, target):
+        """
+        removes order amounts so we won't run into issues
+        when two orders are placed one after the other.
+        it then proceeds to removing positions amount at TradingAlgorithm
+        :param asset:
+        :param target:
+        :return: target
+        """
+        if asset in self.blotter.open_orders:
+            for open_order in self.blotter.open_orders[asset]:
+                current_amount = open_order.amount
+                target -= current_amount
+
+        target = super(ExchangeTradingAlgorithmBase, self). \
+            _calculate_order_target_amount(asset, target)
+
+        return target
+
     def round_order(self, amount, asset):
         """
         We need fractions with cryptocurrencies
@@ -423,6 +442,12 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         -------
 
         """
+        save_algo_object(
+            algo_name=self.algo_namespace,
+            key=self.datetime.floor('1D').strftime('%Y-%m-%d'),
+            obj=self.frame_stats,
+            rel_path='frame_stats'
+        )
         self.is_running = False
 
         if self._analyze is None:
@@ -454,7 +479,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                 stats = pd.DataFrame(period_stats_list)
                 stats.set_index('period_close', drop=False, inplace=True)
 
-                stats = pd.concat([stats, current_stats])
+                # stats = pd.concat([stats, current_stats])
             else:
                 stats = current_stats
 

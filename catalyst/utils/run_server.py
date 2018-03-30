@@ -4,6 +4,17 @@ import base64
 import requests
 import pandas as pd
 import json
+import zlib
+import pickle
+import zmq
+from logbook.queues import ZeroMQSubscriber
+from logbook import FileHandler, StreamHandler,StderrHandler
+
+
+# my_handler = FileHandler('/Users/avishaiw/Documents/test.txt')
+my_handler = StderrHandler()
+subscriber = ZeroMQSubscriber('tcp://127.0.0.1:1056', multi=True)
+controller = subscriber.dispatch_in_background(my_handler)
 
 
 def convert_date(date):
@@ -98,6 +109,10 @@ def run_server(
     if response.status_code == 500:
         raise Exception("issues with cloud connections, "
                         "unable to run catalyst on the cloud")
+    controller.stop()
     received_data = response.json()
-    cloud_log_tail = base64.b64decode(received_data["log"])
-    print(cloud_log_tail)
+    data_perf_compressed = base64.b64decode(received_data["data"])
+    data_perf_pickled = zlib.decompress(data_perf_compressed)
+    data_perf = pickle.loads(data_perf_pickled)
+    # cloud_log_tail = base64.b64decode(received_data["log"])
+    # print(cloud_log_tail)

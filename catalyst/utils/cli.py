@@ -116,7 +116,7 @@ class Date(_DatetimeParam):
 
     def parser(self, value):
         ts = super(Date, self).parser(value)
-        return ts.normalize() if self.as_timestamp else ts.date()
+        return ts.normalize() if self.as_timestamp else ts
 
 
 class Time(_DatetimeParam):
