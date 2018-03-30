@@ -563,6 +563,14 @@ class Marketplace:
         bundle_folder = get_data_source_folder(ds_name)
         z = bcolz.ctable(rootdir=bundle_folder, mode='r')
 
+        if start is not None and end is not None:
+            z = z.fetchwhere('(date>=start_date) & (date<end_date)', user_dict={'start_date': start.to_datetime64(),
+                                                                                 'end_date': end.to_datetime64()})
+        elif start is not None:
+            z = z.fetchwhere('(date>=start_date)', user_dict={'start_date': start.to_datetime64()})
+        elif end is not None:
+            z = z.fetchwhere('(date<end_date)', user_dict={'end_date': end.to_datetime64()})
+
         df = z.todataframe()  # type: pd.DataFrame
         df.set_index(['date', 'symbol'], drop=True, inplace=True)
 
