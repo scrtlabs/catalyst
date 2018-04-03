@@ -1,7 +1,7 @@
 import sys
 import os
 
-#from catalyst import __version__ as version
+from catalyst import __version__ as version
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -44,8 +44,7 @@ project = u'Catalyst'
 copyright = u'2018, Enigma MPC, Inc.'
 
 # The full version, including alpha/beta/rc tags, but excluding the commit hash
-#release = version.split('+', 1)[0]
-release = '0.4'
+release = version.split('+', 1)[0]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.

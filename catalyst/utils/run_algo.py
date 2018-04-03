@@ -489,11 +489,11 @@ def run_algorithm(initialize,
     -------
     perf : pd.DataFrame
         The daily performance of the algorithm.
-
-    See Also
-    --------
-    catalyst.data.bundles.bundles : The available data bundles.
     """
+    #See Also
+    #--------
+    #catalyst.data.bundles.bundles : The available data bundles.
+
     load_extensions(
         default_extension, extensions, strict_extensions, environ
     )
