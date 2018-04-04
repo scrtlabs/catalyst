@@ -6,24 +6,45 @@ import pandas as pd
 import json
 import zlib
 import pickle
-import zmq
+
 from logbook.queues import ZeroMQSubscriber
-from logbook import FileHandler, StreamHandler,StderrHandler
+from logbook import StderrHandler
 
 
-# my_handler = FileHandler('/Users/avishaiw/Documents/test.txt')
+# adding the handlers which receive the records from the server
 my_handler = StderrHandler()
-subscriber = ZeroMQSubscriber('tcp://127.0.0.1:1056', multi=True)
+subscriber = ZeroMQSubscriber('tcp://127.0.0.1:5050', multi=True)
 controller = subscriber.dispatch_in_background(my_handler)
+
+
+def prepare_args(file, text):
+    """
+    send the algo as a base64 decoded text object
+
+    :param file: File
+    :param text: str
+    :return: None, text: str
+    """
+
+    if text:
+        text = base64.b64encode(text)
+    else:
+        text = base64.b64encode(bytes(file.read(), 'utf-8')).decode('utf-8')
+        file = None
+    return file, text
 
 
 def convert_date(date):
     """
     when transferring dates by json,
     converts it to str
+    # any instances which need a conversion,
+    # must be done here
+
     :param date:
     :return: str(date)
     """
+
     if isinstance(date, pd.Timestamp):
         return date.__str__()
 
@@ -59,15 +80,11 @@ def run_server(
         ):
 
     # address to send
-    url = 'http://sandbox.enigma.co/api/catalyst/serve'
-    # url = 'http://127.0.0.1:5000/api/catalyst/serve'
+    # url = 'http://sandbox.enigma.co/api/catalyst/serve'
+    url = 'http://127.0.0.1:5000/api/catalyst/serve'
 
     # argument preparation - encode the file for transfer
-    if algotext:
-        algotext = base64.b64encode(algotext)
-    else:
-        algotext = base64.b64encode(bytes(algofile.read(), 'utf-8')).decode('utf-8')
-        algofile = None
+    algofile, algotext = prepare_args(algofile, algotext)
 
     json_file = {'arguments': {
         'initialize': initialize,
@@ -99,20 +116,27 @@ def run_server(
         'auth_aliases': auth_aliases,
     }}
 
+    # call the server with the following arguments
+    # if any issues raised related to the format of the dates, convert them
     response = requests.post(url,
                              json=json.dumps(
                                     json_file,
                                     default=convert_date
                                 )
                              )
+    # close the handlers, which are not needed anymore
+    controller.stop()
+    subscriber.close()
 
     if response.status_code == 500:
         raise Exception("issues with cloud connections, "
                         "unable to run catalyst on the cloud")
-    controller.stop()
-    received_data = response.json()
-    data_perf_compressed = base64.b64decode(received_data["data"])
-    data_perf_pickled = zlib.decompress(data_perf_compressed)
-    data_perf = pickle.loads(data_perf_pickled)
-    # cloud_log_tail = base64.b64decode(received_data["log"])
-    # print(cloud_log_tail)
+
+    elif response.status_code == 202:
+        print(response.json()['error'])
+
+    else:  # if the run was successful
+        received_data = response.json()
+        data_perf_compressed = base64.b64decode(received_data["data"])
+        data_perf_pickled = zlib.decompress(data_perf_compressed)
+        data_perf = pickle.loads(data_perf_pickled)
