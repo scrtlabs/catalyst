@@ -25,6 +25,7 @@ def merge_bundles(zsource, ztarget):
     df_source = zsource.todataframe()
     df_target = ztarget.todataframe()
 
+    # TODO: duplicates are making their way here
     df = pd.concat(
         [df_source, df_target], ignore_index=True
     )  # type: pd.DataFrame
