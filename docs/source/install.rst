@@ -143,7 +143,7 @@ with the following steps:
 
    .. code-block:: bash
 
-      conda create --name catalyst python=2.7 scipy zlib
+      conda create --name catalyst python=3.6 scipy zlib
 
 3. Activate the environment:
 
@@ -313,6 +313,16 @@ Troubleshooting ``pip`` Install
    .. code-block:: bash
 
       $ sudo apt-get install python-dev
+
+----
+
+**Issue**:
+   Missing TA_Lib
+
+**Solution**:
+   Follow `these instructions
+   <https://mrjbq7.github.io/ta-lib/install.html>`_ to install the TA_Lib Python wrapper
+   (and if needed, its underlying C library as well).
 
 .. _pipenv:
 
@@ -551,6 +561,10 @@ Getting Help
 If after following the instructions above, and going through the 
 *Troubleshooting* sections, you still experience problems installing Catalyst,
 you can seek additional help through the following channels:
+
+- Join our `Catalyst Forum <https://catalyst.enigma.co/>`_, and browse a variety
+  of topics and conversations around common issues that others face when using
+  Catalyst, and how to resolve them. And join the conversation!
 
 - Join our `Discord community <https://discord.gg/SJK32GY>`_, and head over 
   the #catalyst_dev channel where many other users (as well as the project 

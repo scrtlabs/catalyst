@@ -734,7 +734,7 @@ def transform_candles_to_df(candles):
     return pd.DataFrame(candles).set_index('last_traded')
 
 
-def get_candles_df(candles, field, freq, bar_count, end_dt=None):
+def get_candles_df(candles, field, freq, bar_count, end_dt):
     all_series = dict()
 
     for asset in candles:

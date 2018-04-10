@@ -3,7 +3,8 @@ from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.utils.stats_utils import prepare_stats
 from catalyst.gens.sim_engine import (
     BAR,
-    SESSION_START
+    SESSION_START,
+    SESSION_END,
 )
 from logbook import Logger
 
@@ -37,7 +38,7 @@ class LiveGraphClock(object):
     """
 
     def __init__(self, sessions, context, callback=None,
-                 time_skew=pd.Timedelta('0s')):
+                 time_skew=pd.Timedelta('0s'), end=None):
 
         self.sessions = sessions
         self.time_skew = time_skew
@@ -45,6 +46,7 @@ class LiveGraphClock(object):
         self._before_trading_start_bar_yielded = True
         self.context = context
         self.callback = callback
+        self.end = end
 
     def __iter__(self):
         from matplotlib import pyplot as plt
@@ -54,6 +56,8 @@ class LiveGraphClock(object):
             current_time = pd.Timestamp.utcnow()
             current_minute = current_time.floor('1T')
 
+            if self.end is not None and current_minute >= self.end:
+                break
             if self._last_emit is None or current_minute > self._last_emit:
                 log.debug('emitting minutely bar: {}'.format(current_minute))
 
@@ -72,3 +76,5 @@ class LiveGraphClock(object):
 
                 # Workaround: https://stackoverflow.com/a/33050617/814633
                 plt.pause(1)
+
+        yield current_minute, SESSION_END

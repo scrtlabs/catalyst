@@ -322,3 +322,10 @@ class BalanceTooLowError(ZiplineError):
         'add positions to hold a free amount greater than {amount}, or clean '
         'the state of this algo and restart.'
     ).strip()
+
+
+class NoCandlesReceivedFromExchange(ZiplineError):
+    msg = (
+        'Although requesting {bar_count} candles until {end_dt} of asset {asset}, '
+        'an empty list of candles was received for {exchange}.'
+    ).strip()

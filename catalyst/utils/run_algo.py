@@ -10,6 +10,7 @@ import click
 import pandas as pd
 from six import string_types
 
+import catalyst
 from catalyst.data.bundles import load
 from catalyst.data.data_portal import DataPortal
 from catalyst.exchange.exchange_pricing_loader import ExchangePricingLoader, \
@@ -23,7 +24,7 @@ try:
     from pygments.formatters import TerminalFormatter
 
     PYGMENTS = True
-except:
+except ImportError:
     PYGMENTS = False
 from toolz import valfilter, concatv
 from functools import partial
@@ -151,6 +152,7 @@ def _run(handle_data,
         'We encourage you to report any issue on GitHub: '
         'https://github.com/enigmampc/catalyst/issues'
     )
+    log.info('Catalyst version {}'.format(catalyst.__version__))
     sleep(3)
 
     if live:
@@ -221,8 +223,13 @@ def _run(handle_data,
         start = pd.Timestamp.utcnow()
 
         # TODO: fix the end data.
+        # is_end checks if an end date was specified by user
+        # needed for live clock
+        is_end = True
+
         if end is None:
             end = start + timedelta(hours=8760)
+            is_end = False
 
         data = DataPortalExchangeLive(
             exchanges=exchanges,
@@ -251,6 +258,7 @@ def _run(handle_data,
             stats_output=stats_output,
             analyze_live=analyze_live,
             end=end,
+            is_end=is_end,
         )
     elif exchanges:
         # Removed the existing Poloniex fork to keep things simple
@@ -260,6 +268,15 @@ def _run(handle_data,
         # Instead, we should center this data around exchanges.
         # We still need to support bundles for other misc data, but we
         # can handle this later.
+
+        if start != pd.tslib.normalize_date(start) or \
+                        end != pd.tslib.normalize_date(end):
+            # todo: add to Sim_Params the option to start & end at specific times 
+            log.warn(
+                "Catalyst currently starts and ends on the start and "
+                "end of the dates specified, respectively. We hope to "
+                "Modify this and support specific times in a future release."
+            )
 
         data = DataPortalExchangeBacktest(
             exchange_names=[exchange_name for exchange_name in exchanges],
@@ -478,11 +495,11 @@ def run_algorithm(initialize,
     -------
     perf : pd.DataFrame
         The daily performance of the algorithm.
-
-    See Also
-    --------
-    catalyst.data.bundles.bundles : The available data bundles.
     """
+    #See Also
+    #--------
+    #catalyst.data.bundles.bundles : The available data bundles.
+
     load_extensions(
         default_extension, extensions, strict_extensions, environ
     )

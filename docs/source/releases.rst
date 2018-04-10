@@ -2,6 +2,93 @@
 Release Notes
 =============
 
+Version 0.5.8
+^^^^^^^^^^^^^
+**Release Date**: 2018-03-29
+
+Bug Fixes
+~~~~~~~~~
+- Fix Data Marketplace release on mainnet
+
+Version 0.5.7
+^^^^^^^^^^^^^
+**Release Date**: 2018-03-29
+
+Build
+~~~~~
+- Data Marketplace deployed on mainnet.
+- Added progress indicators for publishing data, and made the data publishing
+  synchronous to provide feedback to the publisher.
+
+Bug Fixes
+~~~~~~~~~
+- fixes in storing and loading the state :issue:`214`, 
+  :issue:`287`
+
+Version 0.5.6
+^^^^^^^^^^^^^
+**Release Date**: 2018-03-22
+
+Build
+~~~~~
+- Data Marketplace: ensures compatibility across wallets, now fully supporting 
+  ``ledger``, ``trezor``, ``keystore``, ``private key``. Partial support for 
+  ``metamask`` (includes sign_msg, but not sign_tx). Current support for 
+  ``Digital Bitbox`` is unknown, but believed to be supported.
+- Data Marketplace: Switched online provider from MyEtherWallet to MyCrypto.
+- Data Marketplace: Added progress indicator for data ingestion.
+
+Bug Fixes
+~~~~~~~~~
+- Changed benchmark to be constant, so it doesn't ingest data at all. Temporary
+  fix for :issue:`271`, :issue:`285`
+
+Version 0.5.5
+^^^^^^^^^^^^^
+**Release Date**: 2018-03-19
+
+Bug Fixes
+~~~~~~~~~
+- Fixed an issue with the data history in daily frequency :issue:`274`
+- Fix hourly frequency issues :issue:`227` and :issue:`114`
+
+Version 0.5.4
+^^^^^^^^^^^^^
+**Release Date**: 2018-03-14
+
+Build
+~~~~~
+- Switched Data Marketplace from Ropstein testnet to Rinkeby testnet after 
+  incorporating changes resulting from the marketplace contract audit
+- Several usability improvements of the Data Marketplace that make the 
+  `--dataset` parameter optional. If it is not included in the command line, 
+  will list available datasets, and let you choose interactively.
+
+Bug Fixes
+~~~~~~~~~
+- Fix Binance requirement of symbol to be included in the cancelled order 
+  :issue:`204`
+- Fix `notenoughcasherror` when an open order is filled minutes later 
+  :issue:`237`
+- Properly handle of empty candles received from exchanges :issue:`236`
+- Added a function to reduce open orders amount from calculated target/amount 
+  for target orders :issue:`243`
+- Fix missing file in live trading mode on date change :issue:`252`, 
+  :issue:`253`
+- Upgraded Data Marketplace to Web3==4.0.0b11, which was breaking some 
+  functionality from prior version 4.0.0b7 :issue:`257`
+- Always request more data to avoid empty bars and always give the exact bar
+  number :issue:`260`
+
+Documentation
+~~~~~~~~~~~~~
+- PyCharm documentation :issue:`195`
+- Added TA-Lib troubleshooting instructions
+- Added instructions on how to create a Conda environment for Python 3.6, and
+  updated Visual C++ instructions for Windows and Python 3
+- Linking example algorithms in the documentation to their sources
+
+
 Version 0.5.3
 ^^^^^^^^^^^^^
 **Release Date**: 2018-02-09

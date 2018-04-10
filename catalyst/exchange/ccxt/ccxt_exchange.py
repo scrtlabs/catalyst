@@ -190,6 +190,9 @@ class CCXT(Exchange):
                 if data_frequency == 'minute' and not freq.endswith('T'):
                     continue
 
+                elif data_frequency == 'hourly' and not freq.endswith('D'):
+                    continue
+
                 elif data_frequency == 'daily' and not freq.endswith('D'):
                     continue
 

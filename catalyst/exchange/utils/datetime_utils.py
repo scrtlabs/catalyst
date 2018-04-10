@@ -1,4 +1,5 @@
 import calendar
+import math
 import re
 from datetime import datetime, timedelta, date
 
@@ -248,9 +249,12 @@ def get_year_start_end(dt, first_day=None, last_day=None):
     return year_start, year_end
 
 
-def get_frequency(freq, data_frequency=None, supported_freqs=['D', 'T']):
+def get_frequency(freq, data_frequency=None, supported_freqs=['D', 'H', 'T']):
     """
-    Get the frequency parameters.
+    Takes an arbitrary candle size (e.g. 15T) and converts to the lowest
+    common denominator supported by the data bundles (e.g. 1T). The data
+    bundles only support 1T and 1D frequencies. If another frequency
+    is requested, Catalyst must request the underlying data and resample.
 
     Notes
     -----
@@ -305,14 +309,14 @@ def get_frequency(freq, data_frequency=None, supported_freqs=['D', 'T']):
         data_frequency = 'minute'
 
     elif unit.lower() == 'h':
+        data_frequency = 'minute'
+
         if 'H' in supported_freqs:
             unit = 'H'
             alias = '{}H'.format(candle_size)
-
         else:
             candle_size = candle_size * 60
             alias = '{}T'.format(candle_size)
-            data_frequency = 'minute'
 
     else:
         raise InvalidHistoryFrequencyAlias(freq=freq)
@@ -326,3 +330,33 @@ def from_ms_timestamp(ms):
 
 def get_epoch():
     return pd.to_datetime('1970-1-1', utc=True)
+
+
+def get_candles_number_from_minutes(unit, candle_size, minutes):
+    """
+    Get the number of bars needed for the given time interval
+    in minutes.
+
+    Notes
+    -----
+    Supports only "T", "D" and "H" units
+
+    Parameters
+    ----------
+    unit: str
+    candle_size : int
+    minutes: int
+
+    Returns
+    -------
+    int
+
+    """
+    if unit == "T":
+        res = (float(minutes) / candle_size)
+    elif unit == "H":
+        res = (minutes / 60.0) / candle_size
+    else:  # unit == "D"
+        res = (minutes / 1440.0) / candle_size
+
+    return int(math.ceil(res))

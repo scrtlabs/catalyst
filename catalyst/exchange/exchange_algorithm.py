@@ -379,12 +379,14 @@ class ExchangeTradingAlgorithmBacktest(ExchangeTradingAlgorithmBase):
 
 
 class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
+
     def __init__(self, *args, **kwargs):
         self.algo_namespace = kwargs.pop('algo_namespace', None)
         self.live_graph = kwargs.pop('live_graph', None)
         self.stats_output = kwargs.pop('stats_output', None)
         self._analyze_live = kwargs.pop('analyze_live', None)
         self.end = kwargs.pop('end', None)
+        self.is_end = kwargs.pop('is_end', True)
 
         self._clock = None
         self.frame_stats = list()
@@ -428,6 +430,37 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             log.warn("Can't initialize signal handler inside another thread."
                      "Exit should be handled by the user.")
 
+    def get_frame_stats(self):
+        """
+        preparing the stats before analyze
+        :return: stats: pd.Dataframe
+        """
+        # add the last day stats which is not saved in the directory
+        current_stats = pd.DataFrame(self.frame_stats)
+        current_stats.set_index('period_close', drop=False, inplace=True)
+
+        # get the location of the directory
+        algo_folder = get_algo_folder(self.algo_namespace)
+        folder = join(algo_folder, 'frame_stats')
+
+        if exists(folder):
+            files = [f for f in listdir(folder) if isfile(join(folder, f))]
+
+            period_stats_list = []
+            for item in files:
+                filename = join(folder, item)
+
+                with open(filename, 'rb') as handle:
+                    perf_period = pickle.load(handle)
+                    period_stats_list.extend(perf_period)
+
+            stats = pd.DataFrame(period_stats_list)
+            stats.set_index('period_close', drop=False, inplace=True)
+
+            return pd.concat([stats, current_stats])
+        else:
+            return current_stats
+
     def interrupt_algorithm(self):
         """
 
@@ -442,12 +475,6 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         -------
 
         """
-        save_algo_object(
-            algo_name=self.algo_namespace,
-            key=self.datetime.floor('1D').strftime('%Y-%m-%d'),
-            obj=self.frame_stats,
-            rel_path='frame_stats'
-        )
         self.is_running = False
 
         if self._analyze is None:
@@ -457,31 +484,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             log.info('Exiting the algorithm. Calling `analyze()` '
                      'before exiting the algorithm.')
 
-            # add the last day stats which is not saved in the directory
-            current_stats = pd.DataFrame(self.frame_stats)
-            current_stats.set_index('period_close', drop=False, inplace=True)
-
-            # get the location of the directory
-            algo_folder = get_algo_folder(self.algo_namespace)
-            folder = join(algo_folder, 'frame_stats')
-
-            if exists(folder):
-                files = [f for f in listdir(folder) if isfile(join(folder, f))]
-
-                period_stats_list = []
-                for item in files:
-                    filename = join(folder, item)
-
-                    with open(filename, 'rb') as handle:
-                        perf_period = pickle.load(handle)
-                        period_stats_list.extend(perf_period)
-
-                stats = pd.DataFrame(period_stats_list)
-                stats.set_index('period_close', drop=False, inplace=True)
-
-                # stats = pd.concat([stats, current_stats])
-            else:
-                stats = current_stats
+            stats = self.get_frame_stats()
 
             self.analyze(stats)
 
@@ -533,10 +536,12 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                 self.sim_params.sessions,
                 context=self,
                 callback=self._analyze_live,
+                end=self.end if self.is_end else None
             )
         else:
             self._clock = SimpleClock(
                 self.sim_params.sessions,
+                end=self.end if self.is_end else None
             )
 
         return self._clock
@@ -826,10 +831,6 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         if not self.is_running:
             return
 
-        if self.end is not None and self.end < data.current_dt:
-            log.info('Algorithm has reached specified end time. Finishing...')
-            self.interrupt_algorithm()
-
         # Resetting the frame stats every day to minimize memory footprint
         today = data.current_dt.floor('1D')
         if self.current_day is not None and today > self.current_day:
@@ -1004,6 +1005,19 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                 open_orders.append(exchange_orders)
 
             return open_orders
+
+    def analyze(self, perf):
+        super(ExchangeTradingAlgorithmLive, self)\
+            .analyze(self.get_frame_stats())
+
+    def run(self, data=None, overwrite_sim_params=True):
+        data.attempts = self.attempts
+        perf = super(ExchangeTradingAlgorithmLive, self).run(
+            data, overwrite_sim_params
+        )
+        # Rebuilding the stats to support minute data
+        stats = self.get_frame_stats()
+        return stats
 
     @error_keywords(sid='Keyword argument `sid` is no longer supported for '
                         'get_open_orders. Use `asset` instead.')

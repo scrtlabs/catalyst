@@ -7,6 +7,7 @@ import re
 import shutil
 import sys
 import time
+import webbrowser
 
 import bcolz
 import logbook
@@ -32,6 +33,7 @@ from catalyst.marketplace.utils.eth_utils import bin_hex, from_grains, \
 from catalyst.marketplace.utils.path_utils import get_bundle_folder, \
     get_data_source_folder, get_marketplace_folder, \
     get_user_pubaddr, get_temp_bundles_folder, extract_bundle
+from catalyst.utils.paths import ensure_directory
 
 if sys.version_info.major < 3:
     import urllib
@@ -67,7 +69,10 @@ class Marketplace:
                 contract_url.info().get_content_charset()).strip())
 
         abi_url = urllib.urlopen(MARKETPLACE_CONTRACT_ABI)
-        abi = json.load(abi_url)
+        abi_url = abi_url.read().decode(
+                abi_url.info().get_content_charset())
+
+        abi = json.loads(abi_url)
 
         self.mkt_contract = self.web3.eth.contract(
             self.mkt_contract_address,
@@ -81,7 +86,10 @@ class Marketplace:
                 contract_url.info().get_content_charset()).strip())
 
         abi_url = urllib.urlopen(ENIGMA_CONTRACT_ABI)
-        abi = json.load(abi_url)
+        abi_url = abi_url.read().decode(
+                abi_url.info().get_content_charset())
+
+        abi = json.loads(abi_url)
 
         self.eng_contract = self.web3.eth.contract(
             self.eng_contract_address,
@@ -124,9 +132,10 @@ class Marketplace:
         else:
             while True:
                 for i in range(0, len(self.addresses)):
-                    print('{}\t{}\t{}'.format(
+                    print('{}\t{}\t{}\t{}'.format(
                         i,
                         self.addresses[i]['pubAddr'],
+                        self.addresses[i]['wallet'].ljust(10),
                         self.addresses[i]['desc'])
                     )
                 address_i = int(input('Choose your address associated with '
@@ -141,10 +150,10 @@ class Marketplace:
 
         return address, address_i
 
-    def sign_transaction(self, from_address, tx):
+    def sign_transaction(self, tx):
 
-        print('\nVisit https://www.myetherwallet.com/#offline-transaction and '
-              'enter the following parameters:\n\n'
+        url = 'https://www.mycrypto.com/#offline-transaction'
+        print('\nVisit {url} and enter the following parameters:\n\n'
               'From Address:\t\t{_from}\n'
               '\n\tClick the "Generate Information" button\n\n'
               'To Address:\t\t{to}\n'
@@ -153,13 +162,16 @@ class Marketplace:
               'Gas Price:\t\t[Accept the default value]\n'
               'Nonce:\t\t\t{nonce}\n'
               'Data:\t\t\t{data}\n'.format(
-                _from=from_address,
+                url=url,
+                _from=tx['from'],
                 to=tx['to'],
                 value=tx['value'],
                 gas=tx['gas'],
                 nonce=tx['nonce'],
                 data=tx['data'], )
               )
+
+        webbrowser.open_new(url)
 
         signed_tx = input('Copy and Paste the "Signed Transaction" '
                           'field here:\n')
@@ -172,16 +184,17 @@ class Marketplace:
     def check_transaction(self, tx_hash):
 
         if 'ropsten' in ETH_REMOTE_NODE:
-            etherscan = 'https://ropsten.etherscan.io/tx/{}'.format(
-                tx_hash)
+            etherscan = 'https://ropsten.etherscan.io/tx/'
+        elif 'rinkeby' in ETH_REMOTE_NODE:
+            etherscan = 'https://rinkeby.etherscan.io/tx/'
         else:
-            etherscan = 'https://etherscan.io/tx/{}'.format(tx_hash)
+            etherscan = 'https://etherscan.io/tx/'
+        etherscan = '{}{}'.format(etherscan, tx_hash)
 
         print('\nYou can check the outcome of your transaction here:\n'
               '{}\n\n'.format(etherscan))
 
-    def list(self):
-
+    def _list(self):
         data_sources = self.mkt_contract.functions.getAllProviders().call()
 
         data = []
@@ -193,15 +206,44 @@ class Marketplace:
                             dataset=self.to_text(data_source)
                         )
                     )
+        return pd.DataFrame(data)
 
-        df = pd.DataFrame(data)
+    def list(self):
+        df = self._list()
+
         set_print_settings()
         if df.empty:
             print('There are no datasets available yet.')
         else:
             print(df)
 
-    def subscribe(self, dataset):
+    def subscribe(self, dataset=None):
+
+        if dataset is None:
+
+            df_sets = self._list()
+            if df_sets.empty:
+                print('There are no datasets available yet.')
+                return
+
+            set_print_settings()
+            while True:
+                print(df_sets)
+                dataset_num = input('Choose the dataset you want to '
+                                    'subscribe to [0..{}]: '.format(
+                                        df_sets.size - 1))
+                try:
+                    dataset_num = int(dataset_num)
+                except ValueError:
+                    print('Enter a number between 0 and {}'.format(
+                        df_sets.size - 1))
+                else:
+                    if dataset_num not in range(0, df_sets.size):
+                        print('Enter a number between 0 and {}'.format(
+                            df_sets.size - 1))
+                    else:
+                        dataset = df_sets.iloc[dataset_num]['dataset']
+                        break
 
         dataset = dataset.lower()
 
@@ -292,13 +334,11 @@ class Marketplace:
             self.mkt_contract_address,
             grains,
         ).buildTransaction(
-            {'nonce': self.web3.eth.getTransactionCount(address)}
+            {'from': address,
+             'nonce': self.web3.eth.getTransactionCount(address)}
         )
 
-        if 'ropsten' in ETH_REMOTE_NODE:
-            tx['gas'] = min(int(tx['gas'] * 1.5), 4700000)
-
-        signed_tx = self.sign_transaction(address, tx)
+        signed_tx = self.sign_transaction(tx)
         try:
             tx_hash = '0x{}'.format(
                 bin_hex(self.web3.eth.sendRawTransaction(signed_tx))
@@ -333,13 +373,11 @@ class Marketplace:
 
         tx = self.mkt_contract.functions.subscribe(
             Web3.toHex(dataset),
-        ).buildTransaction(
-            {'nonce': self.web3.eth.getTransactionCount(address)})
+        ).buildTransaction({
+            'from': address,
+            'nonce': self.web3.eth.getTransactionCount(address)})
 
-        if 'ropsten' in ETH_REMOTE_NODE:
-            tx['gas'] = min(int(tx['gas'] * 1.5), 4700000)
-
-        signed_tx = self.sign_transaction(address, tx)
+        signed_tx = self.sign_transaction(tx)
 
         try:
             tx_hash = '0x{}'.format(bin_hex(
@@ -392,17 +430,43 @@ class Marketplace:
         """
         tmp_bundle = extract_bundle(path)
         bundle_folder = get_data_source_folder(ds_name)
+        ensure_directory(bundle_folder)
         if os.listdir(bundle_folder):
             zsource = bcolz.ctable(rootdir=tmp_bundle, mode='r')
             ztarget = bcolz.ctable(rootdir=bundle_folder, mode='r')
             merge_bundles(zsource, ztarget)
 
         else:
+            shutil.rmtree(bundle_folder, ignore_errors=True)
             os.rename(tmp_bundle, bundle_folder)
 
-        pass
+    def ingest(self, ds_name=None, start=None, end=None, force_download=False):
 
-    def ingest(self, ds_name, start=None, end=None, force_download=False):
+        if ds_name is None:
+
+            df_sets = self._list()
+            if df_sets.empty:
+                print('There are no datasets available yet.')
+                return
+
+            set_print_settings()
+            while True:
+                print(df_sets)
+                dataset_num = input('Choose the dataset you want to '
+                                    'ingest [0..{}]: '.format(
+                                        df_sets.size - 1))
+                try:
+                    dataset_num = int(dataset_num)
+                except ValueError:
+                    print('Enter a number between 0 and {}'.format(
+                        df_sets.size - 1))
+                else:
+                    if dataset_num not in range(0, df_sets.size):
+                        print('Enter a number between 0 and {}'.format(
+                            df_sets.size - 1))
+                    else:
+                        ds_name = df_sets.iloc[dataset_num]['dataset']
+                        break
 
         # ds_name = ds_name.lower()
 
@@ -440,20 +504,29 @@ class Marketplace:
             key = self.addresses[address_i]['key']
             secret = self.addresses[address_i]['secret']
         else:
-            key, secret = get_key_secret(address)
+            key, secret = get_key_secret(address,
+                                         self.addresses[address_i]['wallet'])
 
         headers = get_signed_headers(ds_name, key, secret)
-        log.debug('Starting download of dataset for ingestion...')
+        log.info('Starting download of dataset for ingestion...')
         r = requests.post(
             '{}/marketplace/ingest'.format(AUTH_SERVER),
             headers=headers,
             stream=True,
         )
         if r.status_code == 200:
+            log.info('Dataset downloaded successfully. Processing dataset...')
             target_path = get_temp_bundles_folder()
             try:
                 decoder = MultipartDecoder.from_response(r)
+                # with maybe_show_progress(
+                #     iter(decoder.parts),
+                #     True,
+                #     label='Processing files') as part:
+                counter = 1
                 for part in decoder.parts:
+                    log.info("Processing file {} of {}".format(
+                        counter, len(decoder.parts)))
                     h = part.headers[b'Content-Disposition'].decode('utf-8')
                     # Extracting the filename from the header
                     name = re.search(r'filename="(.*)"', h).group(1)
@@ -467,6 +540,7 @@ class Marketplace:
                         f.write(part.content)
 
                     self.process_temp_bundle(ds_name, filename)
+                    counter += 1
 
             except NonMultipartContentTypeException:
                 response = r.json()
@@ -498,17 +572,42 @@ class Marketplace:
 
         return df
 
-    def clean(self, data_source_name, data_frequency=None):
-        data_source_name = data_source_name.lower()
+    def clean(self, ds_name=None, data_frequency=None):
+
+        if ds_name is None:
+            mktplace_root = get_marketplace_folder()
+            folders = [os.path.basename(f.rstrip('/'))
+                       for f in glob.glob('{}/*/'.format(mktplace_root))
+                       if 'temp_bundles' not in f]
+
+            while True:
+                for idx, f in enumerate(folders):
+                    print('{}\t{}'.format(idx, f))
+                dataset_num = input('Choose the dataset you want to '
+                                    'clean [0..{}]: '.format(
+                                        len(folders) - 1))
+                try:
+                    dataset_num = int(dataset_num)
+                except ValueError:
+                    print('Enter a number between 0 and {}'.format(
+                        len(folders) - 1))
+                else:
+                    if dataset_num not in range(0, len(folders)):
+                        print('Enter a number between 0 and {}'.format(
+                            len(folders) - 1))
+                    else:
+                        ds_name = folders[dataset_num]
+                        break
+
+        ds_name = ds_name.lower()
 
         if data_frequency is None:
-            folder = get_data_source_folder(data_source_name)
+            folder = get_data_source_folder(ds_name)
 
         else:
-            folder = get_bundle_folder(data_source_name, data_frequency)
+            folder = get_bundle_folder(ds_name, data_frequency)
 
         shutil.rmtree(folder)
-        pass
 
     def create_metadata(self, key, secret, ds_name, data_frequency, desc,
                         has_history=True, has_live=True):
@@ -544,7 +643,7 @@ class Marketplace:
     def register(self):
         while True:
             desc = input('Enter the name of the dataset to register: ')
-            dataset = desc.lower()
+            dataset = desc.lower().strip()
             provider_info = self.mkt_contract.functions.getDataProviderInfo(
                 Web3.toHex(dataset)
             ).call()
@@ -600,7 +699,8 @@ class Marketplace:
             key = self.addresses[address_i]['key']
             secret = self.addresses[address_i]['secret']
         else:
-            key, secret = get_key_secret(address)
+            key, secret = get_key_secret(address,
+                                         self.addresses[address_i]['wallet'])
 
         grains = to_grains(price)
 
@@ -609,13 +709,11 @@ class Marketplace:
             grains,
             address,
         ).buildTransaction(
-            {'nonce': self.web3.eth.getTransactionCount(address)}
+            {'from': address,
+             'nonce': self.web3.eth.getTransactionCount(address)}
         )
 
-        if 'ropsten' in ETH_REMOTE_NODE:
-            tx['gas'] = min(int(tx['gas'] * 1.5), 4700000)
-
-        signed_tx = self.sign_transaction(address, tx)
+        signed_tx = self.sign_transaction(tx)
 
         try:
             tx_hash = '0x{}'.format(
@@ -683,28 +781,34 @@ class Marketplace:
             key = match['key']
             secret = match['secret']
         else:
-            key, secret = get_key_secret(provider_info[0])
+            key, secret = get_key_secret(provider_info[0], match['wallet'])
 
-        headers = get_signed_headers(dataset, key, secret)
         filenames = glob.glob(os.path.join(datadir, '*.csv'))
 
         if not filenames:
             raise MarketplaceNoCSVFiles(datadir=datadir)
 
         files = []
-        for file in filenames:
+        for idx, file in enumerate(filenames):
+            log.info('Uploading file {} of {}: {}'.format(
+                idx+1, len(filenames), file))
+            files = []
             files.append(('file', open(file, 'rb')))
 
-        r = requests.post('{}/marketplace/publish'.format(AUTH_SERVER),
-                          files=files,
-                          headers=headers)
+            headers = get_signed_headers(dataset, key, secret)
+            r = requests.post('{}/marketplace/publish'.format(AUTH_SERVER),
+                              files=files,
+                              headers=headers)
 
-        if r.status_code != 200:
-            raise MarketplaceHTTPRequest(request='upload file',
-                                         error=r.status_code)
+            if r.status_code != 200:
+                raise MarketplaceHTTPRequest(request='upload file',
+                                             error=r.status_code)
 
-        if 'error' in r.json():
-            raise MarketplaceHTTPRequest(request='upload file',
-                                         error=r.json()['error'])
+            if 'error' in r.json():
+                raise MarketplaceHTTPRequest(request='upload file',
+                                             error=r.json()['error'])
 
-        print('Dataset {} uploaded successfully.'.format(dataset))
+            log.info('File processed successfully.')
+
+        print('\nDataset {} uploaded and processed successfully.'.format(
+            dataset))

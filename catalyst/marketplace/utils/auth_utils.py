@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import webbrowser
 
 import requests
 import time
@@ -9,10 +10,10 @@ from catalyst.marketplace.marketplace_errors import (
     MarketplaceEmptySignature)
 from catalyst.marketplace.utils.path_utils import (
     get_user_pubaddr, save_user_pubaddr)
-from catalyst.constants import AUTH_SERVER
+from catalyst.constants import AUTH_SERVER, SUPPORTED_WALLETS
 
 
-def get_key_secret(pubAddr, wallet='mew'):
+def get_key_secret(pubAddr, wallet):
     """
     Obtain a new key/secret pair from authentication server
 
@@ -42,14 +43,22 @@ def get_key_secret(pubAddr, wallet='mew'):
     auth_type, auth_info = header.split(None, 1)
     d = requests.utils.parse_dict_header(auth_info)
 
-    nonce = '0x{}'.format(d['nonce'])
+    nonce = 'Catalyst nonce: 0x{}'.format(d['nonce'])
 
-    if wallet == 'mew':
+    if wallet in SUPPORTED_WALLETS:
+        url = 'https://www.mycrypto.com/signmsg.html'
+
         print('\nObtaining a key/secret pair to streamline all future '
               'requests with the authentication server.\n'
-              'Visit https://www.myetherwallet.com/signmsg.html and sign the '
-              'following message:\n{}'.format(nonce))
-        signature = input('Copy and Paste the "sig" field from '
+              'Visit {url} and sign the '
+              'following message (copy the entire line, without the '
+              'line break at the end):\n\n{nonce}'.format(
+                url=url,
+                nonce=nonce))
+
+        webbrowser.open_new(url)
+
+        signature = input('\nCopy and Paste the "sig" field from '
                           'the signature here (without the double quotes, '
                           'only the HEX value):\n')
     else:
@@ -83,7 +92,8 @@ def get_key_secret(pubAddr, wallet='mew'):
             addresses = get_user_pubaddr()
 
             match = next((l for l in addresses if
-                          l['pubAddr'] == pubAddr), None)
+                          l['pubAddr'].lower() == pubAddr.lower()), None)
+
             match['key'] = response.json()['key']
             match['secret'] = response.json()['secret']
 
@@ -113,7 +123,7 @@ def get_signed_headers(ds_name, key, secret):
     -------
 
     """
-    nonce = str(int(time.time()))
+    nonce = str(int(time.time() * 1000))
 
     signature = hmac.new(
         secret.encode('utf-8'),
