@@ -223,8 +223,13 @@ def _run(handle_data,
         start = pd.Timestamp.utcnow()
 
         # TODO: fix the end data.
+        # is_end checks if an end date was specified by user
+        # needed for live clock
+        is_end = True
+
         if end is None:
             end = start + timedelta(hours=8760)
+            is_end = False
 
         data = DataPortalExchangeLive(
             exchanges=exchanges,
@@ -253,6 +258,7 @@ def _run(handle_data,
             stats_output=stats_output,
             analyze_live=analyze_live,
             end=end,
+            is_end=is_end,
         )
     elif exchanges:
         # Removed the existing Poloniex fork to keep things simple
