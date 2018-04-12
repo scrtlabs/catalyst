@@ -223,8 +223,13 @@ def _run(handle_data,
         start = pd.Timestamp.utcnow()
 
         # TODO: fix the end data.
+        # is_end checks if an end date was specified by user
+        # needed for live clock
+        is_end = True
+
         if end is None:
             end = start + timedelta(hours=8760)
+            is_end = False
 
         data = DataPortalExchangeLive(
             exchanges=exchanges,
@@ -253,6 +258,7 @@ def _run(handle_data,
             stats_output=stats_output,
             analyze_live=analyze_live,
             end=end,
+            is_end=is_end,
         )
     elif exchanges:
         # Removed the existing Poloniex fork to keep things simple
@@ -433,6 +439,8 @@ def run_algorithm(initialize,
 
     Parameters
     ----------
+    capital_base : float
+        The starting capital for the backtest.
     start : datetime
         The start date of the backtest.
     end : datetime
@@ -441,8 +449,6 @@ def run_algorithm(initialize,
         The initialize function to use for the algorithm. This is called once
         at the very begining of the backtest and should be used to set up
         any state needed by the algorithm.
-    capital_base : float
-        The starting capital for the backtest.
     handle_data : callable[(context, BarData) -> None], optional
         The handle_data function to use for the algorithm. This is called
         every minute when ``data_frequency == 'minute'`` or every day
@@ -452,10 +458,11 @@ def run_algorithm(initialize,
         once before each trading day (after initialize on the first day).
     analyze : callable[(context, pd.DataFrame) -> None], optional
         The analyze function to use for the algorithm. This function is called
-        once at the end of the backtest and is passed the context and the
+        once at the end of the backtest/live run and is passed the context and the
         performance data.
     data_frequency : {'daily', 'minute'}, optional
         The data frequency to run the algorithm at.
+        At backtest both modes are supported, at live mode only the minute mode is supported.
     data : pd.DataFrame, pd.Panel, or DataPortal, optional
         The ohlcv data to run the backtest with.
         This argument is mutually exclusive with:
@@ -463,7 +470,7 @@ def run_algorithm(initialize,
         ``bundle_timestamp``
     bundle : str, optional
         The name of the data bundle to use to load the data to run the backtest
-        with. This defaults to 'quantopian-quandl'.
+        with.
         This argument is mutually exclusive with ``data``.
     bundle_timestamp : datetime, optional
         The datetime to lookup the bundle data for. This defaults to the
@@ -483,17 +490,34 @@ def run_algorithm(initialize,
         The os environment to use. Many extensions use this to get parameters.
         This defaults to ``os.environ``.
     live : bool, optional
-        Execute algorithm in live trading mode.
+        Should the algorithm be executed in live trading mode.
+    exchange_name: str
+        The name of the exchange to be used in the backtest/live run.
+    base_currency: str
+        The base currency to be used in the backtest/live run.
+    algo_namespace: str
+        The namespace of the algorithm.
+    live_graph: bool, optional
+        Should the live graph clock be used instead of the regular clock.
+    analyze_live: callable[(context, pd.DataFrame) -> None], optional
+        The interactive analyze function to be used with the live graph clock every tick.
+    simulate_orders: bool, optional
+        Should paper trading mode be applied.
+    auth_aliases: str, optional
+        Rewrite the auth file name. It should contain an even list
+        of comma-delimited values. For example: "binance,auth2,bittrex,auth2"
+    stats_output: str, optional
+        The URI of the S3 bucket to which upload the performance stats.
+    output: str, optional
+        The path of the output file to which the algorithm performance
+        is serialized.
 
     Returns
     -------
     perf : pd.DataFrame
         The daily performance of the algorithm.
-
-    See Also
-    --------
-    catalyst.data.bundles.bundles : The available data bundles.
     """
+
     load_extensions(
         default_extension, extensions, strict_extensions, environ
     )

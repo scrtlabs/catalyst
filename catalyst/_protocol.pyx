@@ -254,9 +254,7 @@ cdef class BarData:
     def current(self, assets, fields):
         """
         Returns the current value of the given assets for the given fields
-        at the current simulation time.  Current values are the as-traded price
-        and are usually not adjusted for events like splits or dividends (see
-        notes for more information).
+        at the current simulation time.
 
         Parameters
         ----------
@@ -293,20 +291,20 @@ cdef class BarData:
 
         "price" returns the last known close price of the asset.  If there is
         no last known value (either because the asset has never traded, or
-        because it has delisted) NaN is returned.  If a value is found, and we
-        had to cross an adjustment boundary (split, dividend, etc) to get it,
-        the value is adjusted before being returned.
+        because it has delisted) NaN is returned.
 
         "last_traded" returns the date of the last trade event of the asset,
         even if the asset has stopped trading. If there is no last known value,
         pd.NaT is returned.
 
-        "volume" returns the trade volume for the current simulation time.  If
+        In backtest mode, "volume" returns the trade volume for the current simulation time.  If
         there is no trade this minute, 0 is returned.
 
         "open", "high", "low", and "close" return the relevant information for
         the current trade bar.  If there is no current trade bar, NaN is
         returned.
+
+        In live mode, "volume" returns the last 24 hour trading volume.
         """
         multiple_assets = _is_iterable(assets)
         multiple_fields = _is_iterable(fields)
@@ -466,6 +464,7 @@ cdef class BarData:
         -------
         can_trade : bool or pd.Series[bool] indexed by asset.
         """
+
         dt = self.simulation_dt_func()
 
         if self._adjust_minutes:
@@ -594,8 +593,12 @@ cdef class BarData:
         """
         Returns a window of data for the given assets and fields.
 
-        This data is adjusted for splits, dividends, and mergers as of the
-        current algorithm time.
+        The label of each candle is left-bound. This means that for example, in case of 5 minute candles,
+        the candle of 00:00:00 will hold the data between 00:00:00 and 00:04:59.
+
+        In minute mode, both in live and backtest, the last candle will almost always
+        be a partial one. For example, if the current time is 00:02:00 the last 5 minute candle
+        with 00:00:00 timestamp will hold data between 00:00:00 and 00:01:59.
 
         The semantics of missing data are identical to the ones described in
         the notes for `get_spot_value`.
@@ -609,7 +612,8 @@ cdef class BarData:
 
         bar_count: integer number of bars of trade data
 
-        frequency: string. "1m" for minutely data or "1d" for daily date
+        frequency: string. "T" for minutely data, "D" for daily date,
+            "H" for hourly data
 
         Returns
         -------
@@ -630,10 +634,6 @@ cdef class BarData:
             Panel is indexed by field, has dt as the major axis, and assets
             as the minor axis.
 
-        Notes
-        -----
-        If the current simulation time is not a valid market time, we use the
-        last market close instead.
         """
         if isinstance(fields, string_types):
             single_asset = isinstance(assets, PricingDataAssociable)

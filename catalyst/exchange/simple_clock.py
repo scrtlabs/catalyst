@@ -17,7 +17,8 @@ import pandas as pd
 from catalyst.constants import LOG_LEVEL
 from catalyst.gens.sim_engine import (
     BAR,
-    SESSION_START
+    SESSION_START,
+    SESSION_END,
 )
 from logbook import Logger
 
@@ -37,12 +38,13 @@ class SimpleClock(object):
     the Broker and the live trading machine's clock.
     """
 
-    def __init__(self, sessions, time_skew=pd.Timedelta("0s")):
+    def __init__(self, sessions, time_skew=pd.Timedelta("0s"), end=None):
 
         self.sessions = sessions
         self.time_skew = time_skew
         self._last_emit = None
         self._before_trading_start_bar_yielded = True
+        self.end = end
 
     def __iter__(self):
         yield pd.Timestamp.utcnow(), SESSION_START
@@ -51,6 +53,8 @@ class SimpleClock(object):
             current_time = pd.Timestamp.utcnow()
             current_minute = current_time.floor('1 min')
 
+            if self.end is not None and current_minute >= self.end:
+                break
             if self._last_emit is None or current_minute > self._last_emit:
                 log.debug('emitting minutely bar: {}'.format(current_minute))
 
@@ -58,3 +62,5 @@ class SimpleClock(object):
                 yield current_minute, BAR
             else:
                 sleep(1)
+
+        yield current_minute, SESSION_END
