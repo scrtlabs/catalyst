@@ -8,6 +8,7 @@ Version 0.5.8
 
 Bug Fixes
 ~~~~~~~~~
+- Fix proper release of Data Marketplace on mainnet.
 - Fix Data Marketplace release on mainnet
 
 Version 0.5.7

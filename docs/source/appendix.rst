@@ -1,7 +1,7 @@
 API Reference
 -------------
 
-Running a Backtest
+Running a Strategy
 ~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: catalyst.run_algorithm(...)
@@ -13,13 +13,15 @@ The following methods are available for use in the ``initialize``,
 ``handle_data``, and ``before_trading_start`` API functions.
 
 In all listed functions, the ``self`` argument is implicitly the
-currently-executing :class:`~zipline.algorithm.TradingAlgorithm` instance.
+currently-executing :class:`~catalyst.algorithm.TradingAlgorithm` instance.
 
 Data Object
 ```````````
 
 .. autoclass:: catalyst.protocol.BarData
    :members:
+
+
 
 Scheduling Functions
 ````````````````````
@@ -93,8 +95,8 @@ Assets
 Trading Controls
 ````````````````
 
-zipline provides trading controls to help ensure that the algorithm is
-performing as expected. The functions help protect the algorithm from certian
+catalyst provides trading controls to help ensure that the algorithm is
+performing as expected. The functions help protect the algorithm from certain
 bugs that could cause undesirable behavior when trading with real money.
 
 .. autofunction:: catalyst.api.set_do_not_order_list
