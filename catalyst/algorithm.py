@@ -937,10 +937,8 @@ class TradingAlgorithm(object):
         field : {'platform', 'arena', 'data_frequency',
                  'start', 'end', 'capital_base', 'platform', '*'}
             The field to query. The options have the following meanings:
-              arena : str
-                  The arena from the simulation parameters. This will normally
-                  be ``backtest`` but some systems may use this distinguish
-                  live trading from backtesting.
+              arena : str {'backtest', 'live'}
+                  The algorithm's arena.
               data_frequency : {'daily', 'minute'}
                   data_frequency tells the algorithm if it is running with
                   daily or minute mode.
@@ -1269,7 +1267,7 @@ class TradingAlgorithm(object):
 
     @api_method
     def symbols(self, *args):
-        """Lookup multuple Equities as a list.
+        """Lookup multiple TradingPairs as a list.
 
         Parameters
         ----------
@@ -1278,8 +1276,8 @@ class TradingAlgorithm(object):
 
         Returns
         -------
-        equities : list[Equity]
-            The equities that held the given ticker symbols on the current
+        tradingPairs : list[TradingPair]
+            The tradingPairs that held the given ticker symbols on the current
             symbol lookup date.
 
         Raises
@@ -1772,8 +1770,6 @@ class TradingAlgorithm(object):
     @api_method
     def set_symbol_lookup_date(self, dt):
         """Set the date for which symbols will be resolved to their assets
-        (symbols may map to different firms or underlying assets at
-        different times)
 
         Parameters
         ----------

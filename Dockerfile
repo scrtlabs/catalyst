@@ -1,11 +1,11 @@
 #
 # Dockerfile for an image with the currently checked out version of catalyst installed. To build:
 #
-#    docker build -t quantopian/catalyst .
+#    docker build -t enigmampc/catalyst .
 #
 # To run the container:
 #
-#    docker run -v /path/to/your/notebooks:/projects -v ~/.catalyst:/root/.catalyst -p 8888:8888/tcp --name catalyst -it quantopian/catalyst
+#    docker run -v /path/to/your/notebooks:/projects -v ~/.catalyst:/root/.catalyst -p 8888:8888/tcp --name catalyst -it enigmampc/catalyst
 #
 # To access Jupyter when running docker locally (you may need to add NAT rules):
 #
