@@ -182,7 +182,7 @@ or the Terminal application on MacOS).
 
    $ catalyst --help
 
-This is the resulting output, simplified for eductional purposes:
+This is the resulting output, simplified for educational purposes:
 
 .. parsed-literal::
 
