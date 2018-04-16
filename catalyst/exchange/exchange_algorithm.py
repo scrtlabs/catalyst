@@ -134,6 +134,16 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
 
     @api_method
     def set_commission(self, maker=None, taker=None):
+        """Sets the maker and taker fees of the commission model for the simulation.
+
+        Parameters
+        ----------
+        maker : float
+            The taker fee - taking from the order book.
+        taker : float
+            The maker fee - adding to the order book.
+
+        """
         key = list(self.blotter.commission_models.keys())[0]
         if maker is not None:
             self.blotter.commission_models[key].maker = maker
@@ -143,6 +153,13 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
 
     @api_method
     def set_slippage(self, spread=None):
+        """Set the spread of the slippage model for the simulation.
+
+        Parameters
+        ----------
+        spread : float
+            The spread to be set.
+        """
         key = list(self.blotter.slippage_models.keys())[0]
         if spread is not None:
             self.blotter.slippage_models[key].spread = spread
@@ -203,19 +220,33 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
     @api_method
     @preprocess(symbol_str=ensure_upper_case)
     def symbol(self, symbol_str, exchange_name=None):
-        """Lookup an Equity by its ticker symbol.
+        """Lookup a TradingPair by its ticker symbol.
+        Catalyst defines its own set of "universal" symbols to reference
+        trading pairs across exchanges. This is required because exchanges
+        are not adhering to a universal symbolism. For example, Bitfinex
+        uses the BTC symbol for Bitcon while Kraken uses XBT. In addition,
+        pairs are sometimes presented differently. For example, Bitfinex
+        puts the market currency before the base currency without a
+        separator, Bittrex puts the base currency first and uses a dash
+        seperator.
+
+        Here is the Catalyst convention: [Market Currency]_[Base Currency]
+        For example: btc_usd, eth_btc, neo_eth, ltc_eur.
+
+        The symbol for each currency (e.g. btc, eth, ltc) is generally
+        aligned with the Bittrex exchange.
 
         Parameters
         ----------
         symbol_str : str
-            The ticker symbol for the equity to lookup.
+            The ticker symbol for the TradingPair to lookup.
         exchange_name: str
             The name of the exchange containing the symbol
 
         Returns
         -------
-        equity : Equity
-            The equity that held the ticker symbol on the current
+        tradingPair : TradingPair
+            The TradingPair that held the ticker symbol on the current
             symbol lookup date.
 
         Raises
@@ -223,9 +254,6 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
         SymbolNotFound
             Raised when the symbols was not held on the current lookup date.
 
-        See Also
-        --------
-        :func:`catalyst.api.set_symbol_lookup_date`
         """
         # If the user has not set the symbol lookup date,
         # use the end_session as the date for sybmol->sid resolution.

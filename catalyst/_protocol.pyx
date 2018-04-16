@@ -439,22 +439,7 @@ cdef class BarData:
         1) the asset is alive for the session of the current simulation time
           (if current simulation time is not a market minute, we use the next
           session)
-        2) (if we are in minute mode) the asset's exchange is open at the
-          current simulation time or at the simulation calendar's next market
-          minute
-        3) there is a known last price for the asset.
-
-        Notes
-        -----
-        The second condition above warrants some further explanation.
-        - If the asset's exchange calendar is identical to the simulation
-        calendar, then this condition always returns True.
-        - If there are market minutes in the simulation calendar outside of
-        this asset's exchange's trading hours (for example, if the simulation
-        is running on the CME calendar but the asset is MSFT, which trades on
-        the NYSE), during those minutes, this condition will return false
-        (for example, 3:15 am Eastern on a weekday, during which the CME is
-        open but the NYSE is closed).
+p        2) there is a known last price for the asset.
 
         Parameters
         ----------
