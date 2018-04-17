@@ -19,7 +19,6 @@ The exchanges available for backtesting are fully supported in live mode:
 Additionally, we have successfully tested the following exchanges:
 
 - Binance, id = ``binance``
-- Bitmex, id = ``bitmex``
 - GDAX, id = ``gdax``
 
 As Catalyst is currently in Alpha and in under active development, you are 
