@@ -9,20 +9,6 @@ import pandas as pd
 from six import string_types
 
 
-def merge_bundles_list_bcolz(tmp_bundle_paths, rootdir):
-    df = pd.concat([bcolz.ctable(rootdir=tmp_bundle, mode='r').todataframe() for
-                           tmp_bundle in tmp_bundle_paths])
-    df.set_index(['date', 'symbol'], drop=False, inplace=True)
-    sanitize_df(df)
-    bcolz.ctable.fromdataframe(df=df, rootdir=rootdir)
-
-def merge_bundles_list(tmp_bundle_paths, rootdir):
-    df = pd.concat([bcolz.ctable(rootdir=tmp_bundle, mode='r').todataframe() for
-                           tmp_bundle in tmp_bundle_paths])
-    sanitize_df(df)
-    return df
-
-
 def merge_bundles(zsource, ztarget):
     """
     Merge
@@ -40,7 +26,7 @@ def merge_bundles(zsource, ztarget):
     df_target = ztarget.todataframe()
 
     df = pd.concat(
-        [df_target, df_source], ignore_index=True
+        [df_source, df_target], ignore_index=True
     )  # type: pd.DataFrame
     df.drop_duplicates(inplace=True)
     df.set_index(['date', 'symbol'], drop=False, inplace=True)
@@ -55,36 +41,6 @@ def merge_bundles(zsource, ztarget):
     shutil.rmtree(bak_dir)
     return z
 
-def merge_df_w_bundle(df_source, ztarget):
-    """
-    Merge
-    Parameters
-    ----------
-    zsource
-    ztarget
-
-    Returns
-    -------
-
-    """
-    # TODO: find a way to do this iteratively instead of in-memory
-    df_target = ztarget.todataframe()
-
-    df = pd.concat(
-        [df_target, df_source], ignore_index=True
-    )  # type: pd.DataFrame
-    df.drop_duplicates(subset=['date', 'symbol'], keep='last', inplace=True)
-    df.set_index(['date', 'symbol'], drop=False, inplace=True)
-
-    sanitize_df(df)
-
-    dirname = os.path.basename(ztarget.rootdir)
-    bak_dir = ztarget.rootdir.replace(dirname, '.{}'.format(dirname))
-    shutil.move(ztarget.rootdir, bak_dir)
-
-    z = bcolz.ctable.fromdataframe(df=df, rootdir=ztarget.rootdir)
-    shutil.rmtree(bak_dir)
-    return z
 
 def sanitize_df(df):
     # Using a sampling method to identify dates for efficiency with
@@ -113,13 +69,6 @@ def sanitize_df(df):
 
         if is_date:
             df[column] = pd.to_datetime(df[column])
-
-        else:
-            try:
-                ser = safely_reduce_dtype(df[column])
-                df[column] = ser
-            except Exception:
-                pass
 
     return df
 
