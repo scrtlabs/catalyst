@@ -70,13 +70,6 @@ def sanitize_df(df):
         if is_date:
             df[column] = pd.to_datetime(df[column])
 
-        else:
-            try:
-                ser = safely_reduce_dtype(df[column])
-                df[column] = ser
-            except Exception:
-                pass
-
     return df
 
 

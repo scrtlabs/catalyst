@@ -27,7 +27,6 @@ from catalyst.marketplace.marketplace_errors import (
     MarketplaceNoCSVFiles, MarketplaceRequiresPython3)
 from catalyst.marketplace.utils.auth_utils import get_key_secret, \
     get_signed_headers
-from catalyst.marketplace.utils.bundle_utils import merge_bundles
 from catalyst.marketplace.utils.eth_utils import bin_hex, from_grains, \
     to_grains
 from catalyst.marketplace.utils.path_utils import get_bundle_folder, \
@@ -433,8 +432,8 @@ class Marketplace:
         ensure_directory(bundle_folder)
         if os.listdir(bundle_folder):
             zsource = bcolz.ctable(rootdir=tmp_bundle, mode='r')
-            ztarget = bcolz.ctable(rootdir=bundle_folder, mode='r')
-            merge_bundles(zsource, ztarget)
+            ztarget = bcolz.ctable(rootdir=bundle_folder, mode='a')
+            ztarget.append(zsource)
 
         else:
             shutil.rmtree(bundle_folder, ignore_errors=True)
@@ -516,6 +515,8 @@ class Marketplace:
         )
         if r.status_code == 200:
             log.info('Dataset downloaded successfully. Processing dataset...')
+            bundle_folder = get_data_source_folder(ds_name)
+            shutil.rmtree(bundle_folder, ignore_errors=True)
             target_path = get_temp_bundles_folder()
             try:
                 decoder = MultipartDecoder.from_response(r)
@@ -795,11 +796,15 @@ class Marketplace:
         if not filenames:
             raise MarketplaceNoCSVFiles(datadir=datadir)
 
+        def read_file(pathname):
+            with open(pathname, 'rb') as f:
+                return f.read()
+
         files = []
         for idx, file in enumerate(filenames):
             log.info('Uploading file {} of {}: {}'.format(
                 idx+1, len(filenames), file))
-            files.append(('file', open(file, 'rb')))
+            files.append(('file', (os.path.basename(file), read_file(file))))
 
         headers = get_signed_headers(dataset, key, secret)
         r = requests.post('{}/marketplace/publish'.format(AUTH_SERVER),
