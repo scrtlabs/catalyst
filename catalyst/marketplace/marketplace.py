@@ -27,7 +27,8 @@ from catalyst.marketplace.marketplace_errors import (
     MarketplaceNoCSVFiles, MarketplaceRequiresPython3)
 from catalyst.marketplace.utils.auth_utils import get_key_secret, \
     get_signed_headers
-from catalyst.marketplace.utils.bundle_utils import merge_bundles
+from catalyst.marketplace.utils.bundle_utils import merge_bundles, merge_bundles_list, merge_bundles_list_bcolz, \
+    merge_df_w_bundle
 from catalyst.marketplace.utils.eth_utils import bin_hex, from_grains, \
     to_grains
 from catalyst.marketplace.utils.path_utils import get_bundle_folder, \
@@ -414,7 +415,7 @@ class Marketplace:
               'catalyst marketplace ingest --dataset={}'.format(
                 dataset, address, dataset))
 
-    def process_temp_bundle(self, ds_name, path):
+    def process_temp_bundles(self, ds_name, tmp_bundle_paths):
         """
         Merge the temp bundle into the main bundle for the specified
         data source.
@@ -428,17 +429,27 @@ class Marketplace:
         -------
 
         """
-        tmp_bundle = extract_bundle(path)
+        source_path = tmp_bundle_paths[0].replace(os.path.basename(tmp_bundle_paths[0]), f'{ds_name}_tmp_bundle')
         bundle_folder = get_data_source_folder(ds_name)
         ensure_directory(bundle_folder)
         if os.listdir(bundle_folder):
-            zsource = bcolz.ctable(rootdir=tmp_bundle, mode='r')
+            print('bundle folder exists')
+            print('beginning merging of source bundles')
+            df_source = merge_bundles_list(tmp_bundle_paths, source_path)
+            print('finished merging of source bundles')
             ztarget = bcolz.ctable(rootdir=bundle_folder, mode='r')
-            merge_bundles(zsource, ztarget)
+            print('beginning merging of source and target bundle')
+            merge_df_w_bundle(df_source, ztarget)
+            shutil.rmtree(source_path, ignore_errors=True)
+            print('finished merging of source and target bundle')
 
         else:
+            print('bundle folder does not exist')
+            print('beginning merging of source bundles')
+            merge_bundles_list_bcolz(tmp_bundle_paths, source_path)
             shutil.rmtree(bundle_folder, ignore_errors=True)
-            os.rename(tmp_bundle, bundle_folder)
+            os.rename(source_path, bundle_folder)
+            print('finished merging of source bundles')
 
     def ingest(self, ds_name=None, start=None, end=None, force_download=False):
 
@@ -509,6 +520,7 @@ class Marketplace:
 
         headers = get_signed_headers(ds_name, key, secret)
         log.info('Starting download of dataset for ingestion...')
+        AUTH_SERVER = 'http://127.0.0.1:5000'
         r = requests.post(
             '{}/marketplace/ingest'.format(AUTH_SERVER),
             headers=headers,
@@ -524,6 +536,7 @@ class Marketplace:
                 #     True,
                 #     label='Processing files') as part:
                 counter = 1
+                tmp_bundle_paths = []
                 for part in decoder.parts:
                     log.info("Processing file {} of {}".format(
                         counter, len(decoder.parts)))
@@ -538,9 +551,10 @@ class Marketplace:
                         #     if chunk: # filter out keep-alive new chunks
                         #         f.write(chunk)
                         f.write(part.content)
-
-                    self.process_temp_bundle(ds_name, filename)
+                    tmp_bundle_paths.append(extract_bundle(filename))
                     counter += 1
+                self.process_temp_bundles(ds_name, tmp_bundle_paths)
+
 
             except NonMultipartContentTypeException:
                 response = r.json()
@@ -806,6 +820,7 @@ class Marketplace:
             files.append(('file', (os.path.basename(file), read_file(file))))
 
         headers = get_signed_headers(dataset, key, secret)
+        AUTH_SERVER = 'http://127.0.0.1:5000'
         r = requests.post('{}/marketplace/publish'.format(AUTH_SERVER),
                           files=files,
                           headers=headers)
@@ -822,3 +837,8 @@ class Marketplace:
 
         print('\nDataset {} uploaded and processed successfully.'.format(
             dataset))
+
+if __name__ == '__main__':
+    marketplace = Marketplace()
+    marketplace.ingest('test_mktcap_adi')
+    # marketplace.publish('test_mktcap_adi', '/Users/adityapalepu/Startups/Cryptos/adi_examples/coinmarketcap_partial', None)
