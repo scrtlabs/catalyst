@@ -795,11 +795,15 @@ class Marketplace:
         if not filenames:
             raise MarketplaceNoCSVFiles(datadir=datadir)
 
+        def read_file(pathname):
+            with open(pathname, 'rb') as f:
+                return f.read()
+
         files = []
         for idx, file in enumerate(filenames):
             log.info('Uploading file {} of {}: {}'.format(
                 idx+1, len(filenames), file))
-            files.append(('file', open(file, 'rb')))
+            files.append(('file', (os.path.basename(file), read_file(file))))
 
         headers = get_signed_headers(dataset, key, secret)
         r = requests.post('{}/marketplace/publish'.format(AUTH_SERVER),
