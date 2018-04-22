@@ -852,6 +852,16 @@ class CCXT(Exchange):
 
         return orders
 
+    def _check_common_symbols(self, currency):
+        for key, value in self._common_symbols.items():
+            if value == currency:
+                return key.lower()
+        return currency
+
+    def _check_low_balance(self, currency, balances, amount):
+        updated_currency = self._check_common_symbols(currency)
+        return super(CCXT, self)._check_low_balance(updated_currency, balances, amount)
+
     def _process_order_fallback(self, order):
         """
         Fallback method for exchanges which do not play nice with
