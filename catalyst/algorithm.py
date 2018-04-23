@@ -1418,11 +1418,11 @@ class TradingAlgorithm(object):
         Parameters
         ----------
         asset : Asset
-            The asset that this order is for.
+            The asset/TradingPair that this order is for.
         amount : int
-            The amount of shares to order. If ``amount`` is positive, this is
-            the number of shares to buy or cover. If ``amount`` is negative,
-            this is the number of shares to sell or short.
+            The amount of currency to order. If ``amount`` is positive, this is
+            the number of ``market_currency`` (the first asset in the pair) to buy. If ``amount`` is negative,
+            this is the number of ``market_currency`` to sell or short (buy ``base_currency``).
         limit_price : float, optional
             The limit price for the order.
         stop_price : float, optional
@@ -1445,6 +1445,9 @@ class TradingAlgorithm(object):
         ``limit_price=N`` and ``stop_price=M`` is equivalent to
         ``style=StopLimitOrder(N, M)``. It is an error to pass both a ``style``
         and ``limit_price`` or ``stop_price``.
+
+        Currently, orders must be done only with one ``base_currency``
+        throughout all the algorithm.
 
         See Also
         --------
@@ -1549,18 +1552,16 @@ class TradingAlgorithm(object):
                     limit_price=None,
                     stop_price=None,
                     style=None):
-        """Place an order by desired value rather than desired number of
-        shares.
+        """Place an order by ``base_currency`` value rather than desired number of
+        ``market_currency`` wanted.
 
         Parameters
         ----------
         asset : Asset
-            The asset that this order is for.
+            The asset/ TradingPair that this order is for.
         value : float
             If the requested asset exists, the requested value is
-            divided by its price to imply the number of shares to transact.
-            If the Asset being ordered is a Future, the 'value' calculated
-            is actually the exposure, as Futures have no 'value'.
+            divided by its price to imply the number of currency to transact.
 
             value > 0 :: Buy/Cover
             value < 0 :: Sell/Short
@@ -1854,7 +1855,7 @@ class TradingAlgorithm(object):
                      limit_price=None,
                      stop_price=None,
                      style=None):
-        """Place an order to adjust a position to a target number of shares. If
+        """Place an order to adjust a position to a target number of currency. If
         the position doesn't already exist, this is equivalent to placing a new
         order. If the position does exist, this is equivalent to placing an
         order for the difference between the target number of shares and the
@@ -1881,17 +1882,7 @@ class TradingAlgorithm(object):
 
         Notes
         -----
-        ``order_target`` does not take into account any open orders. For
-        example:
-
-        .. code-block:: python
-
-           order_target(sid(0), 10)
-           order_target(sid(0), 10)
-
-        This code will result in 20 shares of ``sid(0)`` because the first
-        call to ``order_target`` will not have been filled when the second
-        ``order_target`` call is made.
+        ``order_target`` takes into account open orders as well.
 
         See :func:`catalyst.api.order` for more information about
         ``limit_price``, ``stop_price``, and ``style``
@@ -1932,8 +1923,6 @@ class TradingAlgorithm(object):
         order. If the position does exist, this is equivalent to placing an
         order for the difference between the target value and the
         current value.
-        If the Asset being ordered is a Future, the 'target value' calculated
-        is actually the target exposure, as Futures have no 'value'.
 
         Parameters
         ----------
@@ -1955,17 +1944,6 @@ class TradingAlgorithm(object):
 
         Notes
         -----
-        ``order_target_value`` does not take into account any open orders. For
-        example:
-
-        .. code-block:: python
-
-           order_target_value(sid(0), 10)
-           order_target_value(sid(0), 10)
-
-        This code will result in 20 dollars of ``sid(0)`` because the first
-        call to ``order_target_value`` will not have been filled when the
-        second ``order_target_value`` call is made.
 
         See :func:`catalyst.api.order` for more information about
         ``limit_price``, ``stop_price``, and ``style``
@@ -2019,17 +1997,6 @@ class TradingAlgorithm(object):
 
         Notes
         -----
-        ``order_target_value`` does not take into account any open orders. For
-        example:
-
-        .. code-block:: python
-
-           order_target_percent(sid(0), 10)
-           order_target_percent(sid(0), 10)
-
-        This code will result in 20% of the portfolio being allocated to sid(0)
-        because the first call to ``order_target_percent`` will not have been
-        filled when the second ``order_target_percent`` call is made.
 
         See :func:`catalyst.api.order` for more information about
         ``limit_price``, ``stop_price``, and ``style``
@@ -2086,7 +2053,7 @@ class TradingAlgorithm(object):
 
         Parameters
         ----------
-        asset : Asset
+        asset : Asset, optional
             If passed and not None, return only the open orders for the given
             asset instead of all open orders.
 
