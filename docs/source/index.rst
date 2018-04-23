@@ -19,7 +19,7 @@ Table of Contents
    resources
    development-guidelines
    releases
+   appendix
 ..   bundles
-..   appendix
 ..   release-process
 

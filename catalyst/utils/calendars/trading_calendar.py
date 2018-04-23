@@ -52,7 +52,7 @@ MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY = range(7)
 
 class TradingCalendar(with_metaclass(ABCMeta)):
     """
-    An TradingCalendar represents the timing information of a single market
+    A TradingCalendar represents the timing information of a single market
     exchange.
 
     The timing information is made up of two parts: sessions, and opens/closes.

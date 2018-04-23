@@ -270,14 +270,14 @@ Miscellaneous
 ..    :members: __init__, from_files, load_adjusted_array
 ..    :member-order: bysource
 
-Asset Metadata
-~~~~~~~~~~~~~~
+.. Asset Metadata
+.. ~~~~~~~~~~~~~~
 
-.. autoclass:: catalyst.assets.Asset
+.. .. autoclass:: catalyst.assets._assets.TradingPair // TODO: add TradingPair info in a clean way
    :members:
 
-.. autoclass:: catalyst.assets.AssetConvertible
-   :members:
+.. .. autoclass:: catalyst.assets.AssetConvertible
+..   :members:
 
 
 Trading Calendar API
@@ -286,7 +286,7 @@ Trading Calendar API
 .. autofunction:: catalyst.utils.calendars.get_calendar
 
 .. autoclass:: catalyst.utils.calendars.TradingCalendar
-   :members:
+..   :members:
 
 .. autofunction:: catalyst.utils.calendars.register_calendar
 
@@ -297,8 +297,8 @@ Trading Calendar API
 .. autofunction:: catalyst.utils.calendars.clear_calendars
 
 
-Data API
-~~~~~~~~
+.. Data API
+.. ~~~~~~~~
 
 .. Writers
 .. ```````
@@ -351,23 +351,23 @@ Data API
 .. .. autofunction:: zipline.data.bundles.yahoo_equities
 
 
+.. TODO: add relevant information to this section
+.. Utilities
+.. ~~~~~~~~~
 
-Utilities
-~~~~~~~~~
+.. Caching
+.. ```````
 
-Caching
-```````
+.. .. autoclass:: catalyst.utils.cache.CachedObject
 
-.. autoclass:: catalyst.utils.cache.CachedObject
+.. .. autoclass:: catalyst.utils.cache.ExpiringCache
 
-.. autoclass:: catalyst.utils.cache.ExpiringCache
+.. .. autoclass:: catalyst.utils.cache.dataframe_cache
 
-.. autoclass:: catalyst.utils.cache.dataframe_cache
+.. .. autoclass:: catalyst.utils.cache.working_file
 
-.. autoclass:: catalyst.utils.cache.working_file
+.. .. autoclass:: catalyst.utils.cache.working_dir
 
-.. autoclass:: catalyst.utils.cache.working_dir
-
-Command Line
-````````````
-.. autofunction:: catalyst.utils.cli.maybe_show_progress
+.. Command Line
+.. ````````````
+.. .. autofunction:: catalyst.utils.cli.maybe_show_progress
