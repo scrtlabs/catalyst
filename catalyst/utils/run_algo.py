@@ -447,7 +447,7 @@ def run_algorithm(initialize,
         The end date of the backtest..
     initialize : callable[context -> None]
         The initialize function to use for the algorithm. This is called once
-        at the very begining of the backtest and should be used to set up
+        at the very beginning of the run and should be used to set up
         any state needed by the algorithm.
     handle_data : callable[(context, BarData) -> None], optional
         The handle_data function to use for the algorithm. This is called
@@ -500,16 +500,16 @@ def run_algorithm(initialize,
     live_graph: bool, optional
         Should the live graph clock be used instead of the regular clock.
     analyze_live: callable[(context, pd.DataFrame) -> None], optional
-        The interactive analyze function to be used with the live graph clock every tick.
+        The interactive analyze function to be used with the live graph clock in every tick.
     simulate_orders: bool, optional
         Should paper trading mode be applied.
     auth_aliases: str, optional
         Rewrite the auth file name. It should contain an even list
         of comma-delimited values. For example: "binance,auth2,bittrex,auth2"
     stats_output: str, optional
-        The URI of the S3 bucket to which upload the performance stats.
+        The URI of the S3 bucket to which to upload the performance stats.
     output: str, optional
-        The path of the output file to which the algorithm performance
+        The output file path to which the algorithm performance
         is serialized.
 
     Returns

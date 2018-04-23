@@ -436,10 +436,9 @@ cdef class BarData:
         """
         For the given asset or iterable of assets, returns true if all of the
         following are true:
-        1) the asset is alive for the session of the current simulation time
-          (if current simulation time is not a market minute, we use the next
-          session)
-p        2) there is a known last price for the asset.
+        1) the asset is alive for the session of the current simulation time (if current simulation
+        time is not a market minute, we use the next session)
+        2) there is a known last price for the asset.
 
         Parameters
         ----------
@@ -582,7 +581,7 @@ p        2) there is a known last price for the asset.
         the candle of 00:00:00 will hold the data between 00:00:00 and 00:04:59.
 
         In minute mode, both in live and backtest, the last candle will almost always
-        be a partial one. For example, if the current time is 00:02:00 the last 5 minute candle
+        be a partial one. For example, if the current time is 00:02:00 then the last 5 minute candle
         with 00:00:00 timestamp will hold data between 00:00:00 and 00:01:59.
 
         The semantics of missing data are identical to the ones described in

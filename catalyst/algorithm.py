@@ -1422,7 +1422,7 @@ class TradingAlgorithm(object):
         amount : int
             The amount of currency to order. If ``amount`` is positive, this is
             the number of ``market_currency`` (the first asset in the pair) to buy. If ``amount`` is negative,
-            this is the number of ``market_currency`` to sell or short (buy ``base_currency``).
+            this is the number of ``market_currency`` to sell (buy ``base_currency``).
         limit_price : float, optional
             The limit price for the order.
         stop_price : float, optional
@@ -1557,14 +1557,14 @@ class TradingAlgorithm(object):
 
         Parameters
         ----------
-        asset : Asset
-            The asset/ TradingPair that this order is for.
+        asset : TradingPair
+            The TradingPair that this order is for.
         value : float
-            If the requested asset exists, the requested value is
+            If the requested tradingPair exists, the requested value is
             divided by its price to imply the number of currency to transact.
 
             value > 0 :: Buy/Cover
-            value < 0 :: Sell/Short
+            value < 0 :: Sell
         limit_price : float, optional
             The limit price for the order.
         stop_price : float, optional
@@ -1801,15 +1801,15 @@ class TradingAlgorithm(object):
                       limit_price=None,
                       stop_price=None,
                       style=None):
-        """Place an order in the specified asset corresponding to the given
+        """Place an order in the specified tradingPair corresponding to the given
         percent of the current portfolio value.
 
         Parameters
         ----------
-        asset : Asset
-            The asset that this order is for.
+        asset : TradingPair
+            The tradingPair that this order is for.
         percent : float
-            The percentage of the porfolio value to allocate to ``asset``.
+            The percentage of the portfolio value to allocate to ``asset``.
             This is specified as a decimal, for example: 0.50 means 50%.
         limit_price : float, optional
             The limit price for the order.
@@ -1863,10 +1863,10 @@ class TradingAlgorithm(object):
 
         Parameters
         ----------
-        asset : Asset
-            The asset that this order is for.
+        asset : TradingPair
+            The TradingPair that this order is for.
         target : int
-            The desired number of shares of ``asset``.
+            The desired number of ``TradingPair``.
         limit_price : float, optional
             The limit price for the order.
         stop_price : float, optional
@@ -1926,10 +1926,10 @@ class TradingAlgorithm(object):
 
         Parameters
         ----------
-        asset : Asset
-            The asset that this order is for.
+        asset : TradingPair
+            The TradingPair that this order is for.
         target : float
-            The desired total value of ``asset``.
+            The desired total value of ``TradingPair``.
         limit_price : float, optional
             The limit price for the order.
         stop_price : float, optional
@@ -1977,11 +1977,11 @@ class TradingAlgorithm(object):
 
         Parameters
         ----------
-        asset : Asset
-            The asset that this order is for.
+        asset : TradingPair
+            The TradingPair that this order is for.
         target : float
-            The desired percentage of the porfolio value to allocate to
-            ``asset``. This is specified as a decimal, for example:
+            The desired percentage of the portfolio value to allocate to
+            ``TradingPair``. This is specified as a decimal, for example:
             0.50 means 50%.
         limit_price : float, optional
             The limit price for the order.
@@ -2030,7 +2030,7 @@ class TradingAlgorithm(object):
         Parameters
         ----------
         share_counts : pd.Series[Asset -> int]
-            Map from asset to number of shares to order for that asset.
+            Map from TradingPair to the number to order for that TradingPair.
 
         Returns
         -------

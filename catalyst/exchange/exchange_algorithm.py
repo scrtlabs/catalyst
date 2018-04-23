@@ -1092,7 +1092,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         order : Order
             The order object.
         execution_price: float
-            The execution price per share of the order
+            The execution price per unit of the order
         """
         exchange = self.exchanges[exchange_name]
         return retry(
@@ -1113,10 +1113,12 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         order_param : str or Order
             The order_id or order object to cancel.
 
-        exchange_name: name of exchange from
-                        which you want to cancel the order
-        symbol:
-        params:
+        exchange_name: str
+            The name of exchange to cancel the order in
+        symbol: str
+            The tradingPair symbol
+        params: dict, optional
+            Extra parameters to pass to the exchange
         """
         exchange = self.exchanges[exchange_name]
 
