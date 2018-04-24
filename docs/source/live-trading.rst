@@ -184,6 +184,21 @@ Here is the breakdown of the new arguments:
 
 
 
+Algorithm State
+^^^^^^^^^^^^^^^
+
+In live mode, each call to ``handle data`` saves the state of the algorithm.
+Any information added to the ``context.state`` dictionary will be saved between runs.
+During algorithm restart, the state is restored (if exists) in the initialization function.
+
+Cleaning the state can be achieved by running:
+
+.. code-block:: bash
+
+    catalyst clean-algo -n my-algo-namespace
+
+
+
 The `catalyst live` command offers additional parameters.
 You can learn more by running the following from the command line:
 
