@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>API Reference &mdash; Catalyst 0.5.8 documentation</title>
+  <title>API Reference &mdash; Catalyst 0.5.9 documentation</title>
   
 
   
@@ -33,7 +33,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="Catalyst 0.5.8 documentation" href="index.html"/>
+    <link rel="top" title="Catalyst 0.5.9 documentation" href="index.html"/>
         <link rel="prev" title="Release Notes" href="releases.html"/> 
 
   
@@ -376,134 +376,112 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>capital_base</strong> : float</p>
-<blockquote>
-<div><p>The starting capital for the backtest.</p>
-</div></blockquote>
-<p><strong>start</strong> : datetime</p>
-<blockquote>
-<div><p>The start date of the backtest.</p>
-</div></blockquote>
-<p><strong>end</strong> : datetime</p>
-<blockquote>
-<div><p>The end date of the backtest..</p>
-</div></blockquote>
-<p><strong>initialize</strong> : callable[context -&gt; None]</p>
-<blockquote>
-<div><p>The initialize function to use for the algorithm. This is called once
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>capital_base</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The starting capital for the backtest.</p>
+</dd>
+<dt><strong>start</strong> <span class="classifier-delimiter">:</span> <span class="classifier">datetime</span></dt>
+<dd><p class="first last">The start date of the backtest.</p>
+</dd>
+<dt><strong>end</strong> <span class="classifier-delimiter">:</span> <span class="classifier">datetime</span></dt>
+<dd><p class="first last">The end date of the backtest..</p>
+</dd>
+<dt><strong>initialize</strong> <span class="classifier-delimiter">:</span> <span class="classifier">callable[context -&gt; None]</span></dt>
+<dd><p class="first last">The initialize function to use for the algorithm. This is called once
 at the very beginning of the run and should be used to set up
 any state needed by the algorithm.</p>
-</div></blockquote>
-<p><strong>handle_data</strong> : callable[(context, BarData) -&gt; None], optional</p>
-<blockquote>
-<div><p>The handle_data function to use for the algorithm. This is called
+</dd>
+<dt><strong>handle_data</strong> <span class="classifier-delimiter">:</span> <span class="classifier">callable[(context, BarData) -&gt; None], optional</span></dt>
+<dd><p class="first last">The handle_data function to use for the algorithm. This is called
 every minute when <code class="docutils literal"><span class="pre">data_frequency</span> <span class="pre">==</span> <span class="pre">'minute'</span></code> or every day
 when <code class="docutils literal"><span class="pre">data_frequency</span> <span class="pre">==</span> <span class="pre">'daily'</span></code>.</p>
-</div></blockquote>
-<p><strong>before_trading_start</strong> : callable[(context, BarData) -&gt; None], optional</p>
-<blockquote>
-<div><p>The before_trading_start function for the algorithm. This is called
+</dd>
+<dt><strong>before_trading_start</strong> <span class="classifier-delimiter">:</span> <span class="classifier">callable[(context, BarData) -&gt; None], optional</span></dt>
+<dd><p class="first last">The before_trading_start function for the algorithm. This is called
 once before each trading day (after initialize on the first day).</p>
-</div></blockquote>
-<p><strong>analyze</strong> : callable[(context, pd.DataFrame) -&gt; None], optional</p>
-<blockquote>
-<div><p>The analyze function to use for the algorithm. This function is called
+</dd>
+<dt><strong>analyze</strong> <span class="classifier-delimiter">:</span> <span class="classifier">callable[(context, pd.DataFrame) -&gt; None], optional</span></dt>
+<dd><p class="first last">The analyze function to use for the algorithm. This function is called
 once at the end of the backtest/live run and is passed the context and the
 performance data.</p>
-</div></blockquote>
-<p><strong>data_frequency</strong> : {‘daily’, ‘minute’}, optional</p>
-<blockquote>
-<div><p>The data frequency to run the algorithm at.
+</dd>
+<dt><strong>data_frequency</strong> <span class="classifier-delimiter">:</span> <span class="classifier">{‘daily’, ‘minute’}, optional</span></dt>
+<dd><p class="first last">The data frequency to run the algorithm at.
 At backtest both modes are supported, at live mode only the minute mode is supported.</p>
-</div></blockquote>
-<p><strong>data</strong> : pd.DataFrame, pd.Panel, or DataPortal, optional</p>
-<blockquote>
-<div><p>The ohlcv data to run the backtest with.
+</dd>
+<dt><strong>data</strong> <span class="classifier-delimiter">:</span> <span class="classifier">pd.DataFrame, pd.Panel, or DataPortal, optional</span></dt>
+<dd><p class="first last">The ohlcv data to run the backtest with.
 This argument is mutually exclusive with:
 <code class="docutils literal"><span class="pre">bundle</span></code>
 <code class="docutils literal"><span class="pre">bundle_timestamp</span></code></p>
-</div></blockquote>
-<p><strong>bundle</strong> : str, optional</p>
-<blockquote>
-<div><p>The name of the data bundle to use to load the data to run the backtest
+</dd>
+<dt><strong>bundle</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
+<dd><p class="first last">The name of the data bundle to use to load the data to run the backtest
 with.
 This argument is mutually exclusive with <code class="docutils literal"><span class="pre">data</span></code>.</p>
-</div></blockquote>
-<p><strong>bundle_timestamp</strong> : datetime, optional</p>
-<blockquote>
-<div><p>The datetime to lookup the bundle data for. This defaults to the
+</dd>
+<dt><strong>bundle_timestamp</strong> <span class="classifier-delimiter">:</span> <span class="classifier">datetime, optional</span></dt>
+<dd><p class="first last">The datetime to lookup the bundle data for. This defaults to the
 current time.
 This argument is mutually exclusive with <code class="docutils literal"><span class="pre">data</span></code>.</p>
-</div></blockquote>
-<p><strong>default_extension</strong> : bool, optional</p>
-<blockquote>
-<div><p>Should the default catalyst extension be loaded. This is found at
+</dd>
+<dt><strong>default_extension</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Should the default catalyst extension be loaded. This is found at
 <code class="docutils literal"><span class="pre">$CATALYST_ROOT/extension.py</span></code></p>
-</div></blockquote>
-<p><strong>extensions</strong> : iterable[str], optional</p>
-<blockquote>
-<div><p>The names of any other extensions to load. Each element may either be
+</dd>
+<dt><strong>extensions</strong> <span class="classifier-delimiter">:</span> <span class="classifier">iterable[str], optional</span></dt>
+<dd><p class="first last">The names of any other extensions to load. Each element may either be
 a dotted module path like <code class="docutils literal"><span class="pre">a.b.c</span></code> or a path to a python file ending
 in <code class="docutils literal"><span class="pre">.py</span></code> like <code class="docutils literal"><span class="pre">a/b/c.py</span></code>.</p>
-</div></blockquote>
-<p><strong>strict_extensions</strong> : bool, optional</p>
-<blockquote>
-<div><p>Should the run fail if any extensions fail to load. If this is false,
+</dd>
+<dt><strong>strict_extensions</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Should the run fail if any extensions fail to load. If this is false,
 a warning will be raised instead.</p>
-</div></blockquote>
-<p><strong>environ</strong> : mapping[str -&gt; str], optional</p>
-<blockquote>
-<div><p>The os environment to use. Many extensions use this to get parameters.
+</dd>
+<dt><strong>environ</strong> <span class="classifier-delimiter">:</span> <span class="classifier">mapping[str -&gt; str], optional</span></dt>
+<dd><p class="first last">The os environment to use. Many extensions use this to get parameters.
 This defaults to <code class="docutils literal"><span class="pre">os.environ</span></code>.</p>
-</div></blockquote>
-<p><strong>live</strong> : bool, optional</p>
-<blockquote>
-<div><p>Should the algorithm be executed in live trading mode.</p>
-</div></blockquote>
-<p><strong>exchange_name: str</strong></p>
-<blockquote>
-<div><p>The name of the exchange to be used in the backtest/live run.</p>
-</div></blockquote>
-<p><strong>base_currency: str</strong></p>
-<blockquote>
-<div><p>The base currency to be used in the backtest/live run.</p>
-</div></blockquote>
-<p><strong>algo_namespace: str</strong></p>
-<blockquote>
-<div><p>The namespace of the algorithm.</p>
-</div></blockquote>
-<p><strong>live_graph: bool, optional</strong></p>
-<blockquote>
-<div><p>Should the live graph clock be used instead of the regular clock.</p>
-</div></blockquote>
-<p><strong>analyze_live: callable[(context, pd.DataFrame) -&gt; None], optional</strong></p>
-<blockquote>
-<div><p>The interactive analyze function to be used with the live graph clock in every tick.</p>
-</div></blockquote>
-<p><strong>simulate_orders: bool, optional</strong></p>
-<blockquote>
-<div><p>Should paper trading mode be applied.</p>
-</div></blockquote>
-<p><strong>auth_aliases: str, optional</strong></p>
-<blockquote>
-<div><p>Rewrite the auth file name. It should contain an even list
+</dd>
+<dt><strong>live</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Should the algorithm be executed in live trading mode.</p>
+</dd>
+<dt><strong>exchange_name: str</strong></dt>
+<dd><p class="first last">The name of the exchange to be used in the backtest/live run.</p>
+</dd>
+<dt><strong>base_currency: str</strong></dt>
+<dd><p class="first last">The base currency to be used in the backtest/live run.</p>
+</dd>
+<dt><strong>algo_namespace: str</strong></dt>
+<dd><p class="first last">The namespace of the algorithm.</p>
+</dd>
+<dt><strong>live_graph: bool, optional</strong></dt>
+<dd><p class="first last">Should the live graph clock be used instead of the regular clock.</p>
+</dd>
+<dt><strong>analyze_live: callable[(context, pd.DataFrame) -&gt; None], optional</strong></dt>
+<dd><p class="first last">The interactive analyze function to be used with the live graph clock in every tick.</p>
+</dd>
+<dt><strong>simulate_orders: bool, optional</strong></dt>
+<dd><p class="first last">Should paper trading mode be applied.</p>
+</dd>
+<dt><strong>auth_aliases: str, optional</strong></dt>
+<dd><p class="first last">Rewrite the auth file name. It should contain an even list
 of comma-delimited values. For example: “binance,auth2,bittrex,auth2”</p>
-</div></blockquote>
-<p><strong>stats_output: str, optional</strong></p>
-<blockquote>
-<div><p>The URI of the S3 bucket to which to upload the performance stats.</p>
-</div></blockquote>
-<p><strong>output: str, optional</strong></p>
-<blockquote>
-<div><p>The output file path to which the algorithm performance
+</dd>
+<dt><strong>stats_output: str, optional</strong></dt>
+<dd><p class="first last">The URI of the S3 bucket to which to upload the performance stats.</p>
+</dd>
+<dt><strong>output: str, optional</strong></dt>
+<dd><p class="first last">The output file path to which the algorithm performance
 is serialized.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>perf</strong> : pd.DataFrame</p>
-<blockquote class="last">
-<div><p>The daily performance of the algorithm.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>perf</strong> <span class="classifier-delimiter">:</span> <span class="classifier">pd.DataFrame</span></dt>
+<dd><p class="first last">The daily performance of the algorithm.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -530,30 +508,27 @@ has recent trade data, etc.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>data_portal</strong> : DataPortal</p>
-<blockquote>
-<div><p>Provider for bar pricing data.</p>
-</div></blockquote>
-<p><strong>simulation_dt_func</strong> : callable</p>
-<blockquote>
-<div><p>Function which returns the current simulation time.
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>data_portal</strong> <span class="classifier-delimiter">:</span> <span class="classifier">DataPortal</span></dt>
+<dd><p class="first last">Provider for bar pricing data.</p>
+</dd>
+<dt><strong>simulation_dt_func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">callable</span></dt>
+<dd><p class="first last">Function which returns the current simulation time.
 This is usually bound to a method of TradingSimulation.</p>
-</div></blockquote>
-<p><strong>data_frequency</strong> : {‘minute’, ‘daily’}</p>
-<blockquote>
-<div><p>The frequency of the bar data; i.e. whether the data is
+</dd>
+<dt><strong>data_frequency</strong> <span class="classifier-delimiter">:</span> <span class="classifier">{‘minute’, ‘daily’}</span></dt>
+<dd><p class="first last">The frequency of the bar data; i.e. whether the data is
 daily or minute bars</p>
-</div></blockquote>
-<p><strong>restrictions</strong> : catalyst.finance.asset_restrictions.Restrictions</p>
-<blockquote>
-<div><p>Object that combines and returns restricted list information from
+</dd>
+<dt><strong>restrictions</strong> <span class="classifier-delimiter">:</span> <span class="classifier">catalyst.finance.asset_restrictions.Restrictions</span></dt>
+<dd><p class="first last">Object that combines and returns restricted list information from
 multiple sources</p>
-</div></blockquote>
-<p><strong>universe_func</strong> : callable, optional</p>
-<blockquote class="last">
-<div><p>Function which returns the current ‘universe’.  This is for
+</dd>
+<dt><strong>universe_func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">callable, optional</span></dt>
+<dd><p class="first last">Function which returns the current ‘universe’.  This is for
 backwards compatibility with older API concepts.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -570,9 +545,17 @@ time is not a market minute, we use the next session)
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>assets: Asset or iterable of assets</strong></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>assets: Asset or iterable of assets</strong></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>can_trade</strong> : bool or pd.Series[bool] indexed by asset.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>can_trade</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool or pd.Series[bool] indexed by asset.</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -587,19 +570,22 @@ at the current simulation time.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>assets</strong> : Asset or iterable of Assets</p>
-<p><strong>fields</strong> : str or iterable[str].</p>
-<blockquote>
-<div><p>Valid values are: “price”,
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>assets</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Asset or iterable of Assets</span></dt>
+<dd></dd>
+<dt><strong>fields</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str or iterable[str].</span></dt>
+<dd><p class="first last">Valid values are: “price”,
 “last_traded”, “open”, “high”, “low”, “close”, “volume”, or column
 names in files read by <code class="docutils literal"><span class="pre">fetch_csv</span></code>.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>current_value</strong> : Scalar, pandas Series, or pandas DataFrame.</p>
-<blockquote class="last">
-<div><p>See notes below.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>current_value</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Scalar, pandas Series, or pandas DataFrame.</span></dt>
+<dd><p class="first last">See notes below.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -647,21 +633,23 @@ the notes for <cite>get_spot_value</cite>.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>assets: Asset or iterable of Asset</strong></p>
-<p><strong>fields: string or iterable of string.  Valid values are “open”, “high”,</strong></p>
-<blockquote>
-<div><p>“low”, “close”, “volume”, “price”, and “last_traded”.</p>
-</div></blockquote>
-<p><strong>bar_count: integer number of bars of trade data</strong></p>
-<p><strong>frequency: string. “T” for minutely data, “D” for daily date,</strong></p>
-<blockquote>
-<div><p>“H” for hourly data</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>assets: Asset or iterable of Asset</strong></dt>
+<dd></dd>
+<dt><strong>fields: string or iterable of string.  Valid values are “open”, “high”,</strong></dt>
+<dd><p class="first last">“low”, “close”, “volume”, “price”, and “last_traded”.</p>
+</dd>
+<dt><strong>bar_count: integer number of bars of trade data</strong></dt>
+<dd></dd>
+<dt><strong>frequency: string. “T” for minutely data, “D” for daily date,</strong></dt>
+<dd><p class="first last">“H” for hourly data</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>history</strong> : Series or DataFrame or Panel</p>
-<blockquote class="last">
-<div><p>Return type depends on the dimensionality of the ‘assets’ and
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>history</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Series or DataFrame or Panel</span></dt>
+<dd><p class="first">Return type depends on the dimensionality of the ‘assets’ and
 ‘fields’ parameters.</p>
 <p>If single asset and field are passed in, the returned Series is
 indexed by dt.</p>
@@ -669,10 +657,11 @@ indexed by dt.</p>
 DataFrame is indexed by dt, and has assets as columns.</p>
 <p>If a single asset and multiple fields are passed in, the returned
 DataFrame is indexed by dt, and has fields as columns.</p>
-<p>If multiple assets and multiple fields are passed in, the returned
+<p class="last">If multiple assets and multiple fields are passed in, the returned
 Panel is indexed by field, has dt as the major axis, and assets
 as the minor axis.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -692,9 +681,17 @@ market minute/day for the trade data check.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>assets: Asset or iterable of assets</strong></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>assets: Asset or iterable of assets</strong></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">boolean or Series of booleans, indexed by asset.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>boolean or Series of booleans, indexed by asset.</strong></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -713,26 +710,23 @@ market minute/day for the trade data check.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>func</strong> : callable[(context, data) -&gt; None]</p>
-<blockquote>
-<div><p>The function to execute when the rule is triggered.</p>
-</div></blockquote>
-<p><strong>date_rule</strong> : EventRule, optional</p>
-<blockquote>
-<div><p>The rule for the dates to execute this function.</p>
-</div></blockquote>
-<p><strong>time_rule</strong> : EventRule, optional</p>
-<blockquote>
-<div><p>The rule for the times to execute this function.</p>
-</div></blockquote>
-<p><strong>half_days</strong> : bool, optional</p>
-<blockquote>
-<div><p>Should this rule fire on half days?</p>
-</div></blockquote>
-<p><strong>calendar</strong> : Sentinel, optional</p>
-<blockquote class="last">
-<div><p>Calendar used to reconcile date and time rules.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">callable[(context, data) -&gt; None]</span></dt>
+<dd><p class="first last">The function to execute when the rule is triggered.</p>
+</dd>
+<dt><strong>date_rule</strong> <span class="classifier-delimiter">:</span> <span class="classifier">EventRule, optional</span></dt>
+<dd><p class="first last">The rule for the dates to execute this function.</p>
+</dd>
+<dt><strong>time_rule</strong> <span class="classifier-delimiter">:</span> <span class="classifier">EventRule, optional</span></dt>
+<dd><p class="first last">The rule for the times to execute this function.</p>
+</dd>
+<dt><strong>half_days</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Should this rule fire on half days?</p>
+</dd>
+<dt><strong>calendar</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Sentinel, optional</span></dt>
+<dd><p class="first last">Calendar used to reconcile date and time rules.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -808,35 +802,33 @@ market minute/day for the trade data check.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>asset</strong> : Asset</p>
-<blockquote>
-<div><p>The asset/TradingPair that this order is for.</p>
-</div></blockquote>
-<p><strong>amount</strong> : int</p>
-<blockquote>
-<div><p>The amount of currency to order. If <code class="docutils literal"><span class="pre">amount</span></code> is positive, this is
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>asset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Asset</span></dt>
+<dd><p class="first last">The asset/TradingPair that this order is for.</p>
+</dd>
+<dt><strong>amount</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">The amount of currency to order. If <code class="docutils literal"><span class="pre">amount</span></code> is positive, this is
 the number of <code class="docutils literal"><span class="pre">market_currency</span></code> (the first asset in the pair) to buy. If <code class="docutils literal"><span class="pre">amount</span></code> is negative,
 this is the number of <code class="docutils literal"><span class="pre">market_currency</span></code> to sell (buy <code class="docutils literal"><span class="pre">base_currency</span></code>).</p>
-</div></blockquote>
-<p><strong>limit_price</strong> : float, optional</p>
-<blockquote>
-<div><p>The limit price for the order.</p>
-</div></blockquote>
-<p><strong>stop_price</strong> : float, optional</p>
-<blockquote>
-<div><p>The stop price for the order.</p>
-</div></blockquote>
-<p><strong>style</strong> : ExecutionStyle, optional</p>
-<blockquote>
-<div><p>The execution style for the order.</p>
-</div></blockquote>
+</dd>
+<dt><strong>limit_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The limit price for the order.</p>
+</dd>
+<dt><strong>stop_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The stop price for the order.</p>
+</dd>
+<dt><strong>style</strong> <span class="classifier-delimiter">:</span> <span class="classifier">ExecutionStyle, optional</span></dt>
+<dd><p class="first last">The execution style for the order.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>order_id</strong> : str or None</p>
-<blockquote class="last">
-<div><p>The unique identifier for this order, or None if no order was
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>order_id</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str or None</span></dt>
+<dd><p class="first last">The unique identifier for this order, or None if no order was
 placed.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -866,35 +858,33 @@ throughout all the algorithm.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>asset</strong> : TradingPair</p>
-<blockquote>
-<div><p>The TradingPair that this order is for.</p>
-</div></blockquote>
-<p><strong>value</strong> : float</p>
-<blockquote>
-<div><p>If the requested tradingPair exists, the requested value is
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>asset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">TradingPair</span></dt>
+<dd><p class="first last">The TradingPair that this order is for.</p>
+</dd>
+<dt><strong>value</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first">If the requested tradingPair exists, the requested value is
 divided by its price to imply the number of currency to transact.</p>
-<p>value &gt; 0 :: Buy/Cover
+<p class="last">value &gt; 0 :: Buy/Cover
 value &lt; 0 :: Sell</p>
-</div></blockquote>
-<p><strong>limit_price</strong> : float, optional</p>
-<blockquote>
-<div><p>The limit price for the order.</p>
-</div></blockquote>
-<p><strong>stop_price</strong> : float, optional</p>
-<blockquote>
-<div><p>The stop price for the order.</p>
-</div></blockquote>
-<p><strong>style</strong> : ExecutionStyle</p>
-<blockquote>
-<div><p>The execution style for the order.</p>
-</div></blockquote>
+</dd>
+<dt><strong>limit_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The limit price for the order.</p>
+</dd>
+<dt><strong>stop_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The stop price for the order.</p>
+</dd>
+<dt><strong>style</strong> <span class="classifier-delimiter">:</span> <span class="classifier">ExecutionStyle</span></dt>
+<dd><p class="first last">The execution style for the order.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>order_id</strong> : str</p>
-<blockquote class="last">
-<div><p>The unique identifier for this order.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>order_id</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The unique identifier for this order.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -917,33 +907,31 @@ percent of the current portfolio value.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>asset</strong> : TradingPair</p>
-<blockquote>
-<div><p>The tradingPair that this order is for.</p>
-</div></blockquote>
-<p><strong>percent</strong> : float</p>
-<blockquote>
-<div><p>The percentage of the portfolio value to allocate to <code class="docutils literal"><span class="pre">asset</span></code>.
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>asset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">TradingPair</span></dt>
+<dd><p class="first last">The tradingPair that this order is for.</p>
+</dd>
+<dt><strong>percent</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The percentage of the portfolio value to allocate to <code class="docutils literal"><span class="pre">asset</span></code>.
 This is specified as a decimal, for example: 0.50 means 50%.</p>
-</div></blockquote>
-<p><strong>limit_price</strong> : float, optional</p>
-<blockquote>
-<div><p>The limit price for the order.</p>
-</div></blockquote>
-<p><strong>stop_price</strong> : float, optional</p>
-<blockquote>
-<div><p>The stop price for the order.</p>
-</div></blockquote>
-<p><strong>style</strong> : ExecutionStyle</p>
-<blockquote>
-<div><p>The execution style for the order.</p>
-</div></blockquote>
+</dd>
+<dt><strong>limit_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The limit price for the order.</p>
+</dd>
+<dt><strong>stop_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The stop price for the order.</p>
+</dd>
+<dt><strong>style</strong> <span class="classifier-delimiter">:</span> <span class="classifier">ExecutionStyle</span></dt>
+<dd><p class="first last">The execution style for the order.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>order_id</strong> : str</p>
-<blockquote class="last">
-<div><p>The unique identifier for this order.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>order_id</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The unique identifier for this order.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -969,32 +957,30 @@ current number of shares.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>asset</strong> : TradingPair</p>
-<blockquote>
-<div><p>The TradingPair that this order is for.</p>
-</div></blockquote>
-<p><strong>target</strong> : int</p>
-<blockquote>
-<div><p>The desired number of <code class="docutils literal"><span class="pre">TradingPair</span></code>.</p>
-</div></blockquote>
-<p><strong>limit_price</strong> : float, optional</p>
-<blockquote>
-<div><p>The limit price for the order.</p>
-</div></blockquote>
-<p><strong>stop_price</strong> : float, optional</p>
-<blockquote>
-<div><p>The stop price for the order.</p>
-</div></blockquote>
-<p><strong>style</strong> : ExecutionStyle</p>
-<blockquote>
-<div><p>The execution style for the order.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>asset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">TradingPair</span></dt>
+<dd><p class="first last">The TradingPair that this order is for.</p>
+</dd>
+<dt><strong>target</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">The desired number of <code class="docutils literal"><span class="pre">TradingPair</span></code>.</p>
+</dd>
+<dt><strong>limit_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The limit price for the order.</p>
+</dd>
+<dt><strong>stop_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The stop price for the order.</p>
+</dd>
+<dt><strong>style</strong> <span class="classifier-delimiter">:</span> <span class="classifier">ExecutionStyle</span></dt>
+<dd><p class="first last">The execution style for the order.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>order_id</strong> : str</p>
-<blockquote class="last">
-<div><p>The unique identifier for this order.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>order_id</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The unique identifier for this order.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1021,32 +1007,30 @@ current value.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>asset</strong> : TradingPair</p>
-<blockquote>
-<div><p>The TradingPair that this order is for.</p>
-</div></blockquote>
-<p><strong>target</strong> : float</p>
-<blockquote>
-<div><p>The desired total value of <code class="docutils literal"><span class="pre">TradingPair</span></code>.</p>
-</div></blockquote>
-<p><strong>limit_price</strong> : float, optional</p>
-<blockquote>
-<div><p>The limit price for the order.</p>
-</div></blockquote>
-<p><strong>stop_price</strong> : float, optional</p>
-<blockquote>
-<div><p>The stop price for the order.</p>
-</div></blockquote>
-<p><strong>style</strong> : ExecutionStyle</p>
-<blockquote>
-<div><p>The execution style for the order.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>asset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">TradingPair</span></dt>
+<dd><p class="first last">The TradingPair that this order is for.</p>
+</dd>
+<dt><strong>target</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The desired total value of <code class="docutils literal"><span class="pre">TradingPair</span></code>.</p>
+</dd>
+<dt><strong>limit_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The limit price for the order.</p>
+</dd>
+<dt><strong>stop_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The stop price for the order.</p>
+</dd>
+<dt><strong>style</strong> <span class="classifier-delimiter">:</span> <span class="classifier">ExecutionStyle</span></dt>
+<dd><p class="first last">The execution style for the order.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>order_id</strong> : str</p>
-<blockquote class="last">
-<div><p>The unique identifier for this order.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>order_id</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The unique identifier for this order.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1072,34 +1056,32 @@ percent and the current percent.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>asset</strong> : TradingPair</p>
-<blockquote>
-<div><p>The TradingPair that this order is for.</p>
-</div></blockquote>
-<p><strong>target</strong> : float</p>
-<blockquote>
-<div><p>The desired percentage of the portfolio value to allocate to
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>asset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">TradingPair</span></dt>
+<dd><p class="first last">The TradingPair that this order is for.</p>
+</dd>
+<dt><strong>target</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The desired percentage of the portfolio value to allocate to
 <code class="docutils literal"><span class="pre">TradingPair</span></code>. This is specified as a decimal, for example:
 0.50 means 50%.</p>
-</div></blockquote>
-<p><strong>limit_price</strong> : float, optional</p>
-<blockquote>
-<div><p>The limit price for the order.</p>
-</div></blockquote>
-<p><strong>stop_price</strong> : float, optional</p>
-<blockquote>
-<div><p>The stop price for the order.</p>
-</div></blockquote>
-<p><strong>style</strong> : ExecutionStyle</p>
-<blockquote>
-<div><p>The execution style for the order.</p>
-</div></blockquote>
+</dd>
+<dt><strong>limit_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The limit price for the order.</p>
+</dd>
+<dt><strong>stop_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The stop price for the order.</p>
+</dd>
+<dt><strong>style</strong> <span class="classifier-delimiter">:</span> <span class="classifier">ExecutionStyle</span></dt>
+<dd><p class="first last">The execution style for the order.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>order_id</strong> : str</p>
-<blockquote class="last">
-<div><p>The unique identifier for this order.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>order_id</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The unique identifier for this order.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1175,20 +1157,21 @@ order functions.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>order_id</strong> : str</p>
-<blockquote>
-<div><p>The unique identifier for the order.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>order_id</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The unique identifier for the order.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>order</strong> : Order</p>
-<blockquote>
-<div><p>The order object.</p>
-</div></blockquote>
-<p>execution_price: float</p>
-<blockquote class="last">
-<div><p>The execution price per unit of the order</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>order</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Order</span></dt>
+<dd><p class="first last">The order object.</p>
+</dd>
+<dt><strong>execution_price: float</strong></dt>
+<dd><p class="first last">The execution price per unit of the order</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1203,20 +1186,22 @@ order functions.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>asset</strong> : Asset</p>
-<blockquote>
-<div><p>If passed and not None, return only the open orders for the given
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>asset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Asset</span></dt>
+<dd><p class="first last">If passed and not None, return only the open orders for the given
 asset instead of all open orders.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>open_orders</strong> : dict[list[Order]] or list[Order]</p>
-<blockquote class="last">
-<div><p>If no asset is passed this will return a dict mapping Assets
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>open_orders</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict[list[Order]] or list[Order]</span></dt>
+<dd><p class="first last">If no asset is passed this will return a dict mapping Assets
 to a list containing all the open orders for the asset.
 If an asset is passed then this will return a list of the open
 orders for this asset.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1231,22 +1216,20 @@ orders for this asset.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>order_param</strong> : str or Order</p>
-<blockquote>
-<div><p>The order_id or order object to cancel.</p>
-</div></blockquote>
-<p><strong>exchange_name: str</strong></p>
-<blockquote>
-<div><p>The name of exchange to cancel the order in</p>
-</div></blockquote>
-<p><strong>symbol: str</strong></p>
-<blockquote>
-<div><p>The tradingPair symbol</p>
-</div></blockquote>
-<p><strong>params: dict, optional</strong></p>
-<blockquote class="last">
-<div><p>Extra parameters to pass to the exchange</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>order_param</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str or Order</span></dt>
+<dd><p class="first last">The order_id or order object to cancel.</p>
+</dd>
+<dt><strong>exchange_name: str</strong></dt>
+<dd><p class="first last">The name of exchange to cancel the order in</p>
+</dd>
+<dt><strong>symbol: str</strong></dt>
+<dd><p class="first last">The tradingPair symbol</p>
+</dd>
+<dt><strong>params: dict, optional</strong></dt>
+<dd><p class="first last">Extra parameters to pass to the exchange</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1263,10 +1246,11 @@ orders for this asset.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cancel_policy</strong> : CancelPolicy</p>
-<blockquote class="last">
-<div><p>The cancellation policy to use.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>cancel_policy</strong> <span class="classifier-delimiter">:</span> <span class="classifier">CancelPolicy</span></dt>
+<dd><p class="first last">The cancellation policy to use.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1289,9 +1273,9 @@ orders for this asset.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>event</strong> : enum-value</p>
-<blockquote>
-<div><dl class="docutils">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>event</strong> <span class="classifier-delimiter">:</span> <span class="classifier">enum-value</span></dt>
+<dd><dl class="first last docutils">
 <dt>An event type, one of:</dt>
 <dd><ul class="first last simple">
 <li><code class="xref py py-data docutils literal"><span class="pre">catalyst.gens.sim_engine.BAR</span></code></li>
@@ -1301,13 +1285,15 @@ orders for this asset.</p>
 </ul>
 </dd>
 </dl>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>should_cancel</strong> : bool</p>
-<blockquote class="last">
-<div><p>Should all open orders be cancelled?</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>should_cancel</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd><p class="first last">Should all open orders be cancelled?</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1325,10 +1311,11 @@ Catalyst will only apply this policy to minutely simulations.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>warn_on_cancel</strong> : bool, optional</p>
-<blockquote class="last">
-<div><p>Should a warning be raised if this causes an order to be cancelled?</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>warn_on_cancel</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Should a warning be raised if this causes an order to be cancelled?</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1365,27 +1352,29 @@ aligned with the Bittrex exchange.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>symbol_str</strong> : str</p>
-<blockquote>
-<div><p>The ticker symbol for the TradingPair to lookup.</p>
-</div></blockquote>
-<p><strong>exchange_name: str</strong></p>
-<blockquote>
-<div><p>The name of the exchange containing the symbol</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>symbol_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The ticker symbol for the TradingPair to lookup.</p>
+</dd>
+<dt><strong>exchange_name: str</strong></dt>
+<dd><p class="first last">The name of the exchange containing the symbol</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>tradingPair</strong> : TradingPair</p>
-<blockquote>
-<div><p>The TradingPair that held the ticker symbol on the current
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>tradingPair</strong> <span class="classifier-delimiter">:</span> <span class="classifier">TradingPair</span></dt>
+<dd><p class="first last">The TradingPair that held the ticker symbol on the current
 symbol lookup date.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>SymbolNotFound</strong></p>
-<blockquote class="last">
-<div><p>Raised when the symbols was not held on the current lookup date.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>SymbolNotFound</strong></dt>
+<dd><p class="first last">Raised when the symbols was not held on the current lookup date.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1400,24 +1389,27 @@ symbol lookup date.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>*args</strong> : iterable[str]</p>
-<blockquote>
-<div><p>The ticker symbols to lookup.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>*args</strong> <span class="classifier-delimiter">:</span> <span class="classifier">iterable[str]</span></dt>
+<dd><p class="first last">The ticker symbols to lookup.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>tradingPairs</strong> : list[TradingPair]</p>
-<blockquote>
-<div><p>The tradingPairs that held the given ticker symbols on the current
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>tradingPairs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list[TradingPair]</span></dt>
+<dd><p class="first last">The tradingPairs that held the given ticker symbols on the current
 symbol lookup date.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>SymbolNotFound</strong></p>
-<blockquote class="last">
-<div><p>Raised when one of the symbols was not held on the current
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>SymbolNotFound</strong></dt>
+<dd><p class="first last">Raised when one of the symbols was not held on the current
 lookup date.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1436,10 +1428,11 @@ lookup date.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dt</strong> : datetime</p>
-<blockquote class="last">
-<div><p>The new symbol lookup date.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>dt</strong> <span class="classifier-delimiter">:</span> <span class="classifier">datetime</span></dt>
+<dd><p class="first last">The new symbol lookup date.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1454,22 +1447,25 @@ lookup date.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>sid</strong> : int</p>
-<blockquote>
-<div><p>The unique integer that identifies an asset.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>sid</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">The unique integer that identifies an asset.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>asset</strong> : Asset</p>
-<blockquote>
-<div><p>The asset with the given <code class="docutils literal"><span class="pre">sid</span></code>.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>asset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Asset</span></dt>
+<dd><p class="first last">The asset with the given <code class="docutils literal"><span class="pre">sid</span></code>.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>SidsNotFound</strong></p>
-<blockquote class="last">
-<div><p>When a requested <code class="docutils literal"><span class="pre">sid</span></code> does not map to any asset.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>SidsNotFound</strong></dt>
+<dd><p class="first last">When a requested <code class="docutils literal"><span class="pre">sid</span></code> does not map to any asset.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1490,10 +1486,11 @@ bugs that could cause undesirable behavior when trading with real money.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>restricted_list</strong> : container[Asset], SecurityList</p>
-<blockquote class="last">
-<div><p>The assets that cannot be ordered.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>restricted_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">container[Asset], SecurityList</span></dt>
+<dd><p class="first last">The assets that cannot be ordered.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1515,11 +1512,12 @@ positions.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>max_leverage</strong> : float</p>
-<blockquote class="last">
-<div><p>The maximum leverage for the algorithm. If not provided there will
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>max_leverage</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The maximum leverage for the algorithm. If not provided there will
 be no maximum.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1535,10 +1533,11 @@ day.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>max_count</strong> : int</p>
-<blockquote class="last">
-<div><p>The maximum number of orders that can be placed on any single day.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>max_count</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">The maximum number of orders that can be placed on any single day.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1557,19 +1556,18 @@ exceeding one of these limits, raise a TradingControlException.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>asset</strong> : Asset, optional</p>
-<blockquote>
-<div><p>If provided, this sets the guard only on positions in the given
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>asset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Asset, optional</span></dt>
+<dd><p class="first last">If provided, this sets the guard only on positions in the given
 asset.</p>
-</div></blockquote>
-<p><strong>max_shares</strong> : int, optional</p>
-<blockquote>
-<div><p>The maximum number of shares that can be ordered at one time.</p>
-</div></blockquote>
-<p><strong>max_notional</strong> : float, optional</p>
-<blockquote class="last">
-<div><p>The maximum value that can be ordered at one time.</p>
-</div></blockquote>
+</dd>
+<dt><strong>max_shares</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
+<dd><p class="first last">The maximum number of shares that can be ordered at one time.</p>
+</dd>
+<dt><strong>max_notional</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The maximum value that can be ordered at one time.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1592,19 +1590,18 @@ these limits, raise a TradingControlException.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>asset</strong> : Asset, optional</p>
-<blockquote>
-<div><p>If provided, this sets the guard only on positions in the given
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>asset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Asset, optional</span></dt>
+<dd><p class="first last">If provided, this sets the guard only on positions in the given
 asset.</p>
-</div></blockquote>
-<p><strong>max_shares</strong> : int, optional</p>
-<blockquote>
-<div><p>The maximum number of shares to hold for an asset.</p>
-</div></blockquote>
-<p><strong>max_notional</strong> : float, optional</p>
-<blockquote class="last">
-<div><p>The maximum value to hold for an asset.</p>
-</div></blockquote>
+</dd>
+<dt><strong>max_shares</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
+<dd><p class="first last">The maximum number of shares to hold for an asset.</p>
+</dd>
+<dt><strong>max_notional</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The maximum value to hold for an asset.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1622,10 +1619,11 @@ asset.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>benchmark</strong> : Asset</p>
-<blockquote class="last">
-<div><p>The asset to set as the new benchmark.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>benchmark</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Asset</span></dt>
+<dd><p class="first last">The asset to set as the new benchmark.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1645,14 +1643,14 @@ automatically reinvested.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>maker</strong> : float</p>
-<blockquote>
-<div><p>The taker fee - taking from the order book.</p>
-</div></blockquote>
-<p><strong>taker</strong> : float</p>
-<blockquote class="last">
-<div><p>The maker fee - adding to the order book.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>maker</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The taker fee - taking from the order book.</p>
+</dd>
+<dt><strong>taker</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The maker fee - adding to the order book.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1675,25 +1673,26 @@ of <code class="docutils literal"><span class="pre">transaction</span></code>.</
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>order</strong> : catalyst.finance.order.Order</p>
-<blockquote>
-<div><p>The order being processed.</p>
-<p>The <code class="docutils literal"><span class="pre">commission</span></code> field of <code class="docutils literal"><span class="pre">order</span></code> is a float indicating the
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>order</strong> <span class="classifier-delimiter">:</span> <span class="classifier">catalyst.finance.order.Order</span></dt>
+<dd><p class="first">The order being processed.</p>
+<p class="last">The <code class="docutils literal"><span class="pre">commission</span></code> field of <code class="docutils literal"><span class="pre">order</span></code> is a float indicating the
 amount of commission already charged on this order.</p>
-</div></blockquote>
-<p><strong>transaction</strong> : catalyst.finance.transaction.Transaction</p>
-<blockquote>
-<div><p>The transaction being processed. A single order may generate
+</dd>
+<dt><strong>transaction</strong> <span class="classifier-delimiter">:</span> <span class="classifier">catalyst.finance.transaction.Transaction</span></dt>
+<dd><p class="first last">The transaction being processed. A single order may generate
 multiple transactions if there isn’t enough volume in a given bar
 to fill the full amount requested in the order.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>amount_charged</strong> : float</p>
-<blockquote class="last">
-<div><p>The additional commission, in dollars, that we should attribute to
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>amount_charged</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The additional commission, in dollars, that we should attribute to
 this order.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1711,14 +1710,14 @@ an optional minimum cost per trade.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cost</strong> : float, optional</p>
-<blockquote>
-<div><p>The amount of commissions paid per share traded.</p>
-</div></blockquote>
-<p><strong>min_trade_cost</strong> : float, optional</p>
-<blockquote class="last">
-<div><p>The minimum amount of commissions paid per trade.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>cost</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The amount of commissions paid per share traded.</p>
+</dd>
+<dt><strong>min_trade_cost</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The minimum amount of commissions paid per trade.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1733,10 +1732,11 @@ an optional minimum cost per trade.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cost</strong> : float, optional</p>
-<blockquote class="last">
-<div><p>The flat amount of commissions paid per equity trade.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>cost</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The flat amount of commissions paid per equity trade.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1751,10 +1751,11 @@ an optional minimum cost per trade.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cost</strong> : float</p>
-<blockquote class="last">
-<div><p>The flat amount of commissions paid per dollar of equities traded.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>cost</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The flat amount of commissions paid per dollar of equities traded.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1772,10 +1773,11 @@ an optional minimum cost per trade.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>spread</strong> : float</p>
-<blockquote class="last">
-<div><p>The spread to be set.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>spread</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The spread to be set.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1794,26 +1796,26 @@ an optional minimum cost per trade.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>data</strong> : BarData</p>
-<blockquote>
-<div><p>The data for the given bar.</p>
-</div></blockquote>
-<p><strong>order</strong> : Order</p>
-<blockquote>
-<div><p>The order to simulate.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>data</strong> <span class="classifier-delimiter">:</span> <span class="classifier">BarData</span></dt>
+<dd><p class="first last">The data for the given bar.</p>
+</dd>
+<dt><strong>order</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Order</span></dt>
+<dd><p class="first last">The order to simulate.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>execution_price</strong> : float</p>
-<blockquote>
-<div><p>The price to execute the trade at.</p>
-</div></blockquote>
-<p><strong>execution_volume</strong> : int</p>
-<blockquote class="last">
-<div><p>The number of shares that could be filled. This may not be all
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>execution_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The price to execute the trade at.</p>
+</dd>
+<dt><strong>execution_volume</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">The number of shares that could be filled. This may not be all
 the shares ordered in which case the order will be filled over
 multiple bars.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1830,10 +1832,11 @@ multiple bars.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>spread</strong> : float, optional</p>
-<blockquote class="last">
-<div><p>spread / 2 will be added to buys and subtracted from sells.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>spread</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">spread / 2 will be added to buys and subtracted from sells.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1862,10 +1865,11 @@ multiple bars.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>**kwargs</strong></p>
-<blockquote class="last">
-<div><p>The names and values to record.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>**kwargs</strong></dt>
+<dd><p class="first last">The names and values to record.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1884,12 +1888,12 @@ dataframe passed to <code class="docutils literal"><span class="pre">analyze</sp
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>field</strong> : {‘platform’, ‘arena’, ‘data_frequency’,</p>
-<blockquote>
-<div><blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>field</strong> <span class="classifier-delimiter">:</span> <span class="classifier">{‘platform’, ‘arena’, ‘data_frequency’,</span></dt>
+<dd><blockquote class="first">
 <div><p>‘start’, ‘end’, ‘capital_base’, ‘platform’, ‘*’}</p>
 </div></blockquote>
-<dl class="docutils">
+<dl class="last docutils">
 <dt>The field to query. The options have the following meanings:</dt>
 <dd><dl class="first last docutils">
 <dt>arena <span class="classifier-delimiter">:</span> <span class="classifier">str {‘backtest’, ‘live’}</span></dt>
@@ -1919,19 +1923,22 @@ know if they are running on the Quantopian platform instead.</p>
 </dl>
 </dd>
 </dl>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>val</strong> : any</p>
-<blockquote>
-<div><p>The value for the field queried. See above for more information.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>val</strong> <span class="classifier-delimiter">:</span> <span class="classifier">any</span></dt>
+<dd><p class="first last">The value for the field queried. See above for more information.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>ValueError</strong></p>
-<blockquote class="last">
-<div><p>Raised when <code class="docutils literal"><span class="pre">field</span></code> is not a valid option.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ValueError</strong></dt>
+<dd><p class="first last">Raised when <code class="docutils literal"><span class="pre">field</span></code> is not a valid option.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1947,63 +1954,56 @@ queryable from the <code class="docutils literal"><span class="pre">data</span><
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>url</strong> : str</p>
-<blockquote>
-<div><p>The url of the csv file to load.</p>
-</div></blockquote>
-<p><strong>pre_func</strong> : callable[pd.DataFrame -&gt; pd.DataFrame], optional</p>
-<blockquote>
-<div><p>A callback to allow preprocessing the raw data returned from
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>url</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The url of the csv file to load.</p>
+</dd>
+<dt><strong>pre_func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">callable[pd.DataFrame -&gt; pd.DataFrame], optional</span></dt>
+<dd><p class="first last">A callback to allow preprocessing the raw data returned from
 fetch_csv before dates are paresed or symbols are mapped.</p>
-</div></blockquote>
-<p><strong>post_func</strong> : callable[pd.DataFrame -&gt; pd.DataFrame], optional</p>
-<blockquote>
-<div><p>A callback to allow postprocessing of the data after dates and
+</dd>
+<dt><strong>post_func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">callable[pd.DataFrame -&gt; pd.DataFrame], optional</span></dt>
+<dd><p class="first last">A callback to allow postprocessing of the data after dates and
 symbols have been mapped.</p>
-</div></blockquote>
-<p><strong>date_column</strong> : str, optional</p>
-<blockquote>
-<div><p>The name of the column in the preprocessed dataframe containing
+</dd>
+<dt><strong>date_column</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
+<dd><p class="first last">The name of the column in the preprocessed dataframe containing
 datetime information to map the data.</p>
-</div></blockquote>
-<p><strong>date_format</strong> : str, optional</p>
-<blockquote>
-<div><p>The format of the dates in the <code class="docutils literal"><span class="pre">date_column</span></code>. If not provided
+</dd>
+<dt><strong>date_format</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
+<dd><p class="first last">The format of the dates in the <code class="docutils literal"><span class="pre">date_column</span></code>. If not provided
 <code class="docutils literal"><span class="pre">fetch_csv</span></code> will attempt to infer the format. For information
 about the format of this string, see <a class="reference external" href="http://pandas.pydata.org/pandas-docs/stable/generated/pandas.read_csv.html#pandas.read_csv" title="(in pandas v0.22.0)"><code class="xref py py-func docutils literal"><span class="pre">pandas.read_csv()</span></code></a>.</p>
-</div></blockquote>
-<p><strong>timezone</strong> : tzinfo or str, optional</p>
-<blockquote>
-<div><p>The timezone for the datetime in the <code class="docutils literal"><span class="pre">date_column</span></code>.</p>
-</div></blockquote>
-<p><strong>symbol</strong> : str, optional</p>
-<blockquote>
-<div><p>If the data is about a new asset or index then this string will
+</dd>
+<dt><strong>timezone</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tzinfo or str, optional</span></dt>
+<dd><p class="first last">The timezone for the datetime in the <code class="docutils literal"><span class="pre">date_column</span></code>.</p>
+</dd>
+<dt><strong>symbol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
+<dd><p class="first last">If the data is about a new asset or index then this string will
 be the name used to identify the values in <code class="docutils literal"><span class="pre">data</span></code>. For example,
 one may use <code class="docutils literal"><span class="pre">fetch_csv</span></code> to load data for VIX, then this field
 could be the string <code class="docutils literal"><span class="pre">'VIX'</span></code>.</p>
-</div></blockquote>
-<p><strong>mask</strong> : bool, optional</p>
-<blockquote>
-<div><p>Drop any rows which cannot be symbol mapped.</p>
-</div></blockquote>
-<p><strong>symbol_column</strong> : str</p>
-<blockquote>
-<div><p>If the data is attaching some new attribute to each asset then this
+</dd>
+<dt><strong>mask</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Drop any rows which cannot be symbol mapped.</p>
+</dd>
+<dt><strong>symbol_column</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">If the data is attaching some new attribute to each asset then this
 argument is the name of the column in the preprocessed dataframe
 containing the symbols. This will be used along with the date
 information to map the sids in the asset finder.</p>
-</div></blockquote>
-<p><strong>**kwargs</strong></p>
-<blockquote>
-<div><p>Forwarded to <a class="reference external" href="http://pandas.pydata.org/pandas-docs/stable/generated/pandas.read_csv.html#pandas.read_csv" title="(in pandas v0.22.0)"><code class="xref py py-func docutils literal"><span class="pre">pandas.read_csv()</span></code></a>.</p>
-</div></blockquote>
+</dd>
+<dt><strong>**kwargs</strong></dt>
+<dd><p class="first last">Forwarded to <a class="reference external" href="http://pandas.pydata.org/pandas-docs/stable/generated/pandas.read_csv.html#pandas.read_csv" title="(in pandas v0.22.0)"><code class="xref py py-func docutils literal"><span class="pre">pandas.read_csv()</span></code></a>.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>csv_data_source</strong> : catalyst.sources.requests_csv.PandasRequestsCSV</p>
-<blockquote class="last">
-<div><p>A requests source that will pull data from the url specified.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>csv_data_source</strong> <span class="classifier-delimiter">:</span> <span class="classifier">catalyst.sources.requests_csv.PandasRequestsCSV</span></dt>
+<dd><p class="first last">A requests source that will pull data from the url specified.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2022,16 +2022,18 @@ information to map the sids in the asset finder.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>name</strong> : str</p>
-<blockquote>
-<div><p>The name of the TradingCalendar to be retrieved.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>name</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The name of the TradingCalendar to be retrieved.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>calendar</strong> : catalyst.utils.calendars.TradingCalendar</p>
-<blockquote class="last">
-<div><p>The desired calendar.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>calendar</strong> <span class="classifier-delimiter">:</span> <span class="classifier">catalyst.utils.calendars.TradingCalendar</span></dt>
+<dd><p class="first last">The desired calendar.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2040,7 +2042,7 @@ information to map the sids in the asset finder.</p>
 
 <dl class="class">
 <dt id="catalyst.utils.calendars.TradingCalendar">
-<em class="property">class </em><code class="descclassname">catalyst.utils.calendars.</code><code class="descname">TradingCalendar</code><span class="sig-paren">(</span><em>start=Timestamp('1990-01-01 00:00:00+0000'</em>, <em>tz='UTC')</em>, <em>end=Timestamp('2019-04-24 12:51:08.540779+0000'</em>, <em>tz='UTC')</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">catalyst.utils.calendars.</code><code class="descname">TradingCalendar</code><span class="sig-paren">(</span><em>start=Timestamp('1990-01-01 00:00:00+0000'</em>, <em>tz='UTC')</em>, <em>end=Timestamp('2019-04-24 13:01:50.957770+0000'</em>, <em>tz='UTC')</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar" title="Permalink to this definition">¶</a></dt>
 <dd><p>A TradingCalendar represents the timing information of a single market
 exchange.</p>
 <p>The timing information is made up of two parts: sessions, and opens/closes.</p>
@@ -2059,26 +2061,26 @@ used for convenience.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>name: str</strong></p>
-<blockquote>
-<div><p>The key with which to register this calendar.</p>
-</div></blockquote>
-<p><strong>calendar: TradingCalendar</strong></p>
-<blockquote>
-<div><p>The calendar to be registered for retrieval.</p>
-</div></blockquote>
-<p><strong>force</strong> : bool, optional</p>
-<blockquote>
-<div><p>If True, old calendars will be overwritten on a name collision.
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>name: str</strong></dt>
+<dd><p class="first last">The key with which to register this calendar.</p>
+</dd>
+<dt><strong>calendar: TradingCalendar</strong></dt>
+<dd><p class="first last">The calendar to be registered for retrieval.</p>
+</dd>
+<dt><strong>force</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">If True, old calendars will be overwritten on a name collision.
 If False, name collisions will raise an exception.
 Default is False.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>CalendarNameCollision</strong></p>
-<blockquote class="last">
-<div><p>If a calendar is already registered with the given calendar’s name.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>CalendarNameCollision</strong></dt>
+<dd><p class="first last">If a calendar is already registered with the given calendar’s name.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2095,26 +2097,26 @@ at some future point in time.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>name: str</strong></p>
-<blockquote>
-<div><p>The key with which to register this calendar.</p>
-</div></blockquote>
-<p><strong>calendar_type: type</strong></p>
-<blockquote>
-<div><p>The type of the calendar to register.</p>
-</div></blockquote>
-<p><strong>force</strong> : bool, optional</p>
-<blockquote>
-<div><p>If True, old calendars will be overwritten on a name collision.
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>name: str</strong></dt>
+<dd><p class="first last">The key with which to register this calendar.</p>
+</dd>
+<dt><strong>calendar_type: type</strong></dt>
+<dd><p class="first last">The type of the calendar to register.</p>
+</dd>
+<dt><strong>force</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">If True, old calendars will be overwritten on a name collision.
 If False, name collisions will raise an exception.
 Default is False.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>CalendarNameCollision</strong></p>
-<blockquote class="last">
-<div><p>If a calendar is already registered with the given calendar’s name.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>CalendarNameCollision</strong></dt>
+<dd><p class="first last">If a calendar is already registered with the given calendar’s name.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2129,10 +2131,11 @@ Default is False.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cal_name</strong> : str</p>
-<blockquote class="last">
-<div><p>The name of the calendar to be deregistered.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>cal_name</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The name of the calendar to be deregistered.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2185,7 +2188,7 @@ Default is False.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.5.8',
+            VERSION:'0.5.9',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
