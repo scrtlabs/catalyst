@@ -1,0 +1,711 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>catalyst.utils.events &#8212; Catalyst 0.5.9 documentation</title>
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.5.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Catalyst 0.5.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for catalyst.utils.events</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2016 Quantopian, Inc.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+<span class="kn">import</span> <span class="nn">six</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">pytz</span>
+<span class="kn">from</span> <span class="nn">toolz</span> <span class="kn">import</span> <span class="n">curry</span>
+
+<span class="kn">from</span> <span class="nn">catalyst.utils.input_validation</span> <span class="kn">import</span> <span class="n">preprocess</span>
+<span class="kn">from</span> <span class="nn">catalyst.utils.memoize</span> <span class="kn">import</span> <span class="n">lazyval</span>
+<span class="kn">from</span> <span class="nn">catalyst.utils.sentinel</span> <span class="kn">import</span> <span class="n">sentinel</span>
+
+<span class="kn">from</span> <span class="nn">.context_tricks</span> <span class="kn">import</span> <span class="n">nop_context</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;EventManager&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Event&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;EventRule&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;StatelessRule&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ComposedRule&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Always&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Never&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;AfterOpen&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;BeforeClose&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NotHalfDay&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NthTradingDayOfWeek&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NDaysBeforeLastTradingDayOfWeek&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NthTradingDayOfMonth&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NDaysBeforeLastTradingDayOfMonth&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;StatefulRule&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;OncePerDay&#39;</span><span class="p">,</span>
+
+    <span class="c1"># Factory API</span>
+    <span class="s1">&#39;date_rules&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;time_rules&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;calendars&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;make_eventrule&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<span class="n">MAX_MONTH_RANGE</span> <span class="o">=</span> <span class="mi">23</span>
+<span class="n">MAX_WEEK_RANGE</span> <span class="o">=</span> <span class="mi">5</span>
+
+
+<span class="k">def</span> <span class="nf">naive_to_utc</span><span class="p">(</span><span class="n">ts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts a UTC tz-naive timestamp to a tz-aware timestamp.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Drop the nanoseconds field. warn=False suppresses the warning</span>
+    <span class="c1"># that we are losing the nanoseconds; however, this is intended.</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">to_pydatetime</span><span class="p">(</span><span class="n">warn</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span> <span class="n">tz</span><span class="o">=</span><span class="s1">&#39;UTC&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">ensure_utc</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">tz</span><span class="o">=</span><span class="s1">&#39;UTC&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Normalize a time. If the time is tz-naive, assume it is UTC.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">time</span><span class="o">.</span><span class="n">tzinfo</span><span class="p">:</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">pytz</span><span class="o">.</span><span class="n">timezone</span><span class="p">(</span><span class="n">tz</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">time</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">pytz</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_out_of_range_error</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="s1">&#39;offset&#39;</span><span class="p">):</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">b</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">a</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">a</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">b</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="ne">ValueError</span><span class="p">(</span>
+        <span class="s1">&#39;{var} must be in between {start} and {end} inclusive&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">,</span>
+            <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
+            <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_td_check</span><span class="p">(</span><span class="n">td</span><span class="p">):</span>
+    <span class="n">seconds</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+
+    <span class="c1"># 43200 seconds = 12 hours</span>
+    <span class="k">if</span> <span class="mi">60</span> <span class="o">&lt;=</span> <span class="n">seconds</span> <span class="o">&lt;=</span> <span class="mi">43200</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">td</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;offset must be in between 1 minute and 12 hours, &#39;</span>
+                         <span class="s1">&#39;inclusive.&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_build_offset</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">default</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Builds the offset argument for event rules.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">offset</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">default</span>  <span class="c1"># use the default.</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_td_check</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot pass kwargs and an offset&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_td_check</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Must pass &#39;hours&#39; and/or &#39;minutes&#39; as keywords&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_build_date</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Builds the date argument for event rules.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">date</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Must pass a date or kwargs&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">date</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot pass kwargs and a date&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">date</span>
+
+
+<span class="k">def</span> <span class="nf">_build_time</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Builds the time argument for event rules.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tz</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;tz&#39;</span><span class="p">,</span> <span class="s1">&#39;UTC&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">time</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot pass kwargs and a time&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ensure_utc</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">tz</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Must pass a time or kwargs&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">time</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="nd">@curry</span>
+<span class="k">def</span> <span class="nf">lossless_float_to_int</span><span class="p">(</span><span class="n">funcname</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">argname</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A preprocessor that coerces integral floats to ints.</span>
+
+<span class="sd">    Receipt of non-integral floats raises a TypeError.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">arg</span>
+
+    <span class="n">arg_as_int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">arg</span> <span class="o">==</span> <span class="n">arg_as_int</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;{f} expected an int for argument {name!r}, but got float {arg}.&quot;</span>
+            <span class="s2">&quot; Coercing to int.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">f</span><span class="o">=</span><span class="n">funcname</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">argname</span><span class="p">,</span>
+                <span class="n">arg</span><span class="o">=</span><span class="n">arg</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">arg_as_int</span>
+
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">EventManager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Manages a list of Event objects.</span>
+<span class="sd">    This manages the logic for checking the rules and dispatching to the</span>
+<span class="sd">    handle_data function of the Events.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    create_context : (BarData) -&gt; context manager, optional</span>
+<span class="sd">        An optional callback to produce a context manager to wrap the calls</span>
+<span class="sd">        to handle_data. This will be passed the current BarData.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">create_context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_events</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_context</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">create_context</span>
+            <span class="k">if</span> <span class="n">create_context</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span>
+            <span class="k">lambda</span> <span class="o">*</span><span class="n">_</span><span class="p">:</span> <span class="n">nop_context</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">prepend</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds an event to the manager.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">prepend</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_events</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_events</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">handle_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_context</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_events</span><span class="p">:</span>
+                <span class="n">event</span><span class="o">.</span><span class="n">handle_data</span><span class="p">(</span>
+                    <span class="n">context</span><span class="p">,</span>
+                    <span class="n">data</span><span class="p">,</span>
+                    <span class="n">dt</span><span class="p">,</span>
+                <span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Event</span><span class="p">(</span><span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Event&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;rule&#39;</span><span class="p">,</span> <span class="s1">&#39;callback&#39;</span><span class="p">])):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An event is a pairing of an EventRule and a callable that will be invoked</span>
+<span class="sd">    with the current algorithm context, data, and datetime only when the rule</span>
+<span class="sd">    is triggered.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">rule</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">callback</span> <span class="o">=</span> <span class="n">callback</span> <span class="ow">or</span> <span class="p">(</span><span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">rule</span><span class="o">=</span><span class="n">rule</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">callback</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">handle_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calls the callable only when the rule is triggered.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">should_trigger</span><span class="p">(</span><span class="n">dt</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">callback</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">EventRule</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">with_metaclass</span><span class="p">(</span><span class="n">ABCMeta</span><span class="p">)):</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">should_trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if the rule should trigger with its current state.</span>
+<span class="sd">        This method should be pure and NOT mutate any state on the object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;should_trigger&#39;</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">StatelessRule</span><span class="p">(</span><span class="n">EventRule</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A stateless rule has no observable side effects.</span>
+<span class="sd">    This is reentrant and will always give the same result for the</span>
+<span class="sd">    same datetime.</span>
+<span class="sd">    Because these are pure, they can be composed to create new rules.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">and_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Logical and of two rules, triggers only when both rules trigger.</span>
+<span class="sd">        This follows the short circuiting rules for normal and.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ComposedRule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule</span><span class="p">,</span> <span class="n">ComposedRule</span><span class="o">.</span><span class="n">lazy_and</span><span class="p">)</span>
+    <span class="fm">__and__</span> <span class="o">=</span> <span class="n">and_</span>
+
+
+<span class="k">class</span> <span class="nc">ComposedRule</span><span class="p">(</span><span class="n">StatelessRule</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A rule that composes the results of two rules with some composing function.</span>
+<span class="sd">    The composing function should be a binary function that accepts the results</span>
+<span class="sd">    first(dt) and second(dt) as positional arguments.</span>
+<span class="sd">    For example, operator.and_.</span>
+<span class="sd">    If lazy=True, then the lazy composer is used instead. The lazy composer</span>
+<span class="sd">    expects a function that takes the two should_trigger functions and the</span>
+<span class="sd">    datetime. This is useful of you don&#39;t always want to call should_trigger</span>
+<span class="sd">    for one of the rules. For example, this is used to implement the &amp; and |</span>
+<span class="sd">    operators so that they will have the same short circuit logic that is</span>
+<span class="sd">    expected.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">second</span><span class="p">,</span> <span class="n">composer</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">StatelessRule</span><span class="p">)</span> <span class="ow">and</span>
+                <span class="nb">isinstance</span><span class="p">(</span><span class="n">second</span><span class="p">,</span> <span class="n">StatelessRule</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Only two StatelessRules can be composed&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">first</span> <span class="o">=</span> <span class="n">first</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">second</span> <span class="o">=</span> <span class="n">second</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">composer</span> <span class="o">=</span> <span class="n">composer</span>
+
+    <span class="k">def</span> <span class="nf">should_trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Composes the two rules with a lazy composer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">composer</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">first</span><span class="o">.</span><span class="n">should_trigger</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">second</span><span class="o">.</span><span class="n">should_trigger</span><span class="p">,</span>
+            <span class="n">dt</span>
+        <span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">lazy_and</span><span class="p">(</span><span class="n">first_should_trigger</span><span class="p">,</span> <span class="n">second_should_trigger</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Lazily ands the two rules. This will NOT call the should_trigger of the</span>
+<span class="sd">        second rule if the first one returns False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">first_should_trigger</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span> <span class="ow">and</span> <span class="n">second_should_trigger</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Always</span><span class="p">(</span><span class="n">StatelessRule</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A rule that always triggers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">always_trigger</span><span class="p">(</span><span class="n">dt</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A should_trigger implementation that will always trigger.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">True</span>
+    <span class="n">should_trigger</span> <span class="o">=</span> <span class="n">always_trigger</span>
+
+
+<span class="k">class</span> <span class="nc">Never</span><span class="p">(</span><span class="n">StatelessRule</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A rule that never triggers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">never_trigger</span><span class="p">(</span><span class="n">dt</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A should_trigger implementation that will never trigger.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="n">should_trigger</span> <span class="o">=</span> <span class="n">never_trigger</span>
+
+
+<span class="k">class</span> <span class="nc">AfterOpen</span><span class="p">(</span><span class="n">StatelessRule</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A rule that triggers for some offset after the market opens.</span>
+<span class="sd">    Example that triggers after 30 minutes of the market opening:</span>
+
+<span class="sd">    &gt;&gt;&gt; AfterOpen(minutes=30)  # doctest: +ELLIPSIS</span>
+<span class="sd">    &lt;catalyst.utils.events.AfterOpen object at ...&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">_build_offset</span><span class="p">(</span>
+            <span class="n">offset</span><span class="p">,</span>
+            <span class="n">kwargs</span><span class="p">,</span>
+            <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>  <span class="c1"># Defaults to the first minute.</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_period_start</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_period_end</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_period_close</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_one_minute</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">calculate_dates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Given a date, find that day&#39;s open and period end (open + offset).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">period_start</span><span class="p">,</span> <span class="n">period_close</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cal</span><span class="o">.</span><span class="n">open_and_close_for_session</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cal</span><span class="o">.</span><span class="n">minute_to_session_label</span><span class="p">(</span><span class="n">dt</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Align the market open and close times here with the execution times</span>
+        <span class="c1"># used by the simulation clock. This ensures that scheduled functions</span>
+        <span class="c1"># trigger at the correct times.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_period_start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cal</span><span class="o">.</span><span class="n">execution_time_from_open</span><span class="p">(</span><span class="n">period_start</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_period_close</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cal</span><span class="o">.</span><span class="n">execution_time_from_close</span><span class="p">(</span><span class="n">period_close</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_period_end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_period_start</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_one_minute</span>
+
+    <span class="k">def</span> <span class="nf">should_trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="c1"># There are two reasons why we might want to recalculate the dates.</span>
+        <span class="c1"># One is the first time we ever call should_trigger, when</span>
+        <span class="c1"># self._period_start is none. The second is when we&#39;re on a new day,</span>
+        <span class="c1"># and need to recalculate the dates. For performance reasons, we rely</span>
+        <span class="c1"># on the fact that our clock only ever ticks forward, since it&#39;s</span>
+        <span class="c1"># cheaper to do dt1 &lt;= dt2 than dt1.date() != dt2.date(). This means</span>
+        <span class="c1"># that we will NOT correctly recognize a new date if we go backwards</span>
+        <span class="c1"># in time(which should never happen in a simulation, or in live</span>
+        <span class="c1"># trading)</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_period_start</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_period_close</span> <span class="o">&lt;=</span> <span class="n">dt</span>
+        <span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">calculate_dates</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">dt</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_period_end</span>
+
+
+<span class="k">class</span> <span class="nc">BeforeClose</span><span class="p">(</span><span class="n">StatelessRule</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A rule that triggers for some offset time before the market closes.</span>
+<span class="sd">    Example that triggers for the last 30 minutes every day:</span>
+
+<span class="sd">    &gt;&gt;&gt; BeforeClose(minutes=30)  # doctest: +ELLIPSIS</span>
+<span class="sd">    &lt;catalyst.utils.events.BeforeClose object at ...&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">_build_offset</span><span class="p">(</span>
+            <span class="n">offset</span><span class="p">,</span>
+            <span class="n">kwargs</span><span class="p">,</span>
+            <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>  <span class="c1"># Defaults to the last minute.</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_period_start</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_period_close</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_period_end</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_one_minute</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">calculate_dates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Given a dt, find that day&#39;s close and period start (close - offset).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">period_end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cal</span><span class="o">.</span><span class="n">open_and_close_for_session</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cal</span><span class="o">.</span><span class="n">minute_to_session_label</span><span class="p">(</span><span class="n">dt</span><span class="p">),</span>
+        <span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Align the market close time here with the execution time used by the</span>
+        <span class="c1"># simulation clock. This ensures that scheduled functions trigger at</span>
+        <span class="c1"># the correct times.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_period_end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cal</span><span class="o">.</span><span class="n">execution_time_from_close</span><span class="p">(</span><span class="n">period_end</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_period_start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_period_end</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_period_close</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_period_end</span>
+
+    <span class="k">def</span> <span class="nf">should_trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="c1"># There are two reasons why we might want to recalculate the dates.</span>
+        <span class="c1"># One is the first time we ever call should_trigger, when</span>
+        <span class="c1"># self._period_start is none. The second is when we&#39;re on a new day,</span>
+        <span class="c1"># and need to recalculate the dates. For performance reasons, we rely</span>
+        <span class="c1"># on the fact that our clock only ever ticks forward, since it&#39;s</span>
+        <span class="c1"># cheaper to do dt1 &lt;= dt2 than dt1.date() != dt2.date(). This means</span>
+        <span class="c1"># that we will NOT correctly recognize a new date if we go backwards</span>
+        <span class="c1"># in time(which should never happen in a simulation, or in live</span>
+        <span class="c1"># trading)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_period_start</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_period_close</span> <span class="o">&lt;=</span> <span class="n">dt</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">calculate_dates</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_period_start</span> <span class="o">==</span> <span class="n">dt</span>
+
+
+<span class="k">class</span> <span class="nc">NotHalfDay</span><span class="p">(</span><span class="n">StatelessRule</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A rule that only triggers when it is not a half day.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">should_trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cal</span><span class="o">.</span><span class="n">minute_to_session_label</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span> \
+            <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cal</span><span class="o">.</span><span class="n">early_closes</span>
+
+
+<span class="k">class</span> <span class="nc">TradingDayOfWeekRule</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">with_metaclass</span><span class="p">(</span><span class="n">ABCMeta</span><span class="p">,</span> <span class="n">StatelessRule</span><span class="p">)):</span>
+    <span class="nd">@preprocess</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">lossless_float_to_int</span><span class="p">(</span><span class="s1">&#39;TradingDayOfWeekRule&#39;</span><span class="p">))</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">invert</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="n">MAX_WEEK_RANGE</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">_out_of_range_error</span><span class="p">(</span><span class="n">MAX_WEEK_RANGE</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">td_delta</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">invert</span> <span class="k">else</span> <span class="n">n</span>
+
+    <span class="k">def</span> <span class="nf">should_trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="c1"># is this market minute&#39;s period in the list of execution periods?</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cal</span><span class="o">.</span><span class="n">minute_to_session_label</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">return</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">execution_period_values</span>
+
+    <span class="nd">@lazyval</span>
+    <span class="k">def</span> <span class="nf">execution_period_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># calculate the list of periods that match the given criteria</span>
+        <span class="n">sessions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cal</span><span class="o">.</span><span class="n">all_sessions</span>
+        <span class="k">return</span> <span class="nb">set</span><span class="p">(</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">sessions</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">sessions</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">sessions</span><span class="o">.</span><span class="n">weekofyear</span><span class="p">])</span>
+            <span class="o">.</span><span class="n">nth</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">td_delta</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">NthTradingDayOfWeek</span><span class="p">(</span><span class="n">TradingDayOfWeekRule</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A rule that triggers on the nth trading day of the week.</span>
+<span class="sd">    This is zero-indexed, n=0 is the first trading day of the week.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">NthTradingDayOfWeek</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">invert</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">NDaysBeforeLastTradingDayOfWeek</span><span class="p">(</span><span class="n">TradingDayOfWeekRule</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A rule that triggers n days before the last trading day of the week.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">NDaysBeforeLastTradingDayOfWeek</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">invert</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">TradingDayOfMonthRule</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">with_metaclass</span><span class="p">(</span><span class="n">ABCMeta</span><span class="p">,</span> <span class="n">StatelessRule</span><span class="p">)):</span>
+
+    <span class="nd">@preprocess</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">lossless_float_to_int</span><span class="p">(</span><span class="s1">&#39;TradingDayOfMonthRule&#39;</span><span class="p">))</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">invert</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="n">MAX_MONTH_RANGE</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">_out_of_range_error</span><span class="p">(</span><span class="n">MAX_MONTH_RANGE</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">invert</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">td_delta</span> <span class="o">=</span> <span class="o">-</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">td_delta</span> <span class="o">=</span> <span class="n">n</span>
+
+    <span class="k">def</span> <span class="nf">should_trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="c1"># is this market minute&#39;s period in the list of execution periods?</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cal</span><span class="o">.</span><span class="n">minute_to_session_label</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">return</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">execution_period_values</span>
+
+    <span class="nd">@lazyval</span>
+    <span class="k">def</span> <span class="nf">execution_period_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># calculate the list of periods that match the given criteria</span>
+        <span class="n">sessions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cal</span><span class="o">.</span><span class="n">all_sessions</span>
+        <span class="k">return</span> <span class="nb">set</span><span class="p">(</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">sessions</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">sessions</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">sessions</span><span class="o">.</span><span class="n">month</span><span class="p">])</span>
+            <span class="o">.</span><span class="n">nth</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">td_delta</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">NthTradingDayOfMonth</span><span class="p">(</span><span class="n">TradingDayOfMonthRule</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A rule that triggers on the nth trading day of the month.</span>
+<span class="sd">    This is zero-indexed, n=0 is the first trading day of the month.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">NthTradingDayOfMonth</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">invert</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">NDaysBeforeLastTradingDayOfMonth</span><span class="p">(</span><span class="n">TradingDayOfMonthRule</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A rule that triggers n days before the last trading day of the month.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">NDaysBeforeLastTradingDayOfMonth</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">invert</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+
+<span class="c1"># Stateful rules</span>
+
+
+<span class="k">class</span> <span class="nc">StatefulRule</span><span class="p">(</span><span class="n">EventRule</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A stateful rule has state.</span>
+<span class="sd">    This rule will give different results for the same datetimes depending</span>
+<span class="sd">    on the internal state that this holds.</span>
+<span class="sd">    StatefulRules wrap other rules as state transformers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule</span> <span class="o">=</span> <span class="n">rule</span> <span class="ow">or</span> <span class="n">Always</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">new_should_trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callable_</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Replace the should trigger implementation for the current rule.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">should_trigger</span> <span class="o">=</span> <span class="n">callable_</span>
+
+
+<span class="k">class</span> <span class="nc">OncePerDay</span><span class="p">(</span><span class="n">StatefulRule</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">triggered</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">date</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">next_date</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">OncePerDay</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">should_trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">date</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">dt</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_date</span><span class="p">:</span>
+            <span class="c1"># initialize or reset for new date</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">triggered</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">date</span> <span class="o">=</span> <span class="n">dt</span>
+
+            <span class="c1"># record the timestamp for the next day, so that we can use it</span>
+            <span class="c1"># to know if we&#39;ve moved to the next day</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">next_date</span> <span class="o">=</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;d&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">triggered</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">should_trigger</span><span class="p">(</span><span class="n">dt</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">triggered</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="c1"># Factory API</span>
+
+<div class="viewcode-block" id="date_rules"><a class="viewcode-back" href="../../../appendix.html#catalyst.api.date_rules">[docs]</a><span class="k">class</span> <span class="nc">date_rules</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">every_day</span> <span class="o">=</span> <span class="n">Always</span>
+
+<div class="viewcode-block" id="date_rules.month_start"><a class="viewcode-back" href="../../../appendix.html#catalyst.api.date_rules.month_start">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">month_start</span><span class="p">(</span><span class="n">days_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">NthTradingDayOfMonth</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">days_offset</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="date_rules.month_end"><a class="viewcode-back" href="../../../appendix.html#catalyst.api.date_rules.month_end">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">month_end</span><span class="p">(</span><span class="n">days_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">NDaysBeforeLastTradingDayOfMonth</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">days_offset</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="date_rules.week_start"><a class="viewcode-back" href="../../../appendix.html#catalyst.api.date_rules.week_start">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">week_start</span><span class="p">(</span><span class="n">days_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">NthTradingDayOfWeek</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">days_offset</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="date_rules.week_end"><a class="viewcode-back" href="../../../appendix.html#catalyst.api.date_rules.week_end">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">week_end</span><span class="p">(</span><span class="n">days_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">NDaysBeforeLastTradingDayOfWeek</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">days_offset</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="time_rules"><a class="viewcode-back" href="../../../appendix.html#catalyst.api.time_rules">[docs]</a><span class="k">class</span> <span class="nc">time_rules</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">market_open</span> <span class="o">=</span> <span class="n">AfterOpen</span>
+    <span class="n">market_close</span> <span class="o">=</span> <span class="n">BeforeClose</span>
+    <span class="n">every_minute</span> <span class="o">=</span> <span class="n">Always</span></div>
+
+
+<span class="k">class</span> <span class="nc">calendars</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">CRYPTO_ASSETS</span> <span class="o">=</span> <span class="n">sentinel</span><span class="p">(</span><span class="s1">&#39;CRYPTO_ASSETS&#39;</span><span class="p">)</span>
+    <span class="n">US_EQUITIES</span> <span class="o">=</span> <span class="n">sentinel</span><span class="p">(</span><span class="s1">&#39;US_EQUITIES&#39;</span><span class="p">)</span>
+    <span class="n">US_FUTURES</span> <span class="o">=</span> <span class="n">sentinel</span><span class="p">(</span><span class="s1">&#39;US_FUTURES&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">make_eventrule</span><span class="p">(</span><span class="n">date_rule</span><span class="p">,</span> <span class="n">time_rule</span><span class="p">,</span> <span class="n">cal</span><span class="p">,</span> <span class="n">half_days</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Constructs an event rule from the factory api.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Insert the calendar in to the individual rules</span>
+    <span class="n">date_rule</span><span class="o">.</span><span class="n">cal</span> <span class="o">=</span> <span class="n">cal</span>
+    <span class="n">time_rule</span><span class="o">.</span><span class="n">cal</span> <span class="o">=</span> <span class="n">cal</span>
+
+    <span class="k">if</span> <span class="n">half_days</span><span class="p">:</span>
+        <span class="n">inner_rule</span> <span class="o">=</span> <span class="n">date_rule</span> <span class="o">&amp;</span> <span class="n">time_rule</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">nhd_rule</span> <span class="o">=</span> <span class="n">NotHalfDay</span><span class="p">()</span>
+        <span class="n">nhd_rule</span><span class="o">.</span><span class="n">cal</span> <span class="o">=</span> <span class="n">cal</span>
+        <span class="n">inner_rule</span> <span class="o">=</span> <span class="n">date_rule</span> <span class="o">&amp;</span> <span class="n">time_rule</span> <span class="o">&amp;</span> <span class="n">nhd_rule</span>
+
+    <span class="k">return</span> <span class="n">OncePerDay</span><span class="p">(</span><span class="n">rule</span><span class="o">=</span><span class="n">inner_rule</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Catalyst 0.5.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Enigma MPC, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
+    </div>
+  </body>
+</html>

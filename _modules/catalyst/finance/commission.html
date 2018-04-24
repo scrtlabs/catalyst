@@ -1,0 +1,437 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>catalyst.finance.commission &#8212; Catalyst 0.5.9 documentation</title>
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.5.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Catalyst 0.5.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for catalyst.finance.commission</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2016 Quantopian, Inc.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+
+<span class="kn">from</span> <span class="nn">six</span> <span class="kn">import</span> <span class="n">with_metaclass</span>
+<span class="kn">from</span> <span class="nn">toolz</span> <span class="kn">import</span> <span class="n">merge</span>
+
+<span class="kn">from</span> <span class="nn">catalyst.assets</span> <span class="kn">import</span> <span class="n">Equity</span><span class="p">,</span> <span class="n">Future</span>
+<span class="kn">from</span> <span class="nn">catalyst.finance.constants</span> <span class="kn">import</span> <span class="n">FUTURE_EXCHANGE_FEES_BY_SYMBOL</span>
+<span class="kn">from</span> <span class="nn">catalyst.finance.shared</span> <span class="kn">import</span> <span class="n">AllowedAssetMarker</span><span class="p">,</span> <span class="n">FinancialModelMeta</span>
+<span class="kn">from</span> <span class="nn">catalyst.utils.dummy</span> <span class="kn">import</span> <span class="n">DummyMapping</span>
+
+<span class="n">DEFAULT_PER_SHARE_COST</span> <span class="o">=</span> <span class="mf">0.0075</span>              <span class="c1"># 0.75 cents per share</span>
+<span class="n">DEFAULT_PER_CONTRACT_COST</span> <span class="o">=</span> <span class="mf">0.85</span>             <span class="c1"># $0.85 per future contract</span>
+<span class="n">DEFAULT_PER_DOLLAR_COST</span> <span class="o">=</span> <span class="mf">0.0015</span>             <span class="c1"># 0.15 cents per dollar</span>
+<span class="n">DEFAULT_MINIMUM_COST_PER_EQUITY_TRADE</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># $1 per trade</span>
+<span class="n">DEFAULT_MINIMUM_COST_PER_FUTURE_TRADE</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># $1 per trade</span>
+
+
+<div class="viewcode-block" id="CommissionModel"><a class="viewcode-back" href="../../../appendix.html#catalyst.finance.commission.CommissionModel">[docs]</a><span class="k">class</span> <span class="nc">CommissionModel</span><span class="p">(</span><span class="n">with_metaclass</span><span class="p">(</span><span class="n">FinancialModelMeta</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract commission model interface.</span>
+
+<span class="sd">    Commission models are responsible for accepting order/transaction pairs and</span>
+<span class="sd">    calculating how much commission should be charged to an algorithm&#39;s account</span>
+<span class="sd">    on each transaction.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Asset types that are compatible with the given model.</span>
+    <span class="n">allowed_asset_types</span> <span class="o">=</span> <span class="p">(</span><span class="n">Equity</span><span class="p">,</span> <span class="n">Future</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CommissionModel.calculate"><a class="viewcode-back" href="../../../appendix.html#catalyst.finance.commission.CommissionModel.calculate">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">transaction</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the amount of commission to charge on ``order`` as a result</span>
+<span class="sd">        of ``transaction``.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        order : catalyst.finance.order.Order</span>
+<span class="sd">            The order being processed.</span>
+
+<span class="sd">            The ``commission`` field of ``order`` is a float indicating the</span>
+<span class="sd">            amount of commission already charged on this order.</span>
+
+<span class="sd">        transaction : catalyst.finance.transaction.Transaction</span>
+<span class="sd">            The transaction being processed. A single order may generate</span>
+<span class="sd">            multiple transactions if there isn&#39;t enough volume in a given bar</span>
+<span class="sd">            to fill the full amount requested in the order.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        amount_charged : float</span>
+<span class="sd">            The additional commission, in dollars, that we should attribute to</span>
+<span class="sd">            this order.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;calculate&#39;</span><span class="p">)</span></div></div>
+
+
+<span class="k">class</span> <span class="nc">EquityCommissionModel</span><span class="p">(</span><span class="n">with_metaclass</span><span class="p">(</span><span class="n">AllowedAssetMarker</span><span class="p">,</span>
+                                           <span class="n">CommissionModel</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for commission models which only support equities.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">allowed_asset_types</span> <span class="o">=</span> <span class="p">(</span><span class="n">Equity</span><span class="p">,)</span>
+
+
+<span class="k">class</span> <span class="nc">FutureCommissionModel</span><span class="p">(</span><span class="n">with_metaclass</span><span class="p">(</span><span class="n">AllowedAssetMarker</span><span class="p">,</span>
+                                           <span class="n">CommissionModel</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for commission models which only support futures.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">allowed_asset_types</span> <span class="o">=</span> <span class="p">(</span><span class="n">Future</span><span class="p">,)</span>
+
+
+<span class="k">def</span> <span class="nf">calculate_per_unit_commission</span><span class="p">(</span><span class="n">order</span><span class="p">,</span>
+                                  <span class="n">transaction</span><span class="p">,</span>
+                                  <span class="n">cost_per_unit</span><span class="p">,</span>
+                                  <span class="n">initial_commission</span><span class="p">,</span>
+                                  <span class="n">min_trade_cost</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    If there is a minimum commission:</span>
+<span class="sd">        If the order hasn&#39;t had a commission paid yet, pay the minimum</span>
+<span class="sd">        commission.</span>
+
+<span class="sd">        If the order has paid a commission, start paying additional</span>
+<span class="sd">        commission once the minimum commission has been reached.</span>
+
+<span class="sd">    If there is no minimum commission:</span>
+<span class="sd">        Pay commission based on number of units in the transaction.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">additional_commission</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">transaction</span><span class="o">.</span><span class="n">amount</span> <span class="o">*</span> <span class="n">cost_per_unit</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">order</span><span class="o">.</span><span class="n">commission</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># no commission paid yet, pay at least the minimum plus a one-time</span>
+        <span class="c1"># exchange fee.</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">min_trade_cost</span><span class="p">,</span> <span class="n">additional_commission</span> <span class="o">+</span> <span class="n">initial_commission</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># we&#39;ve already paid some commission, so figure out how much we</span>
+        <span class="c1"># would be paying if we only counted per unit.</span>
+        <span class="n">per_unit_total</span> <span class="o">=</span> \
+            <span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">filled</span> <span class="o">*</span> <span class="n">cost_per_unit</span><span class="p">)</span> <span class="o">+</span> \
+            <span class="n">additional_commission</span> <span class="o">+</span> \
+            <span class="n">initial_commission</span>
+
+        <span class="k">if</span> <span class="n">per_unit_total</span> <span class="o">&lt;</span> <span class="n">min_trade_cost</span><span class="p">:</span>
+            <span class="c1"># if we haven&#39;t hit the minimum threshold yet, don&#39;t pay</span>
+            <span class="c1"># additional commission</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># we&#39;ve exceeded the threshold, so pay more commission.</span>
+            <span class="k">return</span> <span class="n">per_unit_total</span> <span class="o">-</span> <span class="n">order</span><span class="o">.</span><span class="n">commission</span>
+
+
+<div class="viewcode-block" id="PerShare"><a class="viewcode-back" href="../../../appendix.html#catalyst.finance.commission.PerShare">[docs]</a><span class="k">class</span> <span class="nc">PerShare</span><span class="p">(</span><span class="n">EquityCommissionModel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates a commission for a transaction based on a per share cost with</span>
+<span class="sd">    an optional minimum cost per trade.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cost : float, optional</span>
+<span class="sd">        The amount of commissions paid per share traded.</span>
+<span class="sd">    min_trade_cost : float, optional</span>
+<span class="sd">        The minimum amount of commissions paid per trade.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">cost</span><span class="o">=</span><span class="n">DEFAULT_PER_SHARE_COST</span><span class="p">,</span>
+                 <span class="n">min_trade_cost</span><span class="o">=</span><span class="n">DEFAULT_MINIMUM_COST_PER_EQUITY_TRADE</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cost_per_share</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">cost</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_trade_cost</span> <span class="o">=</span> <span class="n">min_trade_cost</span> <span class="ow">or</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="s1">&#39;{class_name}(cost_per_share={cost_per_share}, &#39;</span>
+            <span class="s1">&#39;min_trade_cost={min_trade_cost})&#39;</span>
+            <span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">class_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                <span class="n">cost_per_share</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cost_per_share</span><span class="p">,</span>
+                <span class="n">min_trade_cost</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">min_trade_cost</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">transaction</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">calculate_per_unit_commission</span><span class="p">(</span>
+            <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span>
+            <span class="n">transaction</span><span class="o">=</span><span class="n">transaction</span><span class="p">,</span>
+            <span class="n">cost_per_unit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cost_per_share</span><span class="p">,</span>
+            <span class="n">initial_commission</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">min_trade_cost</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">min_trade_cost</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<span class="k">class</span> <span class="nc">PerContract</span><span class="p">(</span><span class="n">FutureCommissionModel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates a commission for a transaction based on a per contract cost with</span>
+<span class="sd">    an optional minimum cost per trade.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cost : float or dict</span>
+<span class="sd">        The amount of commissions paid per contract traded. If given a float,</span>
+<span class="sd">        the commission for all futures contracts is the same. If given a</span>
+<span class="sd">        dictionary, it must map root symbols to the commission cost for</span>
+<span class="sd">        contracts of that symbol.</span>
+<span class="sd">    exchange_fee : float or dict</span>
+<span class="sd">        A flat-rate fee charged by the exchange per trade. This value is a</span>
+<span class="sd">        constant, one-time charge no matter how many contracts are being</span>
+<span class="sd">        traded. If given a float, the fee for all contracts is the same. If</span>
+<span class="sd">        given a dictionary, it must map root symbols to the fee for contracts</span>
+<span class="sd">        of that symbol.</span>
+<span class="sd">    min_trade_cost : float, optional</span>
+<span class="sd">        The minimum amount of commissions paid per trade.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">cost</span><span class="p">,</span>
+                 <span class="n">exchange_fee</span><span class="p">,</span>
+                 <span class="n">min_trade_cost</span><span class="o">=</span><span class="n">DEFAULT_MINIMUM_COST_PER_FUTURE_TRADE</span><span class="p">):</span>
+        <span class="c1"># If &#39;cost&#39; or &#39;exchange fee&#39; are constants, use a dummy mapping to</span>
+        <span class="c1"># treat them as a dictionary that always returns the same value.</span>
+        <span class="c1"># NOTE: These dictionary does not handle unknown root symbols, so it</span>
+        <span class="c1"># may be worth revisiting this behavior.</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cost</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cost_per_contract</span> <span class="o">=</span> <span class="n">DummyMapping</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">cost</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Cost per contract is a dictionary. If the user&#39;s dictionary does</span>
+            <span class="c1"># not provide a commission cost for a certain contract, fall back</span>
+            <span class="c1"># on the pre-defined cost values per root symbol.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cost_per_contract</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span>
+                <span class="k">lambda</span><span class="p">:</span> <span class="n">DEFAULT_PER_CONTRACT_COST</span><span class="p">,</span> <span class="o">**</span><span class="n">cost</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exchange_fee</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_exchange_fee</span> <span class="o">=</span> <span class="n">DummyMapping</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">exchange_fee</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Exchange fee is a dictionary. If the user&#39;s dictionary does not</span>
+            <span class="c1"># provide an exchange fee for a certain contract, fall back on the</span>
+            <span class="c1"># pre-defined exchange fees per root symbol.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_exchange_fee</span> <span class="o">=</span> <span class="n">merge</span><span class="p">(</span>
+                <span class="n">FUTURE_EXCHANGE_FEES_BY_SYMBOL</span><span class="p">,</span> <span class="n">exchange_fee</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_trade_cost</span> <span class="o">=</span> <span class="n">min_trade_cost</span> <span class="ow">or</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cost_per_contract</span><span class="p">,</span> <span class="n">DummyMapping</span><span class="p">):</span>
+            <span class="c1"># Cost per contract is a constant, so extract it.</span>
+            <span class="n">cost_per_contract</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cost_per_contract</span><span class="p">[</span><span class="s1">&#39;dummy key&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cost_per_contract</span> <span class="o">=</span> <span class="s1">&#39;&lt;varies&gt;&#39;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_exchange_fee</span><span class="p">,</span> <span class="n">DummyMapping</span><span class="p">):</span>
+            <span class="c1"># Exchange fee is a constant, so extract it.</span>
+            <span class="n">exchange_fee</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exchange_fee</span><span class="p">[</span><span class="s1">&#39;dummy key&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">exchange_fee</span> <span class="o">=</span> <span class="s1">&#39;&lt;varies&gt;&#39;</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="s1">&#39;{class_name}(cost_per_contract={cost_per_contract}, &#39;</span>
+            <span class="s1">&#39;exchange_fee={exchange_fee}, min_trade_cost={min_trade_cost})&#39;</span>
+            <span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">class_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                <span class="n">cost_per_contract</span><span class="o">=</span><span class="n">cost_per_contract</span><span class="p">,</span>
+                <span class="n">exchange_fee</span><span class="o">=</span><span class="n">exchange_fee</span><span class="p">,</span>
+                <span class="n">min_trade_cost</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">min_trade_cost</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">transaction</span><span class="p">):</span>
+        <span class="n">root_symbol</span> <span class="o">=</span> <span class="n">order</span><span class="o">.</span><span class="n">asset</span><span class="o">.</span><span class="n">root_symbol</span>
+        <span class="n">cost_per_contract</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cost_per_contract</span><span class="p">[</span><span class="n">root_symbol</span><span class="p">]</span>
+        <span class="n">exchange_fee</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exchange_fee</span><span class="p">[</span><span class="n">root_symbol</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">calculate_per_unit_commission</span><span class="p">(</span>
+            <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span>
+            <span class="n">transaction</span><span class="o">=</span><span class="n">transaction</span><span class="p">,</span>
+            <span class="n">cost_per_unit</span><span class="o">=</span><span class="n">cost_per_contract</span><span class="p">,</span>
+            <span class="n">initial_commission</span><span class="o">=</span><span class="n">exchange_fee</span><span class="p">,</span>
+            <span class="n">min_trade_cost</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">min_trade_cost</span><span class="p">,</span>
+        <span class="p">)</span>
+
+
+<div class="viewcode-block" id="PerTrade"><a class="viewcode-back" href="../../../appendix.html#catalyst.finance.commission.PerTrade">[docs]</a><span class="k">class</span> <span class="nc">PerTrade</span><span class="p">(</span><span class="n">CommissionModel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates a commission for a transaction based on a per trade cost.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cost : float, optional</span>
+<span class="sd">        The flat amount of commissions paid per equity trade.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cost</span><span class="o">=</span><span class="n">DEFAULT_MINIMUM_COST_PER_EQUITY_TRADE</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Cost parameter is the cost of a trade, regardless of share count.</span>
+<span class="sd">        $5.00 per trade is fairly typical of discount brokers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Cost needs to be floating point so that calculation using division</span>
+        <span class="c1"># logic does not floor to an integer.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cost</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">cost</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;{class_name}(cost_per_trade={cost})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">class_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">cost</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cost</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">transaction</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        If the order hasn&#39;t had a commission paid yet, pay the fixed</span>
+<span class="sd">        commission.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">order</span><span class="o">.</span><span class="n">commission</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># if the order hasn&#39;t had a commission attributed to it yet,</span>
+            <span class="c1"># that&#39;s what we need to pay.</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cost</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># order has already had commission attributed, so no more</span>
+            <span class="c1"># commission.</span>
+            <span class="k">return</span> <span class="mf">0.0</span></div>
+
+
+<span class="k">class</span> <span class="nc">PerFutureTrade</span><span class="p">(</span><span class="n">PerContract</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates a commission for a transaction based on a per trade cost.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cost : float or dict</span>
+<span class="sd">        The flat amount of commissions paid per trade, regardless of the number</span>
+<span class="sd">        of contracts being traded. If given a float, the commission for all</span>
+<span class="sd">        futures contracts is the same. If given a dictionary, it must map root</span>
+<span class="sd">        symbols to the commission cost for trading contracts of that symbol.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cost</span><span class="o">=</span><span class="n">DEFAULT_MINIMUM_COST_PER_FUTURE_TRADE</span><span class="p">):</span>
+        <span class="c1"># The per-trade cost can be represented as the exchange fee in a</span>
+        <span class="c1"># per-contract model because the exchange fee is just a one time cost</span>
+        <span class="c1"># incurred on the first fill.</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PerFutureTrade</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">cost</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">exchange_fee</span><span class="o">=</span><span class="n">cost</span><span class="p">,</span> <span class="n">min_trade_cost</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cost_per_trade</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exchange_fee</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cost_per_trade</span><span class="p">,</span> <span class="n">DummyMapping</span><span class="p">):</span>
+            <span class="c1"># Cost per trade is a constant, so extract it.</span>
+            <span class="n">cost_per_trade</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cost_per_trade</span><span class="p">[</span><span class="s1">&#39;dummy key&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cost_per_trade</span> <span class="o">=</span> <span class="s1">&#39;&lt;varies&gt;&#39;</span>
+        <span class="k">return</span> <span class="s1">&#39;{class_name}(cost_per_trade={cost_per_trade})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">class_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">cost_per_trade</span><span class="o">=</span><span class="n">cost_per_trade</span><span class="p">,</span>
+        <span class="p">)</span>
+
+
+<div class="viewcode-block" id="PerDollar"><a class="viewcode-back" href="../../../appendix.html#catalyst.finance.commission.PerDollar">[docs]</a><span class="k">class</span> <span class="nc">PerDollar</span><span class="p">(</span><span class="n">EquityCommissionModel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates a commission for a transaction based on a per dollar cost.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cost : float</span>
+<span class="sd">        The flat amount of commissions paid per dollar of equities traded.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cost</span><span class="o">=</span><span class="n">DEFAULT_PER_DOLLAR_COST</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Cost parameter is the cost of a trade per-dollar. 0.0015</span>
+<span class="sd">        on $1 million means $1,500 commission (=1M * 0.0015)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cost_per_dollar</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">cost</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;{class_name}(cost_per_dollar={cost})&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">class_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="n">cost</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cost_per_dollar</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">transaction</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Pay commission based on dollar value of shares.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cost_per_share</span> <span class="o">=</span> <span class="n">transaction</span><span class="o">.</span><span class="n">price</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cost_per_dollar</span>
+        <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">transaction</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="o">*</span> <span class="n">cost_per_share</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Catalyst 0.5.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Enigma MPC, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,348 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>catalyst.utils.calendars.calendar_utils &#8212; Catalyst 0.5.9 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '0.5.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">Catalyst 0.5.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for catalyst.utils.calendars.calendar_utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">catalyst.errors</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CalendarNameCollision</span><span class="p">,</span>
+    <span class="n">CyclicCalendarAlias</span><span class="p">,</span>
+    <span class="n">InvalidCalendarName</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.exchange_calendar_open</span> <span class="kn">import</span> <span class="n">OpenExchangeCalendar</span>
+<span class="kn">from</span> <span class="nn">.exchange_calendar_cfe</span> <span class="kn">import</span> <span class="n">CFEExchangeCalendar</span>
+<span class="kn">from</span> <span class="nn">.exchange_calendar_ice</span> <span class="kn">import</span> <span class="n">ICEExchangeCalendar</span>
+<span class="kn">from</span> <span class="nn">.exchange_calendar_nyse</span> <span class="kn">import</span> <span class="n">NYSEExchangeCalendar</span>
+<span class="kn">from</span> <span class="nn">.exchange_calendar_cme</span> <span class="kn">import</span> <span class="n">CMEExchangeCalendar</span>
+<span class="kn">from</span> <span class="nn">.exchange_calendar_bmf</span> <span class="kn">import</span> <span class="n">BMFExchangeCalendar</span>
+<span class="kn">from</span> <span class="nn">.exchange_calendar_lse</span> <span class="kn">import</span> <span class="n">LSEExchangeCalendar</span>
+<span class="kn">from</span> <span class="nn">.exchange_calendar_tsx</span> <span class="kn">import</span> <span class="n">TSXExchangeCalendar</span>
+<span class="kn">from</span> <span class="nn">.us_futures_calendar</span> <span class="kn">import</span> <span class="n">QuantopianUSFuturesCalendar</span>
+
+<span class="n">_default_calendar_factories</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;OPEN&#39;</span><span class="p">:</span> <span class="n">OpenExchangeCalendar</span><span class="p">,</span>
+    <span class="s1">&#39;NYSE&#39;</span><span class="p">:</span> <span class="n">NYSEExchangeCalendar</span><span class="p">,</span>
+    <span class="s1">&#39;CME&#39;</span><span class="p">:</span> <span class="n">CMEExchangeCalendar</span><span class="p">,</span>
+    <span class="s1">&#39;ICE&#39;</span><span class="p">:</span> <span class="n">ICEExchangeCalendar</span><span class="p">,</span>
+    <span class="s1">&#39;CFE&#39;</span><span class="p">:</span> <span class="n">CFEExchangeCalendar</span><span class="p">,</span>
+    <span class="s1">&#39;BMF&#39;</span><span class="p">:</span> <span class="n">BMFExchangeCalendar</span><span class="p">,</span>
+    <span class="s1">&#39;LSE&#39;</span><span class="p">:</span> <span class="n">LSEExchangeCalendar</span><span class="p">,</span>
+    <span class="s1">&#39;TSX&#39;</span><span class="p">:</span> <span class="n">TSXExchangeCalendar</span><span class="p">,</span>
+    <span class="s1">&#39;us_futures&#39;</span><span class="p">:</span> <span class="n">QuantopianUSFuturesCalendar</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">_default_calendar_aliases</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;POLO&#39;</span><span class="p">:</span> <span class="s1">&#39;OPEN&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NASDAQ&#39;</span><span class="p">:</span> <span class="s1">&#39;NYSE&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;BATS&#39;</span><span class="p">:</span> <span class="s1">&#39;NYSE&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;CBOT&#39;</span><span class="p">:</span> <span class="s1">&#39;CME&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;COMEX&#39;</span><span class="p">:</span> <span class="s1">&#39;CME&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NYMEX&#39;</span><span class="p">:</span> <span class="s1">&#39;CME&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ICEUS&#39;</span><span class="p">:</span> <span class="s1">&#39;ICE&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NYFE&#39;</span><span class="p">:</span> <span class="s1">&#39;ICE&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">class</span> <span class="nc">TradingCalendarDispatcher</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class for dispatching and caching trading calendars.</span>
+
+<span class="sd">    Methods of a global instance of this class are provided by</span>
+<span class="sd">    catalyst.utils.calendar_utils.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    calendars : dict[str -&gt; TradingCalendar]</span>
+<span class="sd">        Initial set of calendars.</span>
+<span class="sd">    calendar_factories : dict[str -&gt; function]</span>
+<span class="sd">        Factories for lazy calendar creation.</span>
+<span class="sd">    aliases : dict[str -&gt; str]</span>
+<span class="sd">        Calendar name aliases.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calendars</span><span class="p">,</span> <span class="n">calendar_factories</span><span class="p">,</span> <span class="n">aliases</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calendars</span> <span class="o">=</span> <span class="n">calendars</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calendar_factories</span> <span class="o">=</span> <span class="n">calendar_factories</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aliases</span> <span class="o">=</span> <span class="n">aliases</span>
+
+    <span class="k">def</span> <span class="nf">get_calendar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves an instance of a TradingCalendar whose name is given.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : str</span>
+<span class="sd">            The name of the TradingCalendar to be retrieved.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        calendar : catalyst.utils.calendars.TradingCalendar</span>
+<span class="sd">            The desired calendar.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">canonical_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolve_alias</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calendars</span><span class="p">[</span><span class="n">canonical_name</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="c1"># We haven&#39;t loaded this calendar yet, so make a new one.</span>
+            <span class="k">pass</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">factory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calendar_factories</span><span class="p">[</span><span class="n">canonical_name</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="c1"># We don&#39;t have a factory registered for this name.  Barf.</span>
+            <span class="k">raise</span> <span class="n">InvalidCalendarName</span><span class="p">(</span><span class="n">calendar_name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="c1"># Cache the calendar for future use.</span>
+        <span class="n">calendar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calendars</span><span class="p">[</span><span class="n">canonical_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">factory</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">calendar</span>
+
+    <span class="k">def</span> <span class="nf">has_calendar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Do we have (or have the ability to make) a calendar with ``name``?</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calendars</span>
+            <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calendar_factories</span>
+            <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aliases</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">register_calendar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">calendar</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Registers a calendar for retrieval by the get_calendar method.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name: str</span>
+<span class="sd">            The key with which to register this calendar.</span>
+<span class="sd">        calendar: TradingCalendar</span>
+<span class="sd">            The calendar to be registered for retrieval.</span>
+<span class="sd">        force : bool, optional</span>
+<span class="sd">            If True, old calendars will be overwritten on a name collision.</span>
+<span class="sd">            If False, name collisions will raise an exception.</span>
+<span class="sd">            Default is False.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        CalendarNameCollision</span>
+<span class="sd">            If a calendar is already registered with the given calendar&#39;s name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">force</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">deregister_calendar</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_calendar</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">CalendarNameCollision</span><span class="p">(</span><span class="n">calendar_name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calendars</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">calendar</span>
+
+    <span class="k">def</span> <span class="nf">register_calendar_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">calendar_type</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Registers a calendar by type.</span>
+
+<span class="sd">        This is useful for registering a new calendar to be lazily instantiated</span>
+<span class="sd">        at some future point in time.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name: str</span>
+<span class="sd">            The key with which to register this calendar.</span>
+<span class="sd">        calendar_type: type</span>
+<span class="sd">            The type of the calendar to register.</span>
+<span class="sd">        force : bool, optional</span>
+<span class="sd">            If True, old calendars will be overwritten on a name collision.</span>
+<span class="sd">            If False, name collisions will raise an exception.</span>
+<span class="sd">            Default is False.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        CalendarNameCollision</span>
+<span class="sd">            If a calendar is already registered with the given calendar&#39;s name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">force</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">deregister_calendar</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_calendar</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">CalendarNameCollision</span><span class="p">(</span><span class="n">calendar_name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calendar_factories</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">calendar_type</span>
+
+    <span class="k">def</span> <span class="nf">register_calendar_alias</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alias</span><span class="p">,</span> <span class="n">real_name</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Register an alias for a calendar.</span>
+
+<span class="sd">        This is useful when multiple exchanges should share a calendar, or when</span>
+<span class="sd">        there are multiple ways to refer to the same exchange.</span>
+
+<span class="sd">        After calling ``register_alias(&#39;alias&#39;, &#39;real_name&#39;)``, subsequent</span>
+<span class="sd">        calls to ``get_calendar(&#39;alias&#39;)`` will return the same result as</span>
+<span class="sd">        ``get_calendar(&#39;real_name&#39;)``.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        alias : str</span>
+<span class="sd">            The name to be used to refer to a calendar.</span>
+<span class="sd">        real_name : str</span>
+<span class="sd">            The canonical name of the registered calendar.</span>
+<span class="sd">        force : bool, optional</span>
+<span class="sd">            If True, old calendars will be overwritten on a name collision.</span>
+<span class="sd">            If False, name collisions will raise an exception.</span>
+<span class="sd">            Default is False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">force</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">deregister_calendar</span><span class="p">(</span><span class="n">alias</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_calendar</span><span class="p">(</span><span class="n">alias</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">CalendarNameCollision</span><span class="p">(</span><span class="n">calendar_name</span><span class="o">=</span><span class="n">alias</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aliases</span><span class="p">[</span><span class="n">alias</span><span class="p">]</span> <span class="o">=</span> <span class="n">real_name</span>
+
+        <span class="c1"># Ensure that the new alias doesn&#39;t create a cycle, and back it out if</span>
+        <span class="c1"># we did.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">resolve_alias</span><span class="p">(</span><span class="n">alias</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">CyclicCalendarAlias</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aliases</span><span class="p">[</span><span class="n">alias</span><span class="p">]</span>
+            <span class="k">raise</span>
+
+    <span class="k">def</span> <span class="nf">resolve_alias</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resolve a calendar alias for retrieval.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : str</span>
+<span class="sd">            The name of the requested calendar.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        canonical_name : str</span>
+<span class="sd">            The real name of the calendar to create/return.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Use an OrderedDict as an ordered set so that we can return the order</span>
+        <span class="c1"># of aliases in the event of a cycle.</span>
+        <span class="n">seen</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">while</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aliases</span><span class="p">:</span>
+            <span class="n">seen</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aliases</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+            <span class="c1"># This is O(N ** 2), but if there&#39;s an alias chain longer than 2,</span>
+            <span class="c1"># something strange has happened.</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
+                <span class="n">seen</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">CyclicCalendarAlias</span><span class="p">(</span>
+                    <span class="n">cycle</span><span class="o">=</span><span class="s2">&quot; -&gt; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">)</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">name</span>
+
+    <span class="k">def</span> <span class="nf">deregister_calendar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        If a calendar is registered with the given name, it is de-registered.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        cal_name : str</span>
+<span class="sd">            The name of the calendar to be deregistered.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calendars</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calendar_factories</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aliases</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">clear_calendars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Deregisters all current registered calendars</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calendars</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calendar_factories</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aliases</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+
+<span class="c1"># We maintain a global calendar dispatcher so that users can just do</span>
+<span class="c1"># `register_calendar(&#39;my_calendar&#39;, calendar) and then use `get_calendar`</span>
+<span class="c1"># without having to thread around a dispatcher.</span>
+<span class="n">global_calendar_dispatcher</span> <span class="o">=</span> <span class="n">TradingCalendarDispatcher</span><span class="p">(</span>
+    <span class="n">calendars</span><span class="o">=</span><span class="p">{},</span>
+    <span class="n">calendar_factories</span><span class="o">=</span><span class="n">_default_calendar_factories</span><span class="p">,</span>
+    <span class="n">aliases</span><span class="o">=</span><span class="n">_default_calendar_aliases</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">get_calendar</span> <span class="o">=</span> <span class="n">global_calendar_dispatcher</span><span class="o">.</span><span class="n">get_calendar</span>
+<span class="n">clear_calendars</span> <span class="o">=</span> <span class="n">global_calendar_dispatcher</span><span class="o">.</span><span class="n">clear_calendars</span>
+<span class="n">deregister_calendar</span> <span class="o">=</span> <span class="n">global_calendar_dispatcher</span><span class="o">.</span><span class="n">deregister_calendar</span>
+<span class="n">register_calendar</span> <span class="o">=</span> <span class="n">global_calendar_dispatcher</span><span class="o">.</span><span class="n">register_calendar</span>
+<span class="n">register_calendar_type</span> <span class="o">=</span> <span class="n">global_calendar_dispatcher</span><span class="o">.</span><span class="n">register_calendar_type</span>
+<span class="n">register_calendar_alias</span> <span class="o">=</span> <span class="n">global_calendar_dispatcher</span><span class="o">.</span><span class="n">register_calendar_alias</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">Catalyst 0.5.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Enigma MPC, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
+    </div>
+  </body>
+</html>
