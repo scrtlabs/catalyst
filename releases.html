@@ -1,297 +1,94 @@
 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-<!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
-<head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>Release Notes &mdash; Catalyst 0.4 documentation</title>
-  
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Release Notes &#8212; Catalyst 0.5.9 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.5.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Reference" href="appendix.html" />
+    <link rel="prev" title="Development Guidelines" href="development-guidelines.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="appendix.html" title="API Reference"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="development-guidelines.html" title="Development Guidelines"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Catalyst 0.5.9 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
 
-  
-  
-  
-  
-
-  
-
-  
-  
-    
-
-  
-
-  
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="Catalyst 0.4 documentation" href="index.html"/>
-        <link rel="prev" title="Development Guidelines" href="development-guidelines.html"/> 
-
-  
-  <script src="_static/js/modernizr.min.js"></script>
-
-</head>
-
-<body class="wy-body-for-nav" role="document">
-
-   
-  <div class="wy-grid-for-nav">
-
-    
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
-          
-
-          
-            <a href="index.html" class="icon icon-home"> Catalyst
-          
-
-          
-          </a>
-
-          
-            
-            
-          
-
-          
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
-              <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="install.html">Install</a></li>
-<li class="toctree-l1"><a class="reference internal" href="beginner-tutorial.html">Catalyst Beginner Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="live-trading.html">Live Trading</a></li>
-<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
-<li class="toctree-l1"><a class="reference internal" href="example-algos.html">Example Algorithms</a></li>
-<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
-<li class="toctree-l1"><a class="reference internal" href="videos.html">Videos</a></li>
-<li class="toctree-l1"><a class="reference internal" href="resources.html">Resources</a></li>
-<li class="toctree-l1"><a class="reference internal" href="development-guidelines.html">Development Guidelines</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Release Notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-5-8">Version 0.5.8</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#bug-fixes">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-5-7">Version 0.5.7</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#build">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id1">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-5-6">Version 0.5.6</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id2">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id3">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-5-5">Version 0.5.5</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id4">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-5-4">Version 0.5.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id5">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id6">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#documentation">Documentation</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-5-3">Version 0.5.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id7">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-5-2">Version 0.5.2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id8">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-5-1">Version 0.5.1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id9">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id10">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-4-7">Version 0.4.7</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id11">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id12">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-4-6">Version 0.4.6</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id13">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id14">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-4-5">Version 0.4.5</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id15">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-4-4">Version 0.4.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id16">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-4-3">Version 0.4.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id17">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-4-2">Version 0.4.2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id18">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id19">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-4-0">Version 0.4.0</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id20">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id21">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#version-0-3-10">Version 0.3.10</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id22">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-3-9">Version 0.3.9</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id23">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id24">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-3-8">Version 0.3.8</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id25">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-3-7">Version 0.3.7</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id26">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id27">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-3-6">Version 0.3.6</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id28">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-3-5">Version 0.3.5</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id29">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-3-4">Version 0.3.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id30">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id31">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id32">Documentation</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-3-3">Version 0.3.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id34">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id35">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-3-2">Version 0.3.2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id36">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id37">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-3-1">Version 0.3.1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id38">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-3">Version 0.3</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-2-dev5">Version 0.2.dev5</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-2-dev4">Version 0.2.dev4</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-2-dev3">Version 0.2.dev3</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-2-dev2">Version 0.2.dev2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-2-dev1">Version 0.2.dev1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-1-dev9">Version 0.1.dev9</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-1-dev8">Version 0.1.dev8</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-1-dev7">Version 0.1.dev7</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#version-0-1-dev6">Version 0.1.dev6</a></li>
-</ul>
-</li>
-</ul>
-
-            
-          
-        </div>
-      </div>
-    </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">Catalyst</a>
-        
-      </nav>
-
-
-      
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
-  <ul class="wy-breadcrumbs">
-    
-      <li><a href="index.html">Docs</a> &raquo;</li>
-        
-      <li>Release Notes</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
-        
-            
-            <a href="_sources/releases.rst.txt" rel="nofollow"> View page source</a>
-          
-        
-      </li>
-    
-  </ul>
-
-  
-  <hr/>
-</div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
             
   <div class="section" id="release-notes">
 <h1>Release Notes<a class="headerlink" href="#release-notes" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="version-0-5-8">
-<h2>Version 0.5.8<a class="headerlink" href="#version-0-5-8" title="Permalink to this headline">¶</a></h2>
-<p><strong>Release Date</strong>: 2018-03-29</p>
+<div class="section" id="version-0-5-9">
+<h2>Version 0.5.9<a class="headerlink" href="#version-0-5-9" title="Permalink to this headline">¶</a></h2>
+<p><strong>Release Date</strong>: 2018-04-24</p>
+<div class="section" id="documentation">
+<h3>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Added explanation describing the storing of the algorithm state in live mode <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/224">#224</a></li>
+<li>Addition of
+<a class="reference external" href="https://enigma.co/catalyst/appendix.html">Api Reference</a></li>
+</ul>
+</div>
 <div class="section" id="bug-fixes">
 <h3>Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
+<li>Lowered order size limit to fit all supported exchanges <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/296">#296</a></li>
+<li>Added a graceful finish to a live run with a specified end date <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/302">#302</a></li>
+<li>Added commissions to <cite>daily_stats</cite> Dataframe <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/304">#304</a></li>
+<li>Fixed an issue regarding <cite>str_btc</cite> on Poloniex <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/307">#307</a></li>
+<li>Fixed the last candle returned in backtest in minute mode to be partial (as in live mode)
+<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/266">#266</a></li>
+</ul>
+</div>
+<div class="section" id="build">
+<h3>Build<a class="headerlink" href="#build" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Updated Data Marketplace <cite>get_dataset</cite> to allow users to specify start and end times for the dataset retrieval.</li>
+<li>Upgraded <cite>CCXT</cite> version to 1.12.131</li>
+<li>Updated Data Marketplace to enable submitting several files in a publish command.</li>
+<li>Improved Data Marketplace ingestion.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="version-0-5-8">
+<h2>Version 0.5.8<a class="headerlink" href="#version-0-5-8" title="Permalink to this headline">¶</a></h2>
+<p><strong>Release Date</strong>: 2018-03-29</p>
+<div class="section" id="id1">
+<h3>Bug Fixes<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Fix proper release of Data Marketplace on mainnet.</li>
 <li>Fix Data Marketplace release on mainnet</li>
 </ul>
 </div>
@@ -299,18 +96,18 @@
 <div class="section" id="version-0-5-7">
 <h2>Version 0.5.7<a class="headerlink" href="#version-0-5-7" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2018-03-29</p>
-<div class="section" id="build">
-<h3>Build<a class="headerlink" href="#build" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id2">
+<h3>Build<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Data Marketplace deployed on mainnet.</li>
 <li>Added progress indicators for publishing data, and made the data publishing
 synchronous to provide feedback to the publisher.</li>
 </ul>
 </div>
-<div class="section" id="id1">
-<h3>Bug Fixes<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id3">
+<h3>Bug Fixes<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>fixes in storing and loading the state <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/214">#214</a>,
+<li>Fixes in storing and loading the state <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/214">#214</a>,
 <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/287">#287</a></li>
 </ul>
 </div>
@@ -318,8 +115,8 @@ synchronous to provide feedback to the publisher.</li>
 <div class="section" id="version-0-5-6">
 <h2>Version 0.5.6<a class="headerlink" href="#version-0-5-6" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2018-03-22</p>
-<div class="section" id="id2">
-<h3>Build<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id4">
+<h3>Build<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Data Marketplace: ensures compatibility across wallets, now fully supporting
 <code class="docutils literal"><span class="pre">ledger</span></code>, <code class="docutils literal"><span class="pre">trezor</span></code>, <code class="docutils literal"><span class="pre">keystore</span></code>, <code class="docutils literal"><span class="pre">private</span> <span class="pre">key</span></code>. Partial support for
@@ -329,8 +126,8 @@ synchronous to provide feedback to the publisher.</li>
 <li>Data Marketplace: Added progress indicator for data ingestion.</li>
 </ul>
 </div>
-<div class="section" id="id3">
-<h3>Bug Fixes<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id5">
+<h3>Bug Fixes<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Changed benchmark to be constant, so it doesn’t ingest data at all. Temporary
 fix for <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/271">#271</a>, <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/285">#285</a></li>
@@ -340,8 +137,8 @@ fix for <a class="reference external" href="https://github.com/enigmampc/catalys
 <div class="section" id="version-0-5-5">
 <h2>Version 0.5.5<a class="headerlink" href="#version-0-5-5" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2018-03-19</p>
-<div class="section" id="id4">
-<h3>Bug Fixes<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id6">
+<h3>Bug Fixes<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fixed an issue with the data history in daily frequency <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/274">#274</a></li>
 <li>Fix hourly frequency issues <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/227">#227</a> and <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/114">#114</a></li>
@@ -351,8 +148,8 @@ fix for <a class="reference external" href="https://github.com/enigmampc/catalys
 <div class="section" id="version-0-5-4">
 <h2>Version 0.5.4<a class="headerlink" href="#version-0-5-4" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2018-03-14</p>
-<div class="section" id="id5">
-<h3>Build<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id7">
+<h3>Build<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Switched Data Marketplace from Ropstein testnet to Rinkeby testnet after
 incorporating changes resulting from the marketplace contract audit</li>
@@ -361,8 +158,8 @@ incorporating changes resulting from the marketplace contract audit</li>
 will list available datasets, and let you choose interactively.</li>
 </ul>
 </div>
-<div class="section" id="id6">
-<h3>Bug Fixes<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id8">
+<h3>Bug Fixes<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fix Binance requirement of symbol to be included in the cancelled order
 <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/204">#204</a></li>
@@ -379,8 +176,8 @@ functionality from prior version 4.0.0b7 <a class="reference external" href="htt
 number <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/260">#260</a></li>
 </ul>
 </div>
-<div class="section" id="documentation">
-<h3>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id9">
+<h3>Documentation<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>PyCharm documentation <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/195">#195</a></li>
 <li>Added TA-Lib troubleshooting instructions</li>
@@ -393,8 +190,8 @@ updated Visual C++ instructions for Windows and Python 3</li>
 <div class="section" id="version-0-5-3">
 <h2>Version 0.5.3<a class="headerlink" href="#version-0-5-3" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2018-02-09</p>
-<div class="section" id="id7">
-<h3>Bug Fixes<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id10">
+<h3>Bug Fixes<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fixed an issue with last candle in backtesting <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/219">#219</a></li>
 </ul>
@@ -403,8 +200,8 @@ updated Visual C++ instructions for Windows and Python 3</li>
 <div class="section" id="version-0-5-2">
 <h2>Version 0.5.2<a class="headerlink" href="#version-0-5-2" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2018-02-08</p>
-<div class="section" id="id8">
-<h3>Bug Fixes<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id11">
+<h3>Bug Fixes<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fixed an issue with live candle values <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/216">#216</a> and <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/199">#199</a></li>
 </ul>
@@ -413,8 +210,8 @@ updated Visual C++ instructions for Windows and Python 3</li>
 <div class="section" id="version-0-5-1">
 <h2>Version 0.5.1<a class="headerlink" href="#version-0-5-1" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2018-02-07</p>
-<div class="section" id="id9">
-<h3>Bug Fixes<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id12">
+<h3>Bug Fixes<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fixed an issue with orders that stay open <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/211">#211</a></li>
 <li>Fixed Jupyter issues <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/179">#179</a></li>
@@ -422,8 +219,8 @@ updated Visual C++ instructions for Windows and Python 3</li>
 <li>Improved live state presentation <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/171">#171</a></li>
 </ul>
 </div>
-<div class="section" id="id10">
-<h3>Build<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id13">
+<h3>Build<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Introducing the Enigma Marketplace</li>
 </ul>
@@ -432,14 +229,14 @@ updated Visual C++ instructions for Windows and Python 3</li>
 <div class="section" id="version-0-4-7">
 <h2>Version 0.4.7<a class="headerlink" href="#version-0-4-7" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2018-01-19</p>
-<div class="section" id="id11">
-<h3>Bug Fixes<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id14">
+<h3>Bug Fixes<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fixing issue <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/137">#137</a> impacting the CLI</li>
 </ul>
 </div>
-<div class="section" id="id12">
-<h3>Build<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id15">
+<h3>Build<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Implemented authentication aliases (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/60">#60</a>)</li>
 </ul>
@@ -448,8 +245,8 @@ updated Visual C++ instructions for Windows and Python 3</li>
 <div class="section" id="version-0-4-6">
 <h2>Version 0.4.6<a class="headerlink" href="#version-0-4-6" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2018-01-18</p>
-<div class="section" id="id13">
-<h3>Bug Fixes<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id16">
+<h3>Bug Fixes<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fixed some Python3 issues</li>
 <li>Reading the trade log to get executed order prices on exchanges like Binance (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/151">#151</a>)</li>
@@ -459,8 +256,8 @@ updated Visual C++ instructions for Windows and Python 3</li>
 <li>Using Bitfinex instead of Poloniex to fetch btc_usdt benchmark (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/161">#161</a>)</li>
 </ul>
 </div>
-<div class="section" id="id14">
-<h3>Build<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id17">
+<h3>Build<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Added a <cite>context.state</cite> dict to keep arbitrary state values between runs</li>
 <li>Added ability to stop live algo at specified end date</li>
@@ -470,8 +267,8 @@ updated Visual C++ instructions for Windows and Python 3</li>
 <div class="section" id="version-0-4-5">
 <h2>Version 0.4.5<a class="headerlink" href="#version-0-4-5" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2018-01-12</p>
-<div class="section" id="id15">
-<h3>Bug Fixes<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id18">
+<h3>Bug Fixes<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Improved order execution for exchanges supporting trade lists (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/151">#151</a>)</li>
 <li>Fixed an issue where requesting history of multiple assets repeats values</li>
@@ -483,8 +280,8 @@ updated Visual C++ instructions for Windows and Python 3</li>
 <div class="section" id="version-0-4-4">
 <h2>Version 0.4.4<a class="headerlink" href="#version-0-4-4" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2018-01-09</p>
-<div class="section" id="id16">
-<h3>Bug Fixes<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id19">
+<h3>Bug Fixes<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Removed redundant capital_base validation (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/142">#142</a>)</li>
 <li>Fixed portfolio update issue with restored state (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/111">#111</a>)</li>
@@ -495,8 +292,8 @@ updated Visual C++ instructions for Windows and Python 3</li>
 <div class="section" id="version-0-4-3">
 <h2>Version 0.4.3<a class="headerlink" href="#version-0-4-3" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2018-01-05</p>
-<div class="section" id="id17">
-<h3>Bug Fixes<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id20">
+<h3>Bug Fixes<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fixed CLI issue (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/137">#137</a>)</li>
 <li>Upgraded CCXT</li>
@@ -506,8 +303,8 @@ updated Visual C++ instructions for Windows and Python 3</li>
 <div class="section" id="version-0-4-2">
 <h2>Version 0.4.2<a class="headerlink" href="#version-0-4-2" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2018-01-03</p>
-<div class="section" id="id18">
-<h3>Bug Fixes<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id21">
+<h3>Bug Fixes<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fixed cash synchronization issue (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/133">#133</a>)</li>
 <li>Fixed positions synchronization issue (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/132">#132</a>)</li>
@@ -517,8 +314,8 @@ updated Visual C++ instructions for Windows and Python 3</li>
 <li>Fixed a poloniex specific issue in live trading (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/103">#103</a>)</li>
 </ul>
 </div>
-<div class="section" id="id19">
-<h3>Build<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id22">
+<h3>Build<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Caching CCXT market info to limit round-trips (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/99">#99</a>)</li>
 <li>Tentative support for Pipeline (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/96">#96</a>)</li>
@@ -528,16 +325,16 @@ updated Visual C++ instructions for Windows and Python 3</li>
 <div class="section" id="version-0-4-0">
 <h2>Version 0.4.0<a class="headerlink" href="#version-0-4-0" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2017-12-12</p>
-<div class="section" id="id20">
-<h3>Bug Fixes<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id23">
+<h3>Bug Fixes<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Changed Poloniex interface (should solve <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/95">#95</a> and <a class="reference external" href="https://github.com/enigmampc/catalyst/issues/94">#94</a>)</li>
 <li>Solved issue with overriding commission and slippage (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/87">#87</a>)</li>
 <li>Fixed inefficiency with Bittrex current prices (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/76">#76</a>)</li>
 </ul>
 </div>
-<div class="section" id="id21">
-<h3>Build<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id24">
+<h3>Build<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Integrated with CCXT</li>
 <li>Added paper trading capability (<cite>simulate_orders=True</cite> param in live mode)</li>
@@ -549,8 +346,8 @@ updated Visual C++ instructions for Windows and Python 3</li>
 <h3>Version 0.3.10<a class="headerlink" href="#version-0-3-10" title="Permalink to this headline">¶</a></h3>
 <p><strong>Release Date</strong>: 2017-11-28</p>
 </div>
-<div class="section" id="id22">
-<h3>Bug Fixes<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id25">
+<h3>Bug Fixes<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fixed issue with fetching assets with daily frequency</li>
 </ul>
@@ -559,15 +356,15 @@ updated Visual C++ instructions for Windows and Python 3</li>
 <div class="section" id="version-0-3-9">
 <h2>Version 0.3.9<a class="headerlink" href="#version-0-3-9" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2017-11-28</p>
-<div class="section" id="id23">
-<h3>Bug Fixes<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id26">
+<h3>Bug Fixes<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fixed sortino warning issues (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/77">#77</a>)</li>
 <li>Adjusted computation of last candle of data.history (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/71">#71</a>)</li>
 </ul>
 </div>
-<div class="section" id="id24">
-<h3>Build<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id27">
+<h3>Build<a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Added capital_base parameter to live mode to limit cash (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/79">#79</a>)</li>
 <li>Added support for csv ingestion (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/65">#65</a>)</li>
@@ -578,8 +375,8 @@ updated Visual C++ instructions for Windows and Python 3</li>
 <div class="section" id="version-0-3-8">
 <h2>Version 0.3.8<a class="headerlink" href="#version-0-3-8" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2017-11-14</p>
-<div class="section" id="id25">
-<h3>Bug Fixes<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id28">
+<h3>Bug Fixes<a class="headerlink" href="#id28" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fixed a warning filter issue introduced with the latest release</li>
 </ul>
@@ -588,8 +385,8 @@ updated Visual C++ instructions for Windows and Python 3</li>
 <div class="section" id="version-0-3-7">
 <h2>Version 0.3.7<a class="headerlink" href="#version-0-3-7" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2017-11-14</p>
-<div class="section" id="id26">
-<h3>Bug Fixes<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id29">
+<h3>Bug Fixes<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fixed an SSL cert issue (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/64">#64</a>)</li>
 <li>Fixed cumulative stats warnings (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/63">#63</a>)</li>
@@ -597,8 +394,8 @@ updated Visual C++ instructions for Windows and Python 3</li>
 <li>Standardized live-trading stats (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/61">#61</a>)</li>
 </ul>
 </div>
-<div class="section" id="id27">
-<h3>Build<a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id30">
+<h3>Build<a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Added a mean-reversion sample algo</li>
 <li>Added minutely stats in the analyze() function (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/62">#62</a>)</li>
@@ -609,8 +406,8 @@ updated Visual C++ instructions for Windows and Python 3</li>
 <div class="section" id="version-0-3-6">
 <h2>Version 0.3.6<a class="headerlink" href="#version-0-3-6" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2017-11-4</p>
-<div class="section" id="id28">
-<h3>Bug Fixes<a class="headerlink" href="#id28" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id31">
+<h3>Bug Fixes<a class="headerlink" href="#id31" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fixed an issue with single bar data.history() (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/55">#55</a>)</li>
 </ul>
@@ -619,8 +416,8 @@ updated Visual C++ instructions for Windows and Python 3</li>
 <div class="section" id="version-0-3-5">
 <h2>Version 0.3.5<a class="headerlink" href="#version-0-3-5" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2017-11-4</p>
-<div class="section" id="id29">
-<h3>Bug Fixes<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id32">
+<h3>Bug Fixes<a class="headerlink" href="#id32" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Added workaround for: KeyError: Timestamp error (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/53">#53</a>)</li>
 </ul>
@@ -629,8 +426,8 @@ updated Visual C++ instructions for Windows and Python 3</li>
 <div class="section" id="version-0-3-4">
 <h2>Version 0.3.4<a class="headerlink" href="#version-0-3-4" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2017-11-2</p>
-<div class="section" id="id30">
-<h3>Bug Fixes<a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id33">
+<h3>Bug Fixes<a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fixed issue with auto-ingestion of minute data (<a class="reference external" href="https://github.com/enigmampc/catalyst/issues/47">#47</a>)</li>
 <li>Fixed issue with sell orders in backtesting</li>
@@ -640,14 +437,14 @@ updated Visual C++ instructions for Windows and Python 3</li>
 transactions</li>
 </ul>
 </div>
-<div class="section" id="id31">
-<h3>Build<a class="headerlink" href="#id31" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id34">
+<h3>Build<a class="headerlink" href="#id34" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Added more unit tests</li>
 </ul>
 </div>
-<div class="section" id="id32">
-<h3>Documentation<a class="headerlink" href="#id32" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id35">
+<h3>Documentation<a class="headerlink" href="#id35" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Improved installation notes for Windows C++ compiler and Conda</li>
 <li>Addition of
@@ -668,16 +465,16 @@ transactions</li>
 <div class="section" id="version-0-3-3">
 <h2>Version 0.3.3<a class="headerlink" href="#version-0-3-3" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2017-10-26</p>
-<div class="section" id="id34">
-<h3>Bug Fixes<a class="headerlink" href="#id34" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id37">
+<h3>Bug Fixes<a class="headerlink" href="#id37" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fix missing -x in ingest-exchange</li>
 <li>Fix issue with daily chunks end date (data bundles)</li>
 <li>Fix issue in the prepare_chunk logic (data bundles)</li>
 </ul>
 </div>
-<div class="section" id="id35">
-<h3>Build<a class="headerlink" href="#id35" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id38">
+<h3>Build<a class="headerlink" href="#id38" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Added data validation unit tests</li>
 </ul>
@@ -686,8 +483,8 @@ transactions</li>
 <div class="section" id="version-0-3-2">
 <h2>Version 0.3.2<a class="headerlink" href="#version-0-3-2" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2017-10-25</p>
-<div class="section" id="id36">
-<h3>Bug Fixes<a class="headerlink" href="#id36" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id39">
+<h3>Bug Fixes<a class="headerlink" href="#id39" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fix to work with empty data bundles</li>
 <li>Fix Windows path of <code class="docutils literal"><span class="pre">$HOME/.catalyst</span></code> folder</li>
@@ -696,8 +493,8 @@ transactions</li>
 <li>Fix an issue with asset date in chunks</li>
 </ul>
 </div>
-<div class="section" id="id37">
-<h3>Build<a class="headerlink" href="#id37" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id40">
+<h3>Build<a class="headerlink" href="#id40" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Python3 adjustments</li>
 <li>Added method to clean bundle folders, and remove symbols.json</li>
@@ -708,8 +505,8 @@ transactions</li>
 <div class="section" id="version-0-3-1">
 <h2>Version 0.3.1<a class="headerlink" href="#version-0-3-1" title="Permalink to this headline">¶</a></h2>
 <p><strong>Release Date</strong>: 2017-10-22</p>
-<div class="section" id="id38">
-<h3>Bug Fixes<a class="headerlink" href="#id38" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id41">
+<h3>Bug Fixes<a class="headerlink" href="#id41" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fixed OS-dependent path issue in data bundle</li>
 <li>Changed handling of empty <code class="docutils literal"><span class="pre">auth.json</span></code>, instead of throwing an error for
@@ -829,73 +626,192 @@ exchange directly</li>
 </div>
 
 
-           </div>
-           <div class="articleComments">
-            
-           </div>
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-      
-        <a href="development-guidelines.html" class="btn btn-neutral" title="Development Guidelines" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
-    </div>
-  
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>
-        &copy; Copyright 2018, Enigma MPC, Inc..
-
-    </p>
-  </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
-
-</footer>
-
         </div>
       </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Release Notes</a><ul>
+<li><a class="reference internal" href="#version-0-5-9">Version 0.5.9</a><ul>
+<li><a class="reference internal" href="#documentation">Documentation</a></li>
+<li><a class="reference internal" href="#bug-fixes">Bug Fixes</a></li>
+<li><a class="reference internal" href="#build">Build</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-5-8">Version 0.5.8</a><ul>
+<li><a class="reference internal" href="#id1">Bug Fixes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-5-7">Version 0.5.7</a><ul>
+<li><a class="reference internal" href="#id2">Build</a></li>
+<li><a class="reference internal" href="#id3">Bug Fixes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-5-6">Version 0.5.6</a><ul>
+<li><a class="reference internal" href="#id4">Build</a></li>
+<li><a class="reference internal" href="#id5">Bug Fixes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-5-5">Version 0.5.5</a><ul>
+<li><a class="reference internal" href="#id6">Bug Fixes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-5-4">Version 0.5.4</a><ul>
+<li><a class="reference internal" href="#id7">Build</a></li>
+<li><a class="reference internal" href="#id8">Bug Fixes</a></li>
+<li><a class="reference internal" href="#id9">Documentation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-5-3">Version 0.5.3</a><ul>
+<li><a class="reference internal" href="#id10">Bug Fixes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-5-2">Version 0.5.2</a><ul>
+<li><a class="reference internal" href="#id11">Bug Fixes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-5-1">Version 0.5.1</a><ul>
+<li><a class="reference internal" href="#id12">Bug Fixes</a></li>
+<li><a class="reference internal" href="#id13">Build</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-4-7">Version 0.4.7</a><ul>
+<li><a class="reference internal" href="#id14">Bug Fixes</a></li>
+<li><a class="reference internal" href="#id15">Build</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-4-6">Version 0.4.6</a><ul>
+<li><a class="reference internal" href="#id16">Bug Fixes</a></li>
+<li><a class="reference internal" href="#id17">Build</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-4-5">Version 0.4.5</a><ul>
+<li><a class="reference internal" href="#id18">Bug Fixes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-4-4">Version 0.4.4</a><ul>
+<li><a class="reference internal" href="#id19">Bug Fixes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-4-3">Version 0.4.3</a><ul>
+<li><a class="reference internal" href="#id20">Bug Fixes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-4-2">Version 0.4.2</a><ul>
+<li><a class="reference internal" href="#id21">Bug Fixes</a></li>
+<li><a class="reference internal" href="#id22">Build</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-4-0">Version 0.4.0</a><ul>
+<li><a class="reference internal" href="#id23">Bug Fixes</a></li>
+<li><a class="reference internal" href="#id24">Build</a></li>
+<li><a class="reference internal" href="#version-0-3-10">Version 0.3.10</a></li>
+<li><a class="reference internal" href="#id25">Bug Fixes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-3-9">Version 0.3.9</a><ul>
+<li><a class="reference internal" href="#id26">Bug Fixes</a></li>
+<li><a class="reference internal" href="#id27">Build</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-3-8">Version 0.3.8</a><ul>
+<li><a class="reference internal" href="#id28">Bug Fixes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-3-7">Version 0.3.7</a><ul>
+<li><a class="reference internal" href="#id29">Bug Fixes</a></li>
+<li><a class="reference internal" href="#id30">Build</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-3-6">Version 0.3.6</a><ul>
+<li><a class="reference internal" href="#id31">Bug Fixes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-3-5">Version 0.3.5</a><ul>
+<li><a class="reference internal" href="#id32">Bug Fixes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-3-4">Version 0.3.4</a><ul>
+<li><a class="reference internal" href="#id33">Bug Fixes</a></li>
+<li><a class="reference internal" href="#id34">Build</a></li>
+<li><a class="reference internal" href="#id35">Documentation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-3-3">Version 0.3.3</a><ul>
+<li><a class="reference internal" href="#id37">Bug Fixes</a></li>
+<li><a class="reference internal" href="#id38">Build</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-3-2">Version 0.3.2</a><ul>
+<li><a class="reference internal" href="#id39">Bug Fixes</a></li>
+<li><a class="reference internal" href="#id40">Build</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-3-1">Version 0.3.1</a><ul>
+<li><a class="reference internal" href="#id41">Bug Fixes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-3">Version 0.3</a></li>
+<li><a class="reference internal" href="#version-0-2-dev5">Version 0.2.dev5</a></li>
+<li><a class="reference internal" href="#version-0-2-dev4">Version 0.2.dev4</a></li>
+<li><a class="reference internal" href="#version-0-2-dev3">Version 0.2.dev3</a></li>
+<li><a class="reference internal" href="#version-0-2-dev2">Version 0.2.dev2</a></li>
+<li><a class="reference internal" href="#version-0-2-dev1">Version 0.2.dev1</a></li>
+<li><a class="reference internal" href="#version-0-1-dev9">Version 0.1.dev9</a></li>
+<li><a class="reference internal" href="#version-0-1-dev8">Version 0.1.dev8</a></li>
+<li><a class="reference internal" href="#version-0-1-dev7">Version 0.1.dev7</a></li>
+<li><a class="reference internal" href="#version-0-1-dev6">Version 0.1.dev6</a></li>
+</ul>
+</li>
+</ul>
 
-    </section>
-
-  </div>
-  
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'0.4',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
-
-  
-  
-  <script type="text/javascript">
-      jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
-      });
-  </script>
-   
-
-</body>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="development-guidelines.html"
+                        title="previous chapter">Development Guidelines</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="appendix.html"
+                        title="next chapter">API Reference</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/releases.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="appendix.html" title="API Reference"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="development-guidelines.html" title="Development Guidelines"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Catalyst 0.5.9 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Enigma MPC, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
+    </div>
+  </body>
 </html>

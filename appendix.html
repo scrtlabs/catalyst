@@ -1,167 +1,53 @@
 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-<!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
-<head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>API Reference &mdash; Catalyst 0.4 documentation</title>
-  
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>API Reference &#8212; Catalyst 0.5.9 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.5.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Release Notes" href="releases.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="releases.html" title="Release Notes"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Catalyst 0.5.9 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
 
-  
-  
-  
-  
-
-  
-
-  
-  
-    
-
-  
-
-  
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="Catalyst 0.4 documentation" href="index.html"/> 
-
-  
-  <script src="_static/js/modernizr.min.js"></script>
-
-</head>
-
-<body class="wy-body-for-nav" role="document">
-
-   
-  <div class="wy-grid-for-nav">
-
-    
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
-          
-
-          
-            <a href="index.html" class="icon icon-home"> Catalyst
-          
-
-          
-          </a>
-
-          
-            
-            
-          
-
-          
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
-              <ul>
-<li class="toctree-l1"><a class="reference internal" href="install.html">Install</a></li>
-<li class="toctree-l1"><a class="reference internal" href="beginner-tutorial.html">Catalyst Beginner Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="live-trading.html">Live Trading</a></li>
-<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
-<li class="toctree-l1"><a class="reference internal" href="example-algos.html">Example Algorithms</a></li>
-<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
-<li class="toctree-l1"><a class="reference internal" href="videos.html">Videos</a></li>
-<li class="toctree-l1"><a class="reference internal" href="resources.html">Resources</a></li>
-<li class="toctree-l1"><a class="reference internal" href="development-guidelines.html">Development Guidelines</a></li>
-<li class="toctree-l1"><a class="reference internal" href="releases.html">Release Notes</a></li>
-</ul>
-
-            
-          
-        </div>
-      </div>
-    </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">Catalyst</a>
-        
-      </nav>
-
-
-      
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
-  <ul class="wy-breadcrumbs">
-    
-      <li><a href="index.html">Docs</a> &raquo;</li>
-        
-      <li>API Reference</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
-        
-            
-            <a href="_sources/appendix.rst.txt" rel="nofollow"> View page source</a>
-          
-        
-      </li>
-    
-  </ul>
-
-  
-  <hr/>
-</div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
             
   <div class="section" id="api-reference">
 <h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="running-a-backtest">
-<h2>Running a Backtest<a class="headerlink" href="#running-a-backtest" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="running-a-strategy">
+<h2>Running a Strategy<a class="headerlink" href="#running-a-strategy" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="catalyst.run_algorithm">
 <code class="descclassname">catalyst.</code><code class="descname">run_algorithm</code><span class="sig-paren">(</span><em>...</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/run_algo.html#run_algorithm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.run_algorithm" title="Permalink to this definition">¶</a></dt>
@@ -170,106 +56,116 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>start</strong> : datetime</p>
-<blockquote>
-<div><p>The start date of the backtest.</p>
-</div></blockquote>
-<p><strong>end</strong> : datetime</p>
-<blockquote>
-<div><p>The end date of the backtest..</p>
-</div></blockquote>
-<p><strong>initialize</strong> : callable[context -&gt; None]</p>
-<blockquote>
-<div><p>The initialize function to use for the algorithm. This is called once
-at the very begining of the backtest and should be used to set up
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>capital_base</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The starting capital for the backtest.</p>
+</dd>
+<dt><strong>start</strong> <span class="classifier-delimiter">:</span> <span class="classifier">datetime</span></dt>
+<dd><p class="first last">The start date of the backtest.</p>
+</dd>
+<dt><strong>end</strong> <span class="classifier-delimiter">:</span> <span class="classifier">datetime</span></dt>
+<dd><p class="first last">The end date of the backtest..</p>
+</dd>
+<dt><strong>initialize</strong> <span class="classifier-delimiter">:</span> <span class="classifier">callable[context -&gt; None]</span></dt>
+<dd><p class="first last">The initialize function to use for the algorithm. This is called once
+at the very beginning of the run and should be used to set up
 any state needed by the algorithm.</p>
-</div></blockquote>
-<p><strong>capital_base</strong> : float</p>
-<blockquote>
-<div><p>The starting capital for the backtest.</p>
-</div></blockquote>
-<p><strong>handle_data</strong> : callable[(context, BarData) -&gt; None], optional</p>
-<blockquote>
-<div><p>The handle_data function to use for the algorithm. This is called
+</dd>
+<dt><strong>handle_data</strong> <span class="classifier-delimiter">:</span> <span class="classifier">callable[(context, BarData) -&gt; None], optional</span></dt>
+<dd><p class="first last">The handle_data function to use for the algorithm. This is called
 every minute when <code class="docutils literal"><span class="pre">data_frequency</span> <span class="pre">==</span> <span class="pre">'minute'</span></code> or every day
 when <code class="docutils literal"><span class="pre">data_frequency</span> <span class="pre">==</span> <span class="pre">'daily'</span></code>.</p>
-</div></blockquote>
-<p><strong>before_trading_start</strong> : callable[(context, BarData) -&gt; None], optional</p>
-<blockquote>
-<div><p>The before_trading_start function for the algorithm. This is called
+</dd>
+<dt><strong>before_trading_start</strong> <span class="classifier-delimiter">:</span> <span class="classifier">callable[(context, BarData) -&gt; None], optional</span></dt>
+<dd><p class="first last">The before_trading_start function for the algorithm. This is called
 once before each trading day (after initialize on the first day).</p>
-</div></blockquote>
-<p><strong>analyze</strong> : callable[(context, pd.DataFrame) -&gt; None], optional</p>
-<blockquote>
-<div><p>The analyze function to use for the algorithm. This function is called
-once at the end of the backtest and is passed the context and the
+</dd>
+<dt><strong>analyze</strong> <span class="classifier-delimiter">:</span> <span class="classifier">callable[(context, pd.DataFrame) -&gt; None], optional</span></dt>
+<dd><p class="first last">The analyze function to use for the algorithm. This function is called
+once at the end of the backtest/live run and is passed the context and the
 performance data.</p>
-</div></blockquote>
-<p><strong>data_frequency</strong> : {‘daily’, ‘minute’}, optional</p>
-<blockquote>
-<div><p>The data frequency to run the algorithm at.</p>
-</div></blockquote>
-<p><strong>data</strong> : pd.DataFrame, pd.Panel, or DataPortal, optional</p>
-<blockquote>
-<div><p>The ohlcv data to run the backtest with.
+</dd>
+<dt><strong>data_frequency</strong> <span class="classifier-delimiter">:</span> <span class="classifier">{‘daily’, ‘minute’}, optional</span></dt>
+<dd><p class="first last">The data frequency to run the algorithm at.
+At backtest both modes are supported, at live mode only the minute mode is supported.</p>
+</dd>
+<dt><strong>data</strong> <span class="classifier-delimiter">:</span> <span class="classifier">pd.DataFrame, pd.Panel, or DataPortal, optional</span></dt>
+<dd><p class="first last">The ohlcv data to run the backtest with.
 This argument is mutually exclusive with:
 <code class="docutils literal"><span class="pre">bundle</span></code>
 <code class="docutils literal"><span class="pre">bundle_timestamp</span></code></p>
-</div></blockquote>
-<p><strong>bundle</strong> : str, optional</p>
-<blockquote>
-<div><p>The name of the data bundle to use to load the data to run the backtest
-with. This defaults to ‘quantopian-quandl’.
+</dd>
+<dt><strong>bundle</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
+<dd><p class="first last">The name of the data bundle to use to load the data to run the backtest
+with.
 This argument is mutually exclusive with <code class="docutils literal"><span class="pre">data</span></code>.</p>
-</div></blockquote>
-<p><strong>bundle_timestamp</strong> : datetime, optional</p>
-<blockquote>
-<div><p>The datetime to lookup the bundle data for. This defaults to the
+</dd>
+<dt><strong>bundle_timestamp</strong> <span class="classifier-delimiter">:</span> <span class="classifier">datetime, optional</span></dt>
+<dd><p class="first last">The datetime to lookup the bundle data for. This defaults to the
 current time.
 This argument is mutually exclusive with <code class="docutils literal"><span class="pre">data</span></code>.</p>
-</div></blockquote>
-<p><strong>default_extension</strong> : bool, optional</p>
-<blockquote>
-<div><p>Should the default catalyst extension be loaded. This is found at
+</dd>
+<dt><strong>default_extension</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Should the default catalyst extension be loaded. This is found at
 <code class="docutils literal"><span class="pre">$CATALYST_ROOT/extension.py</span></code></p>
-</div></blockquote>
-<p><strong>extensions</strong> : iterable[str], optional</p>
-<blockquote>
-<div><p>The names of any other extensions to load. Each element may either be
+</dd>
+<dt><strong>extensions</strong> <span class="classifier-delimiter">:</span> <span class="classifier">iterable[str], optional</span></dt>
+<dd><p class="first last">The names of any other extensions to load. Each element may either be
 a dotted module path like <code class="docutils literal"><span class="pre">a.b.c</span></code> or a path to a python file ending
 in <code class="docutils literal"><span class="pre">.py</span></code> like <code class="docutils literal"><span class="pre">a/b/c.py</span></code>.</p>
-</div></blockquote>
-<p><strong>strict_extensions</strong> : bool, optional</p>
-<blockquote>
-<div><p>Should the run fail if any extensions fail to load. If this is false,
+</dd>
+<dt><strong>strict_extensions</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Should the run fail if any extensions fail to load. If this is false,
 a warning will be raised instead.</p>
-</div></blockquote>
-<p><strong>environ</strong> : mapping[str -&gt; str], optional</p>
-<blockquote>
-<div><p>The os environment to use. Many extensions use this to get parameters.
+</dd>
+<dt><strong>environ</strong> <span class="classifier-delimiter">:</span> <span class="classifier">mapping[str -&gt; str], optional</span></dt>
+<dd><p class="first last">The os environment to use. Many extensions use this to get parameters.
 This defaults to <code class="docutils literal"><span class="pre">os.environ</span></code>.</p>
-</div></blockquote>
-<p><strong>live</strong> : bool, optional</p>
-<blockquote>
-<div><p>Execute algorithm in live trading mode.</p>
-</div></blockquote>
+</dd>
+<dt><strong>live</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Should the algorithm be executed in live trading mode.</p>
+</dd>
+<dt><strong>exchange_name: str</strong></dt>
+<dd><p class="first last">The name of the exchange to be used in the backtest/live run.</p>
+</dd>
+<dt><strong>base_currency: str</strong></dt>
+<dd><p class="first last">The base currency to be used in the backtest/live run.</p>
+</dd>
+<dt><strong>algo_namespace: str</strong></dt>
+<dd><p class="first last">The namespace of the algorithm.</p>
+</dd>
+<dt><strong>live_graph: bool, optional</strong></dt>
+<dd><p class="first last">Should the live graph clock be used instead of the regular clock.</p>
+</dd>
+<dt><strong>analyze_live: callable[(context, pd.DataFrame) -&gt; None], optional</strong></dt>
+<dd><p class="first last">The interactive analyze function to be used with the live graph clock in every tick.</p>
+</dd>
+<dt><strong>simulate_orders: bool, optional</strong></dt>
+<dd><p class="first last">Should paper trading mode be applied.</p>
+</dd>
+<dt><strong>auth_aliases: str, optional</strong></dt>
+<dd><p class="first last">Rewrite the auth file name. It should contain an even list
+of comma-delimited values. For example: “binance,auth2,bittrex,auth2”</p>
+</dd>
+<dt><strong>stats_output: str, optional</strong></dt>
+<dd><p class="first last">The URI of the S3 bucket to which to upload the performance stats.</p>
+</dd>
+<dt><strong>output: str, optional</strong></dt>
+<dd><p class="first last">The output file path to which the algorithm performance
+is serialized.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>perf</strong> : pd.DataFrame</p>
-<blockquote class="last">
-<div><p>The daily performance of the algorithm.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>perf</strong> <span class="classifier-delimiter">:</span> <span class="classifier">pd.DataFrame</span></dt>
+<dd><p class="first last">The daily performance of the algorithm.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
 </table>
-<div class="admonition seealso">
-<p class="first admonition-title">See also</p>
-<dl class="last docutils">
-<dt><code class="xref py py-obj docutils literal"><span class="pre">catalyst.data.bundles.bundles</span></code></dt>
-<dd>The available data bundles.</dd>
-</dl>
-</div>
 </dd></dl>
 
 </div>
@@ -292,98 +188,84 @@ has recent trade data, etc.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>data_portal</strong> : DataPortal</p>
-<blockquote>
-<div><p>Provider for bar pricing data.</p>
-</div></blockquote>
-<p><strong>simulation_dt_func</strong> : callable</p>
-<blockquote>
-<div><p>Function which returns the current simulation time.
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>data_portal</strong> <span class="classifier-delimiter">:</span> <span class="classifier">DataPortal</span></dt>
+<dd><p class="first last">Provider for bar pricing data.</p>
+</dd>
+<dt><strong>simulation_dt_func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">callable</span></dt>
+<dd><p class="first last">Function which returns the current simulation time.
 This is usually bound to a method of TradingSimulation.</p>
-</div></blockquote>
-<p><strong>data_frequency</strong> : {‘minute’, ‘daily’}</p>
-<blockquote>
-<div><p>The frequency of the bar data; i.e. whether the data is
+</dd>
+<dt><strong>data_frequency</strong> <span class="classifier-delimiter">:</span> <span class="classifier">{‘minute’, ‘daily’}</span></dt>
+<dd><p class="first last">The frequency of the bar data; i.e. whether the data is
 daily or minute bars</p>
-</div></blockquote>
-<p><strong>restrictions</strong> : catalyst.finance.asset_restrictions.Restrictions</p>
-<blockquote>
-<div><p>Object that combines and returns restricted list information from
+</dd>
+<dt><strong>restrictions</strong> <span class="classifier-delimiter">:</span> <span class="classifier">catalyst.finance.asset_restrictions.Restrictions</span></dt>
+<dd><p class="first last">Object that combines and returns restricted list information from
 multiple sources</p>
-</div></blockquote>
-<p><strong>universe_func</strong> : callable, optional</p>
-<blockquote class="last">
-<div><p>Function which returns the current ‘universe’.  This is for
+</dd>
+<dt><strong>universe_func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">callable, optional</span></dt>
+<dd><p class="first last">Function which returns the current ‘universe’.  This is for
 backwards compatibility with older API concepts.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
 </table>
-<dl class="method">
+<dl class="attribute">
 <dt id="catalyst.protocol.BarData.can_trade">
-<code class="descname">can_trade</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#catalyst.protocol.BarData.can_trade" title="Permalink to this definition">¶</a></dt>
+<code class="descname">can_trade</code><a class="headerlink" href="#catalyst.protocol.BarData.can_trade" title="Permalink to this definition">¶</a></dt>
 <dd><p>For the given asset or iterable of assets, returns true if all of the
 following are true:
-1) the asset is alive for the session of the current simulation time</p>
-<blockquote>
-<div>(if current simulation time is not a market minute, we use the next
-session)</div></blockquote>
-<ol class="arabic simple" start="2">
-<li>(if we are in minute mode) the asset’s exchange is open at the</li>
-</ol>
-<blockquote>
-<div>current simulation time or at the simulation calendar’s next market
-minute</div></blockquote>
-<ol class="arabic simple" start="3">
-<li>there is a known last price for the asset.</li>
-</ol>
+1) the asset is alive for the session of the current simulation time (if current simulation
+time is not a market minute, we use the next session)
+2) there is a known last price for the asset.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>assets: Asset or iterable of assets</strong></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>assets: Asset or iterable of assets</strong></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>can_trade</strong> : bool or pd.Series[bool] indexed by asset.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>can_trade</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool or pd.Series[bool] indexed by asset.</span></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
-<p class="rubric">Notes</p>
-<p>The second condition above warrants some further explanation.
-- If the asset’s exchange calendar is identical to the simulation
-calendar, then this condition always returns True.
-- If there are market minutes in the simulation calendar outside of
-this asset’s exchange’s trading hours (for example, if the simulation
-is running on the CME calendar but the asset is MSFT, which trades on
-the NYSE), during those minutes, this condition will return false
-(for example, 3:15 am Eastern on a weekday, during which the CME is
-open but the NYSE is closed).</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="attribute">
 <dt id="catalyst.protocol.BarData.current">
-<code class="descname">current</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#catalyst.protocol.BarData.current" title="Permalink to this definition">¶</a></dt>
+<code class="descname">current</code><a class="headerlink" href="#catalyst.protocol.BarData.current" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the current value of the given assets for the given fields
-at the current simulation time.  Current values are the as-traded price
-and are usually not adjusted for events like splits or dividends (see
-notes for more information).</p>
+at the current simulation time.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>assets</strong> : Asset or iterable of Assets</p>
-<p><strong>fields</strong> : str or iterable[str].</p>
-<blockquote>
-<div><p>Valid values are: “price”,
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>assets</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Asset or iterable of Assets</span></dt>
+<dd></dd>
+<dt><strong>fields</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str or iterable[str].</span></dt>
+<dd><p class="first last">Valid values are: “price”,
 “last_traded”, “open”, “high”, “low”, “close”, “volume”, or column
 names in files read by <code class="docutils literal"><span class="pre">fetch_csv</span></code>.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>current_value</strong> : Scalar, pandas Series, or pandas DataFrame.</p>
-<blockquote class="last">
-<div><p>See notes below.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>current_value</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Scalar, pandas Series, or pandas DataFrame.</span></dt>
+<dd><p class="first last">See notes below.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -404,43 +286,50 @@ fields, filled with the scalar values for each asset for each field.</p>
 last market close instead.</p>
 <p>“price” returns the last known close price of the asset.  If there is
 no last known value (either because the asset has never traded, or
-because it has delisted) NaN is returned.  If a value is found, and we
-had to cross an adjustment boundary (split, dividend, etc) to get it,
-the value is adjusted before being returned.</p>
+because it has delisted) NaN is returned.</p>
 <p>“last_traded” returns the date of the last trade event of the asset,
 even if the asset has stopped trading. If there is no last known value,
 pd.NaT is returned.</p>
-<p>“volume” returns the trade volume for the current simulation time.  If
+<p>In backtest mode, “volume” returns the trade volume for the current simulation time.  If
 there is no trade this minute, 0 is returned.</p>
 <p>“open”, “high”, “low”, and “close” return the relevant information for
 the current trade bar.  If there is no current trade bar, NaN is
 returned.</p>
+<p>In live mode, “volume” returns the last 24 hour trading volume.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="attribute">
 <dt id="catalyst.protocol.BarData.history">
-<code class="descname">history</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#catalyst.protocol.BarData.history" title="Permalink to this definition">¶</a></dt>
+<code class="descname">history</code><a class="headerlink" href="#catalyst.protocol.BarData.history" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a window of data for the given assets and fields.</p>
-<p>This data is adjusted for splits, dividends, and mergers as of the
-current algorithm time.</p>
+<p>The label of each candle is left-bound. This means that for example, in case of 5 minute candles,
+the candle of 00:00:00 will hold the data between 00:00:00 and 00:04:59.</p>
+<p>In minute mode, both in live and backtest, the last candle will almost always
+be a partial one. For example, if the current time is 00:02:00 then the last 5 minute candle
+with 00:00:00 timestamp will hold data between 00:00:00 and 00:01:59.</p>
 <p>The semantics of missing data are identical to the ones described in
 the notes for <cite>get_spot_value</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>assets: Asset or iterable of Asset</strong></p>
-<p><strong>fields: string or iterable of string.  Valid values are “open”, “high”,</strong></p>
-<blockquote>
-<div><p>“low”, “close”, “volume”, “price”, and “last_traded”.</p>
-</div></blockquote>
-<p><strong>bar_count: integer number of bars of trade data</strong></p>
-<p><strong>frequency: string. “1m” for minutely data or “1d” for daily date</strong></p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>assets: Asset or iterable of Asset</strong></dt>
+<dd></dd>
+<dt><strong>fields: string or iterable of string.  Valid values are “open”, “high”,</strong></dt>
+<dd><p class="first last">“low”, “close”, “volume”, “price”, and “last_traded”.</p>
+</dd>
+<dt><strong>bar_count: integer number of bars of trade data</strong></dt>
+<dd></dd>
+<dt><strong>frequency: string. “T” for minutely data, “D” for daily date,</strong></dt>
+<dd><p class="first last">“H” for hourly data</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>history</strong> : Series or DataFrame or Panel</p>
-<blockquote class="last">
-<div><p>Return type depends on the dimensionality of the ‘assets’ and
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>history</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Series or DataFrame or Panel</span></dt>
+<dd><p class="first">Return type depends on the dimensionality of the ‘assets’ and
 ‘fields’ parameters.</p>
 <p>If single asset and field are passed in, the returned Series is
 indexed by dt.</p>
@@ -448,22 +337,20 @@ indexed by dt.</p>
 DataFrame is indexed by dt, and has assets as columns.</p>
 <p>If a single asset and multiple fields are passed in, the returned
 DataFrame is indexed by dt, and has fields as columns.</p>
-<p>If multiple assets and multiple fields are passed in, the returned
+<p class="last">If multiple assets and multiple fields are passed in, the returned
 Panel is indexed by field, has dt as the major axis, and assets
 as the minor axis.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
 </table>
-<p class="rubric">Notes</p>
-<p>If the current simulation time is not a valid market time, we use the
-last market close instead.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="attribute">
 <dt id="catalyst.protocol.BarData.is_stale">
-<code class="descname">is_stale</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#catalyst.protocol.BarData.is_stale" title="Permalink to this definition">¶</a></dt>
+<code class="descname">is_stale</code><a class="headerlink" href="#catalyst.protocol.BarData.is_stale" title="Permalink to this definition">¶</a></dt>
 <dd><p>For the given asset or iterable of assets, returns true if the asset
 is alive and there is no trade data for the current simulation time.</p>
 <p>If the asset has never traded, returns False.</p>
@@ -474,9 +361,17 @@ market minute/day for the trade data check.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>assets: Asset or iterable of assets</strong></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>assets: Asset or iterable of assets</strong></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">boolean or Series of booleans, indexed by asset.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>boolean or Series of booleans, indexed by asset.</strong></dt>
+<dd></dd>
+</dl>
+</td>
 </tr>
 </tbody>
 </table>
@@ -495,26 +390,23 @@ market minute/day for the trade data check.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>func</strong> : callable[(context, data) -&gt; None]</p>
-<blockquote>
-<div><p>The function to execute when the rule is triggered.</p>
-</div></blockquote>
-<p><strong>date_rule</strong> : EventRule, optional</p>
-<blockquote>
-<div><p>The rule for the dates to execute this function.</p>
-</div></blockquote>
-<p><strong>time_rule</strong> : EventRule, optional</p>
-<blockquote>
-<div><p>The rule for the times to execute this function.</p>
-</div></blockquote>
-<p><strong>half_days</strong> : bool, optional</p>
-<blockquote>
-<div><p>Should this rule fire on half days?</p>
-</div></blockquote>
-<p><strong>calendar</strong> : Sentinel, optional</p>
-<blockquote class="last">
-<div><p>Calendar used to reconcile date and time rules.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">callable[(context, data) -&gt; None]</span></dt>
+<dd><p class="first last">The function to execute when the rule is triggered.</p>
+</dd>
+<dt><strong>date_rule</strong> <span class="classifier-delimiter">:</span> <span class="classifier">EventRule, optional</span></dt>
+<dd><p class="first last">The rule for the dates to execute this function.</p>
+</dd>
+<dt><strong>time_rule</strong> <span class="classifier-delimiter">:</span> <span class="classifier">EventRule, optional</span></dt>
+<dd><p class="first last">The rule for the times to execute this function.</p>
+</dd>
+<dt><strong>half_days</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Should this rule fire on half days?</p>
+</dd>
+<dt><strong>calendar</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Sentinel, optional</span></dt>
+<dd><p class="first last">Calendar used to reconcile date and time rules.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -590,35 +482,33 @@ market minute/day for the trade data check.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>asset</strong> : Asset</p>
-<blockquote>
-<div><p>The asset that this order is for.</p>
-</div></blockquote>
-<p><strong>amount</strong> : int</p>
-<blockquote>
-<div><p>The amount of shares to order. If <code class="docutils literal"><span class="pre">amount</span></code> is positive, this is
-the number of shares to buy or cover. If <code class="docutils literal"><span class="pre">amount</span></code> is negative,
-this is the number of shares to sell or short.</p>
-</div></blockquote>
-<p><strong>limit_price</strong> : float, optional</p>
-<blockquote>
-<div><p>The limit price for the order.</p>
-</div></blockquote>
-<p><strong>stop_price</strong> : float, optional</p>
-<blockquote>
-<div><p>The stop price for the order.</p>
-</div></blockquote>
-<p><strong>style</strong> : ExecutionStyle, optional</p>
-<blockquote>
-<div><p>The execution style for the order.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>asset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Asset</span></dt>
+<dd><p class="first last">The asset/TradingPair that this order is for.</p>
+</dd>
+<dt><strong>amount</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">The amount of currency to order. If <code class="docutils literal"><span class="pre">amount</span></code> is positive, this is
+the number of <code class="docutils literal"><span class="pre">market_currency</span></code> (the first asset in the pair) to buy. If <code class="docutils literal"><span class="pre">amount</span></code> is negative,
+this is the number of <code class="docutils literal"><span class="pre">market_currency</span></code> to sell (buy <code class="docutils literal"><span class="pre">base_currency</span></code>).</p>
+</dd>
+<dt><strong>limit_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The limit price for the order.</p>
+</dd>
+<dt><strong>stop_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The stop price for the order.</p>
+</dd>
+<dt><strong>style</strong> <span class="classifier-delimiter">:</span> <span class="classifier">ExecutionStyle, optional</span></dt>
+<dd><p class="first last">The execution style for the order.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>order_id</strong> : str or None</p>
-<blockquote class="last">
-<div><p>The unique identifier for this order, or None if no order was
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>order_id</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str or None</span></dt>
+<dd><p class="first last">The unique identifier for this order, or None if no order was
 placed.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -635,48 +525,46 @@ equivalent to <code class="docutils literal"><span class="pre">style=LimitOrder(
 <code class="docutils literal"><span class="pre">limit_price=N</span></code> and <code class="docutils literal"><span class="pre">stop_price=M</span></code> is equivalent to
 <code class="docutils literal"><span class="pre">style=StopLimitOrder(N,</span> <span class="pre">M)</span></code>. It is an error to pass both a <code class="docutils literal"><span class="pre">style</span></code>
 and <code class="docutils literal"><span class="pre">limit_price</span></code> or <code class="docutils literal"><span class="pre">stop_price</span></code>.</p>
+<p>Currently, orders must be done only with one <code class="docutils literal"><span class="pre">base_currency</span></code>
+throughout all the algorithm.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="catalyst.api.order_value">
 <code class="descclassname">catalyst.api.</code><code class="descname">order_value</code><span class="sig-paren">(</span><em>self</em>, <em>asset</em>, <em>value</em>, <em>limit_price=None</em>, <em>stop_price=None</em>, <em>style=None</em><span class="sig-paren">)</span><a class="headerlink" href="#catalyst.api.order_value" title="Permalink to this definition">¶</a></dt>
-<dd><p>Place an order by desired value rather than desired number of
-shares.</p>
+<dd><p>Place an order by <code class="docutils literal"><span class="pre">base_currency</span></code> value rather than desired number of
+<code class="docutils literal"><span class="pre">market_currency</span></code> wanted.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>asset</strong> : Asset</p>
-<blockquote>
-<div><p>The asset that this order is for.</p>
-</div></blockquote>
-<p><strong>value</strong> : float</p>
-<blockquote>
-<div><p>If the requested asset exists, the requested value is
-divided by its price to imply the number of shares to transact.
-If the Asset being ordered is a Future, the ‘value’ calculated
-is actually the exposure, as Futures have no ‘value’.</p>
-<p>value &gt; 0 :: Buy/Cover
-value &lt; 0 :: Sell/Short</p>
-</div></blockquote>
-<p><strong>limit_price</strong> : float, optional</p>
-<blockquote>
-<div><p>The limit price for the order.</p>
-</div></blockquote>
-<p><strong>stop_price</strong> : float, optional</p>
-<blockquote>
-<div><p>The stop price for the order.</p>
-</div></blockquote>
-<p><strong>style</strong> : ExecutionStyle</p>
-<blockquote>
-<div><p>The execution style for the order.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>asset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">TradingPair</span></dt>
+<dd><p class="first last">The TradingPair that this order is for.</p>
+</dd>
+<dt><strong>value</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first">If the requested tradingPair exists, the requested value is
+divided by its price to imply the number of currency to transact.</p>
+<p class="last">value &gt; 0 :: Buy/Cover
+value &lt; 0 :: Sell</p>
+</dd>
+<dt><strong>limit_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The limit price for the order.</p>
+</dd>
+<dt><strong>stop_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The stop price for the order.</p>
+</dd>
+<dt><strong>style</strong> <span class="classifier-delimiter">:</span> <span class="classifier">ExecutionStyle</span></dt>
+<dd><p class="first last">The execution style for the order.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>order_id</strong> : str</p>
-<blockquote class="last">
-<div><p>The unique identifier for this order.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>order_id</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The unique identifier for this order.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -693,39 +581,37 @@ value &lt; 0 :: Sell/Short</p>
 <dl class="function">
 <dt id="catalyst.api.order_percent">
 <code class="descclassname">catalyst.api.</code><code class="descname">order_percent</code><span class="sig-paren">(</span><em>self</em>, <em>asset</em>, <em>percent</em>, <em>limit_price=None</em>, <em>stop_price=None</em>, <em>style=None</em><span class="sig-paren">)</span><a class="headerlink" href="#catalyst.api.order_percent" title="Permalink to this definition">¶</a></dt>
-<dd><p>Place an order in the specified asset corresponding to the given
+<dd><p>Place an order in the specified tradingPair corresponding to the given
 percent of the current portfolio value.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>asset</strong> : Asset</p>
-<blockquote>
-<div><p>The asset that this order is for.</p>
-</div></blockquote>
-<p><strong>percent</strong> : float</p>
-<blockquote>
-<div><p>The percentage of the porfolio value to allocate to <code class="docutils literal"><span class="pre">asset</span></code>.
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>asset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">TradingPair</span></dt>
+<dd><p class="first last">The tradingPair that this order is for.</p>
+</dd>
+<dt><strong>percent</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The percentage of the portfolio value to allocate to <code class="docutils literal"><span class="pre">asset</span></code>.
 This is specified as a decimal, for example: 0.50 means 50%.</p>
-</div></blockquote>
-<p><strong>limit_price</strong> : float, optional</p>
-<blockquote>
-<div><p>The limit price for the order.</p>
-</div></blockquote>
-<p><strong>stop_price</strong> : float, optional</p>
-<blockquote>
-<div><p>The stop price for the order.</p>
-</div></blockquote>
-<p><strong>style</strong> : ExecutionStyle</p>
-<blockquote>
-<div><p>The execution style for the order.</p>
-</div></blockquote>
+</dd>
+<dt><strong>limit_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The limit price for the order.</p>
+</dd>
+<dt><strong>stop_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The stop price for the order.</p>
+</dd>
+<dt><strong>style</strong> <span class="classifier-delimiter">:</span> <span class="classifier">ExecutionStyle</span></dt>
+<dd><p class="first last">The execution style for the order.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>order_id</strong> : str</p>
-<blockquote class="last">
-<div><p>The unique identifier for this order.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>order_id</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The unique identifier for this order.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -742,7 +628,7 @@ This is specified as a decimal, for example: 0.50 means 50%.</p>
 <dl class="function">
 <dt id="catalyst.api.order_target">
 <code class="descclassname">catalyst.api.</code><code class="descname">order_target</code><span class="sig-paren">(</span><em>self</em>, <em>asset</em>, <em>target</em>, <em>limit_price=None</em>, <em>stop_price=None</em>, <em>style=None</em><span class="sig-paren">)</span><a class="headerlink" href="#catalyst.api.order_target" title="Permalink to this definition">¶</a></dt>
-<dd><p>Place an order to adjust a position to a target number of shares. If
+<dd><p>Place an order to adjust a position to a target number of currency. If
 the position doesn’t already exist, this is equivalent to placing a new
 order. If the position does exist, this is equivalent to placing an
 order for the difference between the target number of shares and the
@@ -751,32 +637,30 @@ current number of shares.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>asset</strong> : Asset</p>
-<blockquote>
-<div><p>The asset that this order is for.</p>
-</div></blockquote>
-<p><strong>target</strong> : int</p>
-<blockquote>
-<div><p>The desired number of shares of <code class="docutils literal"><span class="pre">asset</span></code>.</p>
-</div></blockquote>
-<p><strong>limit_price</strong> : float, optional</p>
-<blockquote>
-<div><p>The limit price for the order.</p>
-</div></blockquote>
-<p><strong>stop_price</strong> : float, optional</p>
-<blockquote>
-<div><p>The stop price for the order.</p>
-</div></blockquote>
-<p><strong>style</strong> : ExecutionStyle</p>
-<blockquote>
-<div><p>The execution style for the order.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>asset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">TradingPair</span></dt>
+<dd><p class="first last">The TradingPair that this order is for.</p>
+</dd>
+<dt><strong>target</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">The desired number of <code class="docutils literal"><span class="pre">TradingPair</span></code>.</p>
+</dd>
+<dt><strong>limit_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The limit price for the order.</p>
+</dd>
+<dt><strong>stop_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The stop price for the order.</p>
+</dd>
+<dt><strong>style</strong> <span class="classifier-delimiter">:</span> <span class="classifier">ExecutionStyle</span></dt>
+<dd><p class="first last">The execution style for the order.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>order_id</strong> : str</p>
-<blockquote class="last">
-<div><p>The unique identifier for this order.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>order_id</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The unique identifier for this order.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -786,15 +670,7 @@ current number of shares.</p>
 <p class="last"><a class="reference internal" href="#catalyst.finance.execution.ExecutionStyle" title="catalyst.finance.execution.ExecutionStyle"><code class="xref py py-class docutils literal"><span class="pre">catalyst.finance.execution.ExecutionStyle</span></code></a>, <a class="reference internal" href="#catalyst.api.order" title="catalyst.api.order"><code class="xref py py-func docutils literal"><span class="pre">catalyst.api.order()</span></code></a>, <a class="reference internal" href="#catalyst.api.order_target_percent" title="catalyst.api.order_target_percent"><code class="xref py py-func docutils literal"><span class="pre">catalyst.api.order_target_percent()</span></code></a>, <a class="reference internal" href="#catalyst.api.order_target_value" title="catalyst.api.order_target_value"><code class="xref py py-func docutils literal"><span class="pre">catalyst.api.order_target_value()</span></code></a></p>
 </div>
 <p class="rubric">Notes</p>
-<p><code class="docutils literal"><span class="pre">order_target</span></code> does not take into account any open orders. For
-example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">order_target</span><span class="p">(</span><span class="n">sid</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="mi">10</span><span class="p">)</span>
-<span class="n">order_target</span><span class="p">(</span><span class="n">sid</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="mi">10</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>This code will result in 20 shares of <code class="docutils literal"><span class="pre">sid(0)</span></code> because the first
-call to <code class="docutils literal"><span class="pre">order_target</span></code> will not have been filled when the second
-<code class="docutils literal"><span class="pre">order_target</span></code> call is made.</p>
+<p><code class="docutils literal"><span class="pre">order_target</span></code> takes into account open orders as well.</p>
 <p>See <a class="reference internal" href="#catalyst.api.order" title="catalyst.api.order"><code class="xref py py-func docutils literal"><span class="pre">catalyst.api.order()</span></code></a> for more information about
 <code class="docutils literal"><span class="pre">limit_price</span></code>, <code class="docutils literal"><span class="pre">stop_price</span></code>, and <code class="docutils literal"><span class="pre">style</span></code></p>
 </dd></dl>
@@ -806,39 +682,35 @@ call to <code class="docutils literal"><span class="pre">order_target</span></co
 the position doesn’t already exist, this is equivalent to placing a new
 order. If the position does exist, this is equivalent to placing an
 order for the difference between the target value and the
-current value.
-If the Asset being ordered is a Future, the ‘target value’ calculated
-is actually the target exposure, as Futures have no ‘value’.</p>
+current value.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>asset</strong> : Asset</p>
-<blockquote>
-<div><p>The asset that this order is for.</p>
-</div></blockquote>
-<p><strong>target</strong> : float</p>
-<blockquote>
-<div><p>The desired total value of <code class="docutils literal"><span class="pre">asset</span></code>.</p>
-</div></blockquote>
-<p><strong>limit_price</strong> : float, optional</p>
-<blockquote>
-<div><p>The limit price for the order.</p>
-</div></blockquote>
-<p><strong>stop_price</strong> : float, optional</p>
-<blockquote>
-<div><p>The stop price for the order.</p>
-</div></blockquote>
-<p><strong>style</strong> : ExecutionStyle</p>
-<blockquote>
-<div><p>The execution style for the order.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>asset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">TradingPair</span></dt>
+<dd><p class="first last">The TradingPair that this order is for.</p>
+</dd>
+<dt><strong>target</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The desired total value of <code class="docutils literal"><span class="pre">TradingPair</span></code>.</p>
+</dd>
+<dt><strong>limit_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The limit price for the order.</p>
+</dd>
+<dt><strong>stop_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The stop price for the order.</p>
+</dd>
+<dt><strong>style</strong> <span class="classifier-delimiter">:</span> <span class="classifier">ExecutionStyle</span></dt>
+<dd><p class="first last">The execution style for the order.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>order_id</strong> : str</p>
-<blockquote class="last">
-<div><p>The unique identifier for this order.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>order_id</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The unique identifier for this order.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -848,15 +720,6 @@ is actually the target exposure, as Futures have no ‘value’.</p>
 <p class="last"><a class="reference internal" href="#catalyst.finance.execution.ExecutionStyle" title="catalyst.finance.execution.ExecutionStyle"><code class="xref py py-class docutils literal"><span class="pre">catalyst.finance.execution.ExecutionStyle</span></code></a>, <a class="reference internal" href="#catalyst.api.order" title="catalyst.api.order"><code class="xref py py-func docutils literal"><span class="pre">catalyst.api.order()</span></code></a>, <a class="reference internal" href="#catalyst.api.order_target" title="catalyst.api.order_target"><code class="xref py py-func docutils literal"><span class="pre">catalyst.api.order_target()</span></code></a>, <a class="reference internal" href="#catalyst.api.order_target_percent" title="catalyst.api.order_target_percent"><code class="xref py py-func docutils literal"><span class="pre">catalyst.api.order_target_percent()</span></code></a></p>
 </div>
 <p class="rubric">Notes</p>
-<p><code class="docutils literal"><span class="pre">order_target_value</span></code> does not take into account any open orders. For
-example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">order_target_value</span><span class="p">(</span><span class="n">sid</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="mi">10</span><span class="p">)</span>
-<span class="n">order_target_value</span><span class="p">(</span><span class="n">sid</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="mi">10</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>This code will result in 20 dollars of <code class="docutils literal"><span class="pre">sid(0)</span></code> because the first
-call to <code class="docutils literal"><span class="pre">order_target_value</span></code> will not have been filled when the
-second <code class="docutils literal"><span class="pre">order_target_value</span></code> call is made.</p>
 <p>See <a class="reference internal" href="#catalyst.api.order" title="catalyst.api.order"><code class="xref py py-func docutils literal"><span class="pre">catalyst.api.order()</span></code></a> for more information about
 <code class="docutils literal"><span class="pre">limit_price</span></code>, <code class="docutils literal"><span class="pre">stop_price</span></code>, and <code class="docutils literal"><span class="pre">style</span></code></p>
 </dd></dl>
@@ -873,34 +736,32 @@ percent and the current percent.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>asset</strong> : Asset</p>
-<blockquote>
-<div><p>The asset that this order is for.</p>
-</div></blockquote>
-<p><strong>target</strong> : float</p>
-<blockquote>
-<div><p>The desired percentage of the porfolio value to allocate to
-<code class="docutils literal"><span class="pre">asset</span></code>. This is specified as a decimal, for example:
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>asset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">TradingPair</span></dt>
+<dd><p class="first last">The TradingPair that this order is for.</p>
+</dd>
+<dt><strong>target</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The desired percentage of the portfolio value to allocate to
+<code class="docutils literal"><span class="pre">TradingPair</span></code>. This is specified as a decimal, for example:
 0.50 means 50%.</p>
-</div></blockquote>
-<p><strong>limit_price</strong> : float, optional</p>
-<blockquote>
-<div><p>The limit price for the order.</p>
-</div></blockquote>
-<p><strong>stop_price</strong> : float, optional</p>
-<blockquote>
-<div><p>The stop price for the order.</p>
-</div></blockquote>
-<p><strong>style</strong> : ExecutionStyle</p>
-<blockquote>
-<div><p>The execution style for the order.</p>
-</div></blockquote>
+</dd>
+<dt><strong>limit_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The limit price for the order.</p>
+</dd>
+<dt><strong>stop_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The stop price for the order.</p>
+</dd>
+<dt><strong>style</strong> <span class="classifier-delimiter">:</span> <span class="classifier">ExecutionStyle</span></dt>
+<dd><p class="first last">The execution style for the order.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>order_id</strong> : str</p>
-<blockquote class="last">
-<div><p>The unique identifier for this order.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>order_id</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The unique identifier for this order.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -910,15 +771,6 @@ percent and the current percent.</p>
 <p class="last"><a class="reference internal" href="#catalyst.finance.execution.ExecutionStyle" title="catalyst.finance.execution.ExecutionStyle"><code class="xref py py-class docutils literal"><span class="pre">catalyst.finance.execution.ExecutionStyle</span></code></a>, <a class="reference internal" href="#catalyst.api.order" title="catalyst.api.order"><code class="xref py py-func docutils literal"><span class="pre">catalyst.api.order()</span></code></a>, <a class="reference internal" href="#catalyst.api.order_target" title="catalyst.api.order_target"><code class="xref py py-func docutils literal"><span class="pre">catalyst.api.order_target()</span></code></a>, <a class="reference internal" href="#catalyst.api.order_target_value" title="catalyst.api.order_target_value"><code class="xref py py-func docutils literal"><span class="pre">catalyst.api.order_target_value()</span></code></a></p>
 </div>
 <p class="rubric">Notes</p>
-<p><code class="docutils literal"><span class="pre">order_target_value</span></code> does not take into account any open orders. For
-example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">order_target_percent</span><span class="p">(</span><span class="n">sid</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="mi">10</span><span class="p">)</span>
-<span class="n">order_target_percent</span><span class="p">(</span><span class="n">sid</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="mi">10</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>This code will result in 20% of the portfolio being allocated to sid(0)
-because the first call to <code class="docutils literal"><span class="pre">order_target_percent</span></code> will not have been
-filled when the second <code class="docutils literal"><span class="pre">order_target_percent</span></code> call is made.</p>
 <p>See <a class="reference internal" href="#catalyst.api.order" title="catalyst.api.order"><code class="xref py py-func docutils literal"><span class="pre">catalyst.api.order()</span></code></a> for more information about
 <code class="docutils literal"><span class="pre">limit_price</span></code>, <code class="docutils literal"><span class="pre">stop_price</span></code>, and <code class="docutils literal"><span class="pre">style</span></code></p>
 </dd></dl>
@@ -985,20 +837,21 @@ order functions.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>order_id</strong> : str</p>
-<blockquote>
-<div><p>The unique identifier for the order.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>order_id</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The unique identifier for the order.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>order</strong> : Order</p>
-<blockquote>
-<div><p>The order object.</p>
-</div></blockquote>
-<p>execution_price: float</p>
-<blockquote class="last">
-<div><p>The execution price per share of the order</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>order</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Order</span></dt>
+<dd><p class="first last">The order object.</p>
+</dd>
+<dt><strong>execution_price: float</strong></dt>
+<dd><p class="first last">The execution price per unit of the order</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1013,20 +866,22 @@ order functions.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>asset</strong> : Asset</p>
-<blockquote>
-<div><p>If passed and not None, return only the open orders for the given
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>asset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Asset</span></dt>
+<dd><p class="first last">If passed and not None, return only the open orders for the given
 asset instead of all open orders.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>open_orders</strong> : dict[list[Order]] or list[Order]</p>
-<blockquote class="last">
-<div><p>If no asset is passed this will return a dict mapping Assets
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>open_orders</strong> <span class="classifier-delimiter">:</span> <span class="classifier">dict[list[Order]] or list[Order]</span></dt>
+<dd><p class="first last">If no asset is passed this will return a dict mapping Assets
 to a list containing all the open orders for the asset.
 If an asset is passed then this will return a list of the open
 orders for this asset.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1041,16 +896,20 @@ orders for this asset.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>order_param</strong> : str or Order</p>
-<blockquote>
-<div><p>The order_id or order object to cancel.</p>
-</div></blockquote>
-<p><strong>exchange_name: name of exchange from</strong></p>
-<blockquote>
-<div><p>which you want to cancel the order</p>
-</div></blockquote>
-<p><strong>symbol:</strong></p>
-<p class="last"><strong>params:</strong></p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>order_param</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str or Order</span></dt>
+<dd><p class="first last">The order_id or order object to cancel.</p>
+</dd>
+<dt><strong>exchange_name: str</strong></dt>
+<dd><p class="first last">The name of exchange to cancel the order in</p>
+</dd>
+<dt><strong>symbol: str</strong></dt>
+<dd><p class="first last">The tradingPair symbol</p>
+</dd>
+<dt><strong>params: dict, optional</strong></dt>
+<dd><p class="first last">Extra parameters to pass to the exchange</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1067,10 +926,11 @@ orders for this asset.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cancel_policy</strong> : CancelPolicy</p>
-<blockquote class="last">
-<div><p>The cancellation policy to use.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>cancel_policy</strong> <span class="classifier-delimiter">:</span> <span class="classifier">CancelPolicy</span></dt>
+<dd><p class="first last">The cancellation policy to use.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1093,9 +953,9 @@ orders for this asset.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>event</strong> : enum-value</p>
-<blockquote>
-<div><dl class="docutils">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>event</strong> <span class="classifier-delimiter">:</span> <span class="classifier">enum-value</span></dt>
+<dd><dl class="first last docutils">
 <dt>An event type, one of:</dt>
 <dd><ul class="first last simple">
 <li><code class="xref py py-data docutils literal"><span class="pre">catalyst.gens.sim_engine.BAR</span></code></li>
@@ -1105,13 +965,15 @@ orders for this asset.</p>
 </ul>
 </dd>
 </dl>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>should_cancel</strong> : bool</p>
-<blockquote class="last">
-<div><p>Should all open orders be cancelled?</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>should_cancel</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd><p class="first last">Should all open orders be cancelled?</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1124,15 +986,16 @@ orders for this asset.</p>
 <dt id="catalyst.api.EODCancel">
 <code class="descclassname">catalyst.api.</code><code class="descname">EODCancel</code><span class="sig-paren">(</span><em>warn_on_cancel=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/finance/cancel_policy.html#EODCancel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.api.EODCancel" title="Permalink to this definition">¶</a></dt>
 <dd><p>This policy cancels open orders at the end of the day.  For now,
-Zipline will only apply this policy to minutely simulations.</p>
+Catalyst will only apply this policy to minutely simulations.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>warn_on_cancel</strong> : bool, optional</p>
-<blockquote class="last">
-<div><p>Should a warning be raised if this causes an order to be cancelled?</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>warn_on_cancel</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Should a warning be raised if this causes an order to be cancelled?</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1152,68 +1015,81 @@ Zipline will only apply this policy to minutely simulations.</p>
 <dl class="function">
 <dt id="catalyst.api.symbol">
 <code class="descclassname">catalyst.api.</code><code class="descname">symbol</code><span class="sig-paren">(</span><em>self</em>, <em>symbol_str</em>, <em>exchange_name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#catalyst.api.symbol" title="Permalink to this definition">¶</a></dt>
-<dd><p>Lookup an Equity by its ticker symbol.</p>
+<dd><p>Lookup a TradingPair by its ticker symbol.
+Catalyst defines its own set of “universal” symbols to reference
+trading pairs across exchanges. This is required because exchanges
+are not adhering to a universal symbolism. For example, Bitfinex
+uses the BTC symbol for Bitcon while Kraken uses XBT. In addition,
+pairs are sometimes presented differently. For example, Bitfinex
+puts the market currency before the base currency without a
+separator, Bittrex puts the base currency first and uses a dash
+seperator.</p>
+<p>Here is the Catalyst convention: [Market Currency]_[Base Currency]
+For example: btc_usd, eth_btc, neo_eth, ltc_eur.</p>
+<p>The symbol for each currency (e.g. btc, eth, ltc) is generally
+aligned with the Bittrex exchange.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>symbol_str</strong> : str</p>
-<blockquote>
-<div><p>The ticker symbol for the equity to lookup.</p>
-</div></blockquote>
-<p><strong>exchange_name: str</strong></p>
-<blockquote>
-<div><p>The name of the exchange containing the symbol</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>symbol_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The ticker symbol for the TradingPair to lookup.</p>
+</dd>
+<dt><strong>exchange_name: str</strong></dt>
+<dd><p class="first last">The name of the exchange containing the symbol</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>equity</strong> : Equity</p>
-<blockquote>
-<div><p>The equity that held the ticker symbol on the current
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>tradingPair</strong> <span class="classifier-delimiter">:</span> <span class="classifier">TradingPair</span></dt>
+<dd><p class="first last">The TradingPair that held the ticker symbol on the current
 symbol lookup date.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>SymbolNotFound</strong></p>
-<blockquote class="last">
-<div><p>Raised when the symbols was not held on the current lookup date.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>SymbolNotFound</strong></dt>
+<dd><p class="first last">Raised when the symbols was not held on the current lookup date.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
 </table>
-<div class="admonition seealso">
-<p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#catalyst.api.set_symbol_lookup_date" title="catalyst.api.set_symbol_lookup_date"><code class="xref py py-func docutils literal"><span class="pre">catalyst.api.set_symbol_lookup_date()</span></code></a></p>
-</div>
 </dd></dl>
 
 <dl class="function">
 <dt id="catalyst.api.symbols">
 <code class="descclassname">catalyst.api.</code><code class="descname">symbols</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#catalyst.api.symbols" title="Permalink to this definition">¶</a></dt>
-<dd><p>Lookup multuple Equities as a list.</p>
+<dd><p>Lookup multiple TradingPairs as a list.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>*args</strong> : iterable[str]</p>
-<blockquote>
-<div><p>The ticker symbols to lookup.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>*args</strong> <span class="classifier-delimiter">:</span> <span class="classifier">iterable[str]</span></dt>
+<dd><p class="first last">The ticker symbols to lookup.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>equities</strong> : list[Equity]</p>
-<blockquote>
-<div><p>The equities that held the given ticker symbols on the current
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>tradingPairs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list[TradingPair]</span></dt>
+<dd><p class="first last">The tradingPairs that held the given ticker symbols on the current
 symbol lookup date.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>SymbolNotFound</strong></p>
-<blockquote class="last">
-<div><p>Raised when one of the symbols was not held on the current
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>SymbolNotFound</strong></dt>
+<dd><p class="first last">Raised when one of the symbols was not held on the current
 lookup date.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1227,17 +1103,16 @@ lookup date.</p>
 <dl class="function">
 <dt id="catalyst.api.set_symbol_lookup_date">
 <code class="descclassname">catalyst.api.</code><code class="descname">set_symbol_lookup_date</code><span class="sig-paren">(</span><em>self</em>, <em>dt</em><span class="sig-paren">)</span><a class="headerlink" href="#catalyst.api.set_symbol_lookup_date" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the date for which symbols will be resolved to their assets
-(symbols may map to different firms or underlying assets at
-different times)</p>
+<dd><p>Set the date for which symbols will be resolved to their assets</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dt</strong> : datetime</p>
-<blockquote class="last">
-<div><p>The new symbol lookup date.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>dt</strong> <span class="classifier-delimiter">:</span> <span class="classifier">datetime</span></dt>
+<dd><p class="first last">The new symbol lookup date.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1252,22 +1127,25 @@ different times)</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>sid</strong> : int</p>
-<blockquote>
-<div><p>The unique integer that identifies an asset.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>sid</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">The unique integer that identifies an asset.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>asset</strong> : Asset</p>
-<blockquote>
-<div><p>The asset with the given <code class="docutils literal"><span class="pre">sid</span></code>.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>asset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Asset</span></dt>
+<dd><p class="first last">The asset with the given <code class="docutils literal"><span class="pre">sid</span></code>.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>SidsNotFound</strong></p>
-<blockquote class="last">
-<div><p>When a requested <code class="docutils literal"><span class="pre">sid</span></code> does not map to any asset.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>SidsNotFound</strong></dt>
+<dd><p class="first last">When a requested <code class="docutils literal"><span class="pre">sid</span></code> does not map to any asset.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1277,8 +1155,8 @@ different times)</p>
 </div>
 <div class="section" id="trading-controls">
 <h3>Trading Controls<a class="headerlink" href="#trading-controls" title="Permalink to this headline">¶</a></h3>
-<p>zipline provides trading controls to help ensure that the algorithm is
-performing as expected. The functions help protect the algorithm from certian
+<p>catalyst provides trading controls to help ensure that the algorithm is
+performing as expected. The functions help protect the algorithm from certain
 bugs that could cause undesirable behavior when trading with real money.</p>
 <dl class="function">
 <dt id="catalyst.api.set_do_not_order_list">
@@ -1288,10 +1166,11 @@ bugs that could cause undesirable behavior when trading with real money.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>restricted_list</strong> : container[Asset], SecurityList</p>
-<blockquote class="last">
-<div><p>The assets that cannot be ordered.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>restricted_list</strong> <span class="classifier-delimiter">:</span> <span class="classifier">container[Asset], SecurityList</span></dt>
+<dd><p class="first last">The assets that cannot be ordered.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1313,11 +1192,12 @@ positions.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>max_leverage</strong> : float</p>
-<blockquote class="last">
-<div><p>The maximum leverage for the algorithm. If not provided there will
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>max_leverage</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The maximum leverage for the algorithm. If not provided there will
 be no maximum.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1333,10 +1213,11 @@ day.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>max_count</strong> : int</p>
-<blockquote class="last">
-<div><p>The maximum number of orders that can be placed on any single day.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>max_count</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">The maximum number of orders that can be placed on any single day.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1355,19 +1236,18 @@ exceeding one of these limits, raise a TradingControlException.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>asset</strong> : Asset, optional</p>
-<blockquote>
-<div><p>If provided, this sets the guard only on positions in the given
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>asset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Asset, optional</span></dt>
+<dd><p class="first last">If provided, this sets the guard only on positions in the given
 asset.</p>
-</div></blockquote>
-<p><strong>max_shares</strong> : int, optional</p>
-<blockquote>
-<div><p>The maximum number of shares that can be ordered at one time.</p>
-</div></blockquote>
-<p><strong>max_notional</strong> : float, optional</p>
-<blockquote class="last">
-<div><p>The maximum value that can be ordered at one time.</p>
-</div></blockquote>
+</dd>
+<dt><strong>max_shares</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
+<dd><p class="first last">The maximum number of shares that can be ordered at one time.</p>
+</dd>
+<dt><strong>max_notional</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The maximum value that can be ordered at one time.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1390,19 +1270,18 @@ these limits, raise a TradingControlException.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>asset</strong> : Asset, optional</p>
-<blockquote>
-<div><p>If provided, this sets the guard only on positions in the given
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>asset</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Asset, optional</span></dt>
+<dd><p class="first last">If provided, this sets the guard only on positions in the given
 asset.</p>
-</div></blockquote>
-<p><strong>max_shares</strong> : int, optional</p>
-<blockquote>
-<div><p>The maximum number of shares to hold for an asset.</p>
-</div></blockquote>
-<p><strong>max_notional</strong> : float, optional</p>
-<blockquote class="last">
-<div><p>The maximum value to hold for an asset.</p>
-</div></blockquote>
+</dd>
+<dt><strong>max_shares</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
+<dd><p class="first last">The maximum number of shares to hold for an asset.</p>
+</dd>
+<dt><strong>max_notional</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The maximum value to hold for an asset.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1420,10 +1299,11 @@ asset.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>benchmark</strong> : Asset</p>
-<blockquote class="last">
-<div><p>The asset to set as the new benchmark.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>benchmark</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Asset</span></dt>
+<dd><p class="first last">The asset to set as the new benchmark.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1438,7 +1318,24 @@ automatically reinvested.</p>
 <dl class="function">
 <dt id="catalyst.api.set_commission">
 <code class="descclassname">catalyst.api.</code><code class="descname">set_commission</code><span class="sig-paren">(</span><em>self</em>, <em>maker=None</em>, <em>taker=None</em><span class="sig-paren">)</span><a class="headerlink" href="#catalyst.api.set_commission" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Sets the maker and taker fees of the commission model for the simulation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>maker</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The taker fee - taking from the order book.</p>
+</dd>
+<dt><strong>taker</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The maker fee - adding to the order book.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="class">
 <dt id="catalyst.finance.commission.CommissionModel">
@@ -1456,25 +1353,26 @@ of <code class="docutils literal"><span class="pre">transaction</span></code>.</
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>order</strong> : catalyst.finance.order.Order</p>
-<blockquote>
-<div><p>The order being processed.</p>
-<p>The <code class="docutils literal"><span class="pre">commission</span></code> field of <code class="docutils literal"><span class="pre">order</span></code> is a float indicating the
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>order</strong> <span class="classifier-delimiter">:</span> <span class="classifier">catalyst.finance.order.Order</span></dt>
+<dd><p class="first">The order being processed.</p>
+<p class="last">The <code class="docutils literal"><span class="pre">commission</span></code> field of <code class="docutils literal"><span class="pre">order</span></code> is a float indicating the
 amount of commission already charged on this order.</p>
-</div></blockquote>
-<p><strong>transaction</strong> : catalyst.finance.transaction.Transaction</p>
-<blockquote>
-<div><p>The transaction being processed. A single order may generate
+</dd>
+<dt><strong>transaction</strong> <span class="classifier-delimiter">:</span> <span class="classifier">catalyst.finance.transaction.Transaction</span></dt>
+<dd><p class="first last">The transaction being processed. A single order may generate
 multiple transactions if there isn’t enough volume in a given bar
 to fill the full amount requested in the order.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>amount_charged</strong> : float</p>
-<blockquote class="last">
-<div><p>The additional commission, in dollars, that we should attribute to
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>amount_charged</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The additional commission, in dollars, that we should attribute to
 this order.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1492,14 +1390,14 @@ an optional minimum cost per trade.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cost</strong> : float, optional</p>
-<blockquote>
-<div><p>The amount of commissions paid per share traded.</p>
-</div></blockquote>
-<p><strong>min_trade_cost</strong> : float, optional</p>
-<blockquote class="last">
-<div><p>The minimum amount of commissions paid per trade.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>cost</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The amount of commissions paid per share traded.</p>
+</dd>
+<dt><strong>min_trade_cost</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The minimum amount of commissions paid per trade.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1514,10 +1412,11 @@ an optional minimum cost per trade.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cost</strong> : float, optional</p>
-<blockquote class="last">
-<div><p>The flat amount of commissions paid per equity trade.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>cost</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">The flat amount of commissions paid per equity trade.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1532,10 +1431,11 @@ an optional minimum cost per trade.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cost</strong> : float</p>
-<blockquote class="last">
-<div><p>The flat amount of commissions paid per dollar of equities traded.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>cost</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The flat amount of commissions paid per dollar of equities traded.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1548,7 +1448,21 @@ an optional minimum cost per trade.</p>
 <dl class="function">
 <dt id="catalyst.api.set_slippage">
 <code class="descclassname">catalyst.api.</code><code class="descname">set_slippage</code><span class="sig-paren">(</span><em>self</em>, <em>spread=None</em><span class="sig-paren">)</span><a class="headerlink" href="#catalyst.api.set_slippage" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Set the spread of the slippage model for the simulation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>spread</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The spread to be set.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="class">
 <dt id="catalyst.finance.slippage.SlippageModel">
@@ -1562,26 +1476,26 @@ an optional minimum cost per trade.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>data</strong> : BarData</p>
-<blockquote>
-<div><p>The data for the given bar.</p>
-</div></blockquote>
-<p><strong>order</strong> : Order</p>
-<blockquote>
-<div><p>The order to simulate.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>data</strong> <span class="classifier-delimiter">:</span> <span class="classifier">BarData</span></dt>
+<dd><p class="first last">The data for the given bar.</p>
+</dd>
+<dt><strong>order</strong> <span class="classifier-delimiter">:</span> <span class="classifier">Order</span></dt>
+<dd><p class="first last">The order to simulate.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>execution_price</strong> : float</p>
-<blockquote>
-<div><p>The price to execute the trade at.</p>
-</div></blockquote>
-<p><strong>execution_volume</strong> : int</p>
-<blockquote class="last">
-<div><p>The number of shares that could be filled. This may not be all
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>execution_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">The price to execute the trade at.</p>
+</dd>
+<dt><strong>execution_volume</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">The number of shares that could be filled. This may not be all
 the shares ordered in which case the order will be filled over
 multiple bars.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1598,10 +1512,11 @@ multiple bars.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>spread</strong> : float, optional</p>
-<blockquote class="last">
-<div><p>spread / 2 will be added to buys and subtracted from sells.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>spread</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd><p class="first last">spread / 2 will be added to buys and subtracted from sells.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1630,10 +1545,11 @@ multiple bars.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>**kwargs</strong></p>
-<blockquote class="last">
-<div><p>The names and values to record.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>**kwargs</strong></dt>
+<dd><p class="first last">The names and values to record.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1652,18 +1568,16 @@ dataframe passed to <code class="docutils literal"><span class="pre">analyze</sp
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>field</strong> : {‘platform’, ‘arena’, ‘data_frequency’,</p>
-<blockquote>
-<div><blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>field</strong> <span class="classifier-delimiter">:</span> <span class="classifier">{‘platform’, ‘arena’, ‘data_frequency’,</span></dt>
+<dd><blockquote class="first">
 <div><p>‘start’, ‘end’, ‘capital_base’, ‘platform’, ‘*’}</p>
 </div></blockquote>
-<dl class="docutils">
+<dl class="last docutils">
 <dt>The field to query. The options have the following meanings:</dt>
 <dd><dl class="first last docutils">
-<dt>arena <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd><p class="first last">The arena from the simulation parameters. This will normally
-be <code class="docutils literal"><span class="pre">backtest</span></code> but some systems may use this distinguish
-live trading from backtesting.</p>
+<dt>arena <span class="classifier-delimiter">:</span> <span class="classifier">str {‘backtest’, ‘live’}</span></dt>
+<dd><p class="first last">The algorithm’s arena.</p>
 </dd>
 <dt>data_frequency <span class="classifier-delimiter">:</span> <span class="classifier">{‘daily’, ‘minute’}</span></dt>
 <dd><p class="first last">data_frequency tells the algorithm if it is running with
@@ -1689,19 +1603,22 @@ know if they are running on the Quantopian platform instead.</p>
 </dl>
 </dd>
 </dl>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>val</strong> : any</p>
-<blockquote>
-<div><p>The value for the field queried. See above for more information.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>val</strong> <span class="classifier-delimiter">:</span> <span class="classifier">any</span></dt>
+<dd><p class="first last">The value for the field queried. See above for more information.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>ValueError</strong></p>
-<blockquote class="last">
-<div><p>Raised when <code class="docutils literal"><span class="pre">field</span></code> is not a valid option.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>ValueError</strong></dt>
+<dd><p class="first last">Raised when <code class="docutils literal"><span class="pre">field</span></code> is not a valid option.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1717,63 +1634,56 @@ queryable from the <code class="docutils literal"><span class="pre">data</span><
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>url</strong> : str</p>
-<blockquote>
-<div><p>The url of the csv file to load.</p>
-</div></blockquote>
-<p><strong>pre_func</strong> : callable[pd.DataFrame -&gt; pd.DataFrame], optional</p>
-<blockquote>
-<div><p>A callback to allow preprocessing the raw data returned from
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>url</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The url of the csv file to load.</p>
+</dd>
+<dt><strong>pre_func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">callable[pd.DataFrame -&gt; pd.DataFrame], optional</span></dt>
+<dd><p class="first last">A callback to allow preprocessing the raw data returned from
 fetch_csv before dates are paresed or symbols are mapped.</p>
-</div></blockquote>
-<p><strong>post_func</strong> : callable[pd.DataFrame -&gt; pd.DataFrame], optional</p>
-<blockquote>
-<div><p>A callback to allow postprocessing of the data after dates and
+</dd>
+<dt><strong>post_func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">callable[pd.DataFrame -&gt; pd.DataFrame], optional</span></dt>
+<dd><p class="first last">A callback to allow postprocessing of the data after dates and
 symbols have been mapped.</p>
-</div></blockquote>
-<p><strong>date_column</strong> : str, optional</p>
-<blockquote>
-<div><p>The name of the column in the preprocessed dataframe containing
+</dd>
+<dt><strong>date_column</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
+<dd><p class="first last">The name of the column in the preprocessed dataframe containing
 datetime information to map the data.</p>
-</div></blockquote>
-<p><strong>date_format</strong> : str, optional</p>
-<blockquote>
-<div><p>The format of the dates in the <code class="docutils literal"><span class="pre">date_column</span></code>. If not provided
+</dd>
+<dt><strong>date_format</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
+<dd><p class="first last">The format of the dates in the <code class="docutils literal"><span class="pre">date_column</span></code>. If not provided
 <code class="docutils literal"><span class="pre">fetch_csv</span></code> will attempt to infer the format. For information
 about the format of this string, see <a class="reference external" href="http://pandas.pydata.org/pandas-docs/stable/generated/pandas.read_csv.html#pandas.read_csv" title="(in pandas v0.22.0)"><code class="xref py py-func docutils literal"><span class="pre">pandas.read_csv()</span></code></a>.</p>
-</div></blockquote>
-<p><strong>timezone</strong> : tzinfo or str, optional</p>
-<blockquote>
-<div><p>The timezone for the datetime in the <code class="docutils literal"><span class="pre">date_column</span></code>.</p>
-</div></blockquote>
-<p><strong>symbol</strong> : str, optional</p>
-<blockquote>
-<div><p>If the data is about a new asset or index then this string will
+</dd>
+<dt><strong>timezone</strong> <span class="classifier-delimiter">:</span> <span class="classifier">tzinfo or str, optional</span></dt>
+<dd><p class="first last">The timezone for the datetime in the <code class="docutils literal"><span class="pre">date_column</span></code>.</p>
+</dd>
+<dt><strong>symbol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
+<dd><p class="first last">If the data is about a new asset or index then this string will
 be the name used to identify the values in <code class="docutils literal"><span class="pre">data</span></code>. For example,
 one may use <code class="docutils literal"><span class="pre">fetch_csv</span></code> to load data for VIX, then this field
 could be the string <code class="docutils literal"><span class="pre">'VIX'</span></code>.</p>
-</div></blockquote>
-<p><strong>mask</strong> : bool, optional</p>
-<blockquote>
-<div><p>Drop any rows which cannot be symbol mapped.</p>
-</div></blockquote>
-<p><strong>symbol_column</strong> : str</p>
-<blockquote>
-<div><p>If the data is attaching some new attribute to each asset then this
+</dd>
+<dt><strong>mask</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">Drop any rows which cannot be symbol mapped.</p>
+</dd>
+<dt><strong>symbol_column</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">If the data is attaching some new attribute to each asset then this
 argument is the name of the column in the preprocessed dataframe
 containing the symbols. This will be used along with the date
 information to map the sids in the asset finder.</p>
-</div></blockquote>
-<p><strong>**kwargs</strong></p>
-<blockquote>
-<div><p>Forwarded to <a class="reference external" href="http://pandas.pydata.org/pandas-docs/stable/generated/pandas.read_csv.html#pandas.read_csv" title="(in pandas v0.22.0)"><code class="xref py py-func docutils literal"><span class="pre">pandas.read_csv()</span></code></a>.</p>
-</div></blockquote>
+</dd>
+<dt><strong>**kwargs</strong></dt>
+<dd><p class="first last">Forwarded to <a class="reference external" href="http://pandas.pydata.org/pandas-docs/stable/generated/pandas.read_csv.html#pandas.read_csv" title="(in pandas v0.22.0)"><code class="xref py py-func docutils literal"><span class="pre">pandas.read_csv()</span></code></a>.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>csv_data_source</strong> : catalyst.sources.requests_csv.PandasRequestsCSV</p>
-<blockquote class="last">
-<div><p>A requests source that will pull data from the url specified.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>csv_data_source</strong> <span class="classifier-delimiter">:</span> <span class="classifier">catalyst.sources.requests_csv.PandasRequestsCSV</span></dt>
+<dd><p class="first last">A requests source that will pull data from the url specified.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1782,101 +1692,28 @@ information to map the sids in the asset finder.</p>
 
 <span class="target" id="pipeline-api"></span></div>
 </div>
-<div class="section" id="asset-metadata">
-<h2>Asset Metadata<a class="headerlink" href="#asset-metadata" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="catalyst.assets.Asset">
-<em class="property">class </em><code class="descclassname">catalyst.assets.</code><code class="descname">Asset</code><span class="sig-paren">(</span><em>int sid</em>, <em>exchange</em>, <em>symbol=''</em>, <em>asset_name=''</em>, <em>start_date=None</em>, <em>end_date=None</em>, <em>first_traded=None</em>, <em>auto_close_date=None</em>, <em>exchange_full=None</em>, <em>min_trade_size=None</em><span class="sig-paren">)</span><a class="headerlink" href="#catalyst.assets.Asset" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="attribute">
-<dt id="catalyst.assets.Asset.first_traded">
-<code class="descname">first_traded</code><a class="headerlink" href="#catalyst.assets.Asset.first_traded" title="Permalink to this definition">¶</a></dt>
-<dd><p>first_traded: object</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.assets.Asset.from_dict">
-<code class="descname">from_dict</code><span class="sig-paren">(</span><em>type cls</em>, <em>dict_</em><span class="sig-paren">)</span><a class="headerlink" href="#catalyst.assets.Asset.from_dict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Build an Asset instance from a dict.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.assets.Asset.is_alive_for_session">
-<code class="descname">is_alive_for_session</code><span class="sig-paren">(</span><em>self</em>, <em>session_label</em><span class="sig-paren">)</span><a class="headerlink" href="#catalyst.assets.Asset.is_alive_for_session" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns whether the asset is alive at the given dt.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>session_label: pd.Timestamp</strong></p>
-<blockquote>
-<div><p>The desired session label to check. (midnight UTC)</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">boolean: whether the asset is alive at the given dt.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.assets.Asset.is_exchange_open">
-<code class="descname">is_exchange_open</code><span class="sig-paren">(</span><em>self</em>, <em>dt_minute</em><span class="sig-paren">)</span><a class="headerlink" href="#catalyst.assets.Asset.is_exchange_open" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dt_minute: pd.Timestamp (UTC, tz-aware)</strong></p>
-<blockquote>
-<div><p>The minute to check.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">boolean: whether the asset’s exchange is open at the given minute.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.assets.Asset.to_dict">
-<code class="descname">to_dict</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#catalyst.assets.Asset.to_dict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert to a python dict.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="catalyst.assets.AssetConvertible">
-<em class="property">class </em><code class="descclassname">catalyst.assets.</code><code class="descname">AssetConvertible</code><a class="reference internal" href="_modules/catalyst/assets/assets.html#AssetConvertible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.assets.AssetConvertible" title="Permalink to this definition">¶</a></dt>
-<dd><p>ABC for types that are convertible to integer-representations of
-Assets.</p>
-<p>Includes Asset, six.string_types, and Integral</p>
-</dd></dl>
-
-</div>
 <div class="section" id="trading-calendar-api">
 <h2>Trading Calendar API<a class="headerlink" href="#trading-calendar-api" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="catalyst.utils.calendars.get_calendar">
 <code class="descclassname">catalyst.utils.calendars.</code><code class="descname">get_calendar</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#catalyst.utils.calendars.get_calendar" title="Permalink to this definition">¶</a></dt>
-<dd><p>Retrieves an instance of an TradingCalendar whose name is given.</p>
+<dd><p>Retrieves an instance of a TradingCalendar whose name is given.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>name</strong> : str</p>
-<blockquote>
-<div><p>The name of the TradingCalendar to be retrieved.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>name</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The name of the TradingCalendar to be retrieved.</p>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>calendar</strong> : catalyst.utils.calendars.TradingCalendar</p>
-<blockquote class="last">
-<div><p>The desired calendar.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>calendar</strong> <span class="classifier-delimiter">:</span> <span class="classifier">catalyst.utils.calendars.TradingCalendar</span></dt>
+<dd><p class="first last">The desired calendar.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -1885,8 +1722,8 @@ Assets.</p>
 
 <dl class="class">
 <dt id="catalyst.utils.calendars.TradingCalendar">
-<em class="property">class </em><code class="descclassname">catalyst.utils.calendars.</code><code class="descname">TradingCalendar</code><span class="sig-paren">(</span><em>start=Timestamp('1990-01-01 00:00:00+0000'</em>, <em>tz='UTC')</em>, <em>end=Timestamp('2019-03-29 20:15:07.045083+0000'</em>, <em>tz='UTC')</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar" title="Permalink to this definition">¶</a></dt>
-<dd><p>An TradingCalendar represents the timing information of a single market
+<em class="property">class </em><code class="descclassname">catalyst.utils.calendars.</code><code class="descname">TradingCalendar</code><span class="sig-paren">(</span><em>start=Timestamp('1990-01-01 00:00:00+0000'</em>, <em>tz='UTC')</em>, <em>end=Timestamp('2019-04-24 12:33:25.638404+0000'</em>, <em>tz='UTC')</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar" title="Permalink to this definition">¶</a></dt>
+<dd><p>A TradingCalendar represents the timing information of a single market
 exchange.</p>
 <p>The timing information is made up of two parts: sessions, and opens/closes.</p>
 <p>A session represents a contiguous set of minutes, and has a label that is
@@ -1894,616 +1731,6 @@ midnight UTC. It is important to note that a session label should not be
 considered a specific point in time, and that midnight UTC is just being
 used for convenience.</p>
 <p>For each session, we store the open and close time in UTC time.</p>
-<dl class="method">
-<dt id="catalyst.utils.calendars.TradingCalendar.is_open_on_minute">
-<code class="descname">is_open_on_minute</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar.is_open_on_minute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.is_open_on_minute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a dt, return whether this exchange is open at the given dt.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dt: pd.Timestamp</strong></p>
-<blockquote>
-<div><p>The dt for which to check if this exchange is open.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">bool</p>
-<blockquote class="last">
-<div><p>Whether the exchange is open on this dt.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.utils.calendars.TradingCalendar.is_session">
-<code class="descname">is_session</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar.is_session"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.is_session" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a dt, returns whether it’s a valid session label.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dt: pd.Timestamp</strong></p>
-<blockquote>
-<div><p>The dt that is being tested.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">bool</p>
-<blockquote class="last">
-<div><p>Whether the given dt is a valid session label.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.utils.calendars.TradingCalendar.minute_index_to_session_labels">
-<code class="descname">minute_index_to_session_labels</code><span class="sig-paren">(</span><em>index</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar.minute_index_to_session_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.minute_index_to_session_labels" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a sorted DatetimeIndex of market minutes, return a
-DatetimeIndex of the corresponding session labels.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>index: pd.DatetimeIndex or pd.Series</strong></p>
-<blockquote>
-<div><p>The ordered list of market minutes we want session labels for.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">pd.DatetimeIndex (UTC)</p>
-<blockquote class="last">
-<div><p>The list of session labels corresponding to the given minutes.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.utils.calendars.TradingCalendar.minute_to_session_label">
-<code class="descname">minute_to_session_label</code><span class="sig-paren">(</span><em>dt</em>, <em>direction='next'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar.minute_to_session_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.minute_to_session_label" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a minute, get the label of its containing session.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dt</strong> : pd.Timestamp or nanosecond offset</p>
-<blockquote>
-<div><p>The dt for which to get the containing session.</p>
-</div></blockquote>
-<p><strong>direction: str</strong></p>
-<blockquote>
-<div><p>“next” (default) means that if the given dt is not part of a
-session, return the label of the next session.</p>
-<p>“previous” means that if the given dt is not part of a session,
-return the label of the previous session.</p>
-<p>“none” means that a KeyError will be raised if the given
-dt is not part of a session.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">pd.Timestamp (midnight UTC)</p>
-<blockquote class="last">
-<div><p>The label of the containing session.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.utils.calendars.TradingCalendar.minutes_count_for_sessions_in_range">
-<code class="descname">minutes_count_for_sessions_in_range</code><span class="sig-paren">(</span><em>start_session</em>, <em>end_session</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar.minutes_count_for_sessions_in_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.minutes_count_for_sessions_in_range" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>start_session: pd.Timestamp</strong></p>
-<blockquote>
-<div><p>The first session.</p>
-</div></blockquote>
-<p><strong>end_session: pd.Timestamp</strong></p>
-<blockquote>
-<div><p>The last session.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">int: The total number of minutes for the contiguous chunk of sessions.</p>
-<blockquote class="last">
-<div><p>between start_session and end_session, inclusive.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.utils.calendars.TradingCalendar.minutes_for_session">
-<code class="descname">minutes_for_session</code><span class="sig-paren">(</span><em>session_label</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar.minutes_for_session"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.minutes_for_session" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a session label, return the minutes for that session.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>session_label: pd.Timestamp (midnight UTC)</strong></p>
-<blockquote>
-<div><p>A session label whose session’s minutes are desired.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">pd.DateTimeIndex</p>
-<blockquote class="last">
-<div><p>All the minutes for the given session.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.utils.calendars.TradingCalendar.minutes_for_sessions_in_range">
-<code class="descname">minutes_for_sessions_in_range</code><span class="sig-paren">(</span><em>start_session_label</em>, <em>end_session_label</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar.minutes_for_sessions_in_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.minutes_for_sessions_in_range" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns all the minutes for all the sessions from the given start
-session label to the given end session label, inclusive.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>start_session_label: pd.Timestamp</strong></p>
-<blockquote>
-<div><p>The label of the first session in the range.</p>
-</div></blockquote>
-<p><strong>end_session_label: pd.Timestamp</strong></p>
-<blockquote>
-<div><p>The label of the last session in the range.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">pd.DatetimeIndex</p>
-<blockquote class="last">
-<div><p>The minutes in the desired range.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.utils.calendars.TradingCalendar.minutes_in_range">
-<code class="descname">minutes_in_range</code><span class="sig-paren">(</span><em>start_minute</em>, <em>end_minute</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar.minutes_in_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.minutes_in_range" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given start and end minutes, return all the calendar minutes
-in that range, inclusive.</p>
-<p>Given minutes don’t need to be calendar minutes.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>start_minute: pd.Timestamp</strong></p>
-<blockquote>
-<div><p>The minute representing the start of the desired range.</p>
-</div></blockquote>
-<p><strong>end_minute: pd.Timestamp</strong></p>
-<blockquote>
-<div><p>The minute representing the end of the desired range.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">pd.DatetimeIndex</p>
-<blockquote class="last">
-<div><p>The minutes in the desired range.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.utils.calendars.TradingCalendar.next_close">
-<code class="descname">next_close</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar.next_close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.next_close" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a dt, returns the next close.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dt: pd.Timestamp</strong></p>
-<blockquote>
-<div><p>The dt for which to get the next close.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">pd.Timestamp</p>
-<blockquote class="last">
-<div><p>The UTC timestamp of the next close.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.utils.calendars.TradingCalendar.next_minute">
-<code class="descname">next_minute</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar.next_minute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.next_minute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a dt, return the next exchange minute.  If the given dt is not
-an exchange minute, returns the next exchange open.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dt: pd.Timestamp</strong></p>
-<blockquote>
-<div><p>The dt for which to get the next exchange minute.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">pd.Timestamp</p>
-<blockquote class="last">
-<div><p>The next exchange minute.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.utils.calendars.TradingCalendar.next_open">
-<code class="descname">next_open</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar.next_open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.next_open" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a dt, returns the next open.</p>
-<p>If the given dt happens to be a session open, the next session’s open
-will be returned.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dt: pd.Timestamp</strong></p>
-<blockquote>
-<div><p>The dt for which to get the next open.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">pd.Timestamp</p>
-<blockquote class="last">
-<div><p>The UTC timestamp of the next open.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.utils.calendars.TradingCalendar.next_session_label">
-<code class="descname">next_session_label</code><span class="sig-paren">(</span><em>session_label</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar.next_session_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.next_session_label" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a session label, returns the label of the next session.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>session_label: pd.Timestamp</strong></p>
-<blockquote>
-<div><p>A session whose next session is desired.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">pd.Timestamp</p>
-<blockquote class="last">
-<div><p>The next session label (midnight UTC).</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Notes</p>
-<p>Raises ValueError if the given session is the last session in this
-calendar.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.utils.calendars.TradingCalendar.open_and_close_for_session">
-<code class="descname">open_and_close_for_session</code><span class="sig-paren">(</span><em>session_label</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar.open_and_close_for_session"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.open_and_close_for_session" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a tuple of timestamps of the open and close of the session
-represented by the given label.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>session_label: pd.Timestamp</strong></p>
-<blockquote>
-<div><p>The session whose open and close are desired.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(Timestamp, Timestamp)</p>
-<blockquote class="last">
-<div><p>The open and close for the given session.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.utils.calendars.TradingCalendar.previous_close">
-<code class="descname">previous_close</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar.previous_close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.previous_close" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a dt, returns the previous close.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dt: pd.Timestamp</strong></p>
-<blockquote>
-<div><p>The dt for which to get the previous close.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">pd.Timestamp</p>
-<blockquote class="last">
-<div><p>The UTC timestamp of the previous close.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.utils.calendars.TradingCalendar.previous_minute">
-<code class="descname">previous_minute</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar.previous_minute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.previous_minute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a dt, return the previous exchange minute.</p>
-<p>Raises KeyError if the given timestamp is not an exchange minute.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dt: pd.Timestamp</strong></p>
-<blockquote>
-<div><p>The dt for which to get the previous exchange minute.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">pd.Timestamp</p>
-<blockquote class="last">
-<div><p>The previous exchange minute.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.utils.calendars.TradingCalendar.previous_open">
-<code class="descname">previous_open</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar.previous_open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.previous_open" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a dt, returns the previous open.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dt: pd.Timestamp</strong></p>
-<blockquote>
-<div><p>The dt for which to get the previous open.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">pd.Timestamp</p>
-<blockquote class="last">
-<div><p>The UTC imestamp of the previous open.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.utils.calendars.TradingCalendar.previous_session_label">
-<code class="descname">previous_session_label</code><span class="sig-paren">(</span><em>session_label</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar.previous_session_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.previous_session_label" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a session label, returns the label of the previous session.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>session_label: pd.Timestamp</strong></p>
-<blockquote>
-<div><p>A session whose previous session is desired.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">pd.Timestamp</p>
-<blockquote class="last">
-<div><p>The previous session label (midnight UTC).</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Notes</p>
-<p>Raises ValueError if the given session is the first session in this
-calendar.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="catalyst.utils.calendars.TradingCalendar.regular_holidays">
-<code class="descname">regular_holidays</code><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.regular_holidays" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">pd.AbstractHolidayCalendar: a calendar containing the regular holidays</p>
-<p class="last">for this calendar</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.utils.calendars.TradingCalendar.session_distance">
-<code class="descname">session_distance</code><span class="sig-paren">(</span><em>start_session_label</em>, <em>end_session_label</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar.session_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.session_distance" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a start and end session label, returns the distance between
-them.  For example, for three consecutive sessions Mon., Tues., and
-Wed, <cite>session_distance(Mon, Wed)</cite> would return 2.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>start_session_label: pd.Timestamp</strong></p>
-<blockquote>
-<div><p>The label of the start session.</p>
-</div></blockquote>
-<p><strong>end_session_label: pd.Timestamp</strong></p>
-<blockquote>
-<div><p>The label of the ending session.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">int</p>
-<blockquote class="last">
-<div><p>The distance between the two sessions.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.utils.calendars.TradingCalendar.sessions_in_range">
-<code class="descname">sessions_in_range</code><span class="sig-paren">(</span><em>start_session_label</em>, <em>end_session_label</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar.sessions_in_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.sessions_in_range" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given start and end session labels, return all the sessions in that
-range, inclusive.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>start_session_label: pd.Timestamp (midnight UTC)</strong></p>
-<blockquote>
-<div><p>The label representing the first session of the desired range.</p>
-</div></blockquote>
-<p><strong>end_session_label: pd.Timestamp (midnight UTC)</strong></p>
-<blockquote>
-<div><p>The label representing the last session of the desired range.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">pd.DatetimeIndex</p>
-<blockquote class="last">
-<div><p>The desired sessions.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.utils.calendars.TradingCalendar.sessions_window">
-<code class="descname">sessions_window</code><span class="sig-paren">(</span><em>session_label</em>, <em>count</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar.sessions_window"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.sessions_window" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a session label and a window size, returns a list of sessions
-of size <cite>count</cite> + 1, that either starts with the given session
-(if <cite>count</cite> is positive) or ends with the given session (if <cite>count</cite> is
-negative).</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>session_label: pd.Timestamp</strong></p>
-<blockquote>
-<div><p>The label of the initial session.</p>
-</div></blockquote>
-<p><strong>count: int</strong></p>
-<blockquote>
-<div><p>Defines the length and the direction of the window.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">pd.DatetimeIndex</p>
-<blockquote class="last">
-<div><p>The desired sessions.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="catalyst.utils.calendars.TradingCalendar.special_closes">
-<code class="descname">special_closes</code><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.special_closes" title="Permalink to this definition">¶</a></dt>
-<dd><p>A list of special close times and corresponding HolidayCalendars.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list: List of (time, AbstractHolidayCalendar) tuples</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="catalyst.utils.calendars.TradingCalendar.special_closes_adhoc">
-<code class="descname">special_closes_adhoc</code><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.special_closes_adhoc" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">list: List of (time, DatetimeIndex) tuples that represent special</p>
-<blockquote class="last">
-<div><p>closes that cannot be codified into rules.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="catalyst.utils.calendars.TradingCalendar.special_opens">
-<code class="descname">special_opens</code><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.special_opens" title="Permalink to this definition">¶</a></dt>
-<dd><p>A list of special open times and corresponding HolidayCalendars.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list: List of (time, AbstractHolidayCalendar) tuples</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="catalyst.utils.calendars.TradingCalendar.special_opens_adhoc">
-<code class="descname">special_opens_adhoc</code><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar.special_opens_adhoc" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">list: List of (time, DatetimeIndex) tuples that represent special</p>
-<blockquote class="last">
-<div><p>closes that cannot be codified into rules.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="function">
@@ -2514,26 +1741,26 @@ negative).</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>name: str</strong></p>
-<blockquote>
-<div><p>The key with which to register this calendar.</p>
-</div></blockquote>
-<p><strong>calendar: TradingCalendar</strong></p>
-<blockquote>
-<div><p>The calendar to be registered for retrieval.</p>
-</div></blockquote>
-<p><strong>force</strong> : bool, optional</p>
-<blockquote>
-<div><p>If True, old calendars will be overwritten on a name collision.
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>name: str</strong></dt>
+<dd><p class="first last">The key with which to register this calendar.</p>
+</dd>
+<dt><strong>calendar: TradingCalendar</strong></dt>
+<dd><p class="first last">The calendar to be registered for retrieval.</p>
+</dd>
+<dt><strong>force</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">If True, old calendars will be overwritten on a name collision.
 If False, name collisions will raise an exception.
 Default is False.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>CalendarNameCollision</strong></p>
-<blockquote class="last">
-<div><p>If a calendar is already registered with the given calendar’s name.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>CalendarNameCollision</strong></dt>
+<dd><p class="first last">If a calendar is already registered with the given calendar’s name.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2550,26 +1777,26 @@ at some future point in time.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>name: str</strong></p>
-<blockquote>
-<div><p>The key with which to register this calendar.</p>
-</div></blockquote>
-<p><strong>calendar_type: type</strong></p>
-<blockquote>
-<div><p>The type of the calendar to register.</p>
-</div></blockquote>
-<p><strong>force</strong> : bool, optional</p>
-<blockquote>
-<div><p>If True, old calendars will be overwritten on a name collision.
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>name: str</strong></dt>
+<dd><p class="first last">The key with which to register this calendar.</p>
+</dd>
+<dt><strong>calendar_type: type</strong></dt>
+<dd><p class="first last">The type of the calendar to register.</p>
+</dd>
+<dt><strong>force</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd><p class="first last">If True, old calendars will be overwritten on a name collision.
 If False, name collisions will raise an exception.
 Default is False.</p>
-</div></blockquote>
+</dd>
+</dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>CalendarNameCollision</strong></p>
-<blockquote class="last">
-<div><p>If a calendar is already registered with the given calendar’s name.</p>
-</div></blockquote>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>CalendarNameCollision</strong></dt>
+<dd><p class="first last">If a calendar is already registered with the given calendar’s name.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2584,10 +1811,11 @@ Default is False.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cal_name</strong> : str</p>
-<blockquote class="last">
-<div><p>The name of the calendar to be deregistered.</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>cal_name</strong> <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The name of the calendar to be deregistered.</p>
+</dd>
+</dl>
 </td>
 </tr>
 </tbody>
@@ -2601,290 +1829,80 @@ Default is False.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="data-api">
-<h2>Data API<a class="headerlink" href="#data-api" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="utilities">
-<h2>Utilities<a class="headerlink" href="#utilities" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="caching">
-<h3>Caching<a class="headerlink" href="#caching" title="Permalink to this headline">¶</a></h3>
-<dl class="class">
-<dt id="catalyst.utils.cache.CachedObject">
-<em class="property">class </em><code class="descclassname">catalyst.utils.cache.</code><code class="descname">CachedObject</code><span class="sig-paren">(</span><em>value</em>, <em>expires</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/cache.html#CachedObject"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.cache.CachedObject" title="Permalink to this definition">¶</a></dt>
-<dd><p>A simple struct for maintaining a cached object with an expiration date.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>value</strong> : object</p>
-<blockquote>
-<div><p>The object to cache.</p>
-</div></blockquote>
-<p><strong>expires</strong> : datetime-like</p>
-<blockquote class="last">
-<div><p>Expiration date of <cite>value</cite>. The cache is considered invalid for dates
-<strong>strictly greater</strong> than <cite>expires</cite>.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Examples</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">Timestamp</span><span class="p">,</span> <span class="n">Timedelta</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">expires</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="s1">&#39;2014&#39;</span><span class="p">,</span> <span class="n">tz</span><span class="o">=</span><span class="s1">&#39;UTC&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">CachedObject</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">expires</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">unwrap</span><span class="p">(</span><span class="n">expires</span> <span class="o">-</span> <span class="n">Timedelta</span><span class="p">(</span><span class="s1">&#39;1 minute&#39;</span><span class="p">))</span>
-<span class="go">1</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">unwrap</span><span class="p">(</span><span class="n">expires</span><span class="p">)</span>
-<span class="go">1</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">unwrap</span><span class="p">(</span><span class="n">expires</span> <span class="o">+</span> <span class="n">Timedelta</span><span class="p">(</span><span class="s1">&#39;1 minute&#39;</span><span class="p">))</span>
-<span class="gp">... </span>
-<span class="gt">Traceback (most recent call last):</span>
-    <span class="o">...</span>
-<span class="gr">Expired</span>: <span class="n">2014-01-01 00:00:00+00:00</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="class">
-<dt id="catalyst.utils.cache.ExpiringCache">
-<em class="property">class </em><code class="descclassname">catalyst.utils.cache.</code><code class="descname">ExpiringCache</code><span class="sig-paren">(</span><em>cache=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/cache.html#ExpiringCache"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.cache.ExpiringCache" title="Permalink to this definition">¶</a></dt>
-<dd><p>A cache of multiple CachedObjects, which returns the wrapped the value
-or raises and deletes the CachedObject if the value has expired.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cache</strong> : dict-like, optional</p>
-<blockquote class="last">
-<div><p>An instance of a dict-like object which needs to support at least:
-<cite>__del__</cite>, <cite>__getitem__</cite>, <cite>__setitem__</cite>
-If <cite>None</cite>, than a dict is used as a default.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Examples</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">Timestamp</span><span class="p">,</span> <span class="n">Timedelta</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">expires</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="s1">&#39;2014&#39;</span><span class="p">,</span> <span class="n">tz</span><span class="o">=</span><span class="s1">&#39;UTC&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">value</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cache</span> <span class="o">=</span> <span class="n">ExpiringCache</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cache</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">expires</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="n">expires</span> <span class="o">-</span> <span class="n">Timedelta</span><span class="p">(</span><span class="s1">&#39;1 minute&#39;</span><span class="p">))</span>
-<span class="go">1</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="n">expires</span> <span class="o">+</span> <span class="n">Timedelta</span><span class="p">(</span><span class="s1">&#39;1 minute&#39;</span><span class="p">))</span>
-<span class="gt">Traceback (most recent call last):</span>
-    <span class="o">...</span>
-<span class="gr">KeyError</span>: <span class="n">&#39;foo&#39;</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="class">
-<dt id="catalyst.utils.cache.dataframe_cache">
-<em class="property">class </em><code class="descclassname">catalyst.utils.cache.</code><code class="descname">dataframe_cache</code><span class="sig-paren">(</span><em>path=None</em>, <em>lock=None</em>, <em>clean_on_failure=True</em>, <em>serialization='msgpack'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/cache.html#dataframe_cache"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.cache.dataframe_cache" title="Permalink to this definition">¶</a></dt>
-<dd><p>A disk-backed cache for dataframes.</p>
-<p><code class="docutils literal"><span class="pre">dataframe_cache</span></code> is a mutable mapping from string names to pandas
-DataFrame objects.
-This object may be used as a context manager to delete the cache directory
-on exit.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>path</strong> : str, optional</p>
-<blockquote>
-<div><p>The directory path to the cache. Files will be written as
-<code class="docutils literal"><span class="pre">path/&lt;keyname&gt;</span></code>.</p>
-</div></blockquote>
-<p><strong>lock</strong> : Lock, optional</p>
-<blockquote>
-<div><p>Thread lock for multithreaded/multiprocessed access to the cache.
-If not provided no locking will be used.</p>
-</div></blockquote>
-<p><strong>clean_on_failure</strong> : bool, optional</p>
-<blockquote>
-<div><p>Should the directory be cleaned up if an exception is raised in the
-context manager.</p>
-</div></blockquote>
-<p><strong>serialize</strong> : {‘msgpack’, ‘pickle:&lt;n&gt;’}, optional</p>
-<blockquote class="last">
-<div><p>How should the data be serialized. If <code class="docutils literal"><span class="pre">'pickle'</span></code> is passed, an
-optional pickle protocol can be passed like: <code class="docutils literal"><span class="pre">'pickle:3'</span></code> which says
-to use pickle protocol 3.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Notes</p>
-<p>The syntax <code class="docutils literal"><span class="pre">cache[:]</span></code> will load all key:value pairs into memory as a
-dictionary.
-The cache uses a temporary file format that is subject to change between
-versions of catalyst.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="catalyst.utils.cache.working_file">
-<em class="property">class </em><code class="descclassname">catalyst.utils.cache.</code><code class="descname">working_file</code><span class="sig-paren">(</span><em>final_path</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/cache.html#working_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.cache.working_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>A context manager for managing a temporary file that will be moved
-to a non-temporary location if no exceptions are raised in the context.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>final_path</strong> : str</p>
-<blockquote>
-<div><p>The location to move the file when committing.</p>
-</div></blockquote>
-<p><strong>*args, **kwargs</strong></p>
-<blockquote class="last">
-<div><p>Forwarded to NamedTemporaryFile.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Notes</p>
-<p>The file is moved on __exit__ if there are no exceptions.
-<code class="docutils literal"><span class="pre">working_file</span></code> uses <a class="reference external" href="https://docs.python.org/dev/library/shutil.html#shutil.move" title="(in Python v3.8)"><code class="xref py py-func docutils literal"><span class="pre">shutil.move()</span></code></a> to move the actual files,
-meaning it has as strong of guarantees as <a class="reference external" href="https://docs.python.org/dev/library/shutil.html#shutil.move" title="(in Python v3.8)"><code class="xref py py-func docutils literal"><span class="pre">shutil.move()</span></code></a>.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="catalyst.utils.cache.working_dir">
-<em class="property">class </em><code class="descclassname">catalyst.utils.cache.</code><code class="descname">working_dir</code><span class="sig-paren">(</span><em>final_path</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/cache.html#working_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.cache.working_dir" title="Permalink to this definition">¶</a></dt>
-<dd><p>A context manager for managing a temporary directory that will be moved
-to a non-temporary location if no exceptions are raised in the context.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>final_path</strong> : str</p>
-<blockquote>
-<div><p>The location to move the file when committing.</p>
-</div></blockquote>
-<p><strong>*args, **kwargs</strong></p>
-<blockquote class="last">
-<div><p>Forwarded to tmp_dir.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Notes</p>
-<p>The file is moved on __exit__ if there are no exceptions.
-<code class="docutils literal"><span class="pre">working_dir</span></code> uses <code class="xref py py-func docutils literal"><span class="pre">dir_util.copy_tree()</span></code> to move the actual files,
-meaning it has as strong of guarantees as <code class="xref py py-func docutils literal"><span class="pre">dir_util.copy_tree()</span></code>.</p>
-</dd></dl>
-
-</div>
-<div class="section" id="command-line">
-<h3>Command Line<a class="headerlink" href="#command-line" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
-<dt id="catalyst.utils.cli.maybe_show_progress">
-<code class="descclassname">catalyst.utils.cli.</code><code class="descname">maybe_show_progress</code><span class="sig-paren">(</span><em>it</em>, <em>show_progress</em>, <em>empty_char=' '</em>, <em>fill_char='='</em>, <em>bar_template='    [%(bar)s]  %(label)s:  %(info)s'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/cli.html#maybe_show_progress"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.cli.maybe_show_progress" title="Permalink to this definition">¶</a></dt>
-<dd><p>Optionally show a progress bar for the given iterator.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>it</strong> : iterable</p>
-<blockquote>
-<div><p>The underlying iterator.</p>
-</div></blockquote>
-<p><strong>show_progress</strong> : bool</p>
-<blockquote>
-<div><p>Should progress be shown.</p>
-</div></blockquote>
-<p><strong>**kwargs</strong></p>
-<blockquote>
-<div><p>Forwarded to the click progress bar.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>itercontext</strong> : context manager</p>
-<blockquote class="last">
-<div><p>A context manager whose enter is the actual iterator to use.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Examples</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">maybe_show_progress</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="bp">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">ns</span><span class="p">:</span>
-     <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">ns</span><span class="p">:</span>
-         <span class="o">...</span>
-</pre></div>
-</div>
-</dd></dl>
-
-</div>
-</div>
 </div>
 
 
-           </div>
-           <div class="articleComments">
-            
-           </div>
           </div>
-          <footer>
-  
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>
-        &copy; Copyright 2018, Enigma MPC, Inc..
-
-    </p>
-  </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
-
-</footer>
-
         </div>
       </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">API Reference</a><ul>
+<li><a class="reference internal" href="#running-a-strategy">Running a Strategy</a></li>
+<li><a class="reference internal" href="#algorithm-api">Algorithm API</a><ul>
+<li><a class="reference internal" href="#data-object">Data Object</a></li>
+<li><a class="reference internal" href="#scheduling-functions">Scheduling Functions</a></li>
+<li><a class="reference internal" href="#orders">Orders</a><ul>
+<li><a class="reference internal" href="#order-cancellation-policies">Order Cancellation Policies</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#assets">Assets</a></li>
+<li><a class="reference internal" href="#trading-controls">Trading Controls</a></li>
+<li><a class="reference internal" href="#simulation-parameters">Simulation Parameters</a><ul>
+<li><a class="reference internal" href="#commission-models">Commission Models</a></li>
+<li><a class="reference internal" href="#slippage-models">Slippage Models</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pipeline">Pipeline</a></li>
+<li><a class="reference internal" href="#miscellaneous">Miscellaneous</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#trading-calendar-api">Trading Calendar API</a></li>
+</ul>
+</li>
+</ul>
 
-    </section>
-
-  </div>
-  
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'0.4',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
-
-  
-  
-  <script type="text/javascript">
-      jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
-      });
-  </script>
-   
-
-</body>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="releases.html"
+                        title="previous chapter">Release Notes</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/appendix.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="releases.html" title="Release Notes"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Catalyst 0.5.9 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Enigma MPC, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
+    </div>
+  </body>
 </html>

@@ -264,6 +264,11 @@ also define a configuration file with these parameters that you can then
 conveniently pass to the ``-c`` option so that you don't have to supply the 
 command line args all the time.
 
+.. note::
+
+    currently, the base currency of all trading pairs must match the value of ``base_currency``
+
+
 Thus, to execute our algorithm from above and save the results to
 ``buy_btc_simple_out.pickle`` we would call ``catalyst run`` as follows:
 
