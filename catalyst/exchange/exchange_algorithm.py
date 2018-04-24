@@ -134,6 +134,16 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
 
     @api_method
     def set_commission(self, maker=None, taker=None):
+        """Sets the maker and taker fees of the commission model for the simulation.
+
+        Parameters
+        ----------
+        maker : float
+            The taker fee - taking from the order book.
+        taker : float
+            The maker fee - adding to the order book.
+
+        """
         key = list(self.blotter.commission_models.keys())[0]
         if maker is not None:
             self.blotter.commission_models[key].maker = maker
@@ -143,6 +153,13 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
 
     @api_method
     def set_slippage(self, spread=None):
+        """Set the spread of the slippage model for the simulation.
+
+        Parameters
+        ----------
+        spread : float
+            The spread to be set.
+        """
         key = list(self.blotter.slippage_models.keys())[0]
         if spread is not None:
             self.blotter.slippage_models[key].spread = spread
@@ -203,19 +220,33 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
     @api_method
     @preprocess(symbol_str=ensure_upper_case)
     def symbol(self, symbol_str, exchange_name=None):
-        """Lookup an Equity by its ticker symbol.
+        """Lookup a TradingPair by its ticker symbol.
+        Catalyst defines its own set of "universal" symbols to reference
+        trading pairs across exchanges. This is required because exchanges
+        are not adhering to a universal symbolism. For example, Bitfinex
+        uses the BTC symbol for Bitcon while Kraken uses XBT. In addition,
+        pairs are sometimes presented differently. For example, Bitfinex
+        puts the market currency before the base currency without a
+        separator, Bittrex puts the base currency first and uses a dash
+        seperator.
+
+        Here is the Catalyst convention: [Market Currency]_[Base Currency]
+        For example: btc_usd, eth_btc, neo_eth, ltc_eur.
+
+        The symbol for each currency (e.g. btc, eth, ltc) is generally
+        aligned with the Bittrex exchange.
 
         Parameters
         ----------
         symbol_str : str
-            The ticker symbol for the equity to lookup.
+            The ticker symbol for the TradingPair to lookup.
         exchange_name: str
             The name of the exchange containing the symbol
 
         Returns
         -------
-        equity : Equity
-            The equity that held the ticker symbol on the current
+        tradingPair : TradingPair
+            The TradingPair that held the ticker symbol on the current
             symbol lookup date.
 
         Raises
@@ -223,9 +254,6 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
         SymbolNotFound
             Raised when the symbols was not held on the current lookup date.
 
-        See Also
-        --------
-        :func:`catalyst.api.set_symbol_lookup_date`
         """
         # If the user has not set the symbol lookup date,
         # use the end_session as the date for sybmol->sid resolution.
@@ -379,12 +407,14 @@ class ExchangeTradingAlgorithmBacktest(ExchangeTradingAlgorithmBase):
 
 
 class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
+
     def __init__(self, *args, **kwargs):
         self.algo_namespace = kwargs.pop('algo_namespace', None)
         self.live_graph = kwargs.pop('live_graph', None)
         self.stats_output = kwargs.pop('stats_output', None)
         self._analyze_live = kwargs.pop('analyze_live', None)
         self.end = kwargs.pop('end', None)
+        self.is_end = kwargs.pop('is_end', True)
 
         self._clock = None
         self.frame_stats = list()
@@ -428,6 +458,37 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             log.warn("Can't initialize signal handler inside another thread."
                      "Exit should be handled by the user.")
 
+    def get_frame_stats(self):
+        """
+        preparing the stats before analyze
+        :return: stats: pd.Dataframe
+        """
+        # add the last day stats which is not saved in the directory
+        current_stats = pd.DataFrame(self.frame_stats)
+        current_stats.set_index('period_close', drop=False, inplace=True)
+
+        # get the location of the directory
+        algo_folder = get_algo_folder(self.algo_namespace)
+        folder = join(algo_folder, 'frame_stats')
+
+        if exists(folder):
+            files = [f for f in listdir(folder) if isfile(join(folder, f))]
+
+            period_stats_list = []
+            for item in files:
+                filename = join(folder, item)
+
+                with open(filename, 'rb') as handle:
+                    perf_period = pickle.load(handle)
+                    period_stats_list.extend(perf_period)
+
+            stats = pd.DataFrame(period_stats_list)
+            stats.set_index('period_close', drop=False, inplace=True)
+
+            return pd.concat([stats, current_stats])
+        else:
+            return current_stats
+
     def interrupt_algorithm(self):
         """
 
@@ -451,31 +512,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             log.info('Exiting the algorithm. Calling `analyze()` '
                      'before exiting the algorithm.')
 
-            # add the last day stats which is not saved in the directory
-            current_stats = pd.DataFrame(self.frame_stats)
-            current_stats.set_index('period_close', drop=False, inplace=True)
-
-            # get the location of the directory
-            algo_folder = get_algo_folder(self.algo_namespace)
-            folder = join(algo_folder, 'frame_stats')
-
-            if exists(folder):
-                files = [f for f in listdir(folder) if isfile(join(folder, f))]
-
-                period_stats_list = []
-                for item in files:
-                    filename = join(folder, item)
-
-                    with open(filename, 'rb') as handle:
-                        perf_period = pickle.load(handle)
-                        period_stats_list.extend(perf_period)
-
-                stats = pd.DataFrame(period_stats_list)
-                stats.set_index('period_close', drop=False, inplace=True)
-
-                stats = pd.concat([stats, current_stats])
-            else:
-                stats = current_stats
+            stats = self.get_frame_stats()
 
             self.analyze(stats)
 
@@ -527,10 +564,12 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                 self.sim_params.sessions,
                 context=self,
                 callback=self._analyze_live,
+                end=self.end if self.is_end else None
             )
         else:
             self._clock = SimpleClock(
                 self.sim_params.sessions,
+                end=self.end if self.is_end else None
             )
 
         return self._clock
@@ -820,10 +859,6 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         if not self.is_running:
             return
 
-        if self.end is not None and self.end < data.current_dt:
-            log.info('Algorithm has reached specified end time. Finishing...')
-            self.interrupt_algorithm()
-
         # Resetting the frame stats every day to minimize memory footprint
         today = data.current_dt.floor('1D')
         if self.current_day is not None and today > self.current_day:
@@ -999,6 +1034,19 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
 
             return open_orders
 
+    def analyze(self, perf):
+        super(ExchangeTradingAlgorithmLive, self)\
+            .analyze(self.get_frame_stats())
+
+    def run(self, data=None, overwrite_sim_params=True):
+        data.attempts = self.attempts
+        perf = super(ExchangeTradingAlgorithmLive, self).run(
+            data, overwrite_sim_params
+        )
+        # Rebuilding the stats to support minute data
+        stats = self.get_frame_stats()
+        return stats
+
     @error_keywords(sid='Keyword argument `sid` is no longer supported for '
                         'get_open_orders. Use `asset` instead.')
     @api_method
@@ -1044,7 +1092,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         order : Order
             The order object.
         execution_price: float
-            The execution price per share of the order
+            The execution price per unit of the order
         """
         exchange = self.exchanges[exchange_name]
         return retry(
@@ -1065,10 +1113,12 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         order_param : str or Order
             The order_id or order object to cancel.
 
-        exchange_name: name of exchange from
-                        which you want to cancel the order
-        symbol:
-        params:
+        exchange_name: str
+            The name of exchange to cancel the order in
+        symbol: str
+            The tradingPair symbol
+        params: dict, optional
+            Extra parameters to pass to the exchange
         """
         exchange = self.exchanges[exchange_name]
 

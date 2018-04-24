@@ -19,7 +19,6 @@ The exchanges available for backtesting are fully supported in live mode:
 Additionally, we have successfully tested the following exchanges:
 
 - Binance, id = ``binance``
-- Bitmex, id = ``bitmex``
 - GDAX, id = ``gdax``
 
 As Catalyst is currently in Alpha and in under active development, you are 
@@ -182,6 +181,21 @@ Here is the breakdown of the new arguments:
   The live algo starts by default in the present, as mentioned above.
   by setting the start_date to a time in the future, the algorithm would
   essentially sleep and when the predefined time comes, it would start executing.
+
+
+
+Algorithm State
+^^^^^^^^^^^^^^^
+
+In live mode, each call to ``handle data`` saves the state of the algorithm.
+Any information added to the ``context.state`` dictionary will be saved between runs.
+During algorithm restart, the state is restored (if exists) in the initialization function.
+
+Cleaning the state can be achieved by running:
+
+.. code-block:: bash
+
+    catalyst clean-algo -n my-algo-namespace
 
 
 

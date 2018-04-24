@@ -27,7 +27,6 @@ from catalyst.marketplace.marketplace_errors import (
     MarketplaceNoCSVFiles, MarketplaceRequiresPython3)
 from catalyst.marketplace.utils.auth_utils import get_key_secret, \
     get_signed_headers
-from catalyst.marketplace.utils.bundle_utils import merge_bundles
 from catalyst.marketplace.utils.eth_utils import bin_hex, from_grains, \
     to_grains
 from catalyst.marketplace.utils.path_utils import get_bundle_folder, \
@@ -433,8 +432,8 @@ class Marketplace:
         ensure_directory(bundle_folder)
         if os.listdir(bundle_folder):
             zsource = bcolz.ctable(rootdir=tmp_bundle, mode='r')
-            ztarget = bcolz.ctable(rootdir=bundle_folder, mode='r')
-            merge_bundles(zsource, ztarget)
+            ztarget = bcolz.ctable(rootdir=bundle_folder, mode='a')
+            ztarget.append(zsource)
 
         else:
             shutil.rmtree(bundle_folder, ignore_errors=True)
@@ -516,6 +515,8 @@ class Marketplace:
         )
         if r.status_code == 200:
             log.info('Dataset downloaded successfully. Processing dataset...')
+            bundle_folder = get_data_source_folder(ds_name)
+            shutil.rmtree(bundle_folder, ignore_errors=True)
             target_path = get_temp_bundles_folder()
             try:
                 decoder = MultipartDecoder.from_response(r)
@@ -563,6 +564,13 @@ class Marketplace:
         bundle_folder = get_data_source_folder(ds_name)
         z = bcolz.ctable(rootdir=bundle_folder, mode='r')
 
+        # if start is not None and end is not None:
+        #     z = z.fetchwhere('(date>=start_date) & (date<end_date)', user_dict={'start_date': start.to_datetime64(),
+        #                                                                          'end_date': end.to_datetime64()})
+        # elif start is not None:
+        #     z = z.fetchwhere('(date>=start_date)', user_dict={'start_date': start.to_datetime64()})
+        # elif end is not None:
+        #     z = z.fetchwhere('(date<end_date)', user_dict={'end_date': end.to_datetime64()})
         df = z.todataframe()  # type: pd.DataFrame
         df.set_index(['date', 'symbol'], drop=True, inplace=True)
 
@@ -788,27 +796,30 @@ class Marketplace:
         if not filenames:
             raise MarketplaceNoCSVFiles(datadir=datadir)
 
+        def read_file(pathname):
+            with open(pathname, 'rb') as f:
+                return f.read()
+
         files = []
         for idx, file in enumerate(filenames):
             log.info('Uploading file {} of {}: {}'.format(
                 idx+1, len(filenames), file))
-            files = []
-            files.append(('file', open(file, 'rb')))
+            files.append(('file', (os.path.basename(file), read_file(file))))
 
-            headers = get_signed_headers(dataset, key, secret)
-            r = requests.post('{}/marketplace/publish'.format(AUTH_SERVER),
-                              files=files,
-                              headers=headers)
+        headers = get_signed_headers(dataset, key, secret)
+        r = requests.post('{}/marketplace/publish'.format(AUTH_SERVER),
+                          files=files,
+                          headers=headers)
 
-            if r.status_code != 200:
-                raise MarketplaceHTTPRequest(request='upload file',
-                                             error=r.status_code)
+        if r.status_code != 200:
+            raise MarketplaceHTTPRequest(request='upload file',
+                                         error=r.status_code)
 
-            if 'error' in r.json():
-                raise MarketplaceHTTPRequest(request='upload file',
-                                             error=r.json()['error'])
+        if 'error' in r.json():
+            raise MarketplaceHTTPRequest(request='upload file',
+                                         error=r.json()['error'])
 
-            log.info('File processed successfully.')
+        log.info('File processed successfully.')
 
         print('\nDataset {} uploaded and processed successfully.'.format(
             dataset))

@@ -201,7 +201,7 @@ use 180 days of historical data and rebalance every 30 days. This code was used
 in writting the following article: 
 `Markowitz Portfolio Optimization for Cryptocurrencies <https://blog.enigma.co/markowitz-portfolio-optimization-for-cryptocurrencies-in-catalyst-b23c38652556>`_.
 
-Source code: `examples/simple_universe.py <https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/portfolio_optimization.py>`_
+Source code: `examples/portfolio_optimization.py <https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/portfolio_optimization.py>`_
 
 .. literalinclude:: ../../catalyst/examples/portfolio_optimization.py
    :language: python
