@@ -23,7 +23,6 @@ Bug Fixes
 
 Build
 ~~~~~
-- Updated Data Marketplace `get_dataset` to allow users to specify start and end times for the dataset retrieval.
 - Upgraded `CCXT` version to 1.12.131
 - Updated Data Marketplace to enable submitting several files in a publish command.
 - Improved Data Marketplace ingestion.
