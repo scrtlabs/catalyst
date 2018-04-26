@@ -8,6 +8,8 @@
    You can run this code using the Python interpreter:
 
    $ python portfolio_optimization.py
+
+   Written by: Rodrigo Gomez-Grassi
 '''
 
 from __future__ import division
