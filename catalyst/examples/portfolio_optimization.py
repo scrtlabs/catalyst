@@ -1,4 +1,8 @@
-'''Use this code to execute a portfolio optimization model. This code
+'''
+   Author: Rodrigo Gomez-Grassi
+   Date: Sep. 20, 2017  
+
+   Use this code to execute a portfolio optimization model. This code
    will select the portfolio with the maximum Sharpe Ratio. The parameters
    are set to use 180 days of historical data and rebalance every 30 days.
 
