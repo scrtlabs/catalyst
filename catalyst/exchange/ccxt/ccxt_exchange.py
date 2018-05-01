@@ -1097,6 +1097,7 @@ class CCXT(Exchange):
             )
             transactions.append(transaction)
 
+        order.filled = round(order.filled, order.asset.decimals)
         order.broker_order_id = ', '.join([t['id'] for t in trades])
         return transactions
 
