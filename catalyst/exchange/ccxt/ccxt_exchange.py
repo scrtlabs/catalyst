@@ -1,3 +1,4 @@
+import copy
 import json
 import os
 import re
@@ -7,7 +8,7 @@ import ccxt
 import pandas as pd
 import six
 from ccxt import InvalidOrder, NetworkError, \
-    ExchangeError
+    ExchangeError, RequestTimeout
 from logbook import Logger
 from six import string_types
 
@@ -739,6 +740,114 @@ class CCXT(Exchange):
 
         return order, executed_price
 
+    def _check_order_found(self, previous_orders):
+        """
+        check if .orders was updated after the fetch api method was called
+        and if so extract the new order which should be returned to the user
+
+        :param previous_orders: dict(dict())
+        :return: order: Order if an order was found, otherwise, None
+        """
+        if len(previous_orders) != len(self.api.orders):
+            new_orders = [self.api.orders[order_id] for order_id in
+                          set(self.api.orders) - set(previous_orders)]
+            if len(new_orders) != 1:
+                # todo handle this case (not sure we ever will get to this
+                # case, since we assume that in this period of
+                # time, max 1 order was opened)
+                log.warn(
+                    "multiple orders were found: : {} "
+                    "only the first is considered"
+                        .format([x.id for x in new_orders])
+                )
+
+            return new_orders[0]
+
+        return None
+
+    def _fetch_missing_order(self, dt_before):
+        """
+        check if order was created by running through
+        all api functions according to ccxt manual
+
+        :param dt_before: pd.Timestamp
+        :return: order: Order/ order_id: str
+                if an order was found, otherwise None
+        """
+
+        missing_order = None
+        previous_orders = copy.deepcopy(self.api.orders)
+
+        if self.api.has['fetchOrders'] is True:
+            # contains all orders, therefore,
+            # if method available for this exchange,
+            # it's enough to check it.
+            self.api.fetch_orders()
+            missing_order = self._check_order_found(previous_orders)
+
+        else:
+            if self.api.has['fetchOpenOrders'] is True:
+                self.api.fetch_orders()
+                missing_order = self._check_order_found(previous_orders)
+
+            if missing_order is None and \
+                    self.api.has['fetchClosedOrders'] is True:
+                self.api.fetch_closed_orders()
+                missing_order = self._check_order_found(previous_orders)
+
+        if missing_order is None and self.api.has['fetchMyTrades']:
+            recent_trades = [x for x in self.api.fetch_my_trades() if
+                             pd.Timestamp(x['datetime']) > dt_before
+                             ]
+            missing_order_id_by_trade = list(set(
+                trade.order for trade in recent_trades
+                if trade.order not in list(self.api.orders)
+            ))
+            if missing_order_id_by_trade:
+                if len(missing_order_id_by_trade) > 1:
+                    # todo handle this case (not sure we ever will get to this
+                    # case, since we assume that in this period of
+                    # time, max 1 order was opened)
+                    log.warn(
+                        "multiple orders were found according "
+                        "to the trades: {} only the first is considered"
+                            .format([x.id for x in missing_order_id_by_trade])
+                    )
+                order_id = missing_order_id_by_trade[0]
+                return order_id, None
+
+        return missing_order.id, missing_order
+
+    def _handle_request_timeout(self, dt_before, asset, amount, is_buy, style,
+                                adj_amount):
+        """
+        Check if an order was received during the timeout, if it appeared
+        on the orders dict return it to the user.
+        If an order_id was traced alone, an order is created manually
+        and returned to the user. Otherwise, send none to raise an
+        error and retry the call.
+        :param dt_before: pd.Timestamp
+        :param asset: Asset
+        :param amount: float
+        :param is_buy: Bool
+        :param style:
+        :param adj_amount: int
+        :return: missing_order: Order/ None
+        """
+        missing_order_id, missing_order = self._fetch_missing_order(dt_before)
+
+        if missing_order is None:
+            final_amount = adj_amount if amount > 0 else -adj_amount
+            missing_order = Order(
+                dt=dt_before,
+                asset=asset,
+                amount=final_amount,
+                stop=style.get_stop_price(is_buy),
+                limit=style.get_limit_price(is_buy),
+                id=missing_order_id
+            )
+        return missing_order
+
     def create_order(self, asset, amount, is_buy, style):
         symbol = self.get_symbol(asset)
 
@@ -776,6 +885,7 @@ class CCXT(Exchange):
         else:
             adj_amount = round(abs(amount), asset.decimals)
 
+        before_order_dt = pd.Timestamp.utcnow()
         try:
             result = self.api.create_order(
                 symbol=symbol,
@@ -787,6 +897,28 @@ class CCXT(Exchange):
         except InvalidOrder as e:
             log.warn('the exchange rejected the order: {}'.format(e))
             raise CreateOrderError(exchange=self.name, error=e)
+
+        except RequestTimeout as e:
+            log.info(
+                'received a RequestTimeout exception while creating '
+                'an order on {} / {}\n Checking if an order was filled '
+                'during the timeout'.format(self.name, symbol)
+            )
+
+            missing_order = self._handle_request_timeout(
+                before_order_dt, asset, amount, is_buy, style, adj_amount
+            )
+            if missing_order is None:
+                # no order was found
+                log.warn(
+                    'no order was identified during timeout exception.'
+                    'Please double check for inconsistency with the exchange. '
+                    'We encourage you to report any issue on GitHub: '
+                    'https://github.com/enigmampc/catalyst/issues'
+                )
+                raise ExchangeRequestError(error=e)
+            else:
+                return missing_order
 
         except (ExchangeError, NetworkError) as e:
             log.warn(
@@ -860,7 +992,8 @@ class CCXT(Exchange):
 
     def _check_low_balance(self, currency, balances, amount):
         updated_currency = self._check_common_symbols(currency)
-        return super(CCXT, self)._check_low_balance(updated_currency, balances, amount)
+        return super(CCXT, self)._check_low_balance(updated_currency, balances,
+                                                    amount)
 
     def _process_order_fallback(self, order):
         """
@@ -1007,7 +1140,7 @@ class CCXT(Exchange):
             symbol = self.get_symbol(asset_or_symbol) \
                 if asset_or_symbol is not None else None
             self.api.cancel_order(id=order_id,
-                                  symbol=symbol, params= params)
+                                  symbol=symbol, params=params)
 
         except (ExchangeError, NetworkError) as e:
             log.warn(
@@ -1086,7 +1219,7 @@ class CCXT(Exchange):
                 ticker['volume'] = ticker['baseVolume']
 
             elif 'info' in ticker and 'bidQty' in ticker['info'] \
-                and 'askQty' in ticker['info']:
+                    and 'askQty' in ticker['info']:
                 ticker['volume'] = float(ticker['info']['bidQty']) + \
                                    float(ticker['info']['askQty'])
 
