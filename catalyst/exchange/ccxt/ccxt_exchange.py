@@ -765,7 +765,7 @@ class CCXT(Exchange):
 
         return None
 
-    def _fetch_missing_order(self, dt_before):
+    def _fetch_missing_order(self, dt_before, symbol):
         """
         check if order was created by running through
         all api functions according to ccxt manual
@@ -796,8 +796,8 @@ class CCXT(Exchange):
                 missing_order = self._check_order_found(previous_orders)
 
         if missing_order is None and self.api.has['fetchMyTrades']:
-            recent_trades = [x for x in self.api.fetch_my_trades() if
-                             pd.Timestamp(x['datetime']) > dt_before
+            recent_trades = [x for x in self.api.fetch_my_trades(symbol=symbol)
+                             if pd.Timestamp(x['datetime']) > dt_before
                              ]
             missing_order_id_by_trade = list(set(
                 trade.order for trade in recent_trades
@@ -834,7 +834,8 @@ class CCXT(Exchange):
         :param adj_amount: int
         :return: missing_order: Order/ None
         """
-        missing_order_id, missing_order = self._fetch_missing_order(dt_before)
+        missing_order_id, missing_order = self._fetch_missing_order(
+            dt_before=dt_before, symbol=asset.asset_name)
 
         if missing_order is None:
             final_amount = adj_amount if amount > 0 else -adj_amount
