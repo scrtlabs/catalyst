@@ -182,6 +182,7 @@ Here is the breakdown of the new arguments:
   by setting the start_date to a time in the future, the algorithm would
   essentially sleep and when the predefined time comes, it would start executing.
 
+In live trading the ``handle_data()`` function is called once every minute.
 
 
 Algorithm State
