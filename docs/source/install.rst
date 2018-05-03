@@ -562,7 +562,7 @@ If after following the instructions above, and going through the
 *Troubleshooting* sections, you still experience problems installing Catalyst,
 you can seek additional help through the following channels:
 
-- Join our `Catalyst Forum <https://catalyst.enigma.co/>`_, and browse a variety
+- Join our `Catalyst Forum <https://forum.catalystcrypto.io/>`_, and browse a variety
   of topics and conversations around common issues that others face when using
   Catalyst, and how to resolve them. And join the conversation!
 

@@ -42,7 +42,7 @@ Overview
   portfolio with the maximum Sharpe Ratio. The parameters are set to use 180 
   days of historical data and rebalance every 30 days. This code was used in 
   writting the following article: 
-  `Markowitz Portfolio Optimization for Cryptocurrencies <https://blog.enigma.co/markowitz-portfolio-optimization-for-cryptocurrencies-in-catalyst-b23c38652556>`_.
+  `Markowitz Portfolio Optimization for Cryptocurrencies <https://medium.com/catalyst-crypto/markowitz-portfolio-optimization-for-cryptocurrencies-in-catalyst-b23c38652556>`_.
 
 
 .. _buy_btc_simple:
@@ -146,7 +146,7 @@ Source code: `examples/mean_reversion_simple.py <https://github.com/enigmampc/ca
 .. image:: https://s3.amazonaws.com/enigmaco-docs/github.io/example_mean_reversion_simple.png
 
 Notice the difference in performance between the charts above and those seen on 
-`this video tutorial <https://youtu.be/JOBRwst9jUY>`_ at 
+`this video tutorial <https://youtu.be/PmwbYHjuyNQ>`_ at
 minute 8:10. The buy and sell orders are triggered at the same exact times, but
 the differences result from a more realistic slippage model 
 implemented after the video was recorded, which executes the orders at slighlty
@@ -199,7 +199,7 @@ Use this code to execute a portfolio optimization model. This strategy will
 select the portfolio with the maximum Sharpe Ratio. The parameters are set to 
 use 180 days of historical data and rebalance every 30 days. This code was used 
 in writting the following article: 
-`Markowitz Portfolio Optimization for Cryptocurrencies <https://blog.enigma.co/markowitz-portfolio-optimization-for-cryptocurrencies-in-catalyst-b23c38652556>`_.
+`Markowitz Portfolio Optimization for Cryptocurrencies <https://medium.com/catalyst-crypto/markowitz-portfolio-optimization-for-cryptocurrencies-in-catalyst-b23c38652556>`_.
 
 Source code: `examples/portfolio_optimization.py <https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/portfolio_optimization.py>`_
 
