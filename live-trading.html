@@ -534,11 +534,12 @@ simulated in Catalyst instead of processed on the exchange. It defaults to
 <code class="docutils literal"><span class="pre">True</span></code>.</li>
 <li><code class="docutils literal"><span class="pre">end_date</span></code>: When setting the end_date to a time in the <strong>future</strong>,
 it will schedule the live algo to finish gracefully at the specified date.</li>
-<li><code class="docutils literal"><span class="pre">start_date</span></code>: (<strong>Will be implemented in the future</strong>)
+<li><code class="docutils literal"><span class="pre">start_date</span></code>:
 The live algo starts by default in the present, as mentioned above.
 by setting the start_date to a time in the future, the algorithm would
 essentially sleep and when the predefined time comes, it would start executing.</li>
 </ul>
+<p>In live trading the <code class="docutils literal"><span class="pre">handle_data()</span></code> function is called once every minute.</p>
 </div>
 <div class="section" id="algorithm-state">
 <h2>Algorithm State<a class="headerlink" href="#algorithm-state" title="Permalink to this headline">¶</a></h2>

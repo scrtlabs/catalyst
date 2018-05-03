@@ -587,7 +587,14 @@
         <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">live</span><span class="p">:</span>
-        <span class="n">start</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span>
+        <span class="c"># TODO: fix the start data.</span>
+        <span class="c"># is_start checks if a start date was specified by user</span>
+        <span class="c"># needed for live clock</span>
+        <span class="n">is_start</span> <span class="o">=</span> <span class="bp">True</span>
+
+        <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span>
+            <span class="n">is_start</span> <span class="o">=</span> <span class="bp">False</span>
 
         <span class="c"># TODO: fix the end data.</span>
         <span class="c"># is_end checks if an end date was specified by user</span>
@@ -624,6 +631,8 @@
             <span class="n">simulate_orders</span><span class="o">=</span><span class="n">simulate_orders</span><span class="p">,</span>
             <span class="n">stats_output</span><span class="o">=</span><span class="n">stats_output</span><span class="p">,</span>
             <span class="n">analyze_live</span><span class="o">=</span><span class="n">analyze_live</span><span class="p">,</span>
+            <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
+            <span class="n">is_start</span><span class="o">=</span><span class="n">is_start</span><span class="p">,</span>
             <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
             <span class="n">is_end</span><span class="o">=</span><span class="n">is_end</span><span class="p">,</span>
         <span class="p">)</span>
@@ -637,8 +646,9 @@
         <span class="c"># can handle this later.</span>
 
         <span class="k">if</span> <span class="n">start</span> <span class="o">!=</span> <span class="n">pd</span><span class="o">.</span><span class="n">tslib</span><span class="o">.</span><span class="n">normalize_date</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="ow">or</span> \
-                        <span class="n">end</span> <span class="o">!=</span> <span class="n">pd</span><span class="o">.</span><span class="n">tslib</span><span class="o">.</span><span class="n">normalize_date</span><span class="p">(</span><span class="n">end</span><span class="p">):</span>
-            <span class="c"># todo: add to Sim_Params the option to start &amp; end at specific times </span>
+                <span class="n">end</span> <span class="o">!=</span> <span class="n">pd</span><span class="o">.</span><span class="n">tslib</span><span class="o">.</span><span class="n">normalize_date</span><span class="p">(</span><span class="n">end</span><span class="p">):</span>
+            <span class="c"># todo: add to Sim_Params the option to</span>
+            <span class="c"># start &amp; end at specific times</span>
             <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
                 <span class="s">&quot;Catalyst currently starts and ends on the start and &quot;</span>
                 <span class="s">&quot;end of the dates specified, respectively. We hope to &quot;</span>
@@ -825,11 +835,12 @@
 <span class="sd">        once before each trading day (after initialize on the first day).</span>
 <span class="sd">    analyze : callable[(context, pd.DataFrame) -&gt; None], optional</span>
 <span class="sd">        The analyze function to use for the algorithm. This function is called</span>
-<span class="sd">        once at the end of the backtest/live run and is passed the context and the</span>
-<span class="sd">        performance data.</span>
+<span class="sd">        once at the end of the backtest/live run and is passed the</span>
+<span class="sd">        context and the performance data.</span>
 <span class="sd">    data_frequency : {&#39;daily&#39;, &#39;minute&#39;}, optional</span>
 <span class="sd">        The data frequency to run the algorithm at.</span>
-<span class="sd">        At backtest both modes are supported, at live mode only the minute mode is supported.</span>
+<span class="sd">        At backtest both modes are supported, at live mode only</span>
+<span class="sd">        the minute mode is supported.</span>
 <span class="sd">    data : pd.DataFrame, pd.Panel, or DataPortal, optional</span>
 <span class="sd">        The ohlcv data to run the backtest with.</span>
 <span class="sd">        This argument is mutually exclusive with:</span>
@@ -867,7 +878,8 @@
 <span class="sd">    live_graph: bool, optional</span>
 <span class="sd">        Should the live graph clock be used instead of the regular clock.</span>
 <span class="sd">    analyze_live: callable[(context, pd.DataFrame) -&gt; None], optional</span>
-<span class="sd">        The interactive analyze function to be used with the live graph clock in every tick.</span>
+<span class="sd">        The interactive analyze function to be used with</span>
+<span class="sd">        the live graph clock in every tick.</span>
 <span class="sd">    simulate_orders: bool, optional</span>
 <span class="sd">        Should paper trading mode be applied.</span>
 <span class="sd">    auth_aliases: str, optional</span>

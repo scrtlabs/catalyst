@@ -264,11 +264,6 @@ also define a configuration file with these parameters that you can then
 conveniently pass to the ``-c`` option so that you don't have to supply the 
 command line args all the time.
 
-.. note::
-
-    currently, the base currency of all trading pairs must match the value of ``base_currency``
-
-
 Thus, to execute our algorithm from above and save the results to
 ``buy_btc_simple_out.pickle`` we would call ``catalyst run`` as follows:
 
@@ -677,7 +672,7 @@ Install
 
 In order to use Jupyter Notebook, you first have to install it inside your
 environment. It's available as ``pip`` package, so regardless of how you 
-installed Catalyst, go inside your catalyst environemnt and run:
+installed Catalyst, go inside your catalyst environment and run:
 
 .. code-block:: bash
 
@@ -16459,6 +16454,12 @@ NaN
 .. raw:: html
 
    </div>
+
+
+.. note::
+
+   Currently, the base currency of all trading pairs ordered by the algorithm
+   must match the value of the ``base_currency``.
 
 PyCharm IDE
 ~~~~~~~~~~~

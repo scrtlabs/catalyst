@@ -780,6 +780,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">live_graph</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;live_graph&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stats_output</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;stats_output&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_analyze_live</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;analyze_live&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;start&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_start</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;is_start&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;end&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">is_end</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;is_end&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
 
@@ -795,19 +797,19 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">mode_name</span> <span class="o">=</span> <span class="s">&#39;paper&#39;</span> <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;simulate_orders&#39;</span><span class="p">]</span> <span class="k">else</span> <span class="s">&#39;live&#39;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">pnl_stats</span> <span class="o">=</span> <span class="n">get_algo_df</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">algo_namespace</span><span class="p">,</span>
-                <span class="s">&#39;pnl_stats_{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mode_name</span><span class="p">),</span>
-            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">algo_namespace</span><span class="p">,</span>
+            <span class="s">&#39;pnl_stats_{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mode_name</span><span class="p">),</span>
+        <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">custom_signals_stats</span> <span class="o">=</span> <span class="n">get_algo_df</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">algo_namespace</span><span class="p">,</span>
-                <span class="s">&#39;custom_signals_stats_{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mode_name</span><span class="p">)</span>
-            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">algo_namespace</span><span class="p">,</span>
+            <span class="s">&#39;custom_signals_stats_{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mode_name</span><span class="p">)</span>
+        <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">exposure_stats</span> <span class="o">=</span> <span class="n">get_algo_df</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">algo_namespace</span><span class="p">,</span>
-                <span class="s">&#39;exposure_stats_{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mode_name</span><span class="p">)</span>
-            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">algo_namespace</span><span class="p">,</span>
+            <span class="s">&#39;exposure_stats_{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mode_name</span><span class="p">)</span>
+        <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">is_running</span> <span class="o">=</span> <span class="bp">True</span>
 
@@ -931,11 +933,13 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">sim_params</span><span class="o">.</span><span class="n">sessions</span><span class="p">,</span>
                 <span class="n">context</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
                 <span class="n">callback</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_analyze_live</span><span class="p">,</span>
+                <span class="n">start</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_start</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
                 <span class="n">end</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_end</span> <span class="k">else</span> <span class="bp">None</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_clock</span> <span class="o">=</span> <span class="n">SimpleClock</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">sim_params</span><span class="o">.</span><span class="n">sessions</span><span class="p">,</span>
+                <span class="n">start</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_start</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
                 <span class="n">end</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_end</span> <span class="k">else</span> <span class="bp">None</span>
             <span class="p">)</span>
 
@@ -1254,7 +1258,7 @@
                 <span class="n">attempts</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">attempts</span><span class="p">[</span><span class="s">&#39;synchronize_portfolio_attempts&#39;</span><span class="p">],</span>
                 <span class="n">sleeptime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">attempts</span><span class="p">[</span><span class="s">&#39;retry_sleeptime&#39;</span><span class="p">],</span>
                 <span class="n">retry_exceptions</span><span class="o">=</span><span class="p">(</span><span class="n">ExchangeRequestError</span><span class="p">,),</span>
-                <span class="n">cleanup</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;Ordering again.&#39;</span><span class="p">)</span>
+                <span class="n">cleanup</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;Syncing portfolio again.&#39;</span><span class="p">)</span>
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">portfolio_needs_update</span> <span class="o">=</span> <span class="bp">False</span>
 
@@ -1402,7 +1406,7 @@
             <span class="k">return</span> <span class="n">open_orders</span>
 
     <span class="k">def</span> <span class="nf">analyze</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">perf</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ExchangeTradingAlgorithmLive</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>\
+        <span class="nb">super</span><span class="p">(</span><span class="n">ExchangeTradingAlgorithmLive</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span> \
             <span class="o">.</span><span class="n">analyze</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_frame_stats</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">overwrite_sim_params</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>

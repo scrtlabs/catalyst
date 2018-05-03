@@ -587,10 +587,6 @@ performance <code class="docutils literal"><span class="pre">DataFrame</span></c
 also define a configuration file with these parameters that you can then
 conveniently pass to the <code class="docutils literal"><span class="pre">-c</span></code> option so that you don’t have to supply the
 command line args all the time.</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">currently, the base currency of all trading pairs must match the value of <code class="docutils literal"><span class="pre">base_currency</span></code></p>
-</div>
 <p>Thus, to execute our algorithm from above and save the results to
 <code class="docutils literal"><span class="pre">buy_btc_simple_out.pickle</span></code> we would call <code class="docutils literal"><span class="pre">catalyst</span> <span class="pre">run</span></code> as follows:</p>
 <div class="highlight-bash"><div class="highlight"><pre>catalyst run -f buy_btc_simple.py -x bitfinex --start 2016-1-1 --end 2017-9-30 -c usd --capital-base <span class="m">100000</span> -o buy_btc_simple_out.pickle
@@ -1111,7 +1107,7 @@ running algorithms through the command line.</p>
 <h3>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h3>
 <p>In order to use Jupyter Notebook, you first have to install it inside your
 environment. It’s available as <code class="docutils literal"><span class="pre">pip</span></code> package, so regardless of how you
-installed Catalyst, go inside your catalyst environemnt and run:</p>
+installed Catalyst, go inside your catalyst environment and run:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="o">(</span>catalyst<span class="o">)</span><span class="nv">$ </span>pip install jupyter
 </pre></div>
 </div>
@@ -2791,7 +2787,12 @@ performance DataFrame.</p>
 </td><td><p>-0.038185</p>
 </td><td><p>0.070834</p>
 </td></tr></tbody></table><p><p>5 rows × 45 columns</p>
-</p></div></div>
+</p></div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Currently, the base currency of all trading pairs ordered by the algorithm
+must match the value of the <code class="docutils literal"><span class="pre">base_currency</span></code>.</p>
+</div>
+</div>
 </div>
 <div class="section" id="pycharm-ide">
 <h2>PyCharm IDE<a class="headerlink" href="#pycharm-ide" title="Permalink to this headline">¶</a></h2>
