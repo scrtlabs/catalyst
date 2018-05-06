@@ -28,6 +28,8 @@ log = Logger('Exchange', level=LOG_LEVEL)
 class Exchange:
     __metaclass__ = ABCMeta
 
+    MIN_MINUTES_REQUESTED = 150
+
     def __init__(self):
         self.name = None
         self.assets = []
@@ -252,11 +254,11 @@ class Exchange:
 
             elif data_frequency is not None:
                 applies = (
-                    (
-                        data_frequency == 'minute' and
-                        a.end_minute is not None)
-                    or (
-                        data_frequency == 'daily' and a.end_daily is not None)
+                        (
+                                data_frequency == 'minute' and
+                                a.end_minute is not None)
+                        or (
+                                data_frequency == 'daily' and a.end_daily is not None)
                 )
 
             else:
@@ -508,11 +510,15 @@ class Exchange:
         # so we request more than needed
         # TODO: consider defining a const per asset
         # and/or some retry mechanism (in each iteration request more data)
-        kExtra_minutes_candles = 150
-        requested_bar_count = bar_count + \
-            get_candles_number_from_minutes(unit,
-                                            candle_size,
-                                            kExtra_minutes_candles)
+        min_candles_number = get_candles_number_from_minutes(
+            unit,
+            candle_size,
+            self.MIN_MINUTES_REQUESTED)
+
+        requested_bar_count = bar_count
+
+        if requested_bar_count < min_candles_number:
+            requested_bar_count = min_candles_number
 
         # The get_history method supports multiple asset
         candles = self.get_candles(
@@ -631,7 +637,7 @@ class Exchange:
                 start_dt = get_start_dt(end_dt, adj_bar_count, data_frequency)
                 trailing_dt = \
                     series[asset].index[-1] + get_delta(1, data_frequency) \
-                    if asset in series else start_dt
+                        if asset in series else start_dt
 
                 # The get_history method supports multiple asset
                 # Use the original frequency to let each api optimize
