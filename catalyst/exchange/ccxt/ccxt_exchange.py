@@ -996,6 +996,11 @@ class CCXT(Exchange):
         return super(CCXT, self)._check_low_balance(updated_currency, balances,
                                                     amount)
 
+    # def _check_position_balance(self, currency, balances, amount):
+    #     updated_currency = self._check_common_symbols(currency)
+    #     return super(CCXT, self)._check_position_balance(updated_currency,
+    #                                       balances, amount)
+
     def _process_order_fallback(self, order):
         """
         Fallback method for exchanges which do not play nice with
@@ -1052,6 +1057,8 @@ class CCXT(Exchange):
 
         try:
             all_trades = self.get_trades(order.asset)
+        except RequestTimeout as e:
+            raise ExchangeRequestError(error="Received timeout from exchange")
         except ExchangeRequestError as e:
             log.warn(
                 'unable to fetch account trades, trying an alternate '
@@ -1273,6 +1280,13 @@ class CCXT(Exchange):
                 since=start_dt,
                 limit=limit,
             )
+        except RequestTimeout as e:
+            log.warn(
+                'unable to fetch trades {} / {}: {}'.format(
+                    self.name, asset.symbol, e
+                )
+            )
+            raise e
         except (ExchangeError, NetworkError) as e:
             log.warn(
                 'unable to fetch trades {} / {}: {}'.format(
