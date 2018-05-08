@@ -778,7 +778,8 @@ class CCXT(Exchange):
         missing_order = None
         previous_orders = copy.deepcopy(self.api.orders)
 
-        if self.api.has['fetchOrders'] is True:
+        if 'fetchOrders' in self.api.has and \
+                self.api.has['fetchOrders'] is True:
             # contains all orders, therefore,
             # if method available for this exchange,
             # it's enough to check it.
@@ -786,11 +787,13 @@ class CCXT(Exchange):
             missing_order = self._check_order_found(previous_orders)
 
         else:
-            if self.api.has['fetchOpenOrders'] is True:
-                self.api.fetch_orders()
+            if 'fetchOpenOrders' in self.api.has and \
+                    self.api.has['fetchOpenOrders'] is True:
+                self.api.fetch_open_orders()
                 missing_order = self._check_order_found(previous_orders)
 
             if missing_order is None and \
+                    'fetchClosedOrders' in self.api.has and \
                     self.api.has['fetchClosedOrders'] is True:
                 self.api.fetch_closed_orders()
                 missing_order = self._check_order_found(previous_orders)
@@ -800,8 +803,8 @@ class CCXT(Exchange):
                              if pd.Timestamp(x['datetime']) > dt_before
                              ]
             missing_order_id_by_trade = list(set(
-                trade.order for trade in recent_trades
-                if trade.order not in list(self.api.orders)
+                trade['order'] for trade in recent_trades
+                if trade['order'] not in list(self.api.orders)
             ))
             if missing_order_id_by_trade:
                 if len(missing_order_id_by_trade) > 1:
@@ -816,7 +819,7 @@ class CCXT(Exchange):
                 order_id = missing_order_id_by_trade[0]
                 return order_id, None
 
-        return missing_order.id, missing_order
+        return None, missing_order
 
     def _handle_request_timeout(self, dt_before, asset, amount, is_buy, style,
                                 adj_amount):
@@ -837,7 +840,7 @@ class CCXT(Exchange):
         missing_order_id, missing_order = self._fetch_missing_order(
             dt_before=dt_before, symbol=asset.asset_name)
 
-        if missing_order is None:
+        if missing_order_id:
             final_amount = adj_amount if amount > 0 else -adj_amount
             missing_order = Order(
                 dt=dt_before,
