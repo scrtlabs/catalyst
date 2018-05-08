@@ -194,11 +194,12 @@ class Marketplace:
               '{}\n\n'.format(etherscan))
 
     def _list(self):
-        data_sources = self.mkt_contract.functions.getAllProviders().call()
+        num_data_sources = self.mkt_contract.functions.getProviderNamesSize().call()
+        data_sources = [self.mkt_contract.functions.getNameAt(x).call() for x in range(num_data_sources)]
 
         data = []
         for index, data_source in enumerate(data_sources):
-            if index > 0:
+            if index >= 0:
                 if 'test' not in Web3.toText(data_source).lower():
                     data.append(
                         dict(
