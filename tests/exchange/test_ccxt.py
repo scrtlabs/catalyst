@@ -386,6 +386,40 @@ class TestCCXT(BaseExchangeTestCase):
             except ExchangeRequestError as e:
                 pass
 
+    def test_process_order_timeout(self):
+        """
+        in case of a requestTimeout make sure that the process_order method
+        returns an exception so the retry method can request the trades again.
+        :return:
+        """
+        asset = [pair for pair in self.exchange.assets if
+                 pair.symbol == 'eth_usdt'][0]
+        amount = 2
+        price = 0.0025
+        order = Order(
+            dt=pd.to_datetime('2018-05-01 19:54', utc=True),
+            asset=asset,
+            amount=amount,
+            stop=None,
+            limit=price,
+            id='111'
+        )
+        self.exchange.api = MagicMock(
+            spec=[u'create_order', u'fetch_my_trades', u'has',
+                  u'fetch_open_orders', u'orders', u'fetch_closed_orders']
+        )
+        self.exchange.api.has = {'fetchClosedOrders': 'emulated',
+                                 'fetchOrders': False,
+                                 'fetchMyTrades': True,
+                                 }
+        with patch('catalyst.exchange.ccxt.ccxt_exchange.CCXT.get_trades') as \
+                mock_trades:
+            mock_trades.side_effect = RequestTimeout
+            try:
+                observed_transactions = self.exchange.process_order(order)
+            except ExchangeRequestError as e:
+                pass
+
     # def test_order(self):
     #     log.info('creating order')
     #     asset = self.exchange.get_asset('eth_usdt')

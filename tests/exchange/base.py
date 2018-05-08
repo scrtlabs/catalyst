@@ -51,3 +51,7 @@ class BaseExchangeTestCase:
     @abstractmethod
     def test_create_order_timeout_trade(self):
         pass
+
+    @abstractmethod
+    def test_process_order_timeout(self):
+        pass
