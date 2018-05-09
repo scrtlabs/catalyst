@@ -72,7 +72,7 @@ class SimpleClock(object):
         if self.start:
             time_diff = (self.start - pd.Timestamp.utcnow())
             log.info(
-                'Tha algorithm is waiting for the specified '
+                'The algorithm is waiting for the specified '
                 'start date: {}'.format(self.start))
             sleep(time_diff.seconds)
 
