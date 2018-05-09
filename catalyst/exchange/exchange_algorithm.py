@@ -976,7 +976,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
 
         # Saving the daily stats in a format usable for performance
         # analysis.
-        daily_stats = self.prepare_period_stats(
+        self.prepare_period_stats(
             start_dt=today,
             end_dt=data.current_dt
         )
@@ -1044,7 +1044,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
 
     def run(self, data=None, overwrite_sim_params=True):
         data.attempts = self.attempts
-        perf = super(ExchangeTradingAlgorithmLive, self).run(
+        super(ExchangeTradingAlgorithmLive, self).run(
             data, overwrite_sim_params
         )
         # Rebuilding the stats to support minute data
