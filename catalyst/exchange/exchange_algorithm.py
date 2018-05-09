@@ -413,6 +413,8 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         self.live_graph = kwargs.pop('live_graph', None)
         self.stats_output = kwargs.pop('stats_output', None)
         self._analyze_live = kwargs.pop('analyze_live', None)
+        self.start = kwargs.pop('start', None)
+        self.is_start = kwargs.pop('is_start', True)
         self.end = kwargs.pop('end', None)
         self.is_end = kwargs.pop('is_end', True)
 
@@ -428,19 +430,19 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         self.mode_name = 'paper' if kwargs['simulate_orders'] else 'live'
 
         self.pnl_stats = get_algo_df(
-                self.algo_namespace,
-                'pnl_stats_{}'.format(self.mode_name),
-            )
+            self.algo_namespace,
+            'pnl_stats_{}'.format(self.mode_name),
+        )
 
         self.custom_signals_stats = get_algo_df(
-                self.algo_namespace,
-                'custom_signals_stats_{}'.format(self.mode_name)
-            )
+            self.algo_namespace,
+            'custom_signals_stats_{}'.format(self.mode_name)
+        )
 
         self.exposure_stats = get_algo_df(
-                self.algo_namespace,
-                'exposure_stats_{}'.format(self.mode_name)
-            )
+            self.algo_namespace,
+            'exposure_stats_{}'.format(self.mode_name)
+        )
 
         self.is_running = True
 
@@ -564,11 +566,13 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                 self.sim_params.sessions,
                 context=self,
                 callback=self._analyze_live,
+                start=self.start if self.is_start else None,
                 end=self.end if self.is_end else None
             )
         else:
             self._clock = SimpleClock(
                 self.sim_params.sessions,
+                start=self.start if self.is_start else None,
                 end=self.end if self.is_end else None
             )
 
@@ -887,7 +891,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
                 attempts=self.attempts['synchronize_portfolio_attempts'],
                 sleeptime=self.attempts['retry_sleeptime'],
                 retry_exceptions=(ExchangeRequestError,),
-                cleanup=lambda: log.warn('Ordering again.')
+                cleanup=lambda: log.warn('Syncing portfolio again.')
             )
             self.portfolio_needs_update = False
 
@@ -1035,7 +1039,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             return open_orders
 
     def analyze(self, perf):
-        super(ExchangeTradingAlgorithmLive, self)\
+        super(ExchangeTradingAlgorithmLive, self) \
             .analyze(self.get_frame_stats())
 
     def run(self, data=None, overwrite_sim_params=True):

@@ -398,6 +398,13 @@ def catalyst_magic(line, cell=None):
          '(e.g. usd, btc, eth).',
 )
 @click.option(
+    '-s',
+    '--start',
+    type=Date(tz='utc', as_timestamp=True),
+    help='An optional future start date at '
+         'which the algorithm will start at live',
+)
+@click.option(
     '-e',
     '--end',
     type=Date(tz='utc', as_timestamp=True),

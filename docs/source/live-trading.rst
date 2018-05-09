@@ -177,11 +177,12 @@ Here is the breakdown of the new arguments:
   ``True``.
 - ``end_date``: When setting the end_date to a time in the **future**,
   it will schedule the live algo to finish gracefully at the specified date.
-- ``start_date``: (**Will be implemented in the future**)
+- ``start_date``:
   The live algo starts by default in the present, as mentioned above.
   by setting the start_date to a time in the future, the algorithm would
   essentially sleep and when the predefined time comes, it would start executing.
 
+In live trading the ``handle_data()`` function is called once every minute.
 
 
 Algorithm State

@@ -1,3 +1,5 @@
+from time import sleep
+
 import pandas as pd
 from catalyst.constants import LOG_LEVEL
 from catalyst.exchange.utils.stats_utils import prepare_stats
@@ -38,7 +40,7 @@ class LiveGraphClock(object):
     """
 
     def __init__(self, sessions, context, callback=None,
-                 time_skew=pd.Timedelta('0s'), end=None):
+                 time_skew=pd.Timedelta('0s'), start=None, end=None):
 
         self.sessions = sessions
         self.time_skew = time_skew
@@ -46,10 +48,13 @@ class LiveGraphClock(object):
         self._before_trading_start_bar_yielded = True
         self.context = context
         self.callback = callback
+        self.start = start
         self.end = end
 
     def __iter__(self):
         from matplotlib import pyplot as plt
+
+        self.handle_late_start()
         yield pd.Timestamp.utcnow(), SESSION_START
 
         while True:
@@ -78,3 +83,14 @@ class LiveGraphClock(object):
                 plt.pause(1)
 
         yield current_minute, SESSION_END
+
+    def handle_late_start(self):
+        if self.start:
+            time_diff = (self.start - pd.Timestamp.utcnow())
+            log.info(
+                'Tha algorithm is waiting for the specified '
+                'start date: {}'.format(self.start))
+            sleep(time_diff.seconds)
+
+            while pd.Timestamp.utcnow() < self.start:
+                pass

@@ -220,7 +220,14 @@ def _run(handle_data,
         )
 
     if live:
-        start = pd.Timestamp.utcnow()
+        # TODO: fix the start data.
+        # is_start checks if a start date was specified by user
+        # needed for live clock
+        is_start = True
+
+        if start is None:
+            start = pd.Timestamp.utcnow()
+            is_start = False
 
         # TODO: fix the end data.
         # is_end checks if an end date was specified by user
@@ -257,6 +264,8 @@ def _run(handle_data,
             simulate_orders=simulate_orders,
             stats_output=stats_output,
             analyze_live=analyze_live,
+            start=start,
+            is_start=is_start,
             end=end,
             is_end=is_end,
         )
@@ -270,8 +279,9 @@ def _run(handle_data,
         # can handle this later.
 
         if start != pd.tslib.normalize_date(start) or \
-                        end != pd.tslib.normalize_date(end):
-            # todo: add to Sim_Params the option to start & end at specific times 
+                end != pd.tslib.normalize_date(end):
+            # todo: add to Sim_Params the option to
+            # start & end at specific times
             log.warn(
                 "Catalyst currently starts and ends on the start and "
                 "end of the dates specified, respectively. We hope to "
@@ -458,11 +468,12 @@ def run_algorithm(initialize,
         once before each trading day (after initialize on the first day).
     analyze : callable[(context, pd.DataFrame) -> None], optional
         The analyze function to use for the algorithm. This function is called
-        once at the end of the backtest/live run and is passed the context and the
-        performance data.
+        once at the end of the backtest/live run and is passed the
+        context and the performance data.
     data_frequency : {'daily', 'minute'}, optional
         The data frequency to run the algorithm at.
-        At backtest both modes are supported, at live mode only the minute mode is supported.
+        At backtest both modes are supported, at live mode only
+        the minute mode is supported.
     data : pd.DataFrame, pd.Panel, or DataPortal, optional
         The ohlcv data to run the backtest with.
         This argument is mutually exclusive with:
@@ -500,7 +511,8 @@ def run_algorithm(initialize,
     live_graph: bool, optional
         Should the live graph clock be used instead of the regular clock.
     analyze_live: callable[(context, pd.DataFrame) -> None], optional
-        The interactive analyze function to be used with the live graph clock in every tick.
+        The interactive analyze function to be used with
+        the live graph clock in every tick.
     simulate_orders: bool, optional
         Should paper trading mode be applied.
     auth_aliases: str, optional

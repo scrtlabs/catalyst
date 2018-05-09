@@ -7,7 +7,7 @@ Installation: MacOS
 
 .. raw:: html
 
-   <iframe width="560" height="315" src="https://www.youtube.com/embed/ZnsslmHljvw" frameborder="0" allowfullscreen></iframe>
+   <iframe width="560" height="315" src="https://www.youtube.com/embed/SwhMbnJ9sV4" frameborder="0" allowfullscreen></iframe>
 
 |
 |
@@ -19,7 +19,7 @@ Where things go smoothly:
 
 .. raw:: html
 
-   <iframe width="560" height="315" src="https://www.youtube.com/embed/H8HqcEbZmkk" frameborder="0" allowfullscreen></iframe>
+   <iframe width="560" height="315" src="https://www.youtube.com/embed/AdsiUTtJRIk" frameborder="0" allowfullscreen></iframe>
 
 |
 
@@ -27,7 +27,7 @@ Where things don't:
 
 .. raw:: html
    
-   <iframe width="560" height="315" src="https://www.youtube.com/embed/qLkQcWlUBy8" frameborder="0" allowfullscreen></iframe>
+   <iframe width="560" height="315" src="https://www.youtube.com/embed/aoBBMlBNhvo" frameborder="0" allowfullscreen></iframe>
 
 |
 |
@@ -43,7 +43,7 @@ sell. Hopefully, we’ll ride the waves.
 
 .. raw:: html
 
-   <iframe width="560" height="315" src="https://www.youtube.com/embed/JOBRwst9jUY" frameborder="0" allowfullscreen></iframe>
+   <iframe width="560" height="315" src="https://www.youtube.com/embed/PmwbYHjuyNQ" frameborder="0" allowfullscreen></iframe>
 
 |
 |
@@ -57,7 +57,7 @@ in the previous video, we now take it to trade live against the Bittrex exchange
 
 .. raw:: html
 
-	<iframe width="560" height="315" src="https://www.youtube.com/embed/NupiE-Xuglw" frameborder="0" allowfullscreen></iframe>
+	<iframe width="560" height="315" src="https://www.youtube.com/embed/RPSQtjjB42s" frameborder="0" allowfullscreen></iframe>
 
 |
 |

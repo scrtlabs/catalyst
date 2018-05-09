@@ -2,6 +2,24 @@
 Release Notes
 =============
 
+Version 0.5.10
+^^^^^^^^^^^^^^
+**Release Date**: 2018-05-09
+
+Bug Fixes
+~~~~~~~~~
+- Added order creation exception handling according to the ccxt manual
+  :issue:`315`
+- Rounded up the filled amount to avoid unclosed orders :issue:`309`
+- Correct the retry of the fetch trades method in case of a
+  timeout :issue:`321`
+- Fixed the extra history candles fetch in live mode :issue:`323`
+- Fixed the marketplace list function :issue:`327`
+
+Build
+~~~~~
+- Added the ability to set a future start_date on live mode :issue:`318`
+
 Version 0.5.9
 ^^^^^^^^^^^^^
 **Release Date**: 2018-04-24
@@ -23,7 +41,6 @@ Bug Fixes
 
 Build
 ~~~~~
-- Updated Data Marketplace `get_dataset` to allow users to specify start and end times for the dataset retrieval.
 - Upgraded `CCXT` version to 1.12.131
 - Updated Data Marketplace to enable submitting several files in a publish command.
 - Improved Data Marketplace ingestion.
