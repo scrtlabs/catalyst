@@ -400,14 +400,14 @@ def catalyst_magic(line, cell=None):
 @click.option(
     '-s',
     '--start',
-    type=Date(tz='utc', as_timestamp=True),
+    type=Date(tz='utc', as_timestamp=False),
     help='An optional future start date at '
          'which the algorithm will start at live',
 )
 @click.option(
     '-e',
     '--end',
-    type=Date(tz='utc', as_timestamp=True),
+    type=Date(tz='utc', as_timestamp=False),
     help='An optional end date at which to stop the execution.',
 )
 @click.option(
@@ -444,6 +444,7 @@ def live(ctx,
          exchange_name,
          algo_namespace,
          base_currency,
+         start,
          end,
          live_graph,
          auth_aliases,
@@ -487,7 +488,7 @@ def live(ctx,
         data=None,
         bundle=None,
         bundle_timestamp=None,
-        start=None,
+        start=start,
         end=end,
         output=output,
         print_algo=print_algo,

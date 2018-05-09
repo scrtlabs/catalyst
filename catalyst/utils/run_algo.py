@@ -228,6 +228,11 @@ def _run(handle_data,
         if start is None:
             start = pd.Timestamp.utcnow()
             is_start = False
+        elif start:
+            assert pd.Timestamp.utcnow() <= start, \
+                "specified start date is in the past."
+        elif start and end:
+            assert start < end, "start date is later than end date."
 
         # TODO: fix the end data.
         # is_end checks if an end date was specified by user
