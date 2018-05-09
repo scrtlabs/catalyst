@@ -91,7 +91,7 @@ def _run(handle_data,
          live,
          exchange,
          algo_namespace,
-         base_currency,
+         quote_currency,
          live_graph,
          analyze_live,
          simulate_orders,
@@ -190,7 +190,7 @@ def _run(handle_data,
 
         exchanges[name] = get_exchange(
             exchange_name=name,
-            base_currency=base_currency,
+            quote_currency=quote_currency,
             must_authenticate=(live and not simulate_orders),
             skip_init=True,
             auth_alias=auth_alias,
@@ -436,7 +436,7 @@ def run_algorithm(initialize,
                   environ=os.environ,
                   live=False,
                   exchange_name=None,
-                  base_currency=None,
+                  quote_currency=None,
                   algo_namespace=None,
                   live_graph=False,
                   analyze_live=None,
@@ -504,7 +504,7 @@ def run_algorithm(initialize,
         Should the algorithm be executed in live trading mode.
     exchange_name: str
         The name of the exchange to be used in the backtest/live run.
-    base_currency: str
+    quote_currency: str
         The base currency to be used in the backtest/live run.
     algo_namespace: str
         The namespace of the algorithm.
@@ -588,7 +588,7 @@ def run_algorithm(initialize,
         live=live,
         exchange=exchange_name,
         algo_namespace=algo_namespace,
-        base_currency=base_currency,
+        quote_currency=quote_currency,
         live_graph=live_graph,
         analyze_live=analyze_live,
         simulate_orders=simulate_orders,

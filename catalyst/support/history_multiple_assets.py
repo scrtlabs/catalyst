@@ -31,7 +31,7 @@ if __name__ == '__main__':
             handle_data=handle_data,
             exchange_name='poloniex',
             algo_namespace='test_multi_assets',
-            base_currency='usdt',
+            quote_currency='usdt',
             live=True,
             simulate_orders=True,
         )
@@ -43,7 +43,7 @@ if __name__ == '__main__':
             handle_data=handle_data,
             exchange_name='poloniex',
             algo_namespace='test_multi_assets',
-            base_currency='usdt',
+            quote_currency='usdt',
             live=False,
             start=pd.to_datetime('2017-12-1', utc=True),
             end=pd.to_datetime('2017-12-1', utc=True),

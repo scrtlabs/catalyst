@@ -5,10 +5,10 @@ from catalyst import run_algorithm
 def initialize(context):
     context.i = -1  # counts the minutes
     context.exchange = 'cryptopia'
-    context.base_currency = 'btc'
+    context.quote_currency = 'btc'
     context.coins = context.exchanges[context.exchange].assets
     context.coins = [c for c in context.coins if
-                     c.quote_currency == context.base_currency]
+                     c.quote_currency == context.quote_currency]
 
 
 def handle_data(context, data):
@@ -20,7 +20,7 @@ def handle_data(context, data):
     if not context.i % new_day:
         context.coins = context.exchanges[context.exchange].assets
         context.coins = [c for c in context.coins if
-                         c.quote_currency == context.base_currency]
+                         c.quote_currency == context.quote_currency]
 
     # get data every 30 minutes
     minutes = 1
@@ -43,13 +43,13 @@ if __name__ == '__main__':
 
     performance = run_algorithm(
         capital_base=1.0,
-        # amount of base_currency, not always in dollars unless usd
+        # amount of quote_currency, not always in dollars unless usd
         initialize=initialize,
         handle_data=handle_data,
         analyze=analyze,
         exchange_name='cryptopia',
         data_frequency='minute',
-        base_currency='btc',
+        quote_currency='btc',
         live=True,
         live_graph=False,
         simulate_orders=True,

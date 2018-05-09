@@ -275,7 +275,7 @@ if __name__ == '__main__':
             exchange_name='poloniex,bitfinex',
             live=True,
             algo_namespace=algo_namespace,
-            base_currency='btc',
+            quote_currency='btc',
             live_graph=False,
             simulate_orders=True,
             stats_output=None,

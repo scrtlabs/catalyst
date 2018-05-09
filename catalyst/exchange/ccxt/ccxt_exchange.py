@@ -45,7 +45,7 @@ SUPPORTED_EXCHANGES = dict(
 
 class CCXT(Exchange):
     def __init__(self, exchange_name, key,
-                 secret, password, base_currency):
+                 secret, password, quote_currency):
         log.debug(
             'finding {} in CCXT exchanges:\n{}'.format(
                 exchange_name, ccxt.exchanges
@@ -73,7 +73,7 @@ class CCXT(Exchange):
 
         self.name = exchange_name
 
-        self.base_currency = base_currency
+        self.quote_currency = quote_currency
         self.transactions = defaultdict(list)
 
         self.num_candles_limit = 2000

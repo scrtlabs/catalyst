@@ -8,7 +8,7 @@ import pandas as pd
 from catalyst.constants import LOG_LEVEL
 from catalyst.data.data_portal import BASE_FIELDS
 from catalyst.exchange.exchange_bundle import ExchangeBundle
-from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
+from catalyst.exchange.exchange_errors import MismatchingQuoteCurrencies, \
     SymbolNotFoundOnExchange, \
     PricingDataNotLoadedError, \
     NoDataAvailableOnExchange, NoValueForField, \
@@ -36,7 +36,7 @@ class Exchange:
         self._symbol_maps = [None, None]
         self.minute_writer = None
         self.minute_reader = None
-        self.base_currency = None
+        self.quote_currency = None
 
         self.num_candles_limit = None
         self.max_requests_per_minute = None
@@ -743,13 +743,13 @@ class Exchange:
             )
             if cash is not None:
                 free_cash, is_lower = self._check_low_balance(
-                    currency=self.base_currency,
+                    currency=self.quote_currency,
                     balances=balances,
                     amount=cash,
                 )
                 if is_lower:
                     raise NotEnoughCashError(
-                        currency=self.base_currency,
+                        currency=self.quote_currency,
                         exchange=self.name,
                         free=free_cash,
                         cash=cash,
@@ -852,13 +852,13 @@ class Exchange:
             log.warn('skipping order amount of 0')
             return None
 
-        if self.base_currency is None:
-            raise ValueError('no base_currency defined for this exchange')
+        if self.quote_currency is None:
+            raise ValueError('no quote_currency defined for this exchange')
 
-        if asset.quote_currency != self.base_currency.lower():
-            raise MismatchingBaseCurrencies(
-                base_currency=asset.quote_currency,
-                algo_currency=self.base_currency
+        if asset.quote_currency != self.quote_currency.lower():
+            raise MismatchingQuoteCurrencies(
+                quote_currency=asset.quote_currency,
+                algo_currency=self.quote_currency
             )
 
         is_buy = (amount > 0)

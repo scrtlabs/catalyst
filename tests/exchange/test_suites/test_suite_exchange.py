@@ -159,13 +159,13 @@ class TestSuiteExchange(WithLogger, ZiplineTestCase):
         #     population=population,
         #     features=['fetchOrder'],
         #     is_authenticated=True,
-        #     base_currency=quote_currency,
+        #     quote_currency=quote_currency,
         # )  # Type: list[Exchange]
 
         exchanges = [
             get_exchange(
                 'binance',
-                base_currency=quote_currency,
+                quote_currency=quote_currency,
                 must_authenticate=True,
             )
         ]

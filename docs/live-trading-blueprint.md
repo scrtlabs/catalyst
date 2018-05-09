@@ -18,7 +18,7 @@ Here are some key characteristics which make cryptocurrency exchanges
 exchanges different compared to equity brokers.
 * They trade around the clock.
 * Currency symbols are inconsistent across exchanges.
-* They trade currency pairs (i.e. the base currency is not always be USD).
+* They trade currency pairs (i.e. the quote currency is not always be USD).
 This is a paradigm shift in context of zipline. Additional
 business logic will be required to manage the portfolio data and orders.
 * The price of a single asset might vary across exchanges. This means
@@ -151,7 +151,7 @@ exchange_conn = dict(
     name='bitfinex',
     key='',
     secret=b'',
-    base_currency='usd'
+    quote_currency='usd'
 )
 ```
 
@@ -177,7 +177,7 @@ be the responsibility of the exchange as it holds the truth for:
 
 * Executed price of each order (including fees and slippage)
 * Partial / failed orders
-* Cash (i.e. base currency) available
+* Cash (i.e. quote currency) available
 * Cost basis of each position
 
 If each exchange account had a one-to-one relationship with an

@@ -1421,8 +1421,8 @@ class TradingAlgorithm(object):
             The asset/TradingPair that this order is for.
         amount : int
             The amount of currency to order. If ``amount`` is positive, this is
-            the number of ``market_currency`` (the first asset in the pair) to buy. If ``amount`` is negative,
-            this is the number of ``market_currency`` to sell (buy ``base_currency``).
+            the number of ``base_currency`` (the first asset in the pair) to buy. If ``amount`` is negative,
+            this is the number of ``base_currency`` to sell (buy ``quote_currency``).
         limit_price : float, optional
             The limit price for the order.
         stop_price : float, optional
@@ -1446,7 +1446,7 @@ class TradingAlgorithm(object):
         ``style=StopLimitOrder(N, M)``. It is an error to pass both a ``style``
         and ``limit_price`` or ``stop_price``.
 
-        Currently, orders must be done only with one ``base_currency``
+        Currently, orders must be done only with one ``quote_currency``
         throughout all the algorithm.
 
         See Also
@@ -1552,8 +1552,8 @@ class TradingAlgorithm(object):
                     limit_price=None,
                     stop_price=None,
                     style=None):
-        """Place an order by ``base_currency`` value rather than desired number of
-        ``market_currency`` wanted.
+        """Place an order by ``quote_currency`` value rather than desired number of
+        ``base_currency`` wanted.
 
         Parameters
         ----------

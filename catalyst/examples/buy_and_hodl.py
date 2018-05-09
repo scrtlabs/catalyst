@@ -142,7 +142,7 @@ if __name__ == '__main__':
         analyze=analyze,
         exchange_name='poloniex',
         algo_namespace='buy_and_hodl',
-        base_currency='usdt',
+        quote_currency='usdt',
         start=pd.to_datetime('2015-03-01', utc=True),
         end=pd.to_datetime('2017-10-31', utc=True),
     )

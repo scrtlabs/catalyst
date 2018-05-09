@@ -102,13 +102,13 @@ returns the correct asset regardless of the targeted exchange.
 Exchanges tend to use their own convention to represent currencies
 (e.g. XBT and BTC both represent Bitcoin on different exchanges).
 Trading pairs are also inconsistent. For example, Bitfinex
-puts the market currency before the base currency without a
-separator, Bittrex puts the base currency first and uses a dash
+puts the base currency before the quote currency without a
+separator, Bittrex puts the quote currency first and uses a dash
 seperator.
 
 Here is the Catalyst convention:
 
-*[Market Currency]_[Base Currency]* all lowercase.
+*[Base Currency]_[Quote Currency]* all lowercase.
 
 Currency symbols (e.g. btc, eth, ltc) follow the Bittrex convention.
 
@@ -153,15 +153,15 @@ What differs are the arguments provided to the catalyst client or
       exchange_name='bitfinex',
       live=True,
       algo_namespace='my_algo_name',
-      base_currency='btc'
+      quote_currency='btc'
   )
 
 
 Here is the breakdown of the new arguments:
 
 - ``live``: Boolean flag which enables live trading. It defaults to ``False``.
-- ``capital_base``: The amount of base_currency assigned to the strategy.
-  It has to be lower or equal to the amount of base currency available for
+- ``capital_base``: The amount of quote_currency assigned to the strategy.
+  It has to be lower or equal to the amount of quote currency available for
   trading on the exchange. For illustration, order_target_percent(asset, 1)
   will order the capital_base amount specified here of the specified asset.
 - ``exchange_name``: The name of the targeted exchange. See the 
@@ -169,8 +169,8 @@ Here is the breakdown of the new arguments:
   for the full list.
 - ``algo_namespace``: A arbitrary label assigned to your algorithm for
   data storage purposes.
-- ``base_currency``: The base currency used to calculate the
-  statistics of your algorithm. Currently, the base currency of all
+- ``quote_currency``: The quote currency used to calculate the
+  statistics of your algorithm. Currently, the quote currency of all
   trading pairs of your algorithm must match this value.
 - ``simulate_orders``: Enables the paper trading mode, in which orders are
   simulated in Catalyst instead of processed on the exchange. It defaults to 

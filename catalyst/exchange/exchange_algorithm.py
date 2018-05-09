@@ -682,7 +682,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
 
         """
         check_balances = (not self.simulate_orders)
-        base_currency = None
+        quote_currency = None
         tracker = self.perf_tracker.position_tracker
         total_cash = 0.0
         total_positions_value = 0.0
@@ -701,8 +701,8 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
 
             exchange = self.exchanges[exchange_name]  # Type: Exchange
 
-            if base_currency is None:
-                base_currency = exchange.base_currency
+            if quote_currency is None:
+                quote_currency = exchange.quote_currency
 
             orders = []
             for asset in self.blotter.open_orders:
@@ -803,7 +803,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         """
         data = dict(
             long_exposure=period_stats['long_exposure'],
-            base_currency=period_stats['ending_cash']
+            quote_currency=period_stats['ending_cash']
         )
         log.debug('adding exposure stats: {}'.format(data))
 

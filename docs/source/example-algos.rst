@@ -161,8 +161,8 @@ Simple Universe
 This example aims to provide an easy way for users to learn how to 
 collect data from any given exchange and select a subset of the available
 currency pairs for trading. You simply need to specify the exchange and 
-the market (base_currency) that you want to focus on. You will then see 
-how to create a universe of assets, and filter it based the market you 
+the market (quote_currency) that you want to focus on. You will then see
+how to create a universe of assets, and filter it based on the market you
 desire.
 
 The example prints out the closing price of all the pairs for a given 

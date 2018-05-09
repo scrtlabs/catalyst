@@ -246,7 +246,7 @@ the available options:
                                         (supported: bitfinex, bittrex, poloniex).
         -n, --algo-namespace TEXT       A label assigned to the algorithm for data
                                         storage purposes.
-        -c, --base-currency TEXT        The base currency used to calculate
+        -c, --quote-currency TEXT        The quote currency used to calculate
                                         statistics (e.g. usd, btc, eth).
         --help                          Show this message and exit.
 
@@ -254,7 +254,7 @@ the available options:
 As you can see there are a couple of flags that specify where to find your
 algorithm (``-f``) as well as a the ``-x`` flag to specify which exchange to 
 use. There are also arguments for the date range to run the algorithm over 
-(``--start`` and ``--end``). You also need to set the base currency for your 
+(``--start`` and ``--end``). You also need to set the quote currency for your
 algorithm through the ``-c`` flag, and the ``--capital_base``. All the 
 aforementioned parameters are required. Optionally, you will want to save the 
 performance metrics of your algorithm so that you can analyze how it performed. 
@@ -593,7 +593,7 @@ And then run the code above with the following command:
 
 .. code-block:: bash
 
-  catalyst run -f dual_moving_average.py -x bitfinex -s 2017-9-22 -e 2017-9-23 --capital-base 1000 --base-currency usd --data-frequency minute -o out.pickle
+  catalyst run -f dual_moving_average.py -x bitfinex -s 2017-9-22 -e 2017-9-23 --capital-base 1000 --quote-currency usd --data-frequency minute -o out.pickle
 
 Alternatively, we can make use of the ``run_algorithm()`` function included at 
 the end of the file, where we can specify all the simulation parameters, and 
@@ -16458,8 +16458,8 @@ NaN
 
 .. note::
 
-   Currently, the base currency of all trading pairs ordered by the algorithm
-   must match the value of the ``base_currency``.
+   Currently, the quote currency of all trading pairs ordered by the algorithm
+   must match the value of the ``quote_currency``.
 
 PyCharm IDE
 ~~~~~~~~~~~

@@ -23,10 +23,10 @@ if live:
     run_algorithm(initialize=lambda ctx: True,
                   handle_data=handle_data,
                   exchange_name='gdax',
-                  base_currency='usd',
+                  quote_currency='usd',
                   algo_namespace='issue-323',
                   live=True,
                   data_frequency='daily',
                   capital_base=3000,
-                )
+                  )
 
