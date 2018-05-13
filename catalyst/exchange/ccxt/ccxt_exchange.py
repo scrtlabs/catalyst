@@ -999,10 +999,10 @@ class CCXT(Exchange):
         return super(CCXT, self)._check_low_balance(updated_currency, balances,
                                                     amount)
 
-    # def _check_position_balance(self, currency, balances, amount):
-    #     updated_currency = self._check_common_symbols(currency)
-    #     return super(CCXT, self)._check_position_balance(updated_currency,
-    #                                       balances, amount)
+    def _check_position_balance(self, currency, balances, amount):
+        updated_currency = self._check_common_symbols(currency)
+        return super(CCXT, self)._check_position_balance(updated_currency,
+                                          balances, amount)
 
     def _process_order_fallback(self, order):
         """
@@ -1089,23 +1089,38 @@ class CCXT(Exchange):
             filled = trade['amount'] * order.direction
             order.filled += filled
 
-            commission = 0
-            if 'fee' in trade and 'cost' in trade['fee']:
-                commission = trade['fee']['cost']
-                order.commission += commission
-
             order.check_triggers(
                 price=trade['price'],
                 dt=pd.to_datetime(trade['timestamp'], unit='ms', utc=True),
             )
-            transaction = Transaction(
-                asset=order.asset,
-                amount=filled,
-                dt=pd.Timestamp.utcnow(),
-                price=trade['price'],
-                order_id=order.id,
-                commission=commission
-            )
+
+            commission = 0
+            if 'fee' in trade and 'cost' in trade['fee']:
+                # If the exchange gives info of the fees- from ccxt
+                commission = trade['fee']['cost']
+                order.commission += commission
+
+            if 'fee' in trade and 'currency' in trade['fee']:
+                transaction = Transaction(
+                    asset=order.asset,
+                    amount=filled,
+                    dt=pd.Timestamp.utcnow(),
+                    price=trade['price'],
+                    order_id=order.id,
+                    commission=commission,
+                    fee_currency=trade['fee']['currency'].lower(),
+                    is_quote_live=(self.quote_currency ==
+                                   trade['fee']['currency'].lower())
+                )
+            else:
+                transaction = Transaction(
+                    asset=order.asset,
+                    amount=filled,
+                    dt=pd.Timestamp.utcnow(),
+                    price=trade['price'],
+                    order_id=order.id,
+                    commission=commission,
+                )
             transactions.append(transaction)
 
         order.filled = round(order.filled, order.asset.decimals)

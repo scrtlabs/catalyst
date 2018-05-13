@@ -696,26 +696,26 @@ class Exchange:
         else:
             return free, False
 
-    # def _check_position_balance(self, currency, balances, amount):
-    #     """
-    #     In order to avoid spending money that the user doesn't own,
-    #     we are comparing to the balance on the account.
-    #     For positions, we want to avoid double updates, since, exchanges
-    #     update positions when the order is opened as used, catalyst wants
-    #     to take them into consideration, therefore running comparison on total.
-    #     :param currency: str
-    #     :param balances: dict
-    #     :param amount: float
-    #     :return: total: float,
-    #                     bool
-    #     """
-    #     total = balances[currency]['total'] if currency in balances else 0.0
-    #
-    #     if total < amount:
-    #         return total, True
-    #
-    #     else:
-    #         return total, False
+    def _check_position_balance(self, currency, balances, amount):
+        """
+        In order to avoid spending money that the user doesn't own,
+        we are comparing to the balance on the account.
+        For positions, we want to avoid double updates, since, exchanges
+        update positions when the order is opened as used, catalyst wants
+        to take them into consideration, therefore running comparison on total.
+        :param currency: str
+        :param balances: dict
+        :param amount: float
+        :return: total: float,
+                        bool
+        """
+        total = balances[currency]['total'] if currency in balances else 0.0
+
+        if total < amount:
+            return total, True
+
+        else:
+            return total, False
 
     def sync_positions(self, positions, cash=None,
                        check_balances=False):
@@ -782,8 +782,7 @@ class Exchange:
                 position.last_sale_date = ticker['last_traded']
 
                 if check_balances:
-                    # total, is_lower = self._check_position_balance(
-                    total, is_lower = self._check_low_balance(
+                    total, is_lower = self._check_position_balance(
                         currency=asset.base_currency,
                         balances=balances,
                         amount=position.amount,
