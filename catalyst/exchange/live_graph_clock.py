@@ -88,7 +88,7 @@ class LiveGraphClock(object):
         if self.start:
             time_diff = (self.start - pd.Timestamp.utcnow())
             log.info(
-                'The algorithm is waiting for the specified '
+                'Tha algorithm is waiting for the specified '
                 'start date: {}'.format(self.start))
             sleep(time_diff.seconds)
 
