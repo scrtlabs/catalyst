@@ -210,3 +210,20 @@ You can learn more by running the following from the command line:
 
 Here is a complete algorithm for reference:
 `Buy Low and Sell High <https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/buy_low_sell_high_live.py>`_
+
+
+Commissions
+^^^^^^^^^^^
+
+In live mode, commissions are taken off according to what is reduced on the
+exchange. In some exchanges, the fee is always
+reduced from the quote currency where others reduce it from the currency
+that was bought. Meaning that when buying ``btc`` using the ``btc_usd`` trading
+pair, some exchanges will reduce the fee from the ``usd`` value,
+while others will reduce it from the ``btc`` value, which will result in a
+lower ``btc`` amount than the one originally specified.
+In live Catalyst supports both methods, since the fees are fetched directly
+from the exchanges.
+Currently, in paper trading and backtest modes the commissions are reduced
+**always** from the quote currency defined on the algorithm (we will align
+these modes in the future with live mode).
