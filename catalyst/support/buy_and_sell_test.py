@@ -27,8 +27,8 @@ import pandas as pd
 
 
 def initialize(context):
-    # context.asset = symbol('btc_usdt')
-    context.asset = symbol('etc_btc')
+    context.asset = symbol('btc_usdt')
+    # context.asset = symbol('etc_btc')
     context.i = 0
     # context.set_commission(maker=0.4,taker=0.3)
 
@@ -72,9 +72,9 @@ if __name__ == '__main__':
             algo_namespace='buy_btc_simple',
             quote_currency='btc',
             live=True,
-            simulate_orders=False,
+            # simulate_orders=False,
             # start=pd.to_datetime('2018-05-01 17:18', utc=True),
-            # end=pd.to_datetime('2017-10-31', utc=True),
+            end=pd.to_datetime('2018-05-14 08:28', utc=True),
         )
     else:
         run_algorithm(
@@ -85,9 +85,6 @@ if __name__ == '__main__':
                 exchange_name='poloniex',
                 algo_namespace='buy_btc_simple',
                 quote_currency='usdt',
-                # live=True,
-                # simulate_orders=False,
                 start=pd.to_datetime('2016-01-01', utc=True),
                 end=pd.to_datetime('2016-01-03', utc=True),
-                # end=pd.to_datetime('2018-05-02 18:42', utc=True),
             )
