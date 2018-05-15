@@ -757,8 +757,8 @@ class CCXT(Exchange):
                 # time, max 1 order was opened)
                 log.warn(
                     "multiple orders were found: : {} "
-                    "only the first is considered"
-                        .format([x.id for x in new_orders])
+                    "only the first is considered".format(
+                        [x.id for x in new_orders])
                 )
 
             return new_orders[0]
@@ -813,8 +813,8 @@ class CCXT(Exchange):
                     # time, max 1 order was opened)
                     log.warn(
                         "multiple orders were found according "
-                        "to the trades: {} only the first is considered"
-                            .format([x.id for x in missing_order_id_by_trade])
+                        "to the trades: {} only the first is considered".format
+                        ([x.id for x in missing_order_id_by_trade])
                     )
                 order_id = missing_order_id_by_trade[0]
                 return order_id, None
@@ -1002,7 +1002,7 @@ class CCXT(Exchange):
     def _check_position_balance(self, currency, balances, amount):
         updated_currency = self._check_common_symbols(currency)
         return super(CCXT, self)._check_position_balance(updated_currency,
-                                          balances, amount)
+                                                         balances, amount)
 
     def _process_order_fallback(self, order):
         """
@@ -1190,12 +1190,13 @@ class CCXT(Exchange):
         list[dict[str, float]
 
         """
-        if len(assets) == 1:
+        if len(assets) == 1 or not self.api.has['fetchTickers']:
             try:
-                symbol = self.get_symbol(assets[0])
-                log.debug('fetching single ticker: {}'.format(symbol))
                 results = dict()
-                results[symbol] = self.api.fetch_ticker(symbol=symbol)
+                for asset in assets:
+                    symbol = self.get_symbol(asset)
+                    log.debug('fetching single ticker: {}'.format(symbol))
+                    results[symbol] = self.api.fetch_ticker(symbol=symbol)
 
             except (ExchangeError, NetworkError,) as e:
                 log.warn(
