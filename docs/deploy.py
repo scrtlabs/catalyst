@@ -8,8 +8,8 @@ from shutil import move, rmtree
 from subprocess import check_call
 
 HERE = dirname(abspath(__file__))
-ZIPLINE_ROOT = dirname(HERE)
-TEMP_LOCATION = '/tmp/zipline-doc'
+CATALYST_ROOT = dirname(HERE)
+TEMP_LOCATION = '/tmp/catalyst-doc'
 TEMP_LOCATION_GLOB = TEMP_LOCATION + '/*'
 
 
@@ -46,8 +46,8 @@ def main():
             print("Copying built files to temp location.")
             move('build/html', TEMP_LOCATION)
 
-            print("Moving to '%s'" % ZIPLINE_ROOT)
-            os.chdir(ZIPLINE_ROOT)
+            print("Moving to '%s'" % CATALYST_ROOT)
+            os.chdir(CATALYST_ROOT)
 
             print("Checking out gh-pages branch.")
             check_call(
@@ -70,7 +70,7 @@ def main():
         os.chdir(old_dir)
 
     print()
-    print("Updated documentation branch in directory %s" % ZIPLINE_ROOT)
+    print("Updated documentation branch in directory %s" % CATALYST_ROOT)
     print("If you are happy with these changes, commit and push to gh-pages.")
 
 if __name__ == '__main__':

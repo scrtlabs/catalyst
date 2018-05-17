@@ -23,7 +23,7 @@ I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) source
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
-	@echo "  build      to build the C and Cython extensions for zipline"
+	@echo "  build      to build the C and Cython extensions for catalyst"
 	@echo "  html       to make standalone HTML files"
 	@echo "  livehtml   to run a persistent process that rebuilds the docs"
 	@echo "  dirhtml    to make HTML files named index.html in directories"
@@ -96,9 +96,9 @@ qthelp: build
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in $(BUILDDIR)/qthelp, like this:"
-	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/zipline.qhcp"
+	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/catalyst.qhcp"
 	@echo "To view the help file:"
-	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/zipline.qhc"
+	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/catalyst.qhc"
 
 applehelp: build
 	$(SPHINXBUILD) -b applehelp $(ALLSPHINXOPTS) $(BUILDDIR)/applehelp
@@ -113,8 +113,8 @@ devhelp: build
 	@echo
 	@echo "Build finished."
 	@echo "To view the help file:"
-	@echo "# mkdir -p $$HOME/.local/share/devhelp/zipline"
-	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/zipline"
+	@echo "# mkdir -p $$HOME/.local/share/devhelp/catalyst"
+	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/catalyst"
 	@echo "# devhelp"
 
 epub: build

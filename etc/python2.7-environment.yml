@@ -1,6 +1,7 @@
 name: catalyst
 channels:
 - defaults
+- conda-forge
 dependencies:
 - certifi=2016.2.28=py27_0
 - mkl=2017.0.3
@@ -20,6 +21,11 @@ dependencies:
   - bcolz==0.12.1
   - bottleneck==1.2.1
   - chardet==3.0.4
+  - ccxt==1.12.131
+# The Enigma Data Marketplace requires Python3 because it depends on
+# web3, which requires Python3, as building its dependencies breaks in Python2
+#  - web3==4.0.0b7
+  - requests-toolbelt==0.8.0
   - click==6.7
   - contextlib2==0.5.5
   - cycler==0.10.0
@@ -33,7 +39,7 @@ dependencies:
   - lru-dict==1.1.6
   - mako==1.0.7
   - markupsafe==1.0
-  - matplotlib==2.1.0
+  - matplotlib==2.1.2
   - multipledispatch==0.4.9
   - networkx==2.0
   - numexpr==2.6.4
@@ -44,6 +50,7 @@ dependencies:
   - python-dateutil==2.6.1
   - python-editor==1.0.3
   - pytz==2017.2
+  - redo==1.6
   - requests==2.18.4
   - requests-file==1.4.2
   - requests-ftp==0.3.1
@@ -55,4 +62,4 @@ dependencies:
   - tables==3.4.2
   - toolz==0.8.2
   - urllib3==1.22
-  - enigma-catalyst>=0.3
+  - enigma-catalyst>=0.5

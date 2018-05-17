@@ -17,6 +17,7 @@
 """
 Cythonized Asset object.
 """
+
 import hashlib
 
 cimport cython
@@ -38,7 +39,7 @@ from numpy cimport int64_t
 import warnings
 cimport numpy as np
 
-from catalyst.exchange.exchange_utils import get_sid
+from catalyst.exchange.utils.exchange_utils import get_sid
 from catalyst.utils.calendars import get_calendar
 from catalyst.exchange.exchange_errors import InvalidSymbolError, SidHashError
 
@@ -405,6 +406,9 @@ cdef class TradingPair(Asset):
     cdef readonly float taker
     cdef readonly int trading_state
     cdef readonly object data_source
+    cdef readonly float max_trade_size
+    cdef readonly float lot
+    cdef readonly int decimals
 
     _kwargnames = frozenset({
         'sid',
@@ -423,10 +427,13 @@ cdef class TradingPair(Asset):
         'end_minute',
         'exchange_symbol',
         'min_trade_size',
+        'max_trade_size',
+        'lot',
         'maker',
         'taker',
         'trading_state',
-        'data_source'
+        'data_source',
+        'decimals'
     })
     def __init__(self,
                  object symbol,
@@ -443,8 +450,11 @@ cdef class TradingPair(Asset):
                  object auto_close_date=None,
                  object exchange_full=None,
                  float min_trade_size=0.0001,
+                 float max_trade_size=1000000,
                  float maker=0.0015,
                  float taker=0.0025,
+                 float lot=0,
+                 int decimals = 8,
                  int trading_state=0,
                  object data_source='catalyst'):
         """
@@ -458,11 +468,11 @@ cdef class TradingPair(Asset):
         are not adhering to a universal symbolism. For example, Bitfinex
         uses the BTC symbol for Bitcon while Kraken uses XBT. In addition,
         pairs are sometimes presented differently. For example, Bitfinex
-        puts the market currency before the base currency without a
-        separator, Bittrex puts the base currency first and uses a dash
+        puts the base currency before the quote currency without a
+        separator, Bittrex puts the quote currency first and uses a dash
         seperator.
 
-        Here is the Catalyst convention: [Market Currency]_[Base Currency]
+        Here is the Catalyst convention: [Base Currency]_[Quote Currency]
         For example: btc_usd, eth_btc, neo_eth, ltc_eur.
 
         The symbol for each currency (e.g. btc, eth, ltc) is generally
@@ -509,9 +519,12 @@ cdef class TradingPair(Asset):
         :param auto_close_date:
         :param exchange_full:
         :param min_trade_size:
+        :param max_trade_size:
         :param maker:
         :param taker:
         :param data_source
+        :param decimals
+        :param lot
         """
 
         symbol = symbol.lower()
@@ -535,6 +548,9 @@ cdef class TradingPair(Asset):
         if end_date is None:
             end_date = pd.Timestamp.utcnow() + timedelta(days=365)
 
+        if lot == 0 and min_trade_size > 0:
+            lot = min_trade_size
+
         super().__init__(
             sid,
             exchange,
@@ -556,6 +572,9 @@ cdef class TradingPair(Asset):
         self.exchange_symbol = exchange_symbol
         self.trading_state = trading_state
         self.data_source = data_source
+        self.max_trade_size = max_trade_size
+        self.lot = lot
+        self.decimals = decimals
 
     def __repr__(self):
         return 'Trading Pair {symbol}({sid}) Exchange: {exchange}, ' \
@@ -582,6 +601,7 @@ cdef class TradingPair(Asset):
         """
         Convert to a python dict.
         """
+        #TODO: missing fields
         super_dict = super(TradingPair, self).to_dict()
         super_dict['end_daily'] = self.end_daily
         super_dict['end_minute'] = self.end_minute
@@ -610,17 +630,28 @@ cdef class TradingPair(Asset):
         and whose second element is a tuple of all the attributes that should
         be serialized/deserialized during pickling.
         """
+        # added arguments for catalyst
         return (self.__class__, (self.symbol,
                                  self.exchange,
                                  self.start_date,
                                  self.asset_name,
                                  self.sid,
                                  self.leverage,
+                                 self.end_daily,
+                                 self.end_minute,
                                  self.end_date,
+                                 self.exchange_symbol,
                                  self.first_traded,
                                  self.auto_close_date,
                                  self.exchange_full,
-                                 self.min_trade_size))
+                                 self.min_trade_size,
+                                 self.max_trade_size,
+                                 self.maker,
+                                 self.taker,
+                                 self.lot,
+                                 self.decimals,
+                                 self.trading_state,
+                                 self.data_source))
 
 def make_asset_array(int size, Asset asset):
     cdef np.ndarray out = np.empty([size], dtype=object)

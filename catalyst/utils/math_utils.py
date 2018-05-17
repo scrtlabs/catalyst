@@ -17,10 +17,12 @@ import math
 
 from numpy import isnan
 
+
 def round_nearest(x, a):
     return round(round(x / a) * a, -int(math.floor(math.log10(a))))
 
-def tolerant_equals(a, b, atol=10e-7, rtol=10e-7, equal_nan=False):
+
+def tolerant_equals(a, b, atol=10e-9, rtol=10e-9, equal_nan=False):
     """Check if a and b are equal with some tolerance.
 
     Parameters

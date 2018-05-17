@@ -5,26 +5,22 @@ from time import sleep
 
 import numpy as np
 import pandas as pd
-from catalyst.assets._assets import TradingPair
-from logbook import Logger
-
-from catalyst.algorithm import MarketOrder
 from catalyst.constants import LOG_LEVEL
 from catalyst.data.data_portal import BASE_FIELDS
-from catalyst.exchange.bundle_utils import get_start_dt, \
-    get_delta, get_periods, get_periods_range
 from catalyst.exchange.exchange_bundle import ExchangeBundle
-from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
-    BaseCurrencyNotFoundError, SymbolNotFoundOnExchange, \
+from catalyst.exchange.exchange_errors import MismatchingQuoteCurrencies, \
+    SymbolNotFoundOnExchange, \
     PricingDataNotLoadedError, \
-    NoDataAvailableOnExchange, NoValueForField
-from catalyst.exchange.exchange_execution import ExchangeStopLimitOrder, \
-    ExchangeLimitOrder, ExchangeStopOrder
-from catalyst.exchange.exchange_portfolio import ExchangePortfolio
-from catalyst.exchange.exchange_utils import get_exchange_symbols, \
-    get_frequency, resample_history_df
-from catalyst.finance.order import ORDER_STATUS
-from catalyst.finance.transaction import Transaction
+    NoDataAvailableOnExchange, NoValueForField, \
+    NoCandlesReceivedFromExchange, \
+    TickerNotFoundError, NotEnoughCashError
+from catalyst.exchange.utils.datetime_utils import get_delta, \
+    get_periods_range, \
+    get_periods, get_start_dt, get_frequency, \
+    get_candles_number_from_minutes
+from catalyst.exchange.utils.exchange_utils import get_exchange_symbols, \
+    resample_history_df, has_bundle, get_candles_df
+from logbook import Logger
 
 log = Logger('Exchange', level=LOG_LEVEL)
 
@@ -32,40 +28,22 @@ log = Logger('Exchange', level=LOG_LEVEL)
 class Exchange:
     __metaclass__ = ABCMeta
 
+    MIN_MINUTES_REQUESTED = 150
+
     def __init__(self):
         self.name = None
         self.assets = []
         self._symbol_maps = [None, None]
-        self._portfolio = None
         self.minute_writer = None
         self.minute_reader = None
-        self.base_currency = None
+        self.quote_currency = None
 
         self.num_candles_limit = None
         self.max_requests_per_minute = None
         self.request_cpt = None
         self.bundle = ExchangeBundle(self.name)
 
-    @property
-    def positions(self):
-        return self.portfolio.positions
-
-    @property
-    def portfolio(self):
-        """
-        The exchange portfolio
-
-        Returns
-        -------
-        ExchangePortfolio
-        """
-        if self._portfolio is None:
-            self._portfolio = ExchangePortfolio(
-                start_date=pd.Timestamp.utcnow()
-            )
-            self.synchronize_portfolio()
-
-        return self._portfolio
+        self.low_balance_threshold = None
 
     @abstractproperty
     def account(self):
@@ -74,6 +52,9 @@ class Exchange:
     @abstractproperty
     def time_skew(self):
         pass
+
+    def has_bundle(self, data_frequency):
+        return has_bundle(self.name, data_frequency)
 
     def is_open(self, dt):
         """
@@ -177,7 +158,7 @@ class Exchange:
 
     def get_assets(self, symbols=None, data_frequency=None,
                    is_exchange_symbol=False,
-                   is_local=None):
+                   is_local=None, quote_currency=None):
         """
         The list of markets for the specified symbols.
 
@@ -201,14 +182,27 @@ class Exchange:
         if symbols is None:
             # Make a distinct list of all symbols
             symbols = list(set([asset.symbol for asset in self.assets]))
+            symbols.sort()
+
+            if quote_currency is not None:
+                for symbol in symbols[:]:
+                    suffix = '_{}'.format(quote_currency.lower())
+
+                    if not symbol.endswith(suffix):
+                        symbols.remove(symbol)
+
             is_exchange_symbol = False
 
         assets = []
         for symbol in symbols:
-            asset = self.get_asset(
-                symbol, data_frequency, is_exchange_symbol, is_local
-            )
-            assets.append(asset)
+            try:
+                asset = self.get_asset(
+                    symbol, data_frequency, is_exchange_symbol, is_local
+                )
+                assets.append(asset)
+
+            except SymbolNotFoundOnExchange as e:
+                log.warn(e)
         return assets
 
     def get_asset(self, symbol, data_frequency=None, is_exchange_symbol=False,
@@ -241,11 +235,15 @@ class Exchange:
         """
         asset = None
 
+        # TODO: temp mapping, fix to use a single symbol convention
+        og_symbol = symbol
+        symbol = self.get_symbol(symbol) if not is_exchange_symbol else symbol
         log.debug(
             'searching assets for: {} {}'.format(
                 self.name, symbol
             )
         )
+        # TODO: simplify and loose the loop
         for a in self.assets:
             if asset is not None:
                 break
@@ -256,8 +254,11 @@ class Exchange:
 
             elif data_frequency is not None:
                 applies = (
-                    (data_frequency == 'minute' and a.end_minute is not None)
-                    or (data_frequency == 'daily' and a.end_daily is not None)
+                        (
+                                data_frequency == 'minute' and
+                                a.end_minute is not None)
+                        or (
+                                data_frequency == 'daily' and a.end_daily is not None)
                 )
 
             else:
@@ -265,17 +266,24 @@ class Exchange:
 
             # The symbol provided may use the Catalyst or the exchange
             # convention
-            key = a.exchange_symbol if is_exchange_symbol else a.symbol
-            if not asset and key.lower() == symbol.lower() and applies:
-                asset = a
+            key = a.exchange_symbol if \
+                is_exchange_symbol else self.get_symbol(a)
+            if not asset and key.lower() == symbol.lower():
+                if applies:
+                    asset = a
+
+                else:
+                    raise NoDataAvailableOnExchange(
+                        symbol=key,
+                        exchange=self.name,
+                        data_frequency=data_frequency,
+                    )
 
         if asset is None:
-            supported_symbols = sorted([
-                asset.symbol for asset in self.assets
-            ])
+            supported_symbols = sorted([a.symbol for a in self.assets])
 
             raise SymbolNotFoundOnExchange(
-                symbol=symbol,
+                symbol=og_symbol,
                 exchange=self.name.title(),
                 supported_symbols=supported_symbols
             )
@@ -292,6 +300,16 @@ class Exchange:
             symbol_map = get_exchange_symbols(self.name, is_local)
             self._symbol_maps[index] = symbol_map
             return symbol_map
+
+    @abstractmethod
+    def init(self):
+        """
+        Load the asset list from the network.
+
+        Returns
+        -------
+
+        """
 
     @abstractmethod
     def load_assets(self, is_local=False):
@@ -312,54 +330,6 @@ class Exchange:
 
         """
         pass
-
-    def check_open_orders(self):
-        """
-        Loop through the list of open orders in the Portfolio object.
-        For each executed order found, create a transaction and apply to the
-        Portfolio.
-
-        Returns
-        -------
-        list[Transaction]
-
-        """
-        transactions = list()
-        if self.portfolio.open_orders:
-            for order_id in list(self.portfolio.open_orders):
-                log.debug('found open order: {}'.format(order_id))
-
-                order, executed_price = self.get_order(order_id)
-                log.debug(
-                    'got updated order {} {}'.format(
-                        order, executed_price
-                    )
-                )
-                if order.status == ORDER_STATUS.FILLED:
-                    transaction = Transaction(
-                        asset=order.asset,
-                        amount=order.amount,
-                        dt=pd.Timestamp.utcnow(),
-                        price=executed_price,
-                        order_id=order.id,
-                        commission=order.commission
-                    )
-                    transactions.append(transaction)
-
-                    self.portfolio.execute_order(order, transaction)
-
-                elif order.status == ORDER_STATUS.CANCELLED:
-                    self.portfolio.remove_order(order)
-
-                else:
-                    delta = pd.Timestamp.utcnow() - order.dt
-                    log.info(
-                        'order {order_id} still open after {delta}'.format(
-                            order_id=order_id,
-                            delta=delta
-                        )
-                    )
-        return transactions
 
     def get_spot_value(self, assets, field, dt=None, data_frequency='minute'):
         """
@@ -446,6 +416,7 @@ class Exchange:
 
         return value
 
+    # TODO: replace with catalyst.exchange.exchange_utils.get_candles_df
     def get_series_from_candles(self, candles, start_dt, end_dt,
                                 data_frequency, field, previous_value=None):
         """
@@ -470,7 +441,7 @@ class Exchange:
         series = pd.Series(values, index=dates)
 
         periods = get_periods_range(
-            start_dt, end_dt, data_frequency
+            start_dt=start_dt, end_dt=end_dt, freq=data_frequency
         )
         # TODO: ensure that this working as expected, if not use fillna
         series = series.reindex(
@@ -478,7 +449,7 @@ class Exchange:
             method='ffill',
             fill_value=previous_value,
         )
-
+        series.sort_index(inplace=True)
         return series
 
     def get_history_window(self,
@@ -488,7 +459,7 @@ class Exchange:
                            frequency,
                            field,
                            data_frequency=None,
-                           ffill=True):
+                           is_current=False):
 
         """
         Public API method that returns a dataframe containing the requested
@@ -515,10 +486,15 @@ class Exchange:
             The frequency of the data to query; i.e. whether the data is
             'daily' or 'minute' bars.
 
-        # TODO: fill how?
-        ffill: boolean
-            Forward-fill missing values. Only has effect if field
-            is 'price'.
+        is_current: bool
+            Skip date filters when current data is requested (last few bars
+            until now).
+
+        Notes
+        -----
+        Catalysts requires an end data with bar count both CCXT wants a
+        start data with bar count. Since we have to make calculations here,
+        we ensure that the last candle match the end_dt parameter.
 
         Returns
         -------
@@ -527,35 +503,66 @@ class Exchange:
 
         """
         freq, candle_size, unit, data_frequency = get_frequency(
-            frequency, data_frequency
+            frequency, data_frequency, supported_freqs=['T', 'D', 'H']
         )
-        adj_bar_count = candle_size * bar_count
-        start_dt = get_start_dt(end_dt, adj_bar_count, data_frequency)
+
+        # we want to avoid receiving empty candles
+        # so we request more than needed
+        # TODO: consider defining a const per asset
+        # and/or some retry mechanism (in each iteration request more data)
+        min_candles_number = get_candles_number_from_minutes(
+            unit,
+            candle_size,
+            self.MIN_MINUTES_REQUESTED)
+
+        requested_bar_count = bar_count
+
+        if requested_bar_count < min_candles_number:
+            requested_bar_count = min_candles_number
 
         # The get_history method supports multiple asset
         candles = self.get_candles(
             freq=freq,
             assets=assets,
-            bar_count=bar_count,
-            start_dt=start_dt,
-            end_dt=end_dt
+            bar_count=requested_bar_count,
+            end_dt=end_dt if not is_current else None,
         )
 
-        series = dict()
+        # candles sanity check - verify no empty candles were received:
         for asset in candles:
-            asset_series = self.get_series_from_candles(
-                candles=candles[asset],
-                start_dt=start_dt,
-                end_dt=end_dt,
-                data_frequency=frequency,
-                field=field,
-            )
-            series[asset] = asset_series
+            if not candles[asset]:
+                raise NoCandlesReceivedFromExchange(
+                    bar_count=requested_bar_count,
+                    end_dt=end_dt,
+                    asset=asset,
+                    exchange=self.name)
+
+        # for avoiding unnecessary forward fill end_dt is taken back one second
+        forward_fill_till_dt = end_dt - timedelta(seconds=1)
+
+        series = get_candles_df(candles=candles,
+                                field=field,
+                                freq=frequency,
+                                bar_count=requested_bar_count,
+                                end_dt=forward_fill_till_dt)
+
+        # TODO: consider how to approach this edge case
+        # delta_candle_size = candle_size * 60 if unit == 'H' else candle_size
+        # Checking to make sure that the dates match
+        # delta = get_delta(delta_candle_size, data_frequency)
+        # adj_end_dt = end_dt - delta
+        # last_traded = asset_series.index[-1]
+        # if last_traded < adj_end_dt:
+        #    raise LastCandleTooEarlyError(
+        #        last_traded=last_traded,
+        #        end_dt=adj_end_dt,
+        #        exchange=self.name,
+        #    )
 
         df = pd.DataFrame(series)
         df.dropna(inplace=True)
 
-        return df
+        return df.tail(bar_count)
 
     def get_history_window_with_bundle(self,
                                        assets,
@@ -603,8 +610,10 @@ class Exchange:
             A dataframe containing the requested data.
 
         """
+        # TODO: this function needs some work,
+        # we're currently using it just for benchmark data
         freq, candle_size, unit, data_frequency = get_frequency(
-            frequency, data_frequency
+            frequency, data_frequency, supported_freqs=['T', 'D']
         )
         adj_bar_count = candle_size * bar_count
         try:
@@ -616,6 +625,7 @@ class Exchange:
                 data_frequency=data_frequency,
                 force_auto_ingest=force_auto_ingest
             )
+
         except (PricingDataNotLoadedError, NoDataAvailableOnExchange):
             series = dict()
 
@@ -632,15 +642,14 @@ class Exchange:
                 # The get_history method supports multiple asset
                 # Use the original frequency to let each api optimize
                 # the size of result sets
-                trailing_bar_count = get_periods(
+                trailing_bars = get_periods(
                     trailing_dt, end_dt, freq
                 )
                 candles = self.get_candles(
                     freq=freq,
                     assets=asset,
-                    bar_count=trailing_bar_count,
-                    start_dt=start_dt,
-                    end_dt=end_dt
+                    end_dt=end_dt,
+                    bar_count=trailing_bars if trailing_bars < 500 else 500,
                 )
 
                 last_value = series[asset].iloc(0) if asset in series \
@@ -669,51 +678,131 @@ class Exchange:
 
         return df
 
-    def synchronize_portfolio(self):
+    def _check_low_balance(self, currency, balances, amount):
+        """
+        In order to avoid spending money that the user doesn't own,
+        we are comparing to the balance on the account.
+        :param currency: str
+        :param balances: dict
+        :param amount: float
+        :return: free: float,
+                       bool
+        """
+        free = balances[currency]['free'] if currency in balances else 0.0
+
+        if free < amount:
+            return free, True
+
+        else:
+            return free, False
+
+    def _check_position_balance(self, currency, balances, amount):
+        """
+        In order to avoid spending money that the user doesn't own,
+        we are comparing to the balance on the account.
+        For positions, we want to avoid double updates, since, exchanges
+        update positions when the order is opened as used, catalyst wants
+        to take them into consideration, therefore running comparison on total.
+        :param currency: str
+        :param balances: dict
+        :param amount: float
+        :return: total: float,
+                        bool
+        """
+        total = balances[currency]['total'] if currency in balances else 0.0
+
+        if total < amount:
+            return total, True
+
+        else:
+            return total, False
+
+    def sync_positions(self, positions, cash=None,
+                       check_balances=False):
         """
         Update the portfolio cash and position balances based on the
         latest ticker prices.
 
+        Parameters
+        ----------
+        positions:
+            The positions to synchronize.
+
+        check_balances:
+            Check balances amounts against the exchange.
+
         """
-        log.debug('synchronizing portfolio with exchange {}'.format(self.name))
-        balances = self.get_balances()
-
-        base_position_available = balances[self.base_currency]['free'] \
-            if self.base_currency in balances else None
-
-        if base_position_available is None:
-            raise BaseCurrencyNotFoundError(
-                base_currency=self.base_currency,
-                exchange=self.name.title()
+        free_cash = 0.0
+        if check_balances:
+            log.debug('fetching {} balances'.format(self.name))
+            balances = self.get_balances()
+            log.debug(
+                'got free balances for {} currencies'.format(
+                    len(balances)
+                )
             )
+            if cash is not None:
+                free_cash, is_lower = self._check_low_balance(
+                    currency=self.quote_currency,
+                    balances=balances,
+                    amount=cash,
+                )
+                if is_lower:
+                    raise NotEnoughCashError(
+                        currency=self.quote_currency,
+                        exchange=self.name,
+                        free=free_cash,
+                        cash=cash,
+                    )
 
-        portfolio = self._portfolio
-        portfolio.cash = base_position_available
-        log.debug('found base currency balance: {}'.format(portfolio.cash))
-
-        if portfolio.starting_cash is None:
-            portfolio.starting_cash = portfolio.cash
-
-        if portfolio.positions:
-            assets = list(portfolio.positions.keys())
+        positions_value = 0.0
+        if positions:
+            assets = list(set([position.asset for position in positions]))
             tickers = self.tickers(assets)
 
-            portfolio.positions_value = 0.0
-            for asset in tickers:
-                # TODO: convert if the position is not in the base currency
-                ticker = tickers[asset]
-                position = portfolio.positions[asset]
+            for position in positions:
+                asset = position.asset
+                if asset not in tickers:
+                    raise TickerNotFoundError(
+                        symbol=asset.symbol,
+                        exchange=self.name,
+                    )
 
+                ticker = tickers[asset]
+                log.debug(
+                    'updating {symbol} position, last traded on {dt} for '
+                    '{price}{currency}'.format(
+                        symbol=asset.symbol,
+                        dt=ticker['last_traded'],
+                        price=ticker['last_price'],
+                        currency=asset.quote_currency,
+                    )
+                )
                 position.last_sale_price = ticker['last_price']
                 position.last_sale_date = ticker['last_traded']
 
-                portfolio.positions_value += \
-                    position.amount * position.last_sale_price
-                portfolio.portfolio_value = \
-                    portfolio.positions_value + portfolio.cash
+                if check_balances:
+                    total, is_lower = self._check_position_balance(
+                        currency=asset.base_currency,
+                        balances=balances,
+                        amount=position.amount,
+                    )
 
-    def order(self, asset, amount, limit_price=None, stop_price=None,
-              style=None):
+                    if is_lower:
+                        log.warn(
+                            'detected lower balance for {} on {}: {} < {}, '
+                            'updating position amount'.format(
+                                asset.symbol, self.name, total, position.amount
+                            )
+                        )
+                        position.amount = total
+
+                positions_value += \
+                    position.amount * position.last_sale_price
+
+        return free_cash, positions_value
+
+    def order(self, asset, amount, style):
         """Place an order.
 
         Parameters
@@ -762,34 +851,21 @@ class Exchange:
             log.warn('skipping order amount of 0')
             return None
 
-        if self.base_currency is None:
-            raise ValueError('no base_currency defined for this exchange')
+        if self.quote_currency is None:
+            raise ValueError('no quote_currency defined for this exchange')
 
-        if asset.quote_currency != self.base_currency.lower():
-            raise MismatchingBaseCurrencies(
-                base_currency=asset.quote_currency,
-                algo_currency=self.base_currency
+        if asset.quote_currency != self.quote_currency.lower():
+            raise MismatchingQuoteCurrencies(
+                quote_currency=asset.quote_currency,
+                algo_currency=self.quote_currency
             )
 
         is_buy = (amount > 0)
+        display_price = style.get_limit_price(is_buy)
 
-        if limit_price is not None and stop_price is not None:
-            style = ExchangeStopLimitOrder(
-                limit_price, stop_price, exchange=self.name
-            )
-
-        elif limit_price is not None:
-            style = ExchangeLimitOrder(limit_price, exchange=self.name)
-
-        elif stop_price is not None:
-            style = ExchangeStopOrder(stop_price, exchange=self.name)
-
-        else:
-            style = MarketOrder(exchange=self.name)
-
-        display_price = limit_price if limit_price is not None else stop_price
         log.debug(
-            'issuing {side} order of {amount} {symbol} for {type}: {price}'.format(
+            'issuing {side} order of {amount} {symbol} for {type}:'
+            ' {price}'.format(
                 side='buy' if is_buy else 'sell',
                 amount=amount,
                 symbol=asset.symbol,
@@ -798,12 +874,7 @@ class Exchange:
             )
         )
 
-        order = self.create_order(asset, amount, is_buy, style)
-        if order:
-            self._portfolio.create_order(order)
-            return order.id
-        else:
-            return None
+        return self.create_order(asset, amount, is_buy, style)
 
     # The methods below must be implemented for each exchange.
     @abstractmethod
@@ -887,7 +958,24 @@ class Exchange:
         pass
 
     @abstractmethod
-    def cancel_order(self, order_param, symbol_or_asset=None):
+    def process_order(self, order):
+        """
+        Similar to get_order but looks only for executed orders.
+
+        Parameters
+        ----------
+        order: Order
+
+        Returns
+        -------
+        float
+            Avg execution price
+
+        """
+
+    @abstractmethod
+    def cancel_order(self, order_param,
+                     symbol_or_asset=None, params={}):
         """Cancel an open order.
 
         Parameters
@@ -896,12 +984,12 @@ class Exchange:
             The order_id or order object to cancel.
         symbol_or_asset: str|TradingPair
             The catalyst symbol, some exchanges need this
+        params:
         """
         pass
 
     @abstractmethod
-    def get_candles(self, freq, assets, bar_count=None,
-                    start_dt=None, end_dt=None):
+    def get_candles(self, freq, assets, bar_count, start_dt=None, end_dt=None):
         """
         Retrieve OHLCV candles for the given assets
 
@@ -941,13 +1029,15 @@ class Exchange:
         pass
 
     @abc.abstractmethod
-    def tickers(self, assets):
+    def tickers(self, assets, on_ticker_error='raise'):
         """
         Retrieve current tick data for the given assets
 
         Parameters
         ----------
         assets: list[TradingPair]
+        on_ticker_error: str [raise|warn]
+            How to handle an error when retrieving a single ticker.
 
         Returns
         -------
@@ -966,7 +1056,7 @@ class Exchange:
     @abc.abstractmethod
     def get_orderbook(self, asset, order_type, limit):
         """
-        Retrieve the the orderbook for the given trading pair.
+        Retrieve the orderbook for the given trading pair.
 
         Parameters
         ----------
@@ -980,3 +1070,20 @@ class Exchange:
         list[dict[str, float]
         """
         pass
+
+    @abc.abstractmethod
+    def get_trades(self, asset, my_trades, start_dt, limit):
+        """
+        Retrieve a list of trades.
+
+        Parameters
+        ----------
+        my_trades: bool
+            List only my trades.
+        start_dt
+        limit
+
+        Returns
+        -------
+
+        """

@@ -19,11 +19,11 @@ import matplotlib.pyplot as plt
 
 from catalyst import run_algorithm
 from catalyst.api import (order_target_value, symbol, record,
-    cancel_order, get_open_orders, )
+                          cancel_order, get_open_orders, )
 
 
 def initialize(context):
-    context.ASSET_NAME = 'btc_usd'
+    context.ASSET_NAME = 'btc_usdt'
     context.TARGET_HODL_RATIO = 0.8
     context.RESERVE_RATIO = 1.0 - context.TARGET_HODL_RATIO
 
@@ -61,7 +61,6 @@ def handle_data(context, data):
             context.asset,
             target_hodl_value,
             limit_price=price * 1.1,
-            stop_price=price * 0.9,
         )
 
     record(
@@ -141,9 +140,9 @@ if __name__ == '__main__':
         initialize=initialize,
         handle_data=handle_data,
         analyze=analyze,
-        exchange_name='bitfinex',
+        exchange_name='poloniex',
         algo_namespace='buy_and_hodl',
-        base_currency='usd',
+        quote_currency='usdt',
         start=pd.to_datetime('2015-03-01', utc=True),
         end=pd.to_datetime('2017-10-31', utc=True),
     )

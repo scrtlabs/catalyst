@@ -15,13 +15,8 @@
 
 import abc
 
-from sys import float_info
-
-from six import with_metaclass
-
-import catalyst.utils.math_utils as zp_math
-
 from numpy import isfinite
+from six import with_metaclass
 
 from catalyst.errors import BadOrderParameters
 

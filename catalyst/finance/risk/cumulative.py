@@ -27,15 +27,15 @@ from .risk import (
     choose_treasury
 )
 
-from empyrical import (
+from catalyst.patches.stats import (
     alpha_beta_aligned,
     annual_volatility,
-    cum_returns,
     downside_risk,
     information_ratio,
     max_drawdown,
     sharpe_ratio,
     sortino_ratio,
+    cum_returns,
 )
 import warnings
 from catalyst.constants import LOG_LEVEL
@@ -161,9 +161,13 @@ class RiskMetricsCumulative(object):
             if len(self.algorithm_returns) == 1:
                 self.algorithm_returns = np.append(0.0, self.algorithm_returns)
 
-        self.algorithm_cumulative_returns[dt_loc] = cum_returns(
-            self.algorithm_returns
-        )[-1]
+        try:
+            self.algorithm_cumulative_returns[dt_loc] = cum_returns(
+                self.algorithm_returns
+            )[-1]
+        except Exception as e:
+            log.debug('unable to calculate cum returns: {}'.format(e))
+            self.algorithm_cumulative_returns[dt_loc] = np.nan
 
         algo_cumulative_returns_to_date = \
             self.algorithm_cumulative_returns[:dt_loc + 1]
@@ -196,8 +200,11 @@ class RiskMetricsCumulative(object):
             self.benchmark_cumulative_returns[dt_loc] = cum_returns(
                 self.benchmark_returns
             )[-1]
-        except Exception:
-            self.benchmark_cumulative_returns[dt_loc] = 0
+        except Exception as e:
+            log.debug(
+                'unable to calculate benchmark cum returns: {}'.format(e)
+            )
+            self.benchmark_cumulative_returns[dt_loc] = np.nan
 
         benchmark_cumulative_returns_to_date = \
             self.benchmark_cumulative_returns[:dt_loc + 1]
@@ -269,9 +276,16 @@ algorithm_returns ({algo_count}) in range {start} : {end} on {dt}"
         self.sharpe[dt_loc] = sharpe_ratio(
             self.algorithm_returns,
         )
-        self.downside_risk[dt_loc] = downside_risk(
-            self.algorithm_returns
-        )
+
+        try:
+            self.downside_risk[dt_loc] = downside_risk(
+                self.algorithm_returns
+            )
+        except Exception as e:
+            log.debug(
+                'unable to calculate downside risk returns: {}'.format(e)
+            )
+            self.downside_risk[dt_loc] = np.nan
 
         try:
             risk = self.downside_risk[dt_loc]
@@ -279,17 +293,26 @@ algorithm_returns ({algo_count}) in range {start} : {end} on {dt}"
                 self.algorithm_returns,
                 _downside_risk=risk
             )
-        except Exception:
-            # TODO: what causes it to error out?
-            self.sortino[dt_loc] = 0
+        except Exception as e:
+            log.debug(
+                'unable to calculate benchmark cum returns: {}'.format(e)
+            )
+            self.sortino[dt_loc] = np.nan
 
         self.information[dt_loc] = information_ratio(
             self.algorithm_returns,
             self.benchmark_returns,
         )
-        self.max_drawdown = max_drawdown(
-            self.algorithm_returns
-        )
+        try:
+            self.max_drawdown = max_drawdown(
+                self.algorithm_returns
+            )
+        except Exception as e:
+            log.debug(
+                'unable to calculate max drawdown: {}'.format(e)
+            )
+            self.max_drawdown = np.nan
+
         self.max_drawdowns[dt_loc] = self.max_drawdown
         self.max_leverage = self.calculate_max_leverage()
         self.max_leverages[dt_loc] = self.max_leverage

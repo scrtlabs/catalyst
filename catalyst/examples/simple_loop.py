@@ -1,32 +1,38 @@
-import talib
 import pandas as pd
+import talib
+from logbook import Logger, INFO
 
 from catalyst import run_algorithm
 from catalyst.api import symbol, record
-from catalyst.exchange.stats_utils import get_pretty_stats, \
+from catalyst.exchange.utils.stats_utils import get_pretty_stats, \
     extract_transactions
+
+log = Logger('simple_loop', level=INFO)
 
 
 def initialize(context):
-    print('initializing')
-    context.asset = symbol('neo_eth')
+    log.info('initializing')
+    context.asset = symbol('eth_btc')
     context.base_price = None
 
 
 def handle_data(context, data):
-    print('handling bar: {}'.format(data.current_dt))
+    log.info('handling bar: {}'.format(data.current_dt))
 
     price = data.current(context.asset, 'close')
-    print('got price {price}'.format(price=price))
+    log.info('got price {price}'.format(price=price))
 
     prices = data.history(
         context.asset,
         fields='price',
         bar_count=20,
-        frequency='15T'
+        frequency='30T'
     )
+    last_traded = prices.index[-1]
+    log.info('last candle date: {}'.format(last_traded))
+
     rsi = talib.RSI(prices.values, timeperiod=14)[-1]
-    print('got rsi: {}'.format(rsi))
+    log.info('got rsi: {}'.format(rsi))
 
     # If base_price is not set, we use the current value. This is the
     # price at the first bar which we reference to calculate price_change.
@@ -48,22 +54,22 @@ def handle_data(context, data):
 
 def analyze(context, perf):
     import matplotlib.pyplot as plt
-    print('the stats: {}'.format(get_pretty_stats(perf)))
+    log.info('the stats: {}'.format(get_pretty_stats(perf)))
 
-    # The base currency of the algo exchange
-    base_currency = context.exchanges.values()[0].base_currency.upper()
+    # The quote currency of the algo exchange
+    quote_currency = list(context.exchanges.values())[0].quote_currency.upper()
 
     # Plot the portfolio value over time.
     ax1 = plt.subplot(611)
     perf.loc[:, 'portfolio_value'].plot(ax=ax1)
-    ax1.set_ylabel('Portfolio Value ({})'.format(base_currency))
+    ax1.set_ylabel('Portfolio Value ({})'.format(quote_currency))
 
     # Plot the price increase or decrease over time.
     ax2 = plt.subplot(612, sharex=ax1)
     perf.loc[:, 'price'].plot(ax=ax2, label='Price')
 
-    ax2.set_ylabel('{asset} ({base})'.format(
-        asset=context.asset.symbol, base=base_currency
+    ax2.set_ylabel('{asset} ({quote})'.format(
+        asset=context.asset.symbol, quote=quote_currency
     ))
 
     transaction_df = extract_transactions(perf)
@@ -89,9 +95,9 @@ def analyze(context, perf):
 
     ax4 = plt.subplot(613, sharex=ax1)
     perf.loc[:, 'cash'].plot(
-        ax=ax4, label='Base Currency ({})'.format(base_currency)
+        ax=ax4, label='Quote Currency ({})'.format(quote_currency)
     )
-    ax4.set_ylabel('Cash ({})'.format(base_currency))
+    ax4.set_ylabel('Cash ({})'.format(quote_currency))
 
     perf['algorithm'] = perf.loc[:, 'algorithm_period_return']
 
@@ -107,25 +113,32 @@ def analyze(context, perf):
     pass
 
 
-run_algorithm(
-    capital_base=250,
-    start=pd.to_datetime('2017-11-1 0:00', utc=True),
-    end=pd.to_datetime('2017-11-10 23:59', utc=True),
-    data_frequency='daily',
-    initialize=initialize,
-    handle_data=handle_data,
-    analyze=analyze,
-    exchange_name='bitfinex',
-    algo_namespace='simple_loop',
-    base_currency='usd'
-)
-# run_algorithm(
-#     initialize=initialize,
-#     handle_data=handle_data,
-#     analyze=None,
-#     exchange_name='binance',
-#     live=True,
-#     algo_namespace='simple_loop',
-#     base_currency='eth',
-#     live_graph=False,
-# )
+if __name__ == '__main__':
+    mode = 'live'
+
+    if mode == 'backtest':
+        run_algorithm(
+            capital_base=1,
+            initialize=initialize,
+            handle_data=handle_data,
+            analyze=None,
+            exchange_name='poloniex',
+            algo_namespace='simple_loop',
+            quote_currency='eth',
+            data_frequency='minute',
+            start=pd.to_datetime('2017-9-1', utc=True),
+            end=pd.to_datetime('2017-12-1', utc=True),
+        )
+    else:
+        run_algorithm(
+            capital_base=1,
+            initialize=initialize,
+            handle_data=handle_data,
+            analyze=None,
+            exchange_name='binance',
+            live=True,
+            algo_namespace='simple_loop',
+            quote_currency='eth',
+            live_graph=False,
+            simulate_orders=True
+        )

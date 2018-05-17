@@ -15,6 +15,9 @@ as an alternative installation method for MacOS and Linux, you can install
 Catalyst directly with ``pip`` (we recommend in combination with a virtual 
 environemnt). See :ref:`Installing with pip <pip>`.
 
+Alternatively you can install Catalyst using ``pipenv`` which is a mix of pip
+and virtualenv. See :ref:`Installing with pipenv <pipenv>`.
+
 Regardless of the method, each operating system (OS), has its own 
 prerequisites, make sure to review the corresponding sections for your system:
 :ref:`Linux <linux>`, :ref:`MacOS <macos>` and :ref:`Windows <windows>`.
@@ -44,8 +47,10 @@ you can install MiniConda, which is a smaller footprint (fewer packages and
 smaller size) than its big brother Anaconda, but it still contains all the 
 main packages needed. To install MiniConda, you can follow these steps:
 
-1. Download `MiniConda <https://conda.io/miniconda.html>`_. Select Python 2.7 
-   for your Operating System.
+1. Download `MiniConda <https://conda.io/miniconda.html>`_. Select either 
+   Python 3.6 (recommended) or Python 2.7 for your Operating System. The 
+   `Enigma Data Marketplace <https://enigmampc.github.io/marketplace/>`_ will 
+   require Python3, that's why we are recommending to opt for the newer version.
 2. Install MiniConda. See the `Installation Instructions 
    <https://conda.io/docs/user-guide/install/index.html>`_ if you need help.
 3. Ensure the correct installation by running ``conda list`` in a Terminal 
@@ -61,17 +66,26 @@ main packages needed. To install MiniConda, you can follow these steps:
 
 Once either Conda or MiniConda has been set up you can install Catalyst:
 
-1. Download the file `python2.7-environment.yml 
-   <https://github.com/enigmampc/catalyst/blob/master/etc/python2.7-environment.yml>`_.
+1. Download the file `python3.6-environment.yml 
+   <https://github.com/enigmampc/catalyst/blob/master/etc/python3.6-environment.yml>`_ 
+   (recommended) or `python2.7-environment.yml 
+   <https://github.com/enigmampc/catalyst/blob/master/etc/python2.7-environment.yml>`_ 
+   matching your Conda installation from step #1 above.
 
      To download, simply click on the 'Raw' button and save the file locally 
      to a folder you can remember. Make sure that the file gets saved with the
      ``.yml`` extension, and nothing like a ``.txt`` file or anything else.
 
 2. Open a Terminal window and enter [``cd/dir``] into the directory where you 
-   saved the above ``python2.7-environment.yml`` file.
+   saved the above ``.yml`` file.
 
 3. Install using this file. This step can take about 5-10 minutes to install.
+
+   .. code-block:: bash
+
+      conda env create -f python3.6-environment.yml
+
+  or
 
    .. code-block:: bash
 
@@ -119,9 +133,17 @@ with the following steps:
 
 2. Create the environment:
 
+   for python 2.7:
+
    .. code-block:: bash
 
       conda create --name catalyst python=2.7 scipy zlib
+
+  or for python 3.6:
+
+   .. code-block:: bash
+
+      conda create --name catalyst python=3.6 scipy zlib
 
 3. Activate the environment:
 
@@ -177,20 +199,6 @@ use a single tool to install Python and non-Python dependencies, or if you're
 already using `Anaconda <http://continuum.io/downloads>`_ as your Python 
 distribution, refer to the :ref:`Installing with Conda <conda>` section.
 
-Once you've installed the necessary additional dependencies for your system 
-(see below for your particular platform: :ref:`Linux`, :ref:`MacOS` or 
-:ref:`Windows`), you should be able to simply run
-
-.. code-block:: bash
-
-   $ pip install enigma-catalyst matplotlib
-
-Note that in the command above we install two different packages. The second 
-one, ``matplotlib`` is a visualization library. While it's not strictly 
-required to run catalyst simulations or live trading, it comes in very handy
-to visualize the performance of your algorithms, and for this reason we 
-recommend you install it, as well.
-
 If you use Python for anything other than Catalyst, we **strongly** recommend
 that you install in a `virtualenv
 <https://virtualenv.readthedocs.org/en/latest>`_.  The `Hitchhiker's Guide to
@@ -203,7 +211,20 @@ summarized version:
    $ pip install virtualenv
    $ virtualenv catalyst-venv
    $ source ./catalyst-venv/bin/activate
+
+Once you've installed the necessary additional dependencies for your system 
+(:ref:`Linux`, :ref:`MacOS` or :ref:`Windows`) **and have activated your virtualenv**, you should be able to simply run
+
+.. code-block:: bash
+
    $ pip install enigma-catalyst matplotlib
+
+Note that in the command above we install two different packages. The second 
+one, ``matplotlib`` is a visualization library. While it's not strictly 
+required to run catalyst simulations or live trading, it comes in very handy
+to visualize the performance of your algorithms, and for this reason we 
+recommend you install it, as well.
+
 
 Troubleshooting ``pip`` Install
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -216,13 +237,13 @@ Troubleshooting ``pip`` Install
 
    .. code-block:: bash
 
-      pip install --upgrade pip
+      $ pip install --upgrade pip
 
    On Windows, the recommended command is:
 
    .. code-block:: bash
 
-      python -m pip install --upgrade pip
+      $ python -m pip install --upgrade pip
 
 ----
 
@@ -248,7 +269,7 @@ Troubleshooting ``pip`` Install
 
    .. code-block:: bash
 
-      pip install --pre enigma-catalyst
+      $ pip install --pre enigma-catalyst
 
 ----
 
@@ -260,7 +281,7 @@ Troubleshooting ``pip`` Install
 
    .. code-block:: bash
 
-      pip install --upgrade pip setuptools
+      $ pip install --upgrade pip setuptools
 
 ----
 
@@ -275,7 +296,7 @@ Troubleshooting ``pip`` Install
 
    .. code-block:: bash
 
-      pip install -r requirements.txt
+      $ pip install -r requirements.txt
 
 ----
 
@@ -291,8 +312,51 @@ Troubleshooting ``pip`` Install
 
    .. code-block:: bash
 
-      sudo apt-get install python-dev
+      $ sudo apt-get install python-dev
 
+----
+
+**Issue**:
+   Missing TA_Lib
+
+**Solution**:
+   Follow `these instructions
+   <https://mrjbq7.github.io/ta-lib/install.html>`_ to install the TA_Lib Python wrapper
+   (and if needed, its underlying C library as well).
+
+.. _pipenv:
+
+Installing with ``pipenv``
+--------------------------
+
+Installing Catalyst via ``pipenv`` is perhaps easier that installing it via
+``pip`` itself but you need to install ``pipenv`` first via ``pip``.
+
+.. code-block:: bash
+
+   $ pip install pipenv
+
+Once ``pipenv`` is installed you can proceed by creating a project folder and
+installing Catalyst on that project automagically as follows:
+
+.. code-block:: bash
+
+   $ mkdir project
+   $ cd project
+   $ pipenv --two
+   $ pipenv install enigma-catalyst matplotlib
+
+Until now the workflow compared to ``pip`` is almost identical, the difference
+is that you don't need to load manually any virtualenv however you need to use
+the `pipenv run` prefix to run the `catalyst` command as follows:
+
+.. code-block:: bash
+
+   $ pipenv run catalyst --version
+
+If you want to know more about ``pipenv`` go to the `pipenv github repo`_
+
+.. _`pipenv github repo`: https://github.com/pypa/pipenv
 
 .. _linux:
 
@@ -340,14 +404,14 @@ outdated. Thus, you first need to run:
 
 .. code-block:: bash
 
-   pip install --upgrade pip setuptools
+   $ pip install --upgrade pip setuptools
 
 The default installation is also missing the C and C++ compilers, which you 
 install by:
 
 .. code-block:: bash
 
-   sudo yum install gcc gcc-c++
+   $ sudo yum install gcc gcc-c++
 
 Then you should follow the regular installation instructions outlined at the 
 beginning of this page.
@@ -372,20 +436,34 @@ following brew packages:
 
    $ brew install freetype pkg-config gcc openssl
 
-MacOS + virtualenv + matplotlib
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+MacOS + virtualenv/conda + matplotlib
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A note about using matplotlib in virtual enviroments on MacOS: it may be 
-necessary to run
+The first time that you try to run an algorithm that loads the ``matplotlib`` 
+library, you may get the following error:
+
+.. code-block:: text
+
+  RuntimeError: Python is not installed as a framework. The Mac OS X backend 
+  will not be able to function correctly if Python is not installed as a 
+  framework. See the Python documentation for more information on installing 
+  Python as a framework on Mac OS X. Please either reinstall Python as a 
+  framework, or try one of the other backends. If you are using (Ana)Conda 
+  please install python.app and replace the use of 'python' with 'pythonw'. 
+  See 'Working with Matplotlib on OSX' in the Matplotlib FAQ for more 
+  information.
+
+This is a ``matplotlib``-specific error, that will go away once you run the 
+following command:
 
 .. code-block:: bash
 
-   echo "backend: TkAgg" > ~/.matplotlib/matplotlibrc
+   $ echo "backend: TkAgg" > ~/.matplotlib/matplotlibrc
 
 in order to override the default ``MacOS`` backend for your system, which 
-may not be accessible from inside the virtual environment. This will allow 
-Catalyst to open matplotlib charts from within a virtual environment, which 
-is useful for displaying the performance of your backtests.  To learn more 
+may not be accessible from inside the virtual or conda environment. This will 
+allow Catalyst to open matplotlib charts from within a virtual environment, 
+which is useful for displaying the performance of your backtests.  To learn more 
 about matplotlib backends, please refer to the
 `matplotlib backend documentation <https://matplotlib.org/faq/usage_faq.html#what-is-a-backend>`_.
 
@@ -394,12 +472,22 @@ about matplotlib backends, please refer to the
 Windows Requirements
 --------------------
 
-In Windows, you will first need to install the `Microsoft Visual C++ Compiler 
-for Python 2.7 
-<https://www.microsoft.com/en-us/download/details.aspx?id=44266>`_. This 
-package contains the compiler and the set of system headers necessary for 
-producing binary wheels for Python 2.7 packages. If it's not already in your 
-system, download it and install it before proceeding to the next step.
+In Windows, you will first need to install the Microsoft Visual C++ Compiler, 
+which is different depending on the version of Python that you plan to use:
+
+* Python 3.5, 3.6: `Visual C++ 2015 Build Tools 
+  <http://landinghub.visualstudio.com/visual-cpp-build-tools>`_, 
+  which installs Visual C++ version 14.0. **This is the recommended version**
+
+* Python 2.7: `Microsoft Visual C++ Compiler for Python 2.7 
+  <https://www.microsoft.com/en-us/download/details.aspx?id=44266>`_, which 
+  installs version Visual C++ version 9.0
+
+This package contains the compiler and the set of system headers necessary for 
+producing binary wheels for Python packages. If it's not already in your 
+system, download it and install it before proceeding to the next step. If you 
+need additional help, or are looking for other versions of Visual C++ for 
+Windows (only advanced users), follow `this link <https://wiki.python.org/moin/WindowsCompilers>`_.
 
 Once you have the above compiler installed, the easiest and best supported way 
 to install Catalyst in Windows is to use :ref:`Conda <conda>`. If you didn't 
@@ -427,6 +515,7 @@ mentioned above are as follows:
     default you get 0 as the Value Data)
 
 |
+
 - **The installer has encountered an unexpected error installing this package. 
   This may indicate a problem with this package. The error code is 2503.**
 
@@ -439,12 +528,43 @@ mentioned above are as follows:
   - ``cd`` into the folder where you downloaded ``VCForPython27.msi``
   - Run ``msiexec /i VCForPython27.msi``
 
+Updating Catalyst
+-----------------
+
+Catalyst is currently in alpha and in under very active development. We release
+new minor versions every few days in response to the thorough battle testing 
+that our user community puts Catalyst in. As a result, you should expect to 
+update Catalyst frequently. Once installed, Catalyst can easily be updated as a 
+``pip`` package regardless of the environemnt used for installation. Make sure 
+you activate your environment first as you did in your first install, and then 
+execute:
+
+.. code-block:: bash
+
+   $ pip uninstall enigma-catalyst
+   $ pip install enigma-catalyst
+
+Alternatively, you could update Catalyst issuing the following command:
+
+.. code-block:: bash
+
+   $ pip install -U enigma-catalyst
+
+but this command will also upgrade all the Catalyst dependencies to the latest 
+versions available, and may have unexpected side effects if a newer version of a 
+dependency inadvertently breaks some functionality that Catalyst relies on. 
+Thus, the first method is the recommended one.
+
 Getting Help
 ------------
 
 If after following the instructions above, and going through the 
 *Troubleshooting* sections, you still experience problems installing Catalyst,
 you can seek additional help through the following channels:
+
+- Join our `Catalyst Forum <https://forum.catalystcrypto.io/>`_, and browse a variety
+  of topics and conversations around common issues that others face when using
+  Catalyst, and how to resolve them. And join the conversation!
 
 - Join our `Discord community <https://discord.gg/SJK32GY>`_, and head over 
   the #catalyst_dev channel where many other users (as well as the project 

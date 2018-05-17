@@ -2,8 +2,268 @@
 Release Notes
 =============
 
-Version 0.3.10
+Version 0.5.10
+^^^^^^^^^^^^^^
+**Release Date**: 2018-05-09
+
+Bug Fixes
+~~~~~~~~~
+- Added order creation exception handling according to the ccxt manual
+  :issue:`315`
+- Rounded up the filled amount to avoid unclosed orders :issue:`309`
+- Correct the retry of the fetch trades method in case of a
+  timeout :issue:`321`
+- Fixed the extra history candles fetch in live mode :issue:`323`
+- Fixed the marketplace list function :issue:`327`
+
+Build
+~~~~~
+- Added the ability to set a future start_date on live mode :issue:`318`
+
+Version 0.5.9
 ^^^^^^^^^^^^^
+**Release Date**: 2018-04-24
+
+Documentation
+~~~~~~~~~~~~~
+- Added explanation describing the storing of the algorithm state in live mode :issue:`224`
+- Addition of
+  `Api Reference <https://enigma.co/catalyst/appendix.html>`_
+
+Bug Fixes
+~~~~~~~~~
+- Lowered order size limit to fit all supported exchanges :issue:`296`
+- Added a graceful finish to a live run with a specified end date :issue:`302`
+- Added commissions to `daily_stats` Dataframe :issue:`304`
+- Fixed an issue regarding `str_btc` on Poloniex :issue:`307`
+- Fixed the last candle returned in backtest in minute mode to be partial (as in live mode)
+  :issue:`266`
+
+Build
+~~~~~
+- Upgraded `CCXT` version to 1.12.131
+- Updated Data Marketplace to enable submitting several files in a publish command.
+- Improved Data Marketplace ingestion.
+
+Version 0.5.8
+^^^^^^^^^^^^^
+**Release Date**: 2018-03-29
+
+Bug Fixes
+~~~~~~~~~
+- Fix proper release of Data Marketplace on mainnet.
+- Fix Data Marketplace release on mainnet
+
+Version 0.5.7
+^^^^^^^^^^^^^
+**Release Date**: 2018-03-29
+
+Build
+~~~~~
+- Data Marketplace deployed on mainnet.
+- Added progress indicators for publishing data, and made the data publishing
+  synchronous to provide feedback to the publisher.
+
+Bug Fixes
+~~~~~~~~~
+- Fixes in storing and loading the state :issue:`214`,
+  :issue:`287`
+
+Version 0.5.6
+^^^^^^^^^^^^^
+**Release Date**: 2018-03-22
+
+Build
+~~~~~
+- Data Marketplace: ensures compatibility across wallets, now fully supporting 
+  ``ledger``, ``trezor``, ``keystore``, ``private key``. Partial support for 
+  ``metamask`` (includes sign_msg, but not sign_tx). Current support for 
+  ``Digital Bitbox`` is unknown, but believed to be supported.
+- Data Marketplace: Switched online provider from MyEtherWallet to MyCrypto.
+- Data Marketplace: Added progress indicator for data ingestion.
+
+Bug Fixes
+~~~~~~~~~
+- Changed benchmark to be constant, so it doesn't ingest data at all. Temporary
+  fix for :issue:`271`, :issue:`285`
+
+Version 0.5.5
+^^^^^^^^^^^^^
+**Release Date**: 2018-03-19
+
+Bug Fixes
+~~~~~~~~~
+- Fixed an issue with the data history in daily frequency :issue:`274`
+- Fix hourly frequency issues :issue:`227` and :issue:`114`
+
+Version 0.5.4
+^^^^^^^^^^^^^
+**Release Date**: 2018-03-14
+
+Build
+~~~~~
+- Switched Data Marketplace from Ropstein testnet to Rinkeby testnet after 
+  incorporating changes resulting from the marketplace contract audit
+- Several usability improvements of the Data Marketplace that make the 
+  `--dataset` parameter optional. If it is not included in the command line, 
+  will list available datasets, and let you choose interactively.
+
+Bug Fixes
+~~~~~~~~~
+- Fix Binance requirement of symbol to be included in the cancelled order 
+  :issue:`204`
+- Fix `notenoughcasherror` when an open order is filled minutes later 
+  :issue:`237`
+- Properly handle of empty candles received from exchanges :issue:`236`
+- Added a function to reduce open orders amount from calculated target/amount 
+  for target orders :issue:`243`
+- Fix missing file in live trading mode on date change :issue:`252`, 
+  :issue:`253`
+- Upgraded Data Marketplace to Web3==4.0.0b11, which was breaking some 
+  functionality from prior version 4.0.0b7 :issue:`257`
+- Always request more data to avoid empty bars and always give the exact bar
+  number :issue:`260`
+
+Documentation
+~~~~~~~~~~~~~
+- PyCharm documentation :issue:`195`
+- Added TA-Lib troubleshooting instructions
+- Added instructions on how to create a Conda environment for Python 3.6, and
+  updated Visual C++ instructions for Windows and Python 3
+- Linking example algorithms in the documentation to their sources
+
+
+Version 0.5.3
+^^^^^^^^^^^^^
+**Release Date**: 2018-02-09
+
+Bug Fixes
+~~~~~~~~~
+- Fixed an issue with last candle in backtesting :issue:`219`
+
+Version 0.5.2
+^^^^^^^^^^^^^
+**Release Date**: 2018-02-08
+
+Bug Fixes
+~~~~~~~~~
+- Fixed an issue with live candle values :issue:`216` and :issue:`199`
+
+Version 0.5.1
+^^^^^^^^^^^^^
+**Release Date**: 2018-02-07
+
+Bug Fixes
+~~~~~~~~~
+- Fixed an issue with orders that stay open :issue:`211`
+- Fixed Jupyter issues :issue:`179`
+- Fetching multiple tickers in one call to minimize rate limit risks :issue:`174`
+- Improved live state presentation :issue:`171`
+
+
+Build
+~~~~~
+- Introducing the Enigma Marketplace
+
+Version 0.4.7
+^^^^^^^^^^^^^
+**Release Date**: 2018-01-19
+
+Bug Fixes
+~~~~~~~~~
+- Fixing issue :issue:`137` impacting the CLI
+
+Build
+~~~~~
+- Implemented authentication aliases (:issue:`60`)
+
+Version 0.4.6
+^^^^^^^^^^^^^
+**Release Date**: 2018-01-18
+
+Bug Fixes
+~~~~~~~~~
+- Fixed some Python3 issues
+- Reading the trade log to get executed order prices on exchanges like Binance (:issue:`151`)
+- Fixed issue with market order executing price (:issue:`150` and :issue:`111`)
+- Implemented standardized symbol mapping (:issue:`157`)
+- Improved error handling for unsupported timeframes (:issue:`159`)
+- Using Bitfinex instead of Poloniex to fetch btc_usdt benchmark (:issue:`161`)
+
+
+Build
+~~~~~
+- Added a `context.state` dict to keep arbitrary state values between runs
+- Added ability to stop live algo at specified end date
+
+Version 0.4.5
+^^^^^^^^^^^^^
+**Release Date**: 2018-01-12
+
+Bug Fixes
+~~~~~~~~~
+- Improved order execution for exchanges supporting trade lists (:issue:`151`)
+- Fixed an issue where requesting history of multiple assets repeats values
+- Raising an error for order amounts smaller than exchange lots
+- Handling multiple req errors with tickers more gracefully (:issue:`160`)
+
+Version 0.4.4
+^^^^^^^^^^^^^
+**Release Date**: 2018-01-09
+
+Bug Fixes
+~~~~~~~~~
+- Removed redundant capital_base validation (:issue:`142`)
+- Fixed portfolio update issue with restored state (:issue:`111`)
+- Skipping cash validation where there are open orders (:issue:`144`)
+
+Version 0.4.3
+^^^^^^^^^^^^^
+**Release Date**: 2018-01-05
+
+Bug Fixes
+~~~~~~~~~
+- Fixed CLI issue (:issue:`137`)
+- Upgraded CCXT
+
+Version 0.4.2
+^^^^^^^^^^^^^
+**Release Date**: 2018-01-03
+
+Bug Fixes
+~~~~~~~~~
+- Fixed cash synchronization issue (:issue:`133`)
+- Fixed positions synchronization issue (:issue:`132`)
+- Patched empyrical to resolve a np.log1p issue (:issue:`126`)
+- Fixed a paper trading issue (:issue:`124`)
+- Fixed a commission issue (:issue:`104`)
+- Fixed a poloniex specific issue in live trading (:issue:`103`)
+
+Build
+~~~~~
+- Caching CCXT market info to limit round-trips (:issue:`99`)
+- Tentative support for Pipeline (:issue:`96`)
+
+Version 0.4.0
+^^^^^^^^^^^^^
+**Release Date**: 2017-12-12
+
+Bug Fixes
+~~~~~~~~~
+
+- Changed Poloniex interface (should solve :issue:`95` and :issue:`94`)
+- Solved issue with overriding commission and slippage (:issue:`87`)
+- Fixed inefficiency with Bittrex current prices (:issue:`76`)
+
+Build
+~~~~~
+- Integrated with CCXT
+- Added paper trading capability (`simulate_orders=True` param in live mode)
+- More granular commissions (:issue:`82`)
+- Added market orders in live mode (:issue:`81`)
+
+Version 0.3.10
+~~~~~~~~~~~~~~
 **Release Date**: 2017-11-28
 
 Bug Fixes

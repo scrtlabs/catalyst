@@ -656,11 +656,11 @@ class DataPortal(object):
         return spot_value
 
     def _get_minutely_spot_value(self,
-                                asset,
-                                column,
-                                dt,
-                                data_frequency,
-                                ffill=False):
+                                 asset,
+                                 column,
+                                 dt,
+                                 data_frequency,
+                                 ffill=False):
 
         reader = self._get_pricing_reader(data_frequency)
 
@@ -706,7 +706,7 @@ class DataPortal(object):
             asset,
             column,
             dt,
-            ffill, 
+            ffill,
             'minute',
         )
 

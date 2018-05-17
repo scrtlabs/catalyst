@@ -1,9 +1,11 @@
 # Run Command
-# catalyst run --start 2017-1-1 --end 2017-11-1 -o talib_simple.pickle -f talib_simple.py -x poloniex
-# 
+# catalyst run --start 2017-1-1 --end 2017-11-1 -o talib_simple.pickle \
+#   -f talib_simple.py -x poloniex
+#
 # Description
-# Simple TALib Example showing how to use various indicators in you strategy
-# Based loosly on https://github.com/mellertson/talib-macd-example/blob/master/talib-macd-matplotlib-example.py
+# Simple TALib Example showing how to use various indicators
+# in you strategy. Based loosly on
+# https://github.com/mellertson/talib-macd-example/blob/master/talib-macd-matplotlib-example.py
 
 import os
 
@@ -21,7 +23,7 @@ from catalyst.api import (
     order_target_percent,
     symbol,
 )
-from catalyst.exchange.stats_utils import get_pretty_stats
+from catalyst.exchange.utils.stats_utils import get_pretty_stats
 
 algo_namespace = 'talib_sample'
 log = Logger(algo_namespace)
@@ -88,7 +90,7 @@ def _handle_data(context, data):
         prices.close.as_matrix(), fastperiod=context.MACD_FAST,
         slowperiod=context.MACD_SLOW, signalperiod=context.MACD_SIGNAL)
 
-    # Stochastics %K %D 
+    # Stochastics %K %D
     # %K = (Current Close - Lowest Low)/(Highest High - Lowest Low) * 100
     # %D = 3-day SMA of %K
     analysis['stoch_k'], analysis['stoch_d'] = ta.STOCH(
@@ -358,7 +360,7 @@ if __name__ == '__main__':
         handle_data=handle_data,
         analyze=analyze,
         exchange_name='poloniex',
-        base_currency='usdt',
+        quote_currency='usdt',
         start=pd.to_datetime('2016-11-1', utc=True),
         end=pd.to_datetime('2017-11-10', utc=True),
     )

@@ -11,7 +11,6 @@ from catalyst.api import (
     record,
     get_open_orders,
 )
-from catalyst.exchange.stats_utils import crossover, crossunder
 from catalyst.utils.run_algo import run_algorithm
 
 algo_namespace = 'rsi'
@@ -55,7 +54,7 @@ def _handle_buy_sell_decision(context, data, signal, price):
             stop=None
         )
 
-    action = None
+    # action = None
     if context.position is not None:
         cost_basis = context.position['cost_basis']
         amount = context.position['amount']
@@ -80,7 +79,7 @@ def _handle_buy_sell_decision(context, data, signal, price):
                 amount=-amount,
                 limit_price=price * (1 - context.SLIPPAGE_ALLOWED),
             )
-            action = 0
+            # action = 0
             context.position = None
 
     else:
@@ -97,7 +96,7 @@ def _handle_buy_sell_decision(context, data, signal, price):
                 amount=buy_amount,
                 stop=None
             )
-            action = 0
+            # action = 0
 
 
 def _handle_data_rsi_only(context, data):
@@ -115,7 +114,7 @@ def _handle_data_rsi_only(context, data):
         prices = data.history(
             context.asset,
             fields='price',
-            bar_count=17,
+            bar_count=20,
             frequency='30T'
         )
     except Exception as e:
@@ -133,7 +132,7 @@ def _handle_data_rsi_only(context, data):
     price = data.current(context.asset, 'close')
     cash = context.portfolio.cash
     log.info(
-        'base currency available: {cash}, cap: {cap}'.format(
+        'quote currency available: {cash}, cap: {cap}'.format(
             cash=cash,
             cap=context.MAX_HOLDINGS
         )
@@ -157,7 +156,7 @@ def handle_data(context, data):
     dt = data.current_dt
 
     if context.last_bar is None or (
-                context.last_bar + timedelta(minutes=15)) <= dt:
+            context.last_bar + timedelta(minutes=15)) <= dt:
         context.last_bar = dt
     else:
         return
@@ -176,16 +175,16 @@ def handle_data(context, data):
 def analyze(context=None, results=None):
     import matplotlib.pyplot as plt
 
-    base_currency = context.exchanges.values()[0].base_currency.upper()
+    quote_currency = list(context.exchanges.values())[0].quote_currency.upper()
     # Plot the portfolio and asset data.
     ax1 = plt.subplot(611)
     results.loc[:, 'portfolio_value'].plot(ax=ax1)
-    ax1.set_ylabel('Portfolio Value ({})'.format(base_currency))
+    ax1.set_ylabel('Portfolio Value ({})'.format(quote_currency))
 
     ax2 = plt.subplot(612, sharex=ax1)
     results.loc[:, 'price'].plot(ax=ax2)
-    ax2.set_ylabel('{asset} ({base})'.format(
-        asset=context.asset.symbol, base=base_currency
+    ax2.set_ylabel('{asset} ({quote})'.format(
+        asset=context.asset.symbol, quote=quote_currency
     ))
 
     trans = results.loc[[t != [] for t in results.transactions], :]
@@ -215,7 +214,7 @@ def analyze(context=None, results=None):
 
     ax4 = plt.subplot(614, sharex=ax1)
     results.loc[:, ['starting_cash', 'cash']].plot(ax=ax4)
-    ax4.set_ylabel('Base Currency ({})'.format(base_currency))
+    ax4.set_ylabel('Quote Currency ({})'.format(quote_currency))
 
     results['algorithm'] = results.loc[:, 'algorithm_period_return']
 
@@ -250,27 +249,17 @@ def analyze(context=None, results=None):
     pass
 
 
-# run_algorithm(
-#     initialize=initialize,
-#     handle_data=handle_data,
-#     analyze=analyze,
-#     exchange_name='bittrex',
-#     live=True,
-#     algo_namespace=algo_namespace,
-#     base_currency='btc',
-#     live_graph=False
-# )
-
-# Backtest
-run_algorithm(
-    capital_base=0.5,
-    data_frequency='minute',
-    initialize=initialize,
-    handle_data=handle_data,
-    analyze=analyze,
-    exchange_name='poloniex',
-    algo_namespace=algo_namespace,
-    base_currency='btc',
-    start=pd.to_datetime('2017-9-1', utc=True),
-    end=pd.to_datetime('2017-10-1', utc=True),
-)
+if __name__ == '__main__':
+    # Backtest
+    run_algorithm(
+        capital_base=0.5,
+        data_frequency='minute',
+        initialize=initialize,
+        handle_data=handle_data,
+        analyze=analyze,
+        exchange_name='poloniex',
+        algo_namespace=algo_namespace,
+        quote_currency='btc',
+        start=pd.to_datetime('2017-9-1', utc=True),
+        end=pd.to_datetime('2017-10-1', utc=True),
+    )

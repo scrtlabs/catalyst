@@ -1,6 +1,8 @@
-.. include:: welcome.rst
+.. include:: ../../README.rst
+
 |
 |
+
 Table of Contents
 -----------------
 
@@ -9,17 +11,15 @@ Table of Contents
 
    install
    beginner-tutorial
-   jupyter
    live-trading
-   naming-convention
+   features
    example-algos
    utilities
    videos
    resources
    development-guidelines
    releases
+   appendix
 ..   bundles
-..   development-guidelines
-..   appendix
 ..   release-process
 

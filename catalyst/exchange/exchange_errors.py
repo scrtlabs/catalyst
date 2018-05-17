@@ -100,6 +100,19 @@ class InvalidHistoryFrequencyError(ZiplineError):
     ).strip()
 
 
+class UnsupportedHistoryFrequencyError(ZiplineError):
+    msg = (
+        '{exchange} does not support candle frequency {freq}, please choose '
+        'from: {freqs}.'
+    ).strip()
+
+
+class InvalidHistoryTimeframeError(ZiplineError):
+    msg = (
+        'CCXT timeframe {timeframe} not supported by the exchange.'
+    ).strip()
+
+
 class MismatchingFrequencyError(ZiplineError):
     msg = (
         'Bar aggregate frequency {frequency} not compatible with '
@@ -111,7 +124,7 @@ class InvalidSymbolError(ZiplineError):
     msg = (
         'Invalid trading pair symbol: {symbol}. '
         'Catalyst symbols must follow this convention: '
-        '[Market Currency]_[Base Currency]. For example: eth_usd, btc_usd, '
+        '[Base Currency]_[Quote Currency]. For example: eth_usd, btc_usd, '
         'neo_eth, ubq_btc. Error details: {error}'
     ).strip()
 
@@ -143,7 +156,8 @@ class OrphanOrderError(ZiplineError):
 
 class OrphanOrderReverseError(ZiplineError):
     msg = (
-        'Order {order_id} tracked by algorithm, but not found in exchange {exchange}.'
+        'Order {order_id} tracked by algorithm, but not found in exchange '
+        '{exchange}.'
     ).strip()
 
 
@@ -159,23 +173,23 @@ class SidHashError(ZiplineError):
     ).strip()
 
 
-class BaseCurrencyNotFoundError(ZiplineError):
+class QuoteCurrencyNotFoundError(ZiplineError):
     msg = (
-        'Algorithm base currency {base_currency} not found in exchange '
-        '{exchange}.'
+        'Algorithm quote currency {quote_currency} not found in account '
+        'balances on {exchange}: {balances}'
     ).strip()
 
 
-class MismatchingBaseCurrencies(ZiplineError):
+class MismatchingQuoteCurrencies(ZiplineError):
     msg = (
-        'Unable to trade with base currency {base_currency} when the '
+        'Unable to trade with quote currency {quote_currency} when the '
         'algorithm uses {algo_currency}.'
     ).strip()
 
 
-class MismatchingBaseCurrenciesExchanges(ZiplineError):
+class MismatchingQuoteCurrenciesExchanges(ZiplineError):
     msg = (
-        'Unable to trade with base currency {base_currency} when the '
+        'Unable to trade with quote currency {quote_currency} when the '
         'exchange {exchange_name} users {exchange_currency}.'
     ).strip()
 
@@ -206,8 +220,9 @@ class EmptyValuesInBundleError(ZiplineError):
 
 class PricingDataBeforeTradingError(ZiplineError):
     msg = ('Pricing data for trading pairs {symbols} on exchange {exchange} '
-           'starts on {first_trading_day}, but you are either trying to trade or '
-           'retrieve pricing data on {dt}. Adjust your dates accordingly.').strip()
+           'starts on {first_trading_day}, but you are either trying to trade '
+           'or retrieve pricing data on {dt}. Adjust your dates accordingly.'
+           ).strip()
 
 
 class PricingDataNotLoadedError(ZiplineError):
@@ -217,30 +232,100 @@ class PricingDataNotLoadedError(ZiplineError):
            '{data_frequency} -i {symbol_list}`. See catalyst documentation '
            'for details.').strip()
 
+
 class PricingDataValueError(ZiplineError):
     msg = ('Unable to retrieve pricing data for {exchange} {symbol} '
            '[{start_dt} - {end_dt}]: {error}').strip()
 
 
 class DataCorruptionError(ZiplineError):
-    msg = ('Unable to validate data for {exchange} {symbols} in date range '
-           '[{start_dt} - {end_dt}]. The data is either corrupted or '
-           'unavailable. Please try deleting this bundle:'
-           '\n`catalyst clean-exchange -x {exchange}\n'
-           'Then, ingest the data again. Please contact the Catalyst team if '
-           'the issue persists.').strip()
+    msg = (
+        'Unable to validate data for {exchange} {symbols} in date range '
+        '[{start_dt} - {end_dt}]. The data is either corrupted or '
+        'unavailable. Please try deleting this bundle:'
+        '\n`catalyst clean-exchange -x {exchange}\n'
+        'Then, ingest the data again. Please contact the Catalyst team if '
+        'the issue persists.'
+    ).strip()
 
 
 class ApiCandlesError(ZiplineError):
-    msg = ('Unable to fetch candles from the remote API: {error}.').strip()
+    msg = (
+        'Unable to fetch candles from the remote API: {error}.'
+    ).strip()
 
 
 class NoDataAvailableOnExchange(ZiplineError):
     msg = (
-        'Requested data for trading pair {symbol} is not available on exchange {exchange} '
+        'Requested data for trading pair {symbol} is not available on '
+        'exchange {exchange} '
         'in `{data_frequency}` frequency at this time. '
-        'Check `http://enigma.co/catalyst/status` for market coverage.').strip()
+        'Check `http://enigma.co/catalyst/status` for market coverage.'
+    ).strip()
 
 
 class NoValueForField(ZiplineError):
-    msg = ('Value not found for field: {field}.').strip()
+    msg = (
+        'Value not found for field: {field}.'
+    ).strip()
+
+
+class OrderTypeNotSupported(ZiplineError):
+    msg = (
+        'Order type `{order_type}` not currency supported by Catalyst. '
+        'Please use `limit` or `market` orders only.'
+    ).strip()
+
+
+class NotEnoughCapitalError(ZiplineError):
+    msg = (
+        'Not enough capital on exchange {exchange} for trading. Each '
+        'exchange should contain at least as much {quote_currency} '
+        'as the specified `capital_base`. The current balance {balance} is '
+        'lower than the `capital_base`: {capital_base}'
+    ).strip()
+
+
+class NotEnoughCashError(ZiplineError):
+    msg = (
+        'Total {currency} amount on {exchange} is lower than the cash '
+        'reserved for this algo: {free} < {cash}. While trades can be made on '
+        'the exchange accounts outside of the algo, exchange must have enough '
+        'free {currency} to cover the algo cash.'
+    ).strip()
+
+
+class LastCandleTooEarlyError(ZiplineError):
+    msg = (
+        'The trade date of the last candle {last_traded} is before the '
+        'specified end date minus one candle {end_dt}. Please verify how '
+        '{exchange} calculates the start date of OHLCV candles.'
+    ).strip()
+
+
+class TickerNotFoundError(ZiplineError):
+    msg = (
+        'Unable to fetch ticker for {symbol} on {exchange}.'
+    ).strip()
+
+
+class BalanceNotFoundError(ZiplineError):
+    msg = (
+        '{currency} not found in account balance on {exchange}: {balances}.'
+    ).strip()
+
+
+class BalanceTooLowError(ZiplineError):
+    msg = (
+        'Balance for {currency} on {exchange} too low: {free} < {amount}. '
+        'Positions have likely been sold outside of this algorithm. Please '
+        'add positions to hold a free amount greater than {amount}, or clean '
+        'the state of this algo and restart.'
+    ).strip()
+
+
+class NoCandlesReceivedFromExchange(ZiplineError):
+    msg = (
+        'Although requesting {bar_count} candles until {end_dt} of asset {asset}, '
+        'an empty list of candles was received for {exchange}.'
+    ).strip()

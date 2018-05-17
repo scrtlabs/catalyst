@@ -29,11 +29,14 @@ from ._version import get_versions
 from . algorithm import TradingAlgorithm
 from . import api
 
+from catalyst.utils.calendars.calendar_utils import global_calendar_dispatcher
+
+__version__ = get_versions()['version']
+del get_versions
 
 # PERF: Fire a warning if calendars were instantiated during catalyst import.
 # Having calendars doesn't break anything per-se, but it makes catalyst imports
 # noticeably slower, which becomes particularly noticeable in the Zipline CLI.
-from catalyst.utils.calendars.calendar_utils import global_calendar_dispatcher
 if global_calendar_dispatcher._calendars:
     import warnings
     warnings.warn(
@@ -42,10 +45,6 @@ if global_calendar_dispatcher._calendars:
     )
     del warnings
 del global_calendar_dispatcher
-
-
-__version__ = get_versions()['version']
-del get_versions
 
 
 def load_ipython_extension(ipython):
@@ -69,7 +68,6 @@ if os.name == 'nt':
     _()
     del _
 
-
 __all__ = [
     'TradingAlgorithm',
     'api',
@@ -80,7 +78,3 @@ __all__ = [
     'run_algorithm',
     'utils',
 ]
-
-from ._version import get_versions
-__version__ = get_versions()['version']
-del get_versions

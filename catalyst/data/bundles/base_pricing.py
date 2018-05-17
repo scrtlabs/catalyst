@@ -16,6 +16,7 @@
 from catalyst.data.bundles.base import BaseBundle
 from catalyst.utils.memoize import lazyval
 
+
 class BasePricingBundle(BaseBundle):
     @lazyval
     def md_dtypes(self):
@@ -38,6 +39,7 @@ class BasePricingBundle(BaseBundle):
             ('volume', 'float64'),
         ]
 
+
 class BaseCryptoPricingBundle(BasePricingBundle):
     @lazyval
     def calendar_name(self):
@@ -54,6 +56,7 @@ class BaseCryptoPricingBundle(BasePricingBundle):
     @property
     def dividends(self):
         return []
+
 
 class BaseEquityPricingBundle(BasePricingBundle):
     @lazyval

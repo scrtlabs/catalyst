@@ -1,15 +1,14 @@
-import shutil
 import random
+import shutil
 import tempfile
-import pandas as pd
 
-from catalyst.exchange.exchange_bundle import ExchangeBundle
+import pandas as pd
+from nose.tools import assert_equals
+
 from catalyst.exchange.exchange_bcolz import BcolzExchangeBarWriter, \
     BcolzExchangeBarReader
-
-from catalyst.exchange.bundle_utils import get_df_from_arrays
-
-from nose.tools import assert_equals
+from catalyst.exchange.exchange_bundle import ExchangeBundle
+from catalyst.exchange.utils.bundle_utils import get_df_from_arrays
 
 
 class TestBcolzWriter(object):
@@ -116,7 +115,7 @@ class TestBcolzWriter(object):
 
         df = self.generate_df(exchange_name, freq, start, end)
 
-        print df.index[0],df.index[-1]
+        print(df.index[0], df.index[-1])
 
         writer = BcolzExchangeBarWriter(
             rootdir=self.root_dir,
@@ -140,7 +139,7 @@ class TestBcolzWriter(object):
 
         dx = get_df_from_arrays(arrays, periods)
 
-        assert_equals(df.equals(df), True)
+        assert_equals(df.equals(dx), True)
         pass
 
     def test_bcolz_bitfinex_daily_write_read(self):

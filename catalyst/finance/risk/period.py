@@ -29,12 +29,14 @@ from .risk import check_entry
 from empyrical import (
     alpha_beta_aligned,
     annual_volatility,
-    cum_returns,
     downside_risk,
     information_ratio,
-    max_drawdown,
     sharpe_ratio,
     sortino_ratio
+)
+from catalyst.patches.stats import (
+    max_drawdown,
+    cum_returns,
 )
 
 from catalyst.constants import LOG_LEVEL
@@ -154,8 +156,8 @@ class RiskMetricsPeriod(object):
             self.algorithm_returns.values,
             self.benchmark_returns.values,
         )
-        self.excess_return = self.algorithm_period_returns - \
-                             self.treasury_period_return
+        self.excess_return = self.algorithm_period_returns \
+            - self.treasury_period_return
         self.max_drawdown = max_drawdown(self.algorithm_returns.values)
         self.max_leverage = self.calculate_max_leverage()
 

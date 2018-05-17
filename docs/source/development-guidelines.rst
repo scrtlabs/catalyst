@@ -36,25 +36,15 @@ Finally, you can build the C extensions by running:
 
    $ python setup.py build_ext --inplace
 
-.. To finish, make sure `tests`__ pass.
+Development with Docker
+-----------------------
 
-.. __ #style-guide-running-tests
+If you want to work with zipline using a `Docker`__ container, you'll need to 
+build the ``Dockerfile`` in the Zipline root directory, and then build 
+``Dockerfile-dev``. Instructions for building both containers can be found in 
+``Dockerfile`` and ``Dockerfile-dev``, respectively.
 
-.. If you get an error running nosetests after setting up a fresh virtualenv, please try running
-
-.. code-block
-
-..   # where zipline is the name of your virtualenv
-..   $ deactivate zipline
-..   $ workon zipline
-
-
-.. Development with Docker
-.. -----------------------
-
-..If you want to work with zipline using a `Docker`__ container, you'll need to build the ``Dockerfile`` in the Zipline root directory, and then build ``Dockerfile-dev``. Instructions for building both containers can be found in ``Dockerfile`` and ``Dockerfile-dev``, respectively.
-
-.. __ https://docs.docker.com/get-started/
+__ https://docs.docker.com/get-started/
    
 Git Branching Structure
 -----------------------
@@ -82,6 +72,25 @@ To build and view the docs locally, run:
    $ cd docs
    $ make html
    $ {BROWSER} build/html/index.html
+
+
+There is a `documented issue <https://github.com/sphinx-doc/sphinx/issues/3212>`_ 
+with ``sphinx`` and ``docutils`` that causes the error below when trying to build 
+the docs.
+
+.. code-block:: text
+
+   Exception occurred:
+     File "(...)/env-c/lib/python2.7/site-packages/docutils/writers/_html_base.py", line 671, in depart_document
+       assert not self.context, 'len(context) = %s' % len(self.context)
+   AssertionError: len(context) = 3
+
+If you get this error, you need to downgrade your version of ``docutils`` as 
+follows, and build the docs again:
+
+.. code-block:: bash
+
+   $ pip install docutils==0.12
 
 
 Commit messages

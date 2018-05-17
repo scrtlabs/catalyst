@@ -1,8 +1,7 @@
 import numpy as np
-from logbook import Logger
-
 from catalyst.constants import LOG_LEVEL
 from catalyst.protocol import Portfolio, Positions, Position
+from logbook import Logger
 
 log = Logger('ExchangePortfolio', level=LOG_LEVEL)
 
@@ -40,7 +39,13 @@ class ExchangePortfolio(Portfolio):
 
         """
         log.debug('creating order {}'.format(order.id))
-        self.open_orders[order.id] = order
+
+        open_orders = self.open_orders[order.asset] \
+            if order.asset is self.open_orders else []
+
+        open_orders.append(order)
+
+        self.open_orders[order.asset] = open_orders
 
         order_position = self.positions[order.asset] \
             if order.asset in self.positions else None
@@ -51,6 +56,17 @@ class ExchangePortfolio(Portfolio):
 
         order_position.amount += order.amount
         log.debug('open order added to portfolio')
+
+    def _remove_open_order(self, order):
+        try:
+            open_orders = self.open_orders[order.asset]
+            if order in open_orders:
+                open_orders.remove(order)
+
+        except Exception:
+            raise ValueError(
+                'unable to clear order not found in open order list.'
+            )
 
     def execute_order(self, order, transaction):
         """
@@ -66,14 +82,15 @@ class ExchangePortfolio(Portfolio):
 
         """
         log.debug('executing order {}'.format(order.id))
-        del self.open_orders[order.id]
+        self._remove_open_order(order)
 
         order_position = self.positions[order.asset] \
             if order.asset in self.positions else None
 
         if order_position is None:
             raise ValueError(
-                'Trying to execute order for a position not held: %s' % order.id
+                'Trying to execute order for a position not held:'
+                ' {}'.format(order.id)
             )
 
         self.capital_used += order.amount * transaction.price
@@ -99,7 +116,7 @@ class ExchangePortfolio(Portfolio):
 
         """
         log.info('removing cancelled order {}'.format(order.id))
-        del self.open_orders[order.id]
+        self._remove_open_order(order)
 
         order_position = self.positions[order.asset] \
             if order.asset in self.positions else None

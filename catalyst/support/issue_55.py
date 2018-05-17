@@ -1,4 +1,3 @@
-import talib
 import pandas as pd
 
 from catalyst import run_algorithm
@@ -38,5 +37,5 @@ run_algorithm(
     analyze=None,
     exchange_name='poloniex',
     algo_namespace='issue_55',
-    base_currency='btc'
+    quote_currency='btc'
 )

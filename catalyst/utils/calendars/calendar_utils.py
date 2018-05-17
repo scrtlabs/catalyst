@@ -59,7 +59,7 @@ class TradingCalendarDispatcher(object):
 
     def get_calendar(self, name):
         """
-        Retrieves an instance of an TradingCalendar whose name is given.
+        Retrieves an instance of a TradingCalendar whose name is given.
 
         Parameters
         ----------
