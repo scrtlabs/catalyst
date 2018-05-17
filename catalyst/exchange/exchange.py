@@ -370,11 +370,13 @@ class Exchange:
         if field == 'close' or field == 'price':
             return [tickers[asset]['last'] for asset in tickers]
 
-        elif field == 'volume':
-            return [tickers[asset]['volume'] for asset in tickers]
-
-        else:
-            raise NoValueForField(field=field)
+        result = []
+        for asset in tickers:
+            if field in tickers[asset]:
+                result.append(tickers[asset][field])
+            else:
+                raise NoValueForField(field=field)
+        return result
 
     def get_single_spot_value(self, asset, field, data_frequency):
         """
