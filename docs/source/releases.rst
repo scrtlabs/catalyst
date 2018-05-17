@@ -2,6 +2,17 @@
 Release Notes
 =============
 
+Version 0.5.11
+^^^^^^^^^^^^^^
+**Release Date**: 2018-05-09
+
+Bug Fixes
+~~~~~~~~~
+- Added missing start_date argument on live mode when running on cli
+  :issue:`330`
+- Updated the start and end arguments used on cli in live mode to include
+  time information in addition to the date.
+
 Version 0.5.10
 ^^^^^^^^^^^^^^
 **Release Date**: 2018-05-09
