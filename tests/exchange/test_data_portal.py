@@ -9,7 +9,7 @@ from catalyst.exchange.exchange_data_portal import (
 )
 from catalyst.exchange.utils.exchange_utils import get_common_assets
 from catalyst.exchange.utils.factory import get_exchanges
-from test_utils import rnd_history_date_days, rnd_bar_count
+# from test_utils import rnd_history_date_days, rnd_bar_count
 
 log = Logger('test_bitfinex')
 
@@ -96,22 +96,22 @@ class TestExchangeDataPortal:
         log.info('found spot value {}'.format(value))
         pass
 
-    def test_history_compare_exchanges(self):
-        exchanges = get_exchanges(['bittrex', 'bitfinex', 'poloniex'])
-        assets = get_common_assets(exchanges)
-
-        date = rnd_history_date_days()
-        bar_count = rnd_bar_count()
-        data = self.data_portal_backtest.get_history_window(
-            assets=assets,
-            end_dt=date,
-            bar_count=bar_count,
-            frequency='1d',
-            field='close',
-            data_frequency='daily'
-        )
-
-        log.info('found history window: {}'.format(data))
+    # def test_history_compare_exchanges(self):
+    #     exchanges = get_exchanges(['bittrex', 'bitfinex', 'poloniex'])
+    #     assets = get_common_assets(exchanges)
+    #
+    #     date = rnd_history_date_days()
+    #     bar_count = rnd_bar_count()
+    #     data = self.data_portal_backtest.get_history_window(
+    #         assets=assets,
+    #         end_dt=date,
+    #         bar_count=bar_count,
+    #         frequency='1d',
+    #         field='close',
+    #         data_frequency='daily'
+    #     )
+    #
+    #     log.info('found history window: {}'.format(data))
 
     def test_validate_resample(self):
         pass
