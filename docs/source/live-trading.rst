@@ -184,6 +184,9 @@ Here is the breakdown of the new arguments:
 
 In live trading the ``handle_data()`` function is called once every minute.
 
+Here is a complete algorithm for reference:
+`Buy Low and Sell High <https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/buy_low_sell_high.py>`_
+
 
 Algorithm State
 ^^^^^^^^^^^^^^^
@@ -207,9 +210,6 @@ You can learn more by running the following from the command line:
 
     catalyst live --help
 
-
-Here is a complete algorithm for reference:
-`Buy Low and Sell High <https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/buy_low_sell_high_live.py>`_
 
 
 Commissions
