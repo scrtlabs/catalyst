@@ -38,7 +38,7 @@ if __name__ == '__main__':
         analyze=analyze,
         exchange_name='binance',
         algo_namespace='Test candles',
-        base_currency='eth',
+        quote_currency='eth',
         data_frequency='minute',
         live=True,
         simulate_orders=True)

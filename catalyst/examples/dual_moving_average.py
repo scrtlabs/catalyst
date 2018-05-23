@@ -83,15 +83,15 @@ def handle_data(context, data):
 
 
 def analyze(context, perf):
-    # Get the base_currency that was passed as a parameter to the simulation
+    # Get the quote_currency that was passed as a parameter to the simulation
     exchange = list(context.exchanges.values())[0]
-    base_currency = exchange.base_currency.upper()
+    quote_currency = exchange.quote_currency.upper()
 
-    # First chart: Plot portfolio value using base_currency
+    # First chart: Plot portfolio value using quote_currency
     ax1 = plt.subplot(411)
     perf.loc[:, ['portfolio_value']].plot(ax=ax1)
     ax1.legend_.remove()
-    ax1.set_ylabel('Portfolio Value\n({})'.format(base_currency))
+    ax1.set_ylabel('Portfolio Value\n({})'.format(quote_currency))
     start, end = ax1.get_ylim()
     ax1.yaxis.set_ticks(np.arange(start, end, (end - start) / 5))
 
@@ -101,9 +101,9 @@ def analyze(context, perf):
         ax=ax2,
         label='Price')
     ax2.legend_.remove()
-    ax2.set_ylabel('{asset}\n({base})'.format(
+    ax2.set_ylabel('{asset}\n({quote})'.format(
         asset=context.asset.symbol,
-        base=base_currency
+        quote=quote_currency
     ))
     start, end = ax2.get_ylim()
     ax2.yaxis.set_ticks(np.arange(start, end, (end - start) / 5))
@@ -141,7 +141,7 @@ def analyze(context, perf):
     # Fourth chart: Plot our cash
     ax4 = plt.subplot(414, sharex=ax1)
     perf.cash.plot(ax=ax4)
-    ax4.set_ylabel('Cash\n({})'.format(base_currency))
+    ax4.set_ylabel('Cash\n({})'.format(quote_currency))
     start, end = ax4.get_ylim()
     ax4.yaxis.set_ticks(np.arange(0, end, end / 5))
 
@@ -158,7 +158,7 @@ if __name__ == '__main__':
             analyze=analyze,
             exchange_name='bitfinex',
             algo_namespace=NAMESPACE,
-            base_currency='usd',
+            quote_currency='usd',
             start=pd.to_datetime('2017-9-22', utc=True),
             end=pd.to_datetime('2017-9-23', utc=True),
         )

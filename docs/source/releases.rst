@@ -2,6 +2,22 @@
 Release Notes
 =============
 
+Version 0.5.12
+^^^^^^^^^^^^^^
+**Release Date**: 2018-05-23
+
+Build
+~~~~~
+- Renamed the `base_currency` parameter of run_algorithm to `quote_currency`
+  for alignment with the Forex trading terminology.
+- Improved the commissions calculations in live mode - documented at
+  `Live trading <https://enigma.co/catalyst/live-trading.html#commissions>`_
+
+Bug Fixes
+~~~~~~~~~
+- Fixed an issue preventing trading on Gdax with several positions
+  :issue:`299`
+
 Version 0.5.11
 ^^^^^^^^^^^^^^
 **Release Date**: 2018-05-09

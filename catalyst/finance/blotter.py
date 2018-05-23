@@ -383,7 +383,7 @@ class Blotter(object):
                     order.dt = txn.dt
 
                     # added for stats
-                    txn.commission = order.commission
+                    txn.commission = additional_commission
 
                     transactions.append(txn)
 

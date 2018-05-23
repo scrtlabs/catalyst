@@ -8,7 +8,7 @@ import pandas as pd
 from catalyst.constants import LOG_LEVEL
 from catalyst.data.data_portal import BASE_FIELDS
 from catalyst.exchange.exchange_bundle import ExchangeBundle
-from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
+from catalyst.exchange.exchange_errors import MismatchingQuoteCurrencies, \
     SymbolNotFoundOnExchange, \
     PricingDataNotLoadedError, \
     NoDataAvailableOnExchange, NoValueForField, \
@@ -36,7 +36,7 @@ class Exchange:
         self._symbol_maps = [None, None]
         self.minute_writer = None
         self.minute_reader = None
-        self.base_currency = None
+        self.quote_currency = None
 
         self.num_candles_limit = None
         self.max_requests_per_minute = None
@@ -696,26 +696,26 @@ class Exchange:
         else:
             return free, False
 
-    # def _check_position_balance(self, currency, balances, amount):
-    #     """
-    #     In order to avoid spending money that the user doesn't own,
-    #     we are comparing to the balance on the account.
-    #     For positions, we want to avoid double updates, since, exchanges
-    #     update positions when the order is opened as used, catalyst wants
-    #     to take them into consideration, therefore running comparison on total.
-    #     :param currency: str
-    #     :param balances: dict
-    #     :param amount: float
-    #     :return: total: float,
-    #                     bool
-    #     """
-    #     total = balances[currency]['total'] if currency in balances else 0.0
-    #
-    #     if total < amount:
-    #         return total, True
-    #
-    #     else:
-    #         return total, False
+    def _check_position_balance(self, currency, balances, amount):
+        """
+        In order to avoid spending money that the user doesn't own,
+        we are comparing to the balance on the account.
+        For positions, we want to avoid double updates, since, exchanges
+        update positions when the order is opened as used, catalyst wants
+        to take them into consideration, therefore running comparison on total.
+        :param currency: str
+        :param balances: dict
+        :param amount: float
+        :return: total: float,
+                        bool
+        """
+        total = balances[currency]['total'] if currency in balances else 0.0
+
+        if total < amount:
+            return total, True
+
+        else:
+            return total, False
 
     def sync_positions(self, positions, cash=None,
                        check_balances=False):
@@ -743,13 +743,13 @@ class Exchange:
             )
             if cash is not None:
                 free_cash, is_lower = self._check_low_balance(
-                    currency=self.base_currency,
+                    currency=self.quote_currency,
                     balances=balances,
                     amount=cash,
                 )
                 if is_lower:
                     raise NotEnoughCashError(
-                        currency=self.base_currency,
+                        currency=self.quote_currency,
                         exchange=self.name,
                         free=free_cash,
                         cash=cash,
@@ -782,8 +782,7 @@ class Exchange:
                 position.last_sale_date = ticker['last_traded']
 
                 if check_balances:
-                    # total, is_lower = self._check_position_balance(
-                    total, is_lower = self._check_low_balance(
+                    total, is_lower = self._check_position_balance(
                         currency=asset.base_currency,
                         balances=balances,
                         amount=position.amount,
@@ -852,13 +851,13 @@ class Exchange:
             log.warn('skipping order amount of 0')
             return None
 
-        if self.base_currency is None:
-            raise ValueError('no base_currency defined for this exchange')
+        if self.quote_currency is None:
+            raise ValueError('no quote_currency defined for this exchange')
 
-        if asset.quote_currency != self.base_currency.lower():
-            raise MismatchingBaseCurrencies(
-                base_currency=asset.quote_currency,
-                algo_currency=self.base_currency
+        if asset.quote_currency != self.quote_currency.lower():
+            raise MismatchingQuoteCurrencies(
+                quote_currency=asset.quote_currency,
+                algo_currency=self.quote_currency
             )
 
         is_buy = (amount > 0)

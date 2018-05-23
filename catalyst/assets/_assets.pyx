@@ -468,11 +468,11 @@ cdef class TradingPair(Asset):
         are not adhering to a universal symbolism. For example, Bitfinex
         uses the BTC symbol for Bitcon while Kraken uses XBT. In addition,
         pairs are sometimes presented differently. For example, Bitfinex
-        puts the market currency before the base currency without a
-        separator, Bittrex puts the base currency first and uses a dash
+        puts the base currency before the quote currency without a
+        separator, Bittrex puts the quote currency first and uses a dash
         seperator.
 
-        Here is the Catalyst convention: [Market Currency]_[Base Currency]
+        Here is the Catalyst convention: [Base Currency]_[Quote Currency]
         For example: btc_usd, eth_btc, neo_eth, ltc_eur.
 
         The symbol for each currency (e.g. btc, eth, ltc) is generally

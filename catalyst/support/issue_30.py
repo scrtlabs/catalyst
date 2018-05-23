@@ -22,7 +22,7 @@ if __name__ == '__main__':
         analyze=analyze,
         exchange_name='bittrex',
         algo_namespace="bittrex_is_broken",
-        base_currency='usdt',
+        quote_currency='usdt',
         data_frequency='minute',
         simulate_orders=True,
         live=True)

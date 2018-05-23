@@ -4,11 +4,11 @@ from catalyst.api import symbol
 from catalyst.utils.run_algo import run_algorithm
 
 coin = 'btc'
-base_currency = 'usd'
+quote_currency = 'usd'
 
 
 def initialize(context):
-    context.symbol = symbol('%s_%s' % (coin, base_currency))
+    context.symbol = symbol('%s_%s' % (coin, quote_currency))
 
 
 def handle_data_polo_partial_candles(context, data):
@@ -26,7 +26,7 @@ def handle_data_polo_partial_candles(context, data):
 run_algorithm(initialize=lambda ctx: True,
               handle_data=handle_data_polo_partial_candles,
               exchange_name='poloniex',
-              base_currency='usdt',
+              quote_currency='usdt',
               algo_namespace='ns',
               live=False,
               data_frequency='minute',

@@ -160,20 +160,20 @@ def analyze(context=None, perf=None):
     log.info('elapsed time: {}'.format(end - context.start_time))
 
     import matplotlib.pyplot as plt
-    # The base currency of the algo exchange
-    base_currency = list(context.exchanges.values())[0].base_currency.upper()
+    # The quote currency of the algo exchange
+    quote_currency = list(context.exchanges.values())[0].quote_currency.upper()
 
     # Plot the portfolio value over time.
     ax1 = plt.subplot(611)
     perf.loc[:, 'portfolio_value'].plot(ax=ax1)
-    ax1.set_ylabel('Portfolio\nValue\n({})'.format(base_currency))
+    ax1.set_ylabel('Portfolio\nValue\n({})'.format(quote_currency))
 
     # Plot the price increase or decrease over time.
     ax2 = plt.subplot(612, sharex=ax1)
     perf.loc[:, 'price'].plot(ax=ax2, label='Price')
 
-    ax2.set_ylabel('{asset}\n({base})'.format(
-        asset=context.market.symbol, base=base_currency
+    ax2.set_ylabel('{asset}\n({quote})'.format(
+        asset=context.market.symbol, quote=quote_currency
     ))
 
     transaction_df = extract_transactions(perf)
@@ -199,9 +199,9 @@ def analyze(context=None, perf=None):
 
     ax4 = plt.subplot(613, sharex=ax1)
     perf.loc[:, 'cash'].plot(
-        ax=ax4, label='Base Currency ({})'.format(base_currency)
+        ax=ax4, label='Quote Currency ({})'.format(quote_currency)
     )
-    ax4.set_ylabel('Cash\n({})'.format(base_currency))
+    ax4.set_ylabel('Cash\n({})'.format(quote_currency))
 
     perf['algorithm'] = perf.loc[:, 'algorithm_period_return']
 
@@ -255,7 +255,7 @@ if __name__ == '__main__':
             exchange_name='poloniex',
             live=True,
             algo_namespace=NAMESPACE,
-            base_currency='btc',
+            quote_currency='btc',
             live_graph=False,
             simulate_orders=False,
             stats_output=None,
@@ -280,7 +280,7 @@ if __name__ == '__main__':
             analyze=analyze,
             exchange_name='bitfinex',
             algo_namespace=NAMESPACE,
-            base_currency='eth',
+            quote_currency='eth',
             start=pd.to_datetime('2017-10-01', utc=True),
             end=pd.to_datetime('2017-11-10', utc=True),
             output=out

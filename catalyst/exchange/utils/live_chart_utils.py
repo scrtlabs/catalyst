@@ -2,7 +2,7 @@ import matplotlib.dates as mdates
 import pandas as pd
 
 from catalyst.exchange.exchange_errors import \
-    MismatchingBaseCurrenciesExchanges
+    MismatchingQuoteCurrenciesExchanges
 
 fmt = mdates.DateFormatter('%Y-%m-%d %H:%M')
 
@@ -94,28 +94,28 @@ def draw_exposure(ax, df, context):
 
     """
     # TODO: list exchanges in graph
-    base_currency = None
+    quote_currency = None
     positions = []
     for exchange_name in context.exchanges:
         exchange = context.exchanges[exchange_name]
 
-        if not base_currency:
-            base_currency = exchange.base_currency
-        elif base_currency != exchange.base_currency:
-            raise MismatchingBaseCurrenciesExchanges(
-                base_currency=base_currency,
+        if not quote_currency:
+            quote_currency = exchange.quote_currency
+        elif quote_currency != exchange.quote_currency:
+            raise MismatchingQuoteCurrenciesExchanges(
+                quote_currency=quote_currency,
                 exchange_name=exchange.name,
-                exchange_currency=exchange.base_currency
+                exchange_currency=exchange.quote_currency
             )
 
         positions += exchange.portfolio.positions
 
     ax.clear()
     ax.set_title('Exposure')
-    ax.plot(df.index, df['base_currency'], '-',
+    ax.plot(df.index, df['quote_currency'], '-',
             color='green',
             linewidth=1.0,
-            label='Base Currency: {}'.format(base_currency.upper())
+            label='Base Currency: {}'.format(quote_currency.upper())
             )
 
     symbols = []

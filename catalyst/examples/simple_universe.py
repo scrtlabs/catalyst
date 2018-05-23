@@ -5,7 +5,7 @@ Tested on Catalyst version 0.3.3
 This example aims to provide an easy way for users to learn how to
 collect data from any given exchange and select a subset of the available
 currency pairs for trading. You simply need to specify the exchange and
-the market (base_currency) that you want to focus on. You will then see
+the market (quote_currency) that you want to focus on. You will then see
 how to create a universe of assets, and filter it based the market you
 desire.
 
@@ -42,7 +42,7 @@ from catalyst.exchange.utils.exchange_utils import get_exchange_symbols
 def initialize(context):
     context.i = -1  # minute counter
     context.exchange = list(context.exchanges.values())[0].name.lower()
-    context.base_currency = list(context.exchanges.values())[0].base_currency.lower()
+    context.quote_currency = list(context.exchanges.values())[0].quote_currency.lower()
 
 
 def handle_data(context, data):
@@ -119,20 +119,20 @@ def analyze(context=None, results=None):
     pass
 
 
-# Get the universe for a given exchange and a given base_currency market
+# Get the universe for a given exchange and a given quote_currency market
 # Example: Poloniex BTC Market
 def universe(context, lookback_date, current_date):
     # get all the pairs for the given exchange
     json_symbols = get_exchange_symbols(context.exchange)
     # convert into a DataFrame for easier processing
     df = pd.DataFrame.from_dict(json_symbols).transpose().astype(str)
-    df['base_currency'] = df.apply(lambda row: row.symbol.split('_')[1],
+    df['quote_currency'] = df.apply(lambda row: row.symbol.split('_')[1],
                                    axis=1)
-    df['market_currency'] = df.apply(lambda row: row.symbol.split('_')[0],
+    df['base_currency'] = df.apply(lambda row: row.symbol.split('_')[0],
                                      axis=1)
 
-    # Filter all the pairs to get only the ones for a given base_currency
-    df = df[df['base_currency'] == context.base_currency]
+    # Filter all the pairs to get only the ones for a given quote_currency
+    df = df[df['quote_currency'] == context.quote_currency]
 
     # Filter all pairs to ensure that pair existed in the current date range
     df = df[df.start_date < lookback_date]
@@ -159,13 +159,13 @@ if __name__ == '__main__':
     end_date = pd.to_datetime('2017-11-13', utc=True)
 
     performance = run_algorithm(start=start_date, end=end_date,
-                                capital_base=100.0,  # amount of base_currency
+                                capital_base=100.0,  # amount of quote_currency
                                 initialize=initialize,
                                 handle_data=handle_data,
                                 analyze=analyze,
                                 exchange_name='poloniex',
                                 data_frequency='minute',
-                                base_currency='btc',
+                                quote_currency='btc',
                                 live=False,
                                 live_graph=False,
                                 algo_namespace='simple_universe')

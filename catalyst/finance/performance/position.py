@@ -150,6 +150,15 @@ class Position(object):
                 self.last_sale_price = txn.price
                 self.last_sale_date = txn.dt
 
+        # on live mode, if the fee currency exists, reduce the commission
+        # from the position if necessary.
+        # Notice! the fee_currency is compared to the base_currency- once it
+        # is allowed to have more than one quote currency, the comparison is
+        # needed to be changed
+        if txn.commission is not None and \
+                txn.fee_currency == self.asset.base_currency:
+            total_shares -= txn.commission
+
         self.amount = total_shares
 
     @expect_types(asset=Asset)

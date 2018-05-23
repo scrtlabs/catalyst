@@ -25,7 +25,7 @@ class TestCCXT(BaseExchangeTestCase):
             key=auth['key'],
             secret=auth['secret'],
             password='',
-            base_currency='usdt',
+            quote_currency='usdt',
         )
         self.exchange.init()
 

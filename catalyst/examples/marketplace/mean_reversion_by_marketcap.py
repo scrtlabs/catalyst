@@ -205,7 +205,7 @@ if __name__ == '__main__':
             exchange_name='poloniex',
             live=True,
             algo_namespace=NAMESPACE,
-            base_currency='btc',
+            quote_currency='btc',
             live_graph=False,
             simulate_orders=False,
             stats_output=None,
@@ -230,7 +230,7 @@ if __name__ == '__main__':
             analyze=analyze,
             exchange_name='poloniex',
             algo_namespace=NAMESPACE,
-            base_currency='eth',
+            quote_currency='eth',
             start=pd.to_datetime('2017-10-01', utc=True),
             end=pd.to_datetime('2017-10-15', utc=True),
         )

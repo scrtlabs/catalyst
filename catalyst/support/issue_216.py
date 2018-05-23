@@ -68,8 +68,8 @@ class SimulationParameters:
     ALGO_NAMESPACE_TRANSACTIONS_TABLE = '{}/{}/{}.csv'.format(DATA_DIR,
                                                               'tables',
                                                               ALGO_NAMESPACE + '_transactions')
-    BASE_CURRENCY = 'usd'
-    # BASE_CURRENCY = 'usdt'
+    QUOTE_CURRENCY = 'usd'
+    # QUOTE_CURRENCY = 'usdt'
 
     # SHORT PERIOD
     START_DATE = '2017-09-07'
@@ -331,7 +331,7 @@ if __name__ == '__main__':
             analyze=default_analyze,
             exchange_name=parameters.EXCHANGE_NAME,
             algo_namespace=parameters.ALGO_NAMESPACE,
-            base_currency=parameters.BASE_CURRENCY,
+            quote_currency=parameters.QUOTE_CURRENCY,
             start=start_date,
             end=end_date,
             live=False,
@@ -357,7 +357,7 @@ if __name__ == '__main__':
             analyze=default_analyze,
             exchange_name=parameters.EXCHANGE_NAME,
             algo_namespace=parameters.ALGO_NAMESPACE,
-            base_currency=parameters.BASE_CURRENCY,
+            quote_currency=parameters.QUOTE_CURRENCY,
             live=True,
             simulate_orders=True,
             live_graph=False
@@ -370,7 +370,7 @@ if __name__ == '__main__':
             analyze=default_analyze,
             exchange_name=parameters.EXCHANGE_NAME,
             algo_namespace=parameters.ALGO_NAMESPACE,
-            base_currency=parameters.BASE_CURRENCY,
+            quote_currency=parameters.QUOTE_CURRENCY,
             live=True,
             live_graph=True
         )

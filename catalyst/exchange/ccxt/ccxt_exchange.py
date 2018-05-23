@@ -45,7 +45,7 @@ SUPPORTED_EXCHANGES = dict(
 
 class CCXT(Exchange):
     def __init__(self, exchange_name, key,
-                 secret, password, base_currency):
+                 secret, password, quote_currency):
         log.debug(
             'finding {} in CCXT exchanges:\n{}'.format(
                 exchange_name, ccxt.exchanges
@@ -73,7 +73,7 @@ class CCXT(Exchange):
 
         self.name = exchange_name
 
-        self.base_currency = base_currency
+        self.quote_currency = quote_currency
         self.transactions = defaultdict(list)
 
         self.num_candles_limit = 2000
@@ -757,8 +757,8 @@ class CCXT(Exchange):
                 # time, max 1 order was opened)
                 log.warn(
                     "multiple orders were found: : {} "
-                    "only the first is considered"
-                        .format([x.id for x in new_orders])
+                    "only the first is considered".format(
+                        [x.id for x in new_orders])
                 )
 
             return new_orders[0]
@@ -813,8 +813,8 @@ class CCXT(Exchange):
                     # time, max 1 order was opened)
                     log.warn(
                         "multiple orders were found according "
-                        "to the trades: {} only the first is considered"
-                            .format([x.id for x in missing_order_id_by_trade])
+                        "to the trades: {} only the first is considered".format
+                        ([x.id for x in missing_order_id_by_trade])
                     )
                 order_id = missing_order_id_by_trade[0]
                 return order_id, None
@@ -999,10 +999,10 @@ class CCXT(Exchange):
         return super(CCXT, self)._check_low_balance(updated_currency, balances,
                                                     amount)
 
-    # def _check_position_balance(self, currency, balances, amount):
-    #     updated_currency = self._check_common_symbols(currency)
-    #     return super(CCXT, self)._check_position_balance(updated_currency,
-    #                                       balances, amount)
+    def _check_position_balance(self, currency, balances, amount):
+        updated_currency = self._check_common_symbols(currency)
+        return super(CCXT, self)._check_position_balance(updated_currency,
+                                                         balances, amount)
 
     def _process_order_fallback(self, order):
         """
@@ -1089,23 +1089,38 @@ class CCXT(Exchange):
             filled = trade['amount'] * order.direction
             order.filled += filled
 
-            commission = 0
-            if 'fee' in trade and 'cost' in trade['fee']:
-                commission = trade['fee']['cost']
-                order.commission += commission
-
             order.check_triggers(
                 price=trade['price'],
                 dt=pd.to_datetime(trade['timestamp'], unit='ms', utc=True),
             )
-            transaction = Transaction(
-                asset=order.asset,
-                amount=filled,
-                dt=pd.Timestamp.utcnow(),
-                price=trade['price'],
-                order_id=order.id,
-                commission=commission
-            )
+
+            commission = 0
+            if 'fee' in trade and 'cost' in trade['fee']:
+                # If the exchange gives info of the fees- from ccxt
+                commission = trade['fee']['cost']
+                order.commission += commission
+
+            if 'fee' in trade and 'currency' in trade['fee']:
+                transaction = Transaction(
+                    asset=order.asset,
+                    amount=filled,
+                    dt=pd.Timestamp.utcnow(),
+                    price=trade['price'],
+                    order_id=order.id,
+                    commission=commission,
+                    fee_currency=trade['fee']['currency'].lower(),
+                    is_quote_live=(self.quote_currency ==
+                                   trade['fee']['currency'].lower())
+                )
+            else:
+                transaction = Transaction(
+                    asset=order.asset,
+                    amount=filled,
+                    dt=pd.Timestamp.utcnow(),
+                    price=trade['price'],
+                    order_id=order.id,
+                    commission=commission,
+                )
             transactions.append(transaction)
 
         order.filled = round(order.filled, order.asset.decimals)
@@ -1175,12 +1190,13 @@ class CCXT(Exchange):
         list[dict[str, float]
 
         """
-        if len(assets) == 1:
+        if len(assets) == 1 or not self.api.has['fetchTickers']:
             try:
-                symbol = self.get_symbol(assets[0])
-                log.debug('fetching single ticker: {}'.format(symbol))
                 results = dict()
-                results[symbol] = self.api.fetch_ticker(symbol=symbol)
+                for asset in assets:
+                    symbol = self.get_symbol(asset)
+                    log.debug('fetching single ticker: {}'.format(symbol))
+                    results[symbol] = self.api.fetch_ticker(symbol=symbol)
 
             except (ExchangeError, NetworkError,) as e:
                 log.warn(
