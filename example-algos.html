@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Example Algorithms &mdash; Catalyst 0.5.11 documentation</title>
+  <title>Example Algorithms &mdash; Catalyst 0.5.12 documentation</title>
   
 
   
@@ -33,7 +33,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="Catalyst 0.5.11 documentation" href="index.html"/>
+    <link rel="top" title="Catalyst 0.5.12 documentation" href="index.html"/>
         <link rel="next" title="Utilities" href="utilities.html"/>
         <link rel="prev" title="Features" href="features.html"/> 
 
@@ -130,6 +130,7 @@
 <li class="toctree-l2"><a class="reference internal" href="live-trading.html#currency-symbols">Currency Symbols</a></li>
 <li class="toctree-l2"><a class="reference internal" href="live-trading.html#trading-an-algorithm">Trading an Algorithm</a></li>
 <li class="toctree-l2"><a class="reference internal" href="live-trading.html#algorithm-state">Algorithm State</a></li>
+<li class="toctree-l2"><a class="reference internal" href="live-trading.html#commissions">Commissions</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="features.html">Features</a><ul>
@@ -174,132 +175,137 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="releases.html">Release Notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-11">Version 0.5.11</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-12">Version 0.5.12</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#build">Build</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#bug-fixes">Bug Fixes</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-10">Version 0.5.10</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-11">Version 0.5.11</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id1">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#build">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-9">Version 0.5.9</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-10">Version 0.5.10</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id2">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id3">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-8">Version 0.5.8</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-9">Version 0.5.9</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#documentation">Documentation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id4">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id5">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-7">Version 0.5.7</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id5">Build</a></li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-8">Version 0.5.8</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id6">Bug Fixes</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-6">Version 0.5.6</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-7">Version 0.5.7</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id7">Build</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id8">Bug Fixes</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-6">Version 0.5.6</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id9">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id10">Bug Fixes</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-5">Version 0.5.5</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id9">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id11">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-4">Version 0.5.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id10">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id11">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id12">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id12">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id13">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id14">Documentation</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-3">Version 0.5.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id13">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id15">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-2">Version 0.5.2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id14">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id16">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-1">Version 0.5.1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id15">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id16">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-7">Version 0.4.7</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id17">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id18">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-6">Version 0.4.6</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-7">Version 0.4.7</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id19">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id20">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-5">Version 0.4.5</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-6">Version 0.4.6</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id21">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id22">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-4">Version 0.4.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id22">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-3">Version 0.4.3</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-5">Version 0.4.5</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id23">Bug Fixes</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-2">Version 0.4.2</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-4">Version 0.4.4</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id24">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id25">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-3">Version 0.4.3</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id25">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-2">Version 0.4.2</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id26">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id27">Build</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-0">Version 0.4.0</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id26">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id27">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#version-0-3-10">Version 0.3.10</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id28">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id29">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#version-0-3-10">Version 0.3.10</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id30">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-9">Version 0.3.9</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id29">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id30">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id31">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id32">Build</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-8">Version 0.3.8</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id31">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id33">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-7">Version 0.3.7</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id32">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id33">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id34">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id35">Build</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-6">Version 0.3.6</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id34">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id36">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-5">Version 0.3.5</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id35">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id37">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-4">Version 0.3.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id36">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id37">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id38">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id38">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id39">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id40">Documentation</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-3">Version 0.3.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id40">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id41">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-2">Version 0.3.2</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id42">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id43">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-1">Version 0.3.1</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-2">Version 0.3.2</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id44">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id45">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-1">Version 0.3.1</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id46">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3">Version 0.3</a></li>
@@ -418,7 +424,7 @@ writting the following article:
 <div class="section" id="buy-btc-simple-algorithm">
 <span id="buy-btc-simple"></span><h2>Buy BTC Simple Algorithm<a class="headerlink" href="#buy-btc-simple-algorithm" title="Permalink to this headline">¶</a></h2>
 <p>Source code: <a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/buy_btc_simple.py">examples/buy_btc_simple.py</a></p>
-<div class="highlight-python"><div class="highlight"><pre><span class="sd">&#39;&#39;&#39;</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This is a very simple example referenced in the beginner&#39;s tutorial:</span>
 <span class="sd">    https://enigmampc.github.io/catalyst/beginner-tutorial.html</span>
 
@@ -440,7 +446,7 @@ writting the following article:
 
 <span class="sd">    To see which assets are available on each exchange, visit:</span>
 <span class="sd">    https://www.enigma.co/catalyst/status</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">catalyst</span> <span class="kn">import</span> <span class="n">run_algorithm</span>
 <span class="kn">from</span> <span class="nn">catalyst.api</span> <span class="kn">import</span> <span class="n">order</span><span class="p">,</span> <span class="n">record</span><span class="p">,</span> <span class="n">symbol</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
@@ -463,7 +469,7 @@ writting the following article:
         <span class="n">handle_data</span><span class="o">=</span><span class="n">handle_data</span><span class="p">,</span>
         <span class="n">exchange_name</span><span class="o">=</span><span class="s">&#39;poloniex&#39;</span><span class="p">,</span>
         <span class="n">algo_namespace</span><span class="o">=</span><span class="s">&#39;buy_btc_simple&#39;</span><span class="p">,</span>
-        <span class="n">base_currency</span><span class="o">=</span><span class="s">&#39;usdt&#39;</span><span class="p">,</span>
+        <span class="n">quote_currency</span><span class="o">=</span><span class="s">&#39;usdt&#39;</span><span class="p">,</span>
         <span class="n">start</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="s">&#39;2015-03-01&#39;</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
         <span class="n">end</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="s">&#39;2017-10-31&#39;</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
     <span class="p">)</span>
@@ -637,7 +643,7 @@ one day prior to the current date.</p>
         <span class="n">analyze</span><span class="o">=</span><span class="n">analyze</span><span class="p">,</span>
         <span class="n">exchange_name</span><span class="o">=</span><span class="s">&#39;poloniex&#39;</span><span class="p">,</span>
         <span class="n">algo_namespace</span><span class="o">=</span><span class="s">&#39;buy_and_hodl&#39;</span><span class="p">,</span>
-        <span class="n">base_currency</span><span class="o">=</span><span class="s">&#39;usdt&#39;</span><span class="p">,</span>
+        <span class="n">quote_currency</span><span class="o">=</span><span class="s">&#39;usdt&#39;</span><span class="p">,</span>
         <span class="n">start</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="s">&#39;2015-03-01&#39;</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
         <span class="n">end</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="s">&#39;2017-10-31&#39;</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
     <span class="p">)</span>
@@ -735,15 +741,15 @@ one day prior to the current date.</p>
 
 
 <span class="k">def</span> <span class="nf">analyze</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">perf</span><span class="p">):</span>
-    <span class="c"># Get the base_currency that was passed as a parameter to the simulation</span>
+    <span class="c"># Get the quote_currency that was passed as a parameter to the simulation</span>
     <span class="n">exchange</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">exchanges</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">base_currency</span> <span class="o">=</span> <span class="n">exchange</span><span class="o">.</span><span class="n">base_currency</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="n">quote_currency</span> <span class="o">=</span> <span class="n">exchange</span><span class="o">.</span><span class="n">quote_currency</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
 
-    <span class="c"># First chart: Plot portfolio value using base_currency</span>
+    <span class="c"># First chart: Plot portfolio value using quote_currency</span>
     <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">411</span><span class="p">)</span>
     <span class="n">perf</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s">&#39;portfolio_value&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
     <span class="n">ax1</span><span class="o">.</span><span class="n">legend_</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
-    <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Portfolio Value</span><span class="se">\n</span><span class="s">({})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">base_currency</span><span class="p">))</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Portfolio Value</span><span class="se">\n</span><span class="s">({})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">quote_currency</span><span class="p">))</span>
     <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>
     <span class="n">ax1</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">/</span> <span class="mi">5</span><span class="p">))</span>
 
@@ -753,9 +759,9 @@ one day prior to the current date.</p>
         <span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">,</span>
         <span class="n">label</span><span class="o">=</span><span class="s">&#39;Price&#39;</span><span class="p">)</span>
     <span class="n">ax2</span><span class="o">.</span><span class="n">legend_</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
-    <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;{asset}</span><span class="se">\n</span><span class="s">({base})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;{asset}</span><span class="se">\n</span><span class="s">({quote})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
         <span class="n">asset</span><span class="o">=</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span>
-        <span class="n">base</span><span class="o">=</span><span class="n">base_currency</span>
+        <span class="n">quote</span><span class="o">=</span><span class="n">quote_currency</span>
     <span class="p">))</span>
     <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">ax2</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>
     <span class="n">ax2</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">/</span> <span class="mi">5</span><span class="p">))</span>
@@ -793,7 +799,7 @@ one day prior to the current date.</p>
     <span class="c"># Fourth chart: Plot our cash</span>
     <span class="n">ax4</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">414</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
     <span class="n">perf</span><span class="o">.</span><span class="n">cash</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax4</span><span class="p">)</span>
-    <span class="n">ax4</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Cash</span><span class="se">\n</span><span class="s">({})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">base_currency</span><span class="p">))</span>
+    <span class="n">ax4</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Cash</span><span class="se">\n</span><span class="s">({})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">quote_currency</span><span class="p">))</span>
     <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">ax4</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>
     <span class="n">ax4</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">end</span> <span class="o">/</span> <span class="mi">5</span><span class="p">))</span>
 
@@ -810,7 +816,7 @@ one day prior to the current date.</p>
             <span class="n">analyze</span><span class="o">=</span><span class="n">analyze</span><span class="p">,</span>
             <span class="n">exchange_name</span><span class="o">=</span><span class="s">&#39;bitfinex&#39;</span><span class="p">,</span>
             <span class="n">algo_namespace</span><span class="o">=</span><span class="n">NAMESPACE</span><span class="p">,</span>
-            <span class="n">base_currency</span><span class="o">=</span><span class="s">&#39;usd&#39;</span><span class="p">,</span>
+            <span class="n">quote_currency</span><span class="o">=</span><span class="s">&#39;usd&#39;</span><span class="p">,</span>
             <span class="n">start</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="s">&#39;2017-9-22&#39;</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
             <span class="n">end</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="s">&#39;2017-9-23&#39;</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
         <span class="p">)</span>
@@ -998,20 +1004,20 @@ lines 218-245, so in order to run the algorithm we just type:</p>
     <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;elapsed time: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">context</span><span class="o">.</span><span class="n">start_time</span><span class="p">))</span>
 
     <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
-    <span class="c"># The base currency of the algo exchange</span>
-    <span class="n">base_currency</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">exchanges</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">base_currency</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="c"># The quote currency of the algo exchange</span>
+    <span class="n">quote_currency</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">exchanges</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">quote_currency</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
 
     <span class="c"># Plot the portfolio value over time.</span>
     <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">611</span><span class="p">)</span>
     <span class="n">perf</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">&#39;portfolio_value&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
-    <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Portfolio</span><span class="se">\n</span><span class="s">Value</span><span class="se">\n</span><span class="s">({})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">base_currency</span><span class="p">))</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Portfolio</span><span class="se">\n</span><span class="s">Value</span><span class="se">\n</span><span class="s">({})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">quote_currency</span><span class="p">))</span>
 
     <span class="c"># Plot the price increase or decrease over time.</span>
     <span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">612</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
     <span class="n">perf</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">&#39;price&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;Price&#39;</span><span class="p">)</span>
 
-    <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;{asset}</span><span class="se">\n</span><span class="s">({base})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-        <span class="n">asset</span><span class="o">=</span><span class="n">context</span><span class="o">.</span><span class="n">market</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="n">base_currency</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;{asset}</span><span class="se">\n</span><span class="s">({quote})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">asset</span><span class="o">=</span><span class="n">context</span><span class="o">.</span><span class="n">market</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span> <span class="n">quote</span><span class="o">=</span><span class="n">quote_currency</span>
     <span class="p">))</span>
 
     <span class="n">transaction_df</span> <span class="o">=</span> <span class="n">extract_transactions</span><span class="p">(</span><span class="n">perf</span><span class="p">)</span>
@@ -1037,9 +1043,9 @@ lines 218-245, so in order to run the algorithm we just type:</p>
 
     <span class="n">ax4</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">613</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
     <span class="n">perf</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">&#39;cash&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-        <span class="n">ax</span><span class="o">=</span><span class="n">ax4</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;Base Currency ({})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">base_currency</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">=</span><span class="n">ax4</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;Quote Currency ({})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">quote_currency</span><span class="p">)</span>
     <span class="p">)</span>
-    <span class="n">ax4</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Cash</span><span class="se">\n</span><span class="s">({})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">base_currency</span><span class="p">))</span>
+    <span class="n">ax4</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Cash</span><span class="se">\n</span><span class="s">({})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">quote_currency</span><span class="p">))</span>
 
     <span class="n">perf</span><span class="p">[</span><span class="s">&#39;algorithm&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">perf</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">&#39;algorithm_period_return&#39;</span><span class="p">]</span>
 
@@ -1093,7 +1099,7 @@ lines 218-245, so in order to run the algorithm we just type:</p>
             <span class="n">exchange_name</span><span class="o">=</span><span class="s">&#39;binance&#39;</span><span class="p">,</span>
             <span class="n">live</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
             <span class="n">algo_namespace</span><span class="o">=</span><span class="n">NAMESPACE</span><span class="p">,</span>
-            <span class="n">base_currency</span><span class="o">=</span><span class="s">&#39;eth&#39;</span><span class="p">,</span>
+            <span class="n">quote_currency</span><span class="o">=</span><span class="s">&#39;eth&#39;</span><span class="p">,</span>
             <span class="n">live_graph</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
             <span class="n">simulate_orders</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
             <span class="n">stats_output</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
@@ -1119,7 +1125,7 @@ lines 218-245, so in order to run the algorithm we just type:</p>
             <span class="n">analyze</span><span class="o">=</span><span class="n">analyze</span><span class="p">,</span>
             <span class="n">exchange_name</span><span class="o">=</span><span class="s">&#39;bitfinex&#39;</span><span class="p">,</span>
             <span class="n">algo_namespace</span><span class="o">=</span><span class="n">NAMESPACE</span><span class="p">,</span>
-            <span class="n">base_currency</span><span class="o">=</span><span class="s">&#39;btc&#39;</span><span class="p">,</span>
+            <span class="n">quote_currency</span><span class="o">=</span><span class="s">&#39;btc&#39;</span><span class="p">,</span>
             <span class="n">start</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="s">&#39;2017-10-01&#39;</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
             <span class="n">end</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="s">&#39;2017-11-10&#39;</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
             <span class="n">output</span><span class="o">=</span><span class="n">out</span>
@@ -1141,8 +1147,8 @@ strategy.</p>
 <p>This example aims to provide an easy way for users to learn how to
 collect data from any given exchange and select a subset of the available
 currency pairs for trading. You simply need to specify the exchange and
-the market (base_currency) that you want to focus on. You will then see
-how to create a universe of assets, and filter it based the market you
+the market (quote_currency) that you want to focus on. You will then see
+how to create a universe of assets, and filter it based on the market you
 desire.</p>
 <p>The example prints out the closing price of all the pairs for a given
 market in a given exchange every 30 minutes. The example also contains
@@ -1167,7 +1173,7 @@ of the file:</p>
 <span class="sd">This example aims to provide an easy way for users to learn how to</span>
 <span class="sd">collect data from any given exchange and select a subset of the available</span>
 <span class="sd">currency pairs for trading. You simply need to specify the exchange and</span>
-<span class="sd">the market (base_currency) that you want to focus on. You will then see</span>
+<span class="sd">the market (quote_currency) that you want to focus on. You will then see</span>
 <span class="sd">how to create a universe of assets, and filter it based the market you</span>
 <span class="sd">desire.</span>
 
@@ -1204,7 +1210,7 @@ of the file:</p>
 <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
     <span class="n">context</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c"># minute counter</span>
     <span class="n">context</span><span class="o">.</span><span class="n">exchange</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">exchanges</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-    <span class="n">context</span><span class="o">.</span><span class="n">base_currency</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">exchanges</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">base_currency</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">quote_currency</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">exchanges</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">quote_currency</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
 
 
 <span class="k">def</span> <span class="nf">handle_data</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
@@ -1281,20 +1287,20 @@ of the file:</p>
     <span class="k">pass</span>
 
 
-<span class="c"># Get the universe for a given exchange and a given base_currency market</span>
+<span class="c"># Get the universe for a given exchange and a given quote_currency market</span>
 <span class="c"># Example: Poloniex BTC Market</span>
 <span class="k">def</span> <span class="nf">universe</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">lookback_date</span><span class="p">,</span> <span class="n">current_date</span><span class="p">):</span>
     <span class="c"># get all the pairs for the given exchange</span>
     <span class="n">json_symbols</span> <span class="o">=</span> <span class="n">get_exchange_symbols</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">exchange</span><span class="p">)</span>
     <span class="c"># convert into a DataFrame for easier processing</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">json_symbols</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
-    <span class="n">df</span><span class="p">[</span><span class="s">&#39;base_currency&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">row</span><span class="o">.</span><span class="n">symbol</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">&#39;quote_currency&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">row</span><span class="o">.</span><span class="n">symbol</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>
                                    <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">df</span><span class="p">[</span><span class="s">&#39;market_currency&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">row</span><span class="o">.</span><span class="n">symbol</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">&#39;base_currency&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">row</span><span class="o">.</span><span class="n">symbol</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
                                      <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
-    <span class="c"># Filter all the pairs to get only the ones for a given base_currency</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s">&#39;base_currency&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">context</span><span class="o">.</span><span class="n">base_currency</span><span class="p">]</span>
+    <span class="c"># Filter all the pairs to get only the ones for a given quote_currency</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s">&#39;quote_currency&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">context</span><span class="o">.</span><span class="n">quote_currency</span><span class="p">]</span>
 
     <span class="c"># Filter all pairs to ensure that pair existed in the current date range</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">start_date</span> <span class="o">&lt;</span> <span class="n">lookback_date</span><span class="p">]</span>
@@ -1321,13 +1327,13 @@ of the file:</p>
     <span class="n">end_date</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="s">&#39;2017-11-13&#39;</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
     <span class="n">performance</span> <span class="o">=</span> <span class="n">run_algorithm</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end_date</span><span class="p">,</span>
-                                <span class="n">capital_base</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span>  <span class="c"># amount of base_currency</span>
+                                <span class="n">capital_base</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span>  <span class="c"># amount of quote_currency</span>
                                 <span class="n">initialize</span><span class="o">=</span><span class="n">initialize</span><span class="p">,</span>
                                 <span class="n">handle_data</span><span class="o">=</span><span class="n">handle_data</span><span class="p">,</span>
                                 <span class="n">analyze</span><span class="o">=</span><span class="n">analyze</span><span class="p">,</span>
                                 <span class="n">exchange_name</span><span class="o">=</span><span class="s">&#39;poloniex&#39;</span><span class="p">,</span>
                                 <span class="n">data_frequency</span><span class="o">=</span><span class="s">&#39;minute&#39;</span><span class="p">,</span>
-                                <span class="n">base_currency</span><span class="o">=</span><span class="s">&#39;btc&#39;</span><span class="p">,</span>
+                                <span class="n">quote_currency</span><span class="o">=</span><span class="s">&#39;btc&#39;</span><span class="p">,</span>
                                 <span class="n">live</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                                 <span class="n">live_graph</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                                 <span class="n">algo_namespace</span><span class="o">=</span><span class="s">&#39;simple_universe&#39;</span><span class="p">)</span>
@@ -1495,7 +1501,7 @@ in writting the following article:
                             <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
                             <span class="n">exchange_name</span><span class="o">=</span><span class="s">&#39;poloniex&#39;</span><span class="p">,</span>
                             <span class="n">capital_base</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
-                            <span class="n">base_currency</span><span class="o">=</span><span class="s">&#39;usdt&#39;</span><span class="p">,</span> <span class="p">)</span>
+                            <span class="n">quote_currency</span><span class="o">=</span><span class="s">&#39;usdt&#39;</span><span class="p">,</span> <span class="p">)</span>
 </pre></div>
 </div>
 <img alt="https://cdn-images-1.medium.com/max/1600/0*EjjiKZHlYF3sn7yQ." class="align-center" src="https://cdn-images-1.medium.com/max/1600/0*EjjiKZHlYF3sn7yQ." />
@@ -1541,7 +1547,7 @@ in writting the following article:
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.5.11',
+            VERSION:'0.5.12',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

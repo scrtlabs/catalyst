@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Live Trading &mdash; Catalyst 0.5.11 documentation</title>
+  <title>Live Trading &mdash; Catalyst 0.5.12 documentation</title>
   
 
   
@@ -33,7 +33,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="Catalyst 0.5.11 documentation" href="index.html"/>
+    <link rel="top" title="Catalyst 0.5.12 documentation" href="index.html"/>
         <link rel="next" title="Features" href="features.html"/>
         <link rel="prev" title="Catalyst Beginner Tutorial" href="beginner-tutorial.html"/> 
 
@@ -130,6 +130,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#currency-symbols">Currency Symbols</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#trading-an-algorithm">Trading an Algorithm</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#algorithm-state">Algorithm State</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#commissions">Commissions</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="features.html">Features</a><ul>
@@ -174,132 +175,137 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="releases.html">Release Notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-11">Version 0.5.11</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-12">Version 0.5.12</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#build">Build</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#bug-fixes">Bug Fixes</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-10">Version 0.5.10</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-11">Version 0.5.11</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id1">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#build">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-9">Version 0.5.9</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-10">Version 0.5.10</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id2">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id3">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-8">Version 0.5.8</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-9">Version 0.5.9</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#documentation">Documentation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id4">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id5">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-7">Version 0.5.7</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id5">Build</a></li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-8">Version 0.5.8</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id6">Bug Fixes</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-6">Version 0.5.6</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-7">Version 0.5.7</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id7">Build</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id8">Bug Fixes</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-6">Version 0.5.6</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id9">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id10">Bug Fixes</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-5">Version 0.5.5</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id9">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id11">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-4">Version 0.5.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id10">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id11">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id12">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id12">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id13">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id14">Documentation</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-3">Version 0.5.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id13">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id15">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-2">Version 0.5.2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id14">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id16">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-1">Version 0.5.1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id15">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id16">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-7">Version 0.4.7</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id17">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id18">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-6">Version 0.4.6</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-7">Version 0.4.7</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id19">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id20">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-5">Version 0.4.5</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-6">Version 0.4.6</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id21">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id22">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-4">Version 0.4.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id22">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-3">Version 0.4.3</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-5">Version 0.4.5</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id23">Bug Fixes</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-2">Version 0.4.2</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-4">Version 0.4.4</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id24">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id25">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-3">Version 0.4.3</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id25">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-2">Version 0.4.2</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id26">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id27">Build</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-0">Version 0.4.0</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id26">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id27">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#version-0-3-10">Version 0.3.10</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id28">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id29">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#version-0-3-10">Version 0.3.10</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id30">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-9">Version 0.3.9</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id29">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id30">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id31">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id32">Build</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-8">Version 0.3.8</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id31">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id33">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-7">Version 0.3.7</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id32">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id33">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id34">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id35">Build</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-6">Version 0.3.6</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id34">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id36">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-5">Version 0.3.5</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id35">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id37">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-4">Version 0.3.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id36">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id37">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id38">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id38">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id39">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id40">Documentation</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-3">Version 0.3.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id40">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id41">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-2">Version 0.3.2</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id42">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id43">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-1">Version 0.3.1</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-2">Version 0.3.2</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id44">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id45">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-1">Version 0.3.1</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id46">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3">Version 0.3</a></li>
@@ -479,11 +485,11 @@ returns the correct asset regardless of the targeted exchange.</p>
 <p>Exchanges tend to use their own convention to represent currencies
 (e.g. XBT and BTC both represent Bitcoin on different exchanges).
 Trading pairs are also inconsistent. For example, Bitfinex
-puts the market currency before the base currency without a
-separator, Bittrex puts the base currency first and uses a dash
+puts the base currency before the quote currency without a
+separator, Bittrex puts the quote currency first and uses a dash
 seperator.</p>
 <p>Here is the Catalyst convention:</p>
-<p><em>[Market Currency]_[Base Currency]</em> all lowercase.</p>
+<p><em>[Base Currency]_[Quote Currency]</em> all lowercase.</p>
 <p>Currency symbols (e.g. btc, eth, ltc) follow the Bittrex convention.</p>
 <p>Here are some examples:</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="c"># With Bitfinex</span>
@@ -519,15 +525,15 @@ backtest and live execution mode without modification.</p>
     <span class="n">exchange_name</span><span class="o">=</span><span class="s">&#39;bitfinex&#39;</span><span class="p">,</span>
     <span class="n">live</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
     <span class="n">algo_namespace</span><span class="o">=</span><span class="s">&#39;my_algo_name&#39;</span><span class="p">,</span>
-    <span class="n">base_currency</span><span class="o">=</span><span class="s">&#39;btc&#39;</span>
+    <span class="n">quote_currency</span><span class="o">=</span><span class="s">&#39;btc&#39;</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 <p>Here is the breakdown of the new arguments:</p>
 <ul class="simple">
 <li><code class="docutils literal"><span class="pre">live</span></code>: Boolean flag which enables live trading. It defaults to <code class="docutils literal"><span class="pre">False</span></code>.</li>
-<li><code class="docutils literal"><span class="pre">capital_base</span></code>: The amount of base_currency assigned to the strategy.
-It has to be lower or equal to the amount of base currency available for
+<li><code class="docutils literal"><span class="pre">capital_base</span></code>: The amount of quote_currency assigned to the strategy.
+It has to be lower or equal to the amount of quote currency available for
 trading on the exchange. For illustration, order_target_percent(asset, 1)
 will order the capital_base amount specified here of the specified asset.</li>
 <li><code class="docutils literal"><span class="pre">exchange_name</span></code>: The name of the targeted exchange. See the
@@ -535,8 +541,8 @@ will order the capital_base amount specified here of the specified asset.</li>
 for the full list.</li>
 <li><code class="docutils literal"><span class="pre">algo_namespace</span></code>: A arbitrary label assigned to your algorithm for
 data storage purposes.</li>
-<li><code class="docutils literal"><span class="pre">base_currency</span></code>: The base currency used to calculate the
-statistics of your algorithm. Currently, the base currency of all
+<li><code class="docutils literal"><span class="pre">quote_currency</span></code>: The quote currency used to calculate the
+statistics of your algorithm. Currently, the quote currency of all
 trading pairs of your algorithm must match this value.</li>
 <li><code class="docutils literal"><span class="pre">simulate_orders</span></code>: Enables the paper trading mode, in which orders are
 simulated in Catalyst instead of processed on the exchange. It defaults to
@@ -549,6 +555,8 @@ by setting the start_date to a time in the future, the algorithm would
 essentially sleep and when the predefined time comes, it would start executing.</li>
 </ul>
 <p>In live trading the <code class="docutils literal"><span class="pre">handle_data()</span></code> function is called once every minute.</p>
+<p>Here is a complete algorithm for reference:
+<a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/buy_low_sell_high.py">Buy Low and Sell High</a></p>
 </div>
 <div class="section" id="algorithm-state">
 <h2>Algorithm State<a class="headerlink" href="#algorithm-state" title="Permalink to this headline">¶</a></h2>
@@ -564,8 +572,21 @@ You can learn more by running the following from the command line:</p>
 <div class="highlight-bash"><div class="highlight"><pre>catalyst live --help
 </pre></div>
 </div>
-<p>Here is a complete algorithm for reference:
-<a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/buy_low_sell_high_live.py">Buy Low and Sell High</a></p>
+</div>
+<div class="section" id="commissions">
+<h2>Commissions<a class="headerlink" href="#commissions" title="Permalink to this headline">¶</a></h2>
+<p>In live mode, commissions are taken off according to what is reduced on the
+exchange. In some exchanges, the fee is always
+reduced from the quote currency where others reduce it from the currency
+that was bought. Meaning that when buying <code class="docutils literal"><span class="pre">btc</span></code> using the <code class="docutils literal"><span class="pre">btc_usd</span></code> trading
+pair, some exchanges will reduce the fee from the <code class="docutils literal"><span class="pre">usd</span></code> value,
+while others will reduce it from the <code class="docutils literal"><span class="pre">btc</span></code> value, which will result in a
+lower <code class="docutils literal"><span class="pre">btc</span></code> amount than the one originally specified.
+In live Catalyst supports both methods, since the fees are fetched directly
+from the exchanges.
+Currently, in paper trading and backtest modes the commissions are reduced
+<strong>always</strong> from the quote currency defined on the algorithm (we will align
+these modes in the future with live mode).</p>
 </div>
 </div>
 
@@ -608,7 +629,7 @@ You can learn more by running the following from the command line:</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.5.11',
+            VERSION:'0.5.12',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>catalyst.utils.run_algo &mdash; Catalyst 0.5.11 documentation</title>
+  <title>catalyst.utils.run_algo &mdash; Catalyst 0.5.12 documentation</title>
   
 
   
@@ -33,7 +33,7 @@
         <link rel="index" title="Index"
               href="../../../genindex.html"/>
         <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="Catalyst 0.5.11 documentation" href="../../../index.html"/>
+    <link rel="top" title="Catalyst 0.5.12 documentation" href="../../../index.html"/>
         <link rel="up" title="Module code" href="../../index.html"/> 
 
   
@@ -129,6 +129,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../live-trading.html#currency-symbols">Currency Symbols</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../live-trading.html#trading-an-algorithm">Trading an Algorithm</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../live-trading.html#algorithm-state">Algorithm State</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../live-trading.html#commissions">Commissions</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../features.html">Features</a><ul>
@@ -173,132 +174,137 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../releases.html">Release Notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-11">Version 0.5.11</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-12">Version 0.5.12</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#build">Build</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../releases.html#bug-fixes">Bug Fixes</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-10">Version 0.5.10</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-11">Version 0.5.11</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id1">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#build">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-9">Version 0.5.9</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-10">Version 0.5.10</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id2">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id3">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-8">Version 0.5.8</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-9">Version 0.5.9</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#documentation">Documentation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id4">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id5">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-7">Version 0.5.7</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id5">Build</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-8">Version 0.5.8</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id6">Bug Fixes</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-6">Version 0.5.6</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-7">Version 0.5.7</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id7">Build</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id8">Bug Fixes</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-6">Version 0.5.6</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id9">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id10">Bug Fixes</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-5">Version 0.5.5</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id9">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id11">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-4">Version 0.5.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id10">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id11">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id12">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id12">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id13">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id14">Documentation</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-3">Version 0.5.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id13">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id15">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-2">Version 0.5.2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id14">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id16">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-1">Version 0.5.1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id15">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id16">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-4-7">Version 0.4.7</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id17">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id18">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-4-6">Version 0.4.6</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-4-7">Version 0.4.7</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id19">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id20">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-4-5">Version 0.4.5</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-4-6">Version 0.4.6</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id21">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id22">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-4-4">Version 0.4.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id22">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-4-3">Version 0.4.3</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-4-5">Version 0.4.5</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id23">Bug Fixes</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-4-2">Version 0.4.2</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-4-4">Version 0.4.4</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id24">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id25">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-4-3">Version 0.4.3</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id25">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-4-2">Version 0.4.2</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id26">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id27">Build</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-4-0">Version 0.4.0</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id26">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id27">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#version-0-3-10">Version 0.3.10</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id28">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id29">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#version-0-3-10">Version 0.3.10</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id30">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-3-9">Version 0.3.9</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id29">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id30">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id31">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id32">Build</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-3-8">Version 0.3.8</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id31">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id33">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-3-7">Version 0.3.7</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id32">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id33">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id34">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id35">Build</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-3-6">Version 0.3.6</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id34">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id36">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-3-5">Version 0.3.5</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id35">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id37">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-3-4">Version 0.3.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id36">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id37">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id38">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id38">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id39">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id40">Documentation</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-3-3">Version 0.3.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id40">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id41">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-3-2">Version 0.3.2</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id42">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id43">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-3-1">Version 0.3.1</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-3-2">Version 0.3.2</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id44">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id45">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-3-1">Version 0.3.1</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id46">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-3">Version 0.3</a></li>
@@ -467,7 +473,7 @@
          <span class="n">live</span><span class="p">,</span>
          <span class="n">exchange</span><span class="p">,</span>
          <span class="n">algo_namespace</span><span class="p">,</span>
-         <span class="n">base_currency</span><span class="p">,</span>
+         <span class="n">quote_currency</span><span class="p">,</span>
          <span class="n">live_graph</span><span class="p">,</span>
          <span class="n">analyze_live</span><span class="p">,</span>
          <span class="n">simulate_orders</span><span class="p">,</span>
@@ -566,7 +572,7 @@
 
         <span class="n">exchanges</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_exchange</span><span class="p">(</span>
             <span class="n">exchange_name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
-            <span class="n">base_currency</span><span class="o">=</span><span class="n">base_currency</span><span class="p">,</span>
+            <span class="n">quote_currency</span><span class="o">=</span><span class="n">quote_currency</span><span class="p">,</span>
             <span class="n">must_authenticate</span><span class="o">=</span><span class="p">(</span><span class="n">live</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">simulate_orders</span><span class="p">),</span>
             <span class="n">skip_init</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
             <span class="n">auth_alias</span><span class="o">=</span><span class="n">auth_alias</span><span class="p">,</span>
@@ -659,8 +665,8 @@
         <span class="c"># We still need to support bundles for other misc data, but we</span>
         <span class="c"># can handle this later.</span>
 
-        <span class="k">if</span> <span class="n">start</span> <span class="o">!=</span> <span class="n">pd</span><span class="o">.</span><span class="n">tslib</span><span class="o">.</span><span class="n">normalize_date</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="ow">or</span> \
-                <span class="n">end</span> <span class="o">!=</span> <span class="n">pd</span><span class="o">.</span><span class="n">tslib</span><span class="o">.</span><span class="n">normalize_date</span><span class="p">(</span><span class="n">end</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">start</span> <span class="ow">and</span> <span class="n">start</span> <span class="o">!=</span> <span class="n">pd</span><span class="o">.</span><span class="n">tslib</span><span class="o">.</span><span class="n">normalize_date</span><span class="p">(</span><span class="n">start</span><span class="p">))</span> <span class="ow">or</span> \
+                <span class="p">(</span><span class="n">end</span> <span class="ow">and</span> <span class="n">end</span> <span class="o">!=</span> <span class="n">pd</span><span class="o">.</span><span class="n">tslib</span><span class="o">.</span><span class="n">normalize_date</span><span class="p">(</span><span class="n">end</span><span class="p">)):</span>
             <span class="c"># todo: add to Sim_Params the option to</span>
             <span class="c"># start &amp; end at specific times</span>
             <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
@@ -817,7 +823,7 @@
                   <span class="n">environ</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">,</span>
                   <span class="n">live</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                   <span class="n">exchange_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                  <span class="n">base_currency</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                  <span class="n">quote_currency</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                   <span class="n">algo_namespace</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                   <span class="n">live_graph</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                   <span class="n">analyze_live</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
@@ -885,7 +891,7 @@
 <span class="sd">        Should the algorithm be executed in live trading mode.</span>
 <span class="sd">    exchange_name: str</span>
 <span class="sd">        The name of the exchange to be used in the backtest/live run.</span>
-<span class="sd">    base_currency: str</span>
+<span class="sd">    quote_currency: str</span>
 <span class="sd">        The base currency to be used in the backtest/live run.</span>
 <span class="sd">    algo_namespace: str</span>
 <span class="sd">        The namespace of the algorithm.</span>
@@ -969,7 +975,7 @@
         <span class="n">live</span><span class="o">=</span><span class="n">live</span><span class="p">,</span>
         <span class="n">exchange</span><span class="o">=</span><span class="n">exchange_name</span><span class="p">,</span>
         <span class="n">algo_namespace</span><span class="o">=</span><span class="n">algo_namespace</span><span class="p">,</span>
-        <span class="n">base_currency</span><span class="o">=</span><span class="n">base_currency</span><span class="p">,</span>
+        <span class="n">quote_currency</span><span class="o">=</span><span class="n">quote_currency</span><span class="p">,</span>
         <span class="n">live_graph</span><span class="o">=</span><span class="n">live_graph</span><span class="p">,</span>
         <span class="n">analyze_live</span><span class="o">=</span><span class="n">analyze_live</span><span class="p">,</span>
         <span class="n">simulate_orders</span><span class="o">=</span><span class="n">simulate_orders</span><span class="p">,</span>
@@ -1007,7 +1013,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'0.5.11',
+            VERSION:'0.5.12',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
