@@ -25,7 +25,7 @@ from datetime import datetime
 from catalyst.api import record, symbols, order_target_percent
 from catalyst.utils.run_algo import run_algorithm
 
-np.set_printoptions(threshold='nan', suppress=True)
+np.set_printoptions(threshold=np.nan, suppress=True)
 
 
 def initialize(context):
