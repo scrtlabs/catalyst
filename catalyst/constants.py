@@ -44,3 +44,5 @@ ENIGMA_CONTRACT_ABI = 'https://raw.githubusercontent.com/enigmampc/' \
 
 SUPPORTED_WALLETS = ['metamask', 'ledger', 'trezor', 'bitbox', 'keystore',
                      'key']
+
+SUPPORTED_EXCHANGES = ['bitfinex', 'poloniex', 'bittrex']

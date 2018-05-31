@@ -15,6 +15,8 @@ from catalyst.exchange.utils.exchange_utils import delete_algo_folder
 from catalyst.utils.cli import Date, Timestamp
 from catalyst.utils.run_algo import _run, load_extensions
 
+from catalyst.constants import SUPPORTED_EXCHANGES
+
 try:
     __IPYTHON__
 except NameError:
@@ -585,6 +587,9 @@ def ingest_exchange(ctx, exchange_name, data_frequency, start, end,
 
     if exchange_name is None:
         ctx.fail("must specify an exchange name '-x'")
+    if exchange_name not in SUPPORTED_EXCHANGES:
+        ctx.fail("ingest-exchange does not support {}, please choose exchange from: {}".format(exchange_name,
+                                                                                               SUPPORTED_EXCHANGES))
 
     exchange_bundle = ExchangeBundle(exchange_name)
 
