@@ -171,6 +171,9 @@ class ExchangeBlotter(Blotter):
             return None
 
         if self.simulate_orders:
+            if asset.exchange == 'bitfinex' and order_id is None:
+                order_id = str(np.random.binomial(1 << 40, 0.5))
+
             return super(ExchangeBlotter, self).order(
                 asset, amount, style, order_id
             )
