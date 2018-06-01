@@ -820,3 +820,125 @@ class Marketplace:
 
         print('\nDataset {} uploaded and processed successfully.'.format(
             dataset))
+
+    def get_withdraw_amount(self, dataset=None):
+
+        if dataset is None:
+
+            df_sets = self._list()
+            if df_sets.empty:
+                print('There are no datasets available yet.')
+                return
+
+            set_print_settings()
+            while True:
+                print(df_sets)
+                dataset_num = input('Choose the dataset you want to '
+                                    'get withdraw amount for to [0..{}]: '.format(
+                                        df_sets.size - 1))
+                try:
+                    dataset_num = int(dataset_num)
+                except ValueError:
+                    print('Enter a number between 0 and {}'.format(
+                        df_sets.size - 1))
+                else:
+                    if dataset_num not in range(0, df_sets.size):
+                        print('Enter a number between 0 and {}'.format(
+                            df_sets.size - 1))
+                    else:
+                        dataset = df_sets.iloc[dataset_num]['dataset']
+                        break
+
+        dataset = dataset.lower()
+
+        address = self.choose_pubaddr()[0]
+        provider_info = self.mkt_contract.functions.getDataProviderInfo(
+            Web3.toHex(dataset.encode())
+        ).call()
+
+        if not provider_info[4]:
+            print('The requested "{}" dataset is not registered in '
+                  'the Data Marketplace.'.format(dataset))
+            return
+
+        withdraw_amount = self.mkt_contract.functions.getWithdrawAmount(Web3.toHex(dataset.encode())).call()
+        print(withdraw_amount)
+
+    def withdraw(self, dataset=None):
+        if dataset is None:
+            df_sets = self._list()
+            if df_sets.empty:
+                print('There are no datasets available yet.')
+                return
+
+            set_print_settings()
+            while True:
+                print(df_sets)
+                dataset_num = input('Choose the dataset you want to '
+                                    'get withdraw amount for to [0..{}]: '.format(
+                    df_sets.size - 1))
+                try:
+                    dataset_num = int(dataset_num)
+                except ValueError:
+                    print('Enter a number between 0 and {}'.format(
+                        df_sets.size - 1))
+                else:
+                    if dataset_num not in range(0, df_sets.size):
+                        print('Enter a number between 0 and {}'.format(
+                            df_sets.size - 1))
+                    else:
+                        dataset = df_sets.iloc[dataset_num]['dataset']
+                        break
+
+        dataset = dataset.lower()
+
+        address = self.choose_pubaddr()[0]
+        provider_info = self.mkt_contract.functions.getDataProviderInfo(
+            Web3.toHex(dataset.encode())
+        ).call()
+
+        if not provider_info[4]:
+            print('The requested "{}" dataset is not registered in '
+                  'the Data Marketplace.'.format(dataset))
+            return
+
+        try:
+            tx = self.mkt_contract.functions.withdrawProvider(
+                Web3.toHex(dataset.encode()),
+            ).buildTransaction(
+                {'from': address,
+                 'nonce': self.web3.eth.getTransactionCount(address)}
+            )
+
+            signed_tx = self.sign_transaction(tx)
+
+            tx_hash = '0x{}'.format(
+                bin_hex(self.web3.eth.sendRawTransaction(signed_tx))
+            )
+            print(
+                '\nThis is the TxHash for this transaction: {}'.format(tx_hash)
+            )
+
+        except Exception as e:
+            print('Unable to withdraw: {}'.format(e))
+            return
+
+        self.check_transaction(tx_hash)
+
+        print('Waiting for the transaction to succeed...')
+
+        while True:
+            try:
+                if self.web3.eth.getTransactionReceipt(tx_hash).status:
+                    break
+                else:
+                    print('\nTransaction failed. Aborting...')
+                    return
+            except AttributeError:
+                pass
+            for i in range(0, 10):
+                print('.', end='', flush=True)
+                time.sleep(1)
+
+        print('\nTransaction successful!\n'
+              'You have successfully withdrawn your earned ENG\n')

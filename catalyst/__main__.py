@@ -870,6 +870,32 @@ def register(ctx):
     marketplace = Marketplace()
     marketplace.register()
 
+@marketplace.command()
+@click.option(
+    '--dataset',
+    default=None,
+    help='The name of the dataset to ingest from the Data Marketplace.',
+)
+@click.pass_context
+def get_withdraw_amount(ctx, dataset):
+    """Get withdraw amount owner is entitled to.
+    """
+    marketplace = Marketplace()
+    marketplace.get_withdraw_amount(dataset)
+
+@marketplace.command()
+@click.option(
+    '--dataset',
+    default=None,
+    help='The name of the dataset to ingest from the Data Marketplace.',
+)
+@click.pass_context
+def withdraw(ctx, dataset):
+    """Withdraw amount you are entitled to.
+    """
+    marketplace = Marketplace()
+    marketplace.withdraw(dataset)
+
 
 @marketplace.command()
 @click.option(
