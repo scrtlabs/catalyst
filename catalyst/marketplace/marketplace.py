@@ -834,7 +834,7 @@ class Marketplace:
             while True:
                 print(df_sets)
                 dataset_num = input('Choose the dataset you want to '
-                                    'get withdraw amount for to [0..{}]: '.format(
+                                    'get the withdraw amount for [0..{}]: '.format(
                                         df_sets.size - 1))
                 try:
                     dataset_num = int(dataset_num)
@@ -861,8 +861,8 @@ class Marketplace:
                   'the Data Marketplace.'.format(dataset))
             return
 
-        withdraw_amount = self.mkt_contract.functions.getWithdrawAmount(Web3.toHex(dataset.encode())).call()
-        print(withdraw_amount)
+        withdraw_amount = from_grains(self.mkt_contract.functions.getWithdrawAmount(Web3.toHex(dataset.encode())).call())
+        print('{} ENG'.format(withdraw_amount))
 
     def withdraw(self, dataset=None):
         if dataset is None:
@@ -875,7 +875,7 @@ class Marketplace:
             while True:
                 print(df_sets)
                 dataset_num = input('Choose the dataset you want to '
-                                    'get withdraw amount for to [0..{}]: '.format(
+                                    'withdraw from [0..{}]: '.format(
                     df_sets.size - 1))
                 try:
                     dataset_num = int(dataset_num)
