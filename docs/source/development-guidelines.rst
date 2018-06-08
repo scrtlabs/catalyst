@@ -36,25 +36,15 @@ Finally, you can build the C extensions by running:
 
    $ python setup.py build_ext --inplace
 
-.. To finish, make sure `tests`__ pass.
+Development with Docker
+-----------------------
 
-.. __ #style-guide-running-tests
+If you want to work with zipline using a `Docker`__ container, you'll need to 
+build the ``Dockerfile`` in the Zipline root directory, and then build 
+``Dockerfile-dev``. Instructions for building both containers can be found in 
+``Dockerfile`` and ``Dockerfile-dev``, respectively.
 
-.. If you get an error running nosetests after setting up a fresh virtualenv, please try running
-
-.. code-block
-
-..   # where zipline is the name of your virtualenv
-..   $ deactivate zipline
-..   $ workon zipline
-
-
-.. Development with Docker
-.. -----------------------
-
-..If you want to work with zipline using a `Docker`__ container, you'll need to build the ``Dockerfile`` in the Zipline root directory, and then build ``Dockerfile-dev``. Instructions for building both containers can be found in ``Dockerfile`` and ``Dockerfile-dev``, respectively.
-
-.. __ https://docs.docker.com/get-started/
+__ https://docs.docker.com/get-started/
    
 Git Branching Structure
 -----------------------

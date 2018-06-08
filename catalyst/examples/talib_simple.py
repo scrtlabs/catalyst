@@ -360,7 +360,7 @@ if __name__ == '__main__':
         handle_data=handle_data,
         analyze=analyze,
         exchange_name='poloniex',
-        base_currency='usdt',
+        quote_currency='usdt',
         start=pd.to_datetime('2016-11-1', utc=True),
         end=pd.to_datetime('2017-11-10', utc=True),
     )

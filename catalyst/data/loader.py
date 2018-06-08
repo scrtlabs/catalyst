@@ -144,7 +144,7 @@ def load_crypto_market_data(trading_day=None, trading_days=None,
         #  breaks things and it's only needed here
         from catalyst.exchange.utils.factory import get_exchange
         exchange = get_exchange(
-            exchange_name='bitfinex', base_currency='usd'
+            exchange_name='bitfinex', quote_currency='usd'
         )
         exchange.init()
 

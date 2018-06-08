@@ -10,6 +10,7 @@ import click
 import pandas as pd
 from six import string_types
 
+import catalyst
 from catalyst.data.bundles import load
 from catalyst.data.data_portal import DataPortal
 from catalyst.exchange.exchange_pricing_loader import ExchangePricingLoader, \
@@ -23,7 +24,7 @@ try:
     from pygments.formatters import TerminalFormatter
 
     PYGMENTS = True
-except:
+except ImportError:
     PYGMENTS = False
 from toolz import valfilter, concatv
 from functools import partial
@@ -55,6 +56,7 @@ class _RunAlgoError(click.ClickException, ValueError):
     ----------
     pyfunc_msg : str
         The message that will be shown when called as a python function.
+
     cmdline_msg : str
         The message that will be shown on the command line.
     """
@@ -89,7 +91,7 @@ def _run(handle_data,
          live,
          exchange,
          algo_namespace,
-         base_currency,
+         quote_currency,
          live_graph,
          analyze_live,
          simulate_orders,
@@ -150,6 +152,7 @@ def _run(handle_data,
         'We encourage you to report any issue on GitHub: '
         'https://github.com/enigmampc/catalyst/issues'
     )
+    log.info('Catalyst version {}'.format(catalyst.__version__))
     sleep(3)
 
     if live:
@@ -187,7 +190,7 @@ def _run(handle_data,
 
         exchanges[name] = get_exchange(
             exchange_name=name,
-            base_currency=base_currency,
+            quote_currency=quote_currency,
             must_authenticate=(live and not simulate_orders),
             skip_init=True,
             auth_alias=auth_alias,
@@ -217,11 +220,28 @@ def _run(handle_data,
         )
 
     if live:
-        start = pd.Timestamp.utcnow()
+        # TODO: fix the start data.
+        # is_start checks if a start date was specified by user
+        # needed for live clock
+        is_start = True
+
+        if start is None:
+            start = pd.Timestamp.utcnow()
+            is_start = False
+        elif start:
+            assert pd.Timestamp.utcnow() <= start, \
+                "specified start date is in the past."
+        elif start and end:
+            assert start < end, "start date is later than end date."
 
         # TODO: fix the end data.
+        # is_end checks if an end date was specified by user
+        # needed for live clock
+        is_end = True
+
         if end is None:
             end = start + timedelta(hours=8760)
+            is_end = False
 
         data = DataPortalExchangeLive(
             exchanges=exchanges,
@@ -249,7 +269,10 @@ def _run(handle_data,
             simulate_orders=simulate_orders,
             stats_output=stats_output,
             analyze_live=analyze_live,
+            start=start,
+            is_start=is_start,
             end=end,
+            is_end=is_end,
         )
     elif exchanges:
         # Removed the existing Poloniex fork to keep things simple
@@ -259,6 +282,16 @@ def _run(handle_data,
         # Instead, we should center this data around exchanges.
         # We still need to support bundles for other misc data, but we
         # can handle this later.
+
+        if (start and start != pd.tslib.normalize_date(start)) or \
+                (end and end != pd.tslib.normalize_date(end)):
+            # todo: add to Sim_Params the option to
+            # start & end at specific times
+            log.warn(
+                "Catalyst currently starts and ends on the start and "
+                "end of the dates specified, respectively. We hope to "
+                "Modify this and support specific times in a future release."
+            )
 
         data = DataPortalExchangeBacktest(
             exchange_names=[exchange_name for exchange_name in exchanges],
@@ -408,7 +441,7 @@ def run_algorithm(initialize,
                   environ=os.environ,
                   live=False,
                   exchange_name=None,
-                  base_currency=None,
+                  quote_currency=None,
                   algo_namespace=None,
                   live_graph=False,
                   analyze_live=None,
@@ -416,20 +449,21 @@ def run_algorithm(initialize,
                   auth_aliases=None,
                   stats_output=None,
                   output=os.devnull):
-    """Run a trading algorithm.
+    """
+    Run a trading algorithm.
 
     Parameters
     ----------
+    capital_base : float
+        The starting capital for the backtest.
     start : datetime
         The start date of the backtest.
     end : datetime
         The end date of the backtest..
     initialize : callable[context -> None]
         The initialize function to use for the algorithm. This is called once
-        at the very begining of the backtest and should be used to set up
+        at the very beginning of the run and should be used to set up
         any state needed by the algorithm.
-    capital_base : float
-        The starting capital for the backtest.
     handle_data : callable[(context, BarData) -> None], optional
         The handle_data function to use for the algorithm. This is called
         every minute when ``data_frequency == 'minute'`` or every day
@@ -439,10 +473,12 @@ def run_algorithm(initialize,
         once before each trading day (after initialize on the first day).
     analyze : callable[(context, pd.DataFrame) -> None], optional
         The analyze function to use for the algorithm. This function is called
-        once at the end of the backtest and is passed the context and the
-        performance data.
+        once at the end of the backtest/live run and is passed the
+        context and the performance data.
     data_frequency : {'daily', 'minute'}, optional
         The data frequency to run the algorithm at.
+        At backtest both modes are supported, at live mode only
+        the minute mode is supported.
     data : pd.DataFrame, pd.Panel, or DataPortal, optional
         The ohlcv data to run the backtest with.
         This argument is mutually exclusive with:
@@ -450,7 +486,7 @@ def run_algorithm(initialize,
         ``bundle_timestamp``
     bundle : str, optional
         The name of the data bundle to use to load the data to run the backtest
-        with. This defaults to 'quantopian-quandl'.
+        with.
         This argument is mutually exclusive with ``data``.
     bundle_timestamp : datetime, optional
         The datetime to lookup the bundle data for. This defaults to the
@@ -458,7 +494,7 @@ def run_algorithm(initialize,
         This argument is mutually exclusive with ``data``.
     default_extension : bool, optional
         Should the default catalyst extension be loaded. This is found at
-        ``$ZIPLINE_ROOT/extension.py``
+        ``$CATALYST_ROOT/extension.py``
     extensions : iterable[str], optional
         The names of any other extensions to load. Each element may either be
         a dotted module path like ``a.b.c`` or a path to a python file ending
@@ -469,22 +505,36 @@ def run_algorithm(initialize,
     environ : mapping[str -> str], optional
         The os environment to use. Many extensions use this to get parameters.
         This defaults to ``os.environ``.
-    live: execute live trading
-    exchange_conn: The exchange connection parameters
-
-    Supported Exchanges
-    -------------------
-    bitfinex
+    live : bool, optional
+        Should the algorithm be executed in live trading mode.
+    exchange_name: str
+        The name of the exchange to be used in the backtest/live run.
+    quote_currency: str
+        The base currency to be used in the backtest/live run.
+    algo_namespace: str
+        The namespace of the algorithm.
+    live_graph: bool, optional
+        Should the live graph clock be used instead of the regular clock.
+    analyze_live: callable[(context, pd.DataFrame) -> None], optional
+        The interactive analyze function to be used with
+        the live graph clock in every tick.
+    simulate_orders: bool, optional
+        Should paper trading mode be applied.
+    auth_aliases: str, optional
+        Rewrite the auth file name. It should contain an even list
+        of comma-delimited values. For example: "binance,auth2,bittrex,auth2"
+    stats_output: str, optional
+        The URI of the S3 bucket to which to upload the performance stats.
+    output: str, optional
+        The output file path to which the algorithm performance
+        is serialized.
 
     Returns
     -------
     perf : pd.DataFrame
         The daily performance of the algorithm.
-
-    See Also
-    --------
-    catalyst.data.bundles.bundles : The available data bundles.
     """
+
     load_extensions(
         default_extension, extensions, strict_extensions, environ
     )
@@ -543,7 +593,7 @@ def run_algorithm(initialize,
         live=live,
         exchange=exchange_name,
         algo_namespace=algo_namespace,
-        base_currency=base_currency,
+        quote_currency=quote_currency,
         live_graph=live_graph,
         analyze_live=analyze_live,
         simulate_orders=simulate_orders,

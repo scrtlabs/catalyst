@@ -7,7 +7,6 @@ from catalyst.api import (
     order_target_percent,
     symbol,
     record,
-    get_open_orders,
 )
 from catalyst.exchange.utils.stats_utils import get_pretty_stats
 from catalyst.utils.run_algo import run_algorithm
@@ -60,7 +59,7 @@ def _handle_data(context, data):
         rsi=rsi,
     )
 
-    orders = get_open_orders(context.asset)
+    orders = context.blotter.open_orders
     if orders:
         log.info('skipping bar until all open orders execute')
         return
@@ -146,14 +145,14 @@ if __name__ == '__main__':
     live = True
     if live:
         run_algorithm(
-            capital_base=0.001,
+            capital_base=1000,
             initialize=initialize,
             handle_data=handle_data,
             analyze=analyze,
-            exchange_name='binance',
+            exchange_name='bittrex',
             live=True,
             algo_namespace=algo_namespace,
-            base_currency='btc',
+            quote_currency='btc',
             simulate_orders=True,
         )
     else:
@@ -165,7 +164,7 @@ if __name__ == '__main__':
             analyze=analyze,
             exchange_name='poloniex',
             algo_namespace='buy_and_hodl',
-            base_currency='usdt',
+            quote_currency='usdt',
             start=pd.to_datetime('2015-03-01', utc=True),
             end=pd.to_datetime('2017-10-31', utc=True),
         )

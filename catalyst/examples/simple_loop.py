@@ -56,20 +56,20 @@ def analyze(context, perf):
     import matplotlib.pyplot as plt
     log.info('the stats: {}'.format(get_pretty_stats(perf)))
 
-    # The base currency of the algo exchange
-    base_currency = list(context.exchanges.values())[0].base_currency.upper()
+    # The quote currency of the algo exchange
+    quote_currency = list(context.exchanges.values())[0].quote_currency.upper()
 
     # Plot the portfolio value over time.
     ax1 = plt.subplot(611)
     perf.loc[:, 'portfolio_value'].plot(ax=ax1)
-    ax1.set_ylabel('Portfolio Value ({})'.format(base_currency))
+    ax1.set_ylabel('Portfolio Value ({})'.format(quote_currency))
 
     # Plot the price increase or decrease over time.
     ax2 = plt.subplot(612, sharex=ax1)
     perf.loc[:, 'price'].plot(ax=ax2, label='Price')
 
-    ax2.set_ylabel('{asset} ({base})'.format(
-        asset=context.asset.symbol, base=base_currency
+    ax2.set_ylabel('{asset} ({quote})'.format(
+        asset=context.asset.symbol, quote=quote_currency
     ))
 
     transaction_df = extract_transactions(perf)
@@ -95,9 +95,9 @@ def analyze(context, perf):
 
     ax4 = plt.subplot(613, sharex=ax1)
     perf.loc[:, 'cash'].plot(
-        ax=ax4, label='Base Currency ({})'.format(base_currency)
+        ax=ax4, label='Quote Currency ({})'.format(quote_currency)
     )
-    ax4.set_ylabel('Cash ({})'.format(base_currency))
+    ax4.set_ylabel('Cash ({})'.format(quote_currency))
 
     perf['algorithm'] = perf.loc[:, 'algorithm_period_return']
 
@@ -114,7 +114,7 @@ def analyze(context, perf):
 
 
 if __name__ == '__main__':
-    mode = 'backtest'
+    mode = 'live'
 
     if mode == 'backtest':
         run_algorithm(
@@ -124,7 +124,7 @@ if __name__ == '__main__':
             analyze=None,
             exchange_name='poloniex',
             algo_namespace='simple_loop',
-            base_currency='eth',
+            quote_currency='eth',
             data_frequency='minute',
             start=pd.to_datetime('2017-9-1', utc=True),
             end=pd.to_datetime('2017-12-1', utc=True),
@@ -138,7 +138,7 @@ if __name__ == '__main__':
             exchange_name='binance',
             live=True,
             algo_namespace='simple_loop',
-            base_currency='eth',
+            quote_currency='eth',
             live_graph=False,
             simulate_orders=True
         )

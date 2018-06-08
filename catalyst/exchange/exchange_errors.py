@@ -124,7 +124,7 @@ class InvalidSymbolError(ZiplineError):
     msg = (
         'Invalid trading pair symbol: {symbol}. '
         'Catalyst symbols must follow this convention: '
-        '[Market Currency]_[Base Currency]. For example: eth_usd, btc_usd, '
+        '[Base Currency]_[Quote Currency]. For example: eth_usd, btc_usd, '
         'neo_eth, ubq_btc. Error details: {error}'
     ).strip()
 
@@ -173,23 +173,23 @@ class SidHashError(ZiplineError):
     ).strip()
 
 
-class BaseCurrencyNotFoundError(ZiplineError):
+class QuoteCurrencyNotFoundError(ZiplineError):
     msg = (
-        'Algorithm base currency {base_currency} not found in account '
+        'Algorithm quote currency {quote_currency} not found in account '
         'balances on {exchange}: {balances}'
     ).strip()
 
 
-class MismatchingBaseCurrencies(ZiplineError):
+class MismatchingQuoteCurrencies(ZiplineError):
     msg = (
-        'Unable to trade with base currency {base_currency} when the '
+        'Unable to trade with quote currency {quote_currency} when the '
         'algorithm uses {algo_currency}.'
     ).strip()
 
 
-class MismatchingBaseCurrenciesExchanges(ZiplineError):
+class MismatchingQuoteCurrenciesExchanges(ZiplineError):
     msg = (
-        'Unable to trade with base currency {base_currency} when the '
+        'Unable to trade with quote currency {quote_currency} when the '
         'exchange {exchange_name} users {exchange_currency}.'
     ).strip()
 
@@ -280,7 +280,7 @@ class OrderTypeNotSupported(ZiplineError):
 class NotEnoughCapitalError(ZiplineError):
     msg = (
         'Not enough capital on exchange {exchange} for trading. Each '
-        'exchange should contain at least as much {base_currency} '
+        'exchange should contain at least as much {quote_currency} '
         'as the specified `capital_base`. The current balance {balance} is '
         'lower than the `capital_base`: {capital_base}'
     ).strip()
@@ -321,4 +321,11 @@ class BalanceTooLowError(ZiplineError):
         'Positions have likely been sold outside of this algorithm. Please '
         'add positions to hold a free amount greater than {amount}, or clean '
         'the state of this algo and restart.'
+    ).strip()
+
+
+class NoCandlesReceivedFromExchange(ZiplineError):
+    msg = (
+        'Although requesting {bar_count} candles until {end_dt} of asset {asset}, '
+        'an empty list of candles was received for {exchange}.'
     ).strip()

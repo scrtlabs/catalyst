@@ -21,7 +21,7 @@ from datetime import datetime
 from catalyst.api import record, symbols, order_target_percent
 from catalyst.utils.run_algo import run_algorithm
 
-np.set_printoptions(threshold='nan', suppress=True)
+np.set_printoptions(threshold=np.nan, suppress=True)
 
 
 def initialize(context):
@@ -38,7 +38,7 @@ def initialize(context):
 
 
 def handle_data(context, data):
-    # Only rebalance at the beggining of the algorithm execution and
+    # Only rebalance at the beginning of the algorithm execution and
     # every multiple of the rebalance period
     if context.i == 0 or context.i % context.rebalance_period == 0:
         n = context.window
@@ -66,7 +66,7 @@ def handle_data(context, data):
         # Define portfolio optimization parameters
         n_portfolios = 50000
         results_array = np.zeros((3 + context.nassets, n_portfolios))
-        for p in xrange(n_portfolios):
+        for p in range(n_portfolios):
             weights = np.random.random(context.nassets)
             weights /= np.sum(weights)
             w = np.asmatrix(weights)
@@ -80,15 +80,15 @@ def handle_data(context, data):
             # store Sharpe Ratio (return / volatility) - risk free rate element
             # excluded for simplicity
             results_array[2, p] = results_array[0, p] / results_array[1, p]
-            i = 0
-            for iw in weights:
-                results_array[3 + i, p] = weights[i]
-                i += 1
+
+            for i, w in enumerate(weights):
+                results_array[3 + i, p] = w
+
+        columns = ['r', 'stdev', 'sharpe'] + context.assets
 
         # convert results array to Pandas DataFrame
         results_frame = pd.DataFrame(np.transpose(results_array),
-                                     columns=['r', 'stdev', 'sharpe']
-                                             + context.assets)
+                                     columns=columns)
         # locate position of portfolio with highest Sharpe Ratio
         max_sharpe_port = results_frame.iloc[results_frame['sharpe'].idxmax()]
         # locate positon of portfolio with minimum standard deviation
@@ -107,14 +107,15 @@ def handle_data(context, data):
         plt.xlabel('Volatility')
         plt.ylabel('Returns')
         plt.colorbar()
-        # plot red star to highlight position of portfolio
+
+        # plot blue circle to highlight position of portfolio
         # with highest Sharpe Ratio
         plt.scatter(max_sharpe_port[1],
                     max_sharpe_port[0],
                     marker='o',
                     color='b',
                     s=200)
-        # plot green star to highlight position of minimum variance portfolio
+
         plt.show()
         print(max_sharpe_port)
         record(pr=pr,
@@ -146,4 +147,5 @@ if __name__ == '__main__':
                             start=start,
                             end=end,
                             exchange_name='poloniex',
-                            capital_base=100000, )
+                            capital_base=100000,
+                            quote_currency='usdt')

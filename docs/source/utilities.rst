@@ -95,7 +95,7 @@ Simpler case for daily data
                            end=end, 
                            exchange_name='poloniex', 
                            capital_base=10000, 
-                           base_currency = 'usdt')
+                           quote_currency = 'usdt')
 
 More versatile case for minute data
 
@@ -145,5 +145,5 @@ More versatile case for minute data
                            end=end,
                            exchange_name='poloniex', 
                            data_frequency='minute',
-                           base_currency ='usdt', 
+                           quote_currency ='usdt',
                            capital_base=10000 )

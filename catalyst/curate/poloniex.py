@@ -361,8 +361,8 @@ class PoloniexCurator(object):
 
                 if(start is None):
                     start = time.gmtime()
-                base, market = currencyPair.lower().split('_')
-                symbol = '{market}_{base}'.format(market=market, base=base)
+                quote, base = currencyPair.lower().split('_')
+                symbol = '{base}_{quote}'.format(base=base, quote=quote)
                 symbol_map[currencyPair] = dict(
                     symbol=symbol,
                     start_date=start.strftime("%Y-%m-%d")

@@ -15,7 +15,7 @@ from catalyst.exchange.utils.test_utils import select_random_exchanges, \
     handle_exchange_error, select_random_assets
 from catalyst.testing import ZiplineTestCase
 from catalyst.testing.fixtures import WithLogger
-from exchange.utils.factory import get_exchanges
+from catalyst.exchange.utils.factory import get_exchanges, get_exchange
 
 log = Logger('TestSuiteExchange')
 
@@ -90,7 +90,7 @@ class TestSuiteExchange(WithLogger, ZiplineTestCase):
         #     exchange_population,
         #     features=['fetchTickers'],
         # )  # Type: list[Exchange]
-        exchanges = list(get_exchanges(['bitfinex']).values())
+        exchanges = list(get_exchanges(['binance']).values())
         for exchange in exchanges:
             exchange.init()
 
@@ -113,10 +113,11 @@ class TestSuiteExchange(WithLogger, ZiplineTestCase):
         exchange_population = 3
         asset_population = 3
 
-        exchanges = select_random_exchanges(
-            population=exchange_population,
-            features=['fetchOHLCV'],
-        )  # Type: list[Exchange]
+        # exchanges = select_random_exchanges(
+        #     population=exchange_population,
+        #     features=['fetchOHLCV'],
+        # )  # Type: list[Exchange]
+        exchanges = list(get_exchanges(['binance']).values())
         for exchange in exchanges:
             exchange.init()
 
@@ -138,7 +139,6 @@ class TestSuiteExchange(WithLogger, ZiplineTestCase):
                     assets=assets,
                     bar_count=bar_count,
                     start_dt=dt_range[0],
-                    end_dt=dt_range[-1],
                 )
 
                 assert len(candles) == asset_population
@@ -155,13 +155,20 @@ class TestSuiteExchange(WithLogger, ZiplineTestCase):
         quote_currency = 'eth'
         order_amount = 0.1
 
-        exchanges = select_random_exchanges(
-            population=population,
-            features=['fetchOrder'],
-            is_authenticated=True,
-            base_currency=quote_currency,
-        )  # Type: list[Exchange]
+        # exchanges = select_random_exchanges(
+        #     population=population,
+        #     features=['fetchOrder'],
+        #     is_authenticated=True,
+        #     quote_currency=quote_currency,
+        # )  # Type: list[Exchange]
 
+        exchanges = [
+            get_exchange(
+                'binance',
+                quote_currency=quote_currency,
+                must_authenticate=True,
+            )
+        ]
         log_catcher = TestHandler()
         with log_catcher:
             for exchange in exchanges:

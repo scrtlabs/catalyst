@@ -1,4 +1,5 @@
 import abc
+import datetime
 
 import numpy as np
 import pandas as pd
@@ -9,8 +10,9 @@ from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.exchange_errors import (
     ExchangeRequestError,
     PricingDataNotLoadedError)
-from catalyst.exchange.utils.exchange_utils import resample_history_df, group_assets_by_exchange
-from catalyst.exchange.utils.datetime_utils import get_frequency
+from catalyst.exchange.utils.exchange_utils import resample_history_df, \
+    group_assets_by_exchange
+from catalyst.exchange.utils.datetime_utils import get_frequency, get_start_dt
 from logbook import Logger
 from redo import retry
 
@@ -295,25 +297,38 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
         bundle = self.exchange_bundles[exchange_name]  # type: ExchangeBundle
 
         freq, candle_size, unit, adj_data_frequency = get_frequency(
-            frequency, data_frequency
+            frequency, data_frequency, supported_freqs=['T', 'D']
         )
         adj_bar_count = candle_size * bar_count
-        trailing_bar_count = candle_size - 1
 
-        if data_frequency == 'minute' and adj_data_frequency == 'daily':
-            end_dt = end_dt.floor('1D')
+        if data_frequency == "minute":
+            # for minute frequency always request data until the
+            # current minute (do not include the current minute)
+            last_dt_for_series = end_dt - datetime.timedelta(minutes=1)
+
+            # read the minute bundles for daily frequency to
+            # support last partial candle
+            # TODO: optimize this by applying this logic only for the last day
+            if adj_data_frequency == 'daily':
+                adj_data_frequency = 'minute'
+                adj_bar_count = adj_bar_count * 1440
+
+        else:  # data_frequency == "daily":
+            last_dt_for_series = end_dt
 
         series = bundle.get_history_window_series_and_load(
             assets=assets,
-            end_dt=end_dt,
+            end_dt=last_dt_for_series,
             bar_count=adj_bar_count,
             field=field,
             data_frequency=adj_data_frequency,
             algo_end_dt=self._last_available_session,
-            trailing_bar_count=trailing_bar_count,
         )
 
-        df = resample_history_df(pd.DataFrame(series), freq, field)
+        start_dt = get_start_dt(last_dt_for_series, adj_bar_count,
+                                adj_data_frequency, False)
+        df = resample_history_df(pd.DataFrame(series), freq, field, start_dt)
+
         return df
 
     def get_exchange_spot_value(self,

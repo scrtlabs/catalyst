@@ -8,16 +8,18 @@ import pandas as pd
 from catalyst.constants import LOG_LEVEL
 from catalyst.data.data_portal import BASE_FIELDS
 from catalyst.exchange.exchange_bundle import ExchangeBundle
-from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
+from catalyst.exchange.exchange_errors import MismatchingQuoteCurrencies, \
     SymbolNotFoundOnExchange, \
     PricingDataNotLoadedError, \
-    NoDataAvailableOnExchange, NoValueForField, LastCandleTooEarlyError, \
+    NoDataAvailableOnExchange, NoValueForField, \
+    NoCandlesReceivedFromExchange, \
     TickerNotFoundError, NotEnoughCashError
 from catalyst.exchange.utils.datetime_utils import get_delta, \
     get_periods_range, \
-    get_periods, get_start_dt, get_frequency
+    get_periods, get_start_dt, get_frequency, \
+    get_candles_number_from_minutes
 from catalyst.exchange.utils.exchange_utils import get_exchange_symbols, \
-    resample_history_df, has_bundle
+    resample_history_df, has_bundle, get_candles_df
 from logbook import Logger
 
 log = Logger('Exchange', level=LOG_LEVEL)
@@ -26,13 +28,15 @@ log = Logger('Exchange', level=LOG_LEVEL)
 class Exchange:
     __metaclass__ = ABCMeta
 
+    MIN_MINUTES_REQUESTED = 150
+
     def __init__(self):
         self.name = None
         self.assets = []
         self._symbol_maps = [None, None]
         self.minute_writer = None
         self.minute_reader = None
-        self.base_currency = None
+        self.quote_currency = None
 
         self.num_candles_limit = None
         self.max_requests_per_minute = None
@@ -178,6 +182,7 @@ class Exchange:
         if symbols is None:
             # Make a distinct list of all symbols
             symbols = list(set([asset.symbol for asset in self.assets]))
+            symbols.sort()
 
             if quote_currency is not None:
                 for symbol in symbols[:]:
@@ -196,12 +201,8 @@ class Exchange:
                 )
                 assets.append(asset)
 
-            except SymbolNotFoundOnExchange:
-                log.debug(
-                    'skipping non-existent market {} {}'.format(
-                        self.name, symbol
-                    )
-                )
+            except SymbolNotFoundOnExchange as e:
+                log.warn(e)
         return assets
 
     def get_asset(self, symbol, data_frequency=None, is_exchange_symbol=False,
@@ -253,10 +254,11 @@ class Exchange:
 
             elif data_frequency is not None:
                 applies = (
-                    (
-                        data_frequency == 'minute' and a.end_minute is not None)
-                    or (
-                        data_frequency == 'daily' and a.end_daily is not None)
+                        (
+                                data_frequency == 'minute' and
+                                a.end_minute is not None)
+                        or (
+                                data_frequency == 'daily' and a.end_daily is not None)
                 )
 
             else:
@@ -501,45 +503,66 @@ class Exchange:
 
         """
         freq, candle_size, unit, data_frequency = get_frequency(
-            frequency, data_frequency
+            frequency, data_frequency, supported_freqs=['T', 'D', 'H']
         )
+
+        # we want to avoid receiving empty candles
+        # so we request more than needed
+        # TODO: consider defining a const per asset
+        # and/or some retry mechanism (in each iteration request more data)
+        min_candles_number = get_candles_number_from_minutes(
+            unit,
+            candle_size,
+            self.MIN_MINUTES_REQUESTED)
+
+        requested_bar_count = bar_count
+
+        if requested_bar_count < min_candles_number:
+            requested_bar_count = min_candles_number
+
         # The get_history method supports multiple asset
         candles = self.get_candles(
             freq=freq,
             assets=assets,
-            bar_count=bar_count,
+            bar_count=requested_bar_count,
             end_dt=end_dt if not is_current else None,
         )
 
-        series = dict()
+        # candles sanity check - verify no empty candles were received:
         for asset in candles:
-            first_candle = candles[asset][0]
-            asset_series = self.get_series_from_candles(
-                candles=candles[asset],
-                start_dt=first_candle['last_traded'],
-                end_dt=end_dt,
-                data_frequency=frequency,
-                field=field,
-            )
+            if not candles[asset]:
+                raise NoCandlesReceivedFromExchange(
+                    bar_count=requested_bar_count,
+                    end_dt=end_dt,
+                    asset=asset,
+                    exchange=self.name)
 
-            # Checking to make sure that the dates match
-            delta = get_delta(candle_size, data_frequency)
-            adj_end_dt = end_dt - delta
-            last_traded = asset_series.index[-1]
+        # for avoiding unnecessary forward fill end_dt is taken back one second
+        forward_fill_till_dt = end_dt - timedelta(seconds=1)
 
-            if last_traded < adj_end_dt:
-                raise LastCandleTooEarlyError(
-                    last_traded=last_traded,
-                    end_dt=adj_end_dt,
-                    exchange=self.name,
-                )
+        series = get_candles_df(candles=candles,
+                                field=field,
+                                freq=frequency,
+                                bar_count=requested_bar_count,
+                                end_dt=forward_fill_till_dt)
 
-            series[asset] = asset_series
+        # TODO: consider how to approach this edge case
+        # delta_candle_size = candle_size * 60 if unit == 'H' else candle_size
+        # Checking to make sure that the dates match
+        # delta = get_delta(delta_candle_size, data_frequency)
+        # adj_end_dt = end_dt - delta
+        # last_traded = asset_series.index[-1]
+        # if last_traded < adj_end_dt:
+        #    raise LastCandleTooEarlyError(
+        #        last_traded=last_traded,
+        #        end_dt=adj_end_dt,
+        #        exchange=self.name,
+        #    )
 
         df = pd.DataFrame(series)
         df.dropna(inplace=True)
 
-        return df
+        return df.tail(bar_count)
 
     def get_history_window_with_bundle(self,
                                        assets,
@@ -587,9 +610,10 @@ class Exchange:
             A dataframe containing the requested data.
 
         """
-        # TODO: this function needs some work, we're currently using it just for benchmark data
+        # TODO: this function needs some work,
+        # we're currently using it just for benchmark data
         freq, candle_size, unit, data_frequency = get_frequency(
-            frequency, data_frequency
+            frequency, data_frequency, supported_freqs=['T', 'D']
         )
         adj_bar_count = candle_size * bar_count
         try:
@@ -655,6 +679,15 @@ class Exchange:
         return df
 
     def _check_low_balance(self, currency, balances, amount):
+        """
+        In order to avoid spending money that the user doesn't own,
+        we are comparing to the balance on the account.
+        :param currency: str
+        :param balances: dict
+        :param amount: float
+        :return: free: float,
+                       bool
+        """
         free = balances[currency]['free'] if currency in balances else 0.0
 
         if free < amount:
@@ -663,7 +696,29 @@ class Exchange:
         else:
             return free, False
 
-    def sync_positions(self, positions, cash=None, check_balances=False):
+    def _check_position_balance(self, currency, balances, amount):
+        """
+        In order to avoid spending money that the user doesn't own,
+        we are comparing to the balance on the account.
+        For positions, we want to avoid double updates, since, exchanges
+        update positions when the order is opened as used, catalyst wants
+        to take them into consideration, therefore running comparison on total.
+        :param currency: str
+        :param balances: dict
+        :param amount: float
+        :return: total: float,
+                        bool
+        """
+        total = balances[currency]['total'] if currency in balances else 0.0
+
+        if total < amount:
+            return total, True
+
+        else:
+            return total, False
+
+    def sync_positions(self, positions, cash=None,
+                       check_balances=False):
         """
         Update the portfolio cash and position balances based on the
         latest ticker prices.
@@ -688,21 +743,21 @@ class Exchange:
             )
             if cash is not None:
                 free_cash, is_lower = self._check_low_balance(
-                    currency=self.base_currency,
+                    currency=self.quote_currency,
                     balances=balances,
                     amount=cash,
                 )
                 if is_lower:
                     raise NotEnoughCashError(
-                        currency=self.base_currency,
+                        currency=self.quote_currency,
                         exchange=self.name,
                         free=free_cash,
                         cash=cash,
                     )
 
         positions_value = 0.0
-        if positions is not None:
-            assets = set([position.asset for position in positions])
+        if positions:
+            assets = list(set([position.asset for position in positions]))
             tickers = self.tickers(assets)
 
             for position in positions:
@@ -726,11 +781,8 @@ class Exchange:
                 position.last_sale_price = ticker['last_price']
                 position.last_sale_date = ticker['last_traded']
 
-                positions_value += \
-                    position.amount * position.last_sale_price
-
                 if check_balances:
-                    free, is_lower = self._check_low_balance(
+                    total, is_lower = self._check_position_balance(
                         currency=asset.base_currency,
                         balances=balances,
                         amount=position.amount,
@@ -740,10 +792,13 @@ class Exchange:
                         log.warn(
                             'detected lower balance for {} on {}: {} < {}, '
                             'updating position amount'.format(
-                                asset.symbol, self.name, free, position.amount
+                                asset.symbol, self.name, total, position.amount
                             )
                         )
-                        position.amount = free
+                        position.amount = total
+
+                positions_value += \
+                    position.amount * position.last_sale_price
 
         return free_cash, positions_value
 
@@ -796,13 +851,13 @@ class Exchange:
             log.warn('skipping order amount of 0')
             return None
 
-        if self.base_currency is None:
-            raise ValueError('no base_currency defined for this exchange')
+        if self.quote_currency is None:
+            raise ValueError('no quote_currency defined for this exchange')
 
-        if asset.quote_currency != self.base_currency.lower():
-            raise MismatchingBaseCurrencies(
-                base_currency=asset.quote_currency,
-                algo_currency=self.base_currency
+        if asset.quote_currency != self.quote_currency.lower():
+            raise MismatchingQuoteCurrencies(
+                quote_currency=asset.quote_currency,
+                algo_currency=self.quote_currency
             )
 
         is_buy = (amount > 0)
@@ -919,7 +974,8 @@ class Exchange:
         """
 
     @abstractmethod
-    def cancel_order(self, order_param, symbol_or_asset=None):
+    def cancel_order(self, order_param,
+                     symbol_or_asset=None, params={}):
         """Cancel an open order.
 
         Parameters
@@ -928,6 +984,7 @@ class Exchange:
             The order_id or order object to cancel.
         symbol_or_asset: str|TradingPair
             The catalyst symbol, some exchanges need this
+        params:
         """
         pass
 
@@ -972,13 +1029,15 @@ class Exchange:
         pass
 
     @abc.abstractmethod
-    def tickers(self, assets):
+    def tickers(self, assets, on_ticker_error='raise'):
         """
         Retrieve current tick data for the given assets
 
         Parameters
         ----------
         assets: list[TradingPair]
+        on_ticker_error: str [raise|warn]
+            How to handle an error when retrieving a single ticker.
 
         Returns
         -------

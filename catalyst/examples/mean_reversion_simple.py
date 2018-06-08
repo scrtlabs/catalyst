@@ -33,12 +33,12 @@ def initialize(context):
     # parameters or values you're going to use.
 
     # In our example, we're looking at Neo in Ether.
-    context.market = symbol('eth_btc')
+    context.market = symbol('bnb_eth')
     context.base_price = None
     context.current_day = None
 
-    context.RSI_OVERSOLD = 55
-    context.RSI_OVERBOUGHT = 60
+    context.RSI_OVERSOLD = 60
+    context.RSI_OVERBOUGHT = 70
     context.CANDLE_SIZE = '15T'
 
     context.start_time = time.time()
@@ -160,20 +160,20 @@ def analyze(context=None, perf=None):
     log.info('elapsed time: {}'.format(end - context.start_time))
 
     import matplotlib.pyplot as plt
-    # The base currency of the algo exchange
-    base_currency = list(context.exchanges.values())[0].base_currency.upper()
+    # The quote currency of the algo exchange
+    quote_currency = list(context.exchanges.values())[0].quote_currency.upper()
 
     # Plot the portfolio value over time.
     ax1 = plt.subplot(611)
     perf.loc[:, 'portfolio_value'].plot(ax=ax1)
-    ax1.set_ylabel('Portfolio\nValue\n({})'.format(base_currency))
+    ax1.set_ylabel('Portfolio\nValue\n({})'.format(quote_currency))
 
     # Plot the price increase or decrease over time.
     ax2 = plt.subplot(612, sharex=ax1)
     perf.loc[:, 'price'].plot(ax=ax2, label='Price')
 
-    ax2.set_ylabel('{asset}\n({base})'.format(
-        asset=context.market.symbol, base=base_currency
+    ax2.set_ylabel('{asset}\n({quote})'.format(
+        asset=context.market.symbol, quote=quote_currency
     ))
 
     transaction_df = extract_transactions(perf)
@@ -199,9 +199,9 @@ def analyze(context=None, perf=None):
 
     ax4 = plt.subplot(613, sharex=ax1)
     perf.loc[:, 'cash'].plot(
-        ax=ax4, label='Base Currency ({})'.format(base_currency)
+        ax=ax4, label='Quote Currency ({})'.format(quote_currency)
     )
-    ax4.set_ylabel('Cash\n({})'.format(base_currency))
+    ax4.set_ylabel('Cash\n({})'.format(quote_currency))
 
     perf['algorithm'] = perf.loc[:, 'algorithm_period_return']
 
@@ -248,14 +248,14 @@ if __name__ == '__main__':
 
     if live:
         run_algorithm(
-            capital_base=0.01,
+            capital_base=0.1,
             initialize=initialize,
             handle_data=handle_data,
             analyze=analyze,
-            exchange_name='poloniex',
+            exchange_name='binance',
             live=True,
             algo_namespace=NAMESPACE,
-            base_currency='btc',
+            quote_currency='eth',
             live_graph=False,
             simulate_orders=False,
             stats_output=None,
@@ -274,14 +274,14 @@ if __name__ == '__main__':
         #    -x bitfinex -s 2017-10-1 -e 2017-11-10 -c usdt -n mean-reversion \
         #   --data-frequency minute --capital-base 10000
         run_algorithm(
-            capital_base=0.1,
+            capital_base=0.035,
             data_frequency='minute',
             initialize=initialize,
             handle_data=handle_data,
             analyze=analyze,
             exchange_name='bitfinex',
             algo_namespace=NAMESPACE,
-            base_currency='btc',
+            quote_currency='btc',
             start=pd.to_datetime('2017-10-01', utc=True),
             end=pd.to_datetime('2017-11-10', utc=True),
             output=out

@@ -6,6 +6,7 @@ import click
 import sys
 import logbook
 import pandas as pd
+from catalyst.marketplace.marketplace import Marketplace
 from six import text_type
 
 from catalyst.data import bundles as bundles_module
@@ -13,6 +14,7 @@ from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.utils.exchange_utils import delete_algo_folder
 from catalyst.utils.cli import Date, Timestamp
 from catalyst.utils.run_algo import _run, load_extensions
+from catalyst.exchange.utils.bundle_utils import EXCHANGE_NAMES
 
 try:
     __IPYTHON__
@@ -203,8 +205,8 @@ def ipython_only(option):
 )
 @click.option(
     '-c',
-    '--base-currency',
-    help='The base currency used to calculate statistics '
+    '--quote-currency',
+    help='The quote currency used to calculate statistics '
          '(e.g. usd, btc, eth).',
 )
 @click.pass_context
@@ -223,7 +225,7 @@ def run(ctx,
         local_namespace,
         exchange_name,
         algo_namespace,
-        base_currency):
+        quote_currency):
     """Run a backtest for the given algorithm.
     """
 
@@ -252,8 +254,8 @@ def run(ctx,
     if exchange_name is None:
         ctx.fail("must specify an exchange name '-x'")
 
-    if base_currency is None:
-        ctx.fail("must specify a base currency with '-c' in backtest mode")
+    if quote_currency is None:
+        ctx.fail("must specify a quote currency with '-c' in backtest mode")
 
     if capital_base is None:
         ctx.fail("must specify a capital base with '--capital-base'")
@@ -282,7 +284,7 @@ def run(ctx,
         live=False,
         exchange=exchange_name,
         algo_namespace=algo_namespace,
-        base_currency=base_currency,
+        quote_currency=quote_currency,
         analyze_live=None,
         live_graph=False,
         simulate_orders=True,
@@ -343,7 +345,7 @@ def catalyst_magic(line, cell=None):
     '--capital-base',
     type=float,
     show_default=True,
-    help='The amount of capital (in base_currency) allocated to trading.',
+    help='The amount of capital (in quote_currency) allocated to trading.',
 )
 @click.option(
     '-t',
@@ -392,14 +394,21 @@ def catalyst_magic(line, cell=None):
 )
 @click.option(
     '-c',
-    '--base-currency',
-    help='The base currency used to calculate statistics '
+    '--quote-currency',
+    help='The quote currency used to calculate statistics '
          '(e.g. usd, btc, eth).',
+)
+@click.option(
+    '-s',
+    '--start',
+    type=Date(tz='utc', as_timestamp=False),
+    help='An optional future start date at '
+         'which the algorithm will start at live',
 )
 @click.option(
     '-e',
     '--end',
-    type=Date(tz='utc', as_timestamp=True),
+    type=Date(tz='utc', as_timestamp=False),
     help='An optional end date at which to stop the execution.',
 )
 @click.option(
@@ -435,7 +444,8 @@ def live(ctx,
          local_namespace,
          exchange_name,
          algo_namespace,
-         base_currency,
+         quote_currency,
+         start,
          end,
          live_graph,
          auth_aliases,
@@ -454,8 +464,8 @@ def live(ctx,
     if algo_namespace is None:
         ctx.fail("must specify an algorithm name '-n' in live execution mode")
 
-    if base_currency is None:
-        ctx.fail("must specify a base currency '-c' in live execution mode")
+    if quote_currency is None:
+        ctx.fail("must specify a quote currency '-c' in live execution mode")
 
     if capital_base is None:
         ctx.fail("must specify a capital base with '--capital-base'")
@@ -479,7 +489,7 @@ def live(ctx,
         data=None,
         bundle=None,
         bundle_timestamp=None,
-        start=None,
+        start=start,
         end=end,
         output=output,
         print_algo=print_algo,
@@ -488,7 +498,7 @@ def live(ctx,
         live=True,
         exchange=exchange_name,
         algo_namespace=algo_namespace,
-        base_currency=base_currency,
+        quote_currency=quote_currency,
         live_graph=live_graph,
         analyze_live=None,
         simulate_orders=simulate_orders,
@@ -576,10 +586,17 @@ def ingest_exchange(ctx, exchange_name, data_frequency, start, end,
 
     if exchange_name is None:
         ctx.fail("must specify an exchange name '-x'")
+    if exchange_name not in EXCHANGE_NAMES:
+        ctx.fail(
+            "ingest-exchange does not support {}, "
+            "please choose exchange from: {}".format(
+                exchange_name,
+                EXCHANGE_NAMES))
 
     exchange_bundle = ExchangeBundle(exchange_name)
 
-    click.echo('Ingesting exchange bundle {}...'.format(exchange_name), sys.stdout)
+    click.echo('Trying to ingest exchange bundle {}...'.format(exchange_name),
+               sys.stdout)
     exchange_bundle.ingest(
         data_frequency=data_frequency,
         include_symbols=include_symbols,
@@ -633,7 +650,8 @@ def clean_exchange(ctx, exchange_name, data_frequency):
 
     exchange_bundle = ExchangeBundle(exchange_name)
 
-    click.echo('Cleaning exchange bundle {}...'.format(exchange_name), sys.stdout)
+    click.echo('Cleaning exchange bundle {}...'.format(exchange_name),
+               sys.stdout)
     exchange_bundle.clean(
         data_frequency=data_frequency,
     )
@@ -759,6 +777,157 @@ def bundles():
         # no ingestions have yet been made.
         for timestamp in ingestions or ["<no ingestions>"]:
             click.echo("%s %s" % (bundle, timestamp), sys.stdout)
+
+
+@main.group()
+@click.pass_context
+def marketplace(ctx):
+    """Access the Enigma Data Marketplace to:\n
+    - Register and Publish new datasets (seller-side)\n
+    - Subscribe and Ingest premium datasets (buyer-side)\n
+    """
+    pass
+
+
+@marketplace.command()
+@click.pass_context
+def ls(ctx):
+    """List all available datasets.
+    """
+    click.echo('Listing of available data sources on the marketplace:',
+               sys.stdout)
+    marketplace = Marketplace()
+    marketplace.list()
+
+
+@marketplace.command()
+@click.option(
+    '--dataset',
+    default=None,
+    help='The name of the dataset to ingest from the Data Marketplace.',
+)
+@click.pass_context
+def subscribe(ctx, dataset):
+    """Subscribe to an existing dataset.
+    """
+    marketplace = Marketplace()
+    marketplace.subscribe(dataset)
+
+
+@marketplace.command()
+@click.option(
+    '--dataset',
+    default=None,
+    help='The name of the dataset to ingest from the Data Marketplace.',
+)
+@click.option(
+    '-f',
+    '--data-frequency',
+    type=click.Choice({'daily', 'minute', 'daily,minute', 'minute,daily'}),
+    default='daily',
+    show_default=True,
+    help='The data frequency of the desired OHLCV bars.',
+)
+@click.option(
+    '-s',
+    '--start',
+    default=None,
+    type=Date(tz='utc', as_timestamp=True),
+    help='The start date of the data range. (default: one year from end date)',
+)
+@click.option(
+    '-e',
+    '--end',
+    default=None,
+    type=Date(tz='utc', as_timestamp=True),
+    help='The end date of the data range. (default: today)',
+)
+@click.pass_context
+def ingest(ctx, dataset, data_frequency, start, end):
+    """Ingest a dataset (requires subscription).
+    """
+    marketplace = Marketplace()
+    marketplace.ingest(dataset, data_frequency, start, end)
+
+
+@marketplace.command()
+@click.option(
+    '--dataset',
+    default=None,
+    help='The name of the dataset to ingest from the Data Marketplace.',
+)
+@click.pass_context
+def clean(ctx, dataset):
+    """Clean/Remove local data for a given dataset.
+    """
+    marketplace = Marketplace()
+    marketplace.clean(dataset)
+
+
+@marketplace.command()
+@click.pass_context
+def register(ctx):
+    """Register a new dataset.
+    """
+    marketplace = Marketplace()
+    marketplace.register()
+
+@marketplace.command()
+@click.option(
+    '--dataset',
+    default=None,
+    help='The name of the dataset to ingest from the Data Marketplace.',
+)
+@click.pass_context
+def get_withdraw_amount(ctx, dataset):
+    """Get withdraw amount owner is entitled to.
+    """
+    marketplace = Marketplace()
+    marketplace.get_withdraw_amount(dataset)
+
+@marketplace.command()
+@click.option(
+    '--dataset',
+    default=None,
+    help='The name of the dataset to ingest from the Data Marketplace.',
+)
+@click.pass_context
+def withdraw(ctx, dataset):
+    """Withdraw amount you are entitled to.
+    """
+    marketplace = Marketplace()
+    marketplace.withdraw(dataset)
+
+
+@marketplace.command()
+@click.option(
+    '--dataset',
+    default=None,
+    help='The name of the Marketplace dataset to publish data for.',
+)
+@click.option(
+    '--datadir',
+    default=None,
+    help='The folder that contains the CSV data files to publish.',
+)
+@click.option(
+    '--watch/--no-watch',
+    is_flag=True,
+    default=False,
+    help='Whether to watch the datadir for live data.',
+)
+@click.pass_context
+def publish(ctx, dataset, datadir, watch):
+    """Publish data for a registered dataset.
+    """
+    marketplace = Marketplace()
+    if dataset is None:
+        ctx.fail("must specify a dataset to publish data for "
+                 " with '--dataset'\n")
+    if datadir is None:
+        ctx.fail("must specify a datadir where to find the files to publish "
+                 " with '--datadir'\n")
+    marketplace.publish(dataset, datadir, watch)
 
 
 if __name__ == '__main__':

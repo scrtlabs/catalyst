@@ -1,6 +1,8 @@
 .. include:: ../../README.rst
+
 |
 |
+
 Table of Contents
 -----------------
 
@@ -17,7 +19,7 @@ Table of Contents
    resources
    development-guidelines
    releases
+   appendix
 ..   bundles
-..   appendix
 ..   release-process
 

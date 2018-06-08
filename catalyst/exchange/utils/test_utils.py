@@ -23,11 +23,11 @@ def handle_exchange_error(exchange, e):
 
 
 def select_random_exchanges(population=3, features=None,
-                            is_authenticated=False, base_currency=None):
+                            is_authenticated=False, quote_currency=None):
     all_exchanges = find_exchanges(
         features=features,
         is_authenticated=is_authenticated,
-        base_currency=base_currency,
+        quote_currency=quote_currency,
     )
 
     if population is not None:

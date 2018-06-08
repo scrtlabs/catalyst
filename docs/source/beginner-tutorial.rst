@@ -168,7 +168,7 @@ We'll start with the CLI, and introduce the ``run_algorithm()`` in the last
 example of this tutorial. Some of the :doc:`example algorithms <example-algos>` 
 provide instructions on how to run them both from the CLI, and using the 
 :func:`~catalyst.run_algorithm` function. For the third method, refer to the 
-corresponding section on :doc:`Catalyst & Jupyter Notebook <jupyter>` after you 
+corresponding section on :ref:`Catalyst & Jupyter Notebook <jupyter>` after you 
 have assimilated the contents of this tutorial.
 
 Command line interface
@@ -182,7 +182,7 @@ or the Terminal application on MacOS).
 
    $ catalyst --help
 
-This is the resulting output, simplified for eductional purposes:
+This is the resulting output, simplified for educational purposes:
 
 .. parsed-literal::
 
@@ -246,7 +246,7 @@ the available options:
                                         (supported: bitfinex, bittrex, poloniex).
         -n, --algo-namespace TEXT       A label assigned to the algorithm for data
                                         storage purposes.
-        -c, --base-currency TEXT        The base currency used to calculate
+        -c, --quote-currency TEXT        The quote currency used to calculate
                                         statistics (e.g. usd, btc, eth).
         --help                          Show this message and exit.
 
@@ -254,7 +254,7 @@ the available options:
 As you can see there are a couple of flags that specify where to find your
 algorithm (``-f``) as well as a the ``-x`` flag to specify which exchange to 
 use. There are also arguments for the date range to run the algorithm over 
-(``--start`` and ``--end``). You also need to set the base currency for your 
+(``--start`` and ``--end``). You also need to set the quote currency for your
 algorithm through the ``-c`` flag, and the ``--capital_base``. All the 
 aforementioned parameters are required. Optionally, you will want to save the 
 performance metrics of your algorithm so that you can analyze how it performed. 
@@ -473,6 +473,7 @@ Which we execute by running:
     </div>
 
 |
+
 There is a row for each trading day, starting on the first day of our 
 simulation Jan 1st, 2016. In the columns you can find various
 information about the state of your algorithm. The column
@@ -518,7 +519,7 @@ alongside enigma-catalyst (with the exception of the ``Conda`` install, where it
 was included by default inside the conda environment we created). If for any 
 reason you don't have it installed, you can add it by running:
 
-.. code-block:: python
+.. code-block:: bash
 
   (catalyst)$ pip install matplotlib
 
@@ -579,162 +580,8 @@ which you can skim through for now. A copy of this algorithm is available in
 the ``examples`` directory:
 `dual_moving_average.py <https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/dual_moving_average.py>`_.
 
-.. code-block:: python
-
-    import numpy as np
-    import pandas as pd
-    from logbook import Logger
-    import matplotlib.pyplot as plt 
-
-    from catalyst import run_algorithm
-    from catalyst.api import (order, record, symbol, order_target_percent, 
-            get_open_orders)
-    from catalyst.exchange.utils.stats_utils import extract_transactions
-
-    NAMESPACE = 'dual_moving_average'
-    log = Logger(NAMESPACE)
-
-    def initialize(context):
-        context.i = 0
-        context.asset = symbol('ltc_usd')
-        context.base_price = None
-
-
-    def handle_data(context, data):
-        # define the windows for the moving averages 
-        short_window = 50
-        long_window = 200
-
-        # Skip as many bars as long_window to properly compute the average
-        context.i += 1
-        if context.i < long_window:
-           return
-
-        # Compute moving averages calling data.history() for each 
-        # moving average with the appropriate parameters. We choose to use
-        # minute bars for this simulation -> freq="1m"
-        # Returns a pandas dataframe.
-        short_mavg = data.history(context.asset, 'price', 
-                            bar_count=short_window, frequency="1m").mean()
-        long_mavg = data.history(context.asset, 'price',
-                            bar_count=long_window, frequency="1m").mean()
-
-        # Let's keep the price of our asset in a more handy variable
-        price = data.current(context.asset, 'price')
-
-        # If base_price is not set, we use the current value. This is the
-        # price at the first bar which we reference to calculate price_change.
-        if context.base_price is None:
-            context.base_price = price
-        price_change = (price - context.base_price) / context.base_price
-
-        # Save values for later inspection
-        record(price=price,
-               cash=context.portfolio.cash,
-               price_change=price_change,
-               short_mavg=short_mavg,
-               long_mavg=long_mavg)
-
-        # Since we are using limit orders, some orders may not execute immediately
-        # we wait until all orders are executed before considering more trades.
-        orders = get_open_orders(context.asset)
-        if len(orders) > 0:
-            return
-
-        # Exit if we cannot trade
-        if not data.can_trade(context.asset):
-            return
-
-        # We check what's our position on our portfolio and trade accordingly
-        pos_amount = context.portfolio.positions[context.asset].amount
-
-        # Trading logic
-        if short_mavg > long_mavg and pos_amount == 0:
-           # we buy 100% of our portfolio for this asset
-           order_target_percent(context.asset, 1)
-        elif short_mavg < long_mavg and pos_amount > 0:
-           # we sell all our positions for this asset
-           order_target_percent(context.asset, 0)
-
-
-    def analyze(context, perf):
-
-        # Get the base_currency that was passed as a parameter to the simulation
-        exchange = list(context.exchanges.values())[0]
-        base_currency = exchange.base_currency.upper()
-
-        # First chart: Plot portfolio value using base_currency
-        ax1 = plt.subplot(411)
-        perf.loc[:, ['portfolio_value']].plot(ax=ax1)
-        ax1.legend_.remove()
-        ax1.set_ylabel('Portfolio Value\n({})'.format(base_currency))
-        start, end = ax1.get_ylim()
-        ax1.yaxis.set_ticks(np.arange(start, end, (end-start)/5))
-
-        # Second chart: Plot asset price, moving averages and buys/sells
-        ax2 = plt.subplot(412, sharex=ax1)
-        perf.loc[:, ['price','short_mavg','long_mavg']].plot(ax=ax2, label='Price')
-        ax2.legend_.remove()
-        ax2.set_ylabel('{asset}\n({base})'.format(
-            asset = context.asset.symbol,
-            base = base_currency
-            ))
-        start, end = ax2.get_ylim()
-        ax2.yaxis.set_ticks(np.arange(start, end, (end-start)/5))
-
-        transaction_df = extract_transactions(perf)
-        if not transaction_df.empty:
-            buy_df = transaction_df[transaction_df['amount'] > 0]
-            sell_df = transaction_df[transaction_df['amount'] < 0]
-            ax2.scatter(
-                buy_df.index.to_pydatetime(),
-                perf.loc[buy_df.index, 'price'],
-                marker='^',
-                s=100,
-                c='green',
-                label=''
-            )
-            ax2.scatter(
-                sell_df.index.to_pydatetime(),
-                perf.loc[sell_df.index, 'price'],
-                marker='v',
-                s=100,
-                c='red',
-                label=''
-            )
-
-        # Third chart: Compare percentage change between our portfolio
-        # and the price of the asset
-        ax3 = plt.subplot(413, sharex=ax1)
-        perf.loc[:, ['algorithm_period_return', 'price_change']].plot(ax=ax3)
-        ax3.legend_.remove()
-        ax3.set_ylabel('Percent Change')
-        start, end = ax3.get_ylim()
-        ax3.yaxis.set_ticks(np.arange(start, end, (end-start)/5))
-
-        # Fourth chart: Plot our cash
-        ax4 = plt.subplot(414, sharex=ax1)
-        perf.cash.plot(ax=ax4)
-        ax4.set_ylabel('Cash\n({})'.format(base_currency))
-        start, end = ax4.get_ylim()
-        ax4.yaxis.set_ticks(np.arange(0, end, end/5))
-
-        plt.show()
-
-
-    if __name__ == '__main__':
-        run_algorithm(
-                capital_base=1000,
-                data_frequency='minute',
-                initialize=initialize,
-                handle_data=handle_data,
-                analyze=analyze,
-                exchange_name='bitfinex',
-                algo_namespace=NAMESPACE,
-                base_currency='usd',
-                start=pd.to_datetime('2017-9-22', utc=True),
-                end=pd.to_datetime('2017-9-23', utc=True),
-            )
+.. literalinclude:: ../../catalyst/examples/dual_moving_average.py
+   :language: python
 
 In order to run the code above, you have to ingest the needed data first:
 
@@ -746,7 +593,7 @@ And then run the code above with the following command:
 
 .. code-block:: bash
 
-  catalyst run -f dual_moving_average.py -x bitfinex -s 2017-9-22 -e 2017-9-23 --capital-base 1000 --base-currency usd --data-frequency minute -o out.pickle
+  catalyst run -f dual_moving_average.py -x bitfinex -s 2017-9-22 -e 2017-9-23 --capital-base 1000 --quote-currency usd --data-frequency minute -o out.pickle
 
 Alternatively, we can make use of the ``run_algorithm()`` function included at 
 the end of the file, where we can specify all the simulation parameters, and 
@@ -806,6 +653,7 @@ the ``scikit-learn`` functions require ``numpy.ndarray``\ s rather than
 ``pandas.DataFrame``\ s, so you can simply pass the underlying
 ``ndarray`` of a ``DataFrame`` via ``.values``).
 
+.. _jupyter:
 
 Jupyter Notebook
 ~~~~~~~~~~~~~~~~
@@ -824,15 +672,15 @@ Install
 
 In order to use Jupyter Notebook, you first have to install it inside your
 environment. It's available as ``pip`` package, so regardless of how you 
-installed Catalyst, go inside your catalyst environemnt and run:
+installed Catalyst, go inside your catalyst environment and run:
 
-.. code:: bash
+.. code-block:: bash
 
     (catalyst)$ pip install jupyter
 
 Once you have Jupyter Notebook installed, every time you want to use it run:
 
-.. code:: bash
+.. code-block:: bash
 
     (catalyst)$ jupyter notebook
 
@@ -846,7 +694,7 @@ Before running your algorithms inside the Jupyter Notebook, remember to ingest
 the data from the command line interface (CLI). In the example below, you would
 need to run first:
 
-.. code:: bash
+.. code-block:: bash
 
   catalyst ingest-exchange -x bitfinex -i btc_usd
 
@@ -16608,6 +16456,54 @@ NaN
    </div>
 
 
+.. note::
+
+   Currently, the quote currency of all trading pairs ordered by the algorithm
+   must match the value of the ``quote_currency``.
+
+PyCharm IDE
+~~~~~~~~~~~
+
+PyCharm is an Integrated Development Environment (IDE) used in computer 
+programming, specifically for the Python language. It streamlines the continuos
+development of Python code, and among other things includes a debugger that 
+comes in handy to see the inner workings of Catalyst, and your trading 
+algorithms.
+
+Install
+^^^^^^^
+Install PyCharm from their `Website <https://www.jetbrains.com/pycharm/download/>`__.
+There is a free and open-source **Community** version.
+
+Setup
+^^^^^
+
+1. When creating a new project in PyCharm, right under you specify the Location,
+   click on **Project Interpreter** to display a drop down menu
+
+2. Select **Existing interpreter**, click the gear box right next to it and 
+   select 'add local'. Depending on your installation, select either 
+   "*Virtual Environemnt*" or "*Conda Environment" and click the '...' button to
+   navigate to your catalyst env and select the Python binary file: 
+   ``bin/python`` for Linux/MacOS installations or 'python.exe' for Windows 
+   installs (for example: 'C:\\Users\\user\\Anaconda2\\envs\\catalyst\\python.exe'). 
+   Select OK. You may want to click on *Make available to all projects* for your
+   future reference. Click OK again, and create your new environment using the
+   set up of your virtual environment.
+
+Alternatively, if you already have your project created, in Windows do:
+
+1. File -> Default Settings -> Project Interpreter. Click the gear box next to 
+   the project interpreter and select ‘add local’, and follow the steps from the
+   second step above.
+
+On MacOS:
+
+1. PyCharm -> Preferences -> Settings -> Project:’NAME_OF_PROJECT’ -> 
+   Project Interpreter. Click the gear box next to the project interpreter 
+   and select ‘add local’, and follow the steps from the second step above.
+
+You should now be able to run your project/scripts in PyCharm.
 
 Next steps
 ~~~~~~~~~~

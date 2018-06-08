@@ -47,7 +47,7 @@ class CancelPolicy(with_metaclass(abc.ABCMeta)):
 
 class EODCancel(CancelPolicy):
     """This policy cancels open orders at the end of the day.  For now,
-    Zipline will only apply this policy to minutely simulations.
+    Catalyst will only apply this policy to minutely simulations.
 
     Parameters
     ----------

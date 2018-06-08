@@ -23,13 +23,29 @@ from catalyst.utils.input_validation import expect_types
 
 class Transaction(object):
     @expect_types(asset=Asset)
-    def __init__(self, asset, amount, dt, price, order_id, commission=None):
+    def __init__(self, asset, amount, dt, price, order_id, commission=None,
+                 fee_currency=None, is_quote_live=False):
+        """
+
+        :param asset:
+        :param amount:
+        :param dt:
+        :param price:
+        :param order_id:
+        :param commission:
+        :param fee_currency: str; from what currency is the commission
+                                    reduced from- only on live mode
+        :param is_quote_live: bool; is the fee_currency the quote_currency
+                                    of the algorithm and running on live mode
+        """
         self.asset = asset
         self.amount = amount
         self.dt = dt
         self.price = price
         self.order_id = order_id
         self.commission = commission
+        self.fee_currency = fee_currency
+        self.is_quote_live = is_quote_live
         self.type = DATASOURCE_TYPE.TRANSACTION
 
     def __getitem__(self, name):

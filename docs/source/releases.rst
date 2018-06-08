@@ -2,6 +2,211 @@
 Release Notes
 =============
 
+Version 0.5.13
+^^^^^^^^^^^^^^
+**Release Date**: 2018-06-07
+
+Build
+~~~~~
+- Added functions to marketplace client to get withdraw amount entitled to
+  and to withdraw ENG as well.
+- Updates to handle web3 upgrade on the marketplace.
+
+Bug Fixes
+~~~~~~~~~
+- Pull request :issue:`334`.
+- Raise error when trying to ingest non existing data.
+
+Version 0.5.12
+^^^^^^^^^^^^^^
+**Release Date**: 2018-05-23
+
+Build
+~~~~~
+- Renamed the `base_currency` parameter of run_algorithm to `quote_currency`
+  for alignment with the Forex trading terminology.
+- Improved the commissions calculations in live mode - documented at
+  `Live trading <https://enigma.co/catalyst/live-trading.html#commissions>`_
+
+Bug Fixes
+~~~~~~~~~
+- Fixed an issue preventing trading on Gdax with several positions
+  :issue:`299`
+
+Version 0.5.11
+^^^^^^^^^^^^^^
+**Release Date**: 2018-05-09
+
+Bug Fixes
+~~~~~~~~~
+- Added missing start_date argument on live mode when running on cli
+  :issue:`330`
+- Updated the start and end arguments used on cli in live mode to include
+  time information in addition to the date.
+
+Version 0.5.10
+^^^^^^^^^^^^^^
+**Release Date**: 2018-05-09
+
+Bug Fixes
+~~~~~~~~~
+- Added order creation exception handling according to the ccxt manual
+  :issue:`315`
+- Rounded up the filled amount to avoid unclosed orders :issue:`309`
+- Correct the retry of the fetch trades method in case of a
+  timeout :issue:`321`
+- Fixed the extra history candles fetch in live mode :issue:`323`
+- Fixed the marketplace list function :issue:`327`
+
+Build
+~~~~~
+- Added the ability to set a future start_date on live mode :issue:`318`
+
+Version 0.5.9
+^^^^^^^^^^^^^
+**Release Date**: 2018-04-24
+
+Documentation
+~~~~~~~~~~~~~
+- Added explanation describing the storing of the algorithm state in live mode :issue:`224`
+- Addition of
+  `Api Reference <https://enigma.co/catalyst/appendix.html>`_
+
+Bug Fixes
+~~~~~~~~~
+- Lowered order size limit to fit all supported exchanges :issue:`296`
+- Added a graceful finish to a live run with a specified end date :issue:`302`
+- Added commissions to `daily_stats` Dataframe :issue:`304`
+- Fixed an issue regarding `str_btc` on Poloniex :issue:`307`
+- Fixed the last candle returned in backtest in minute mode to be partial (as in live mode)
+  :issue:`266`
+
+Build
+~~~~~
+- Upgraded `CCXT` version to 1.12.131
+- Updated Data Marketplace to enable submitting several files in a publish command.
+- Improved Data Marketplace ingestion.
+
+Version 0.5.8
+^^^^^^^^^^^^^
+**Release Date**: 2018-03-29
+
+Bug Fixes
+~~~~~~~~~
+- Fix proper release of Data Marketplace on mainnet.
+- Fix Data Marketplace release on mainnet
+
+Version 0.5.7
+^^^^^^^^^^^^^
+**Release Date**: 2018-03-29
+
+Build
+~~~~~
+- Data Marketplace deployed on mainnet.
+- Added progress indicators for publishing data, and made the data publishing
+  synchronous to provide feedback to the publisher.
+
+Bug Fixes
+~~~~~~~~~
+- Fixes in storing and loading the state :issue:`214`,
+  :issue:`287`
+
+Version 0.5.6
+^^^^^^^^^^^^^
+**Release Date**: 2018-03-22
+
+Build
+~~~~~
+- Data Marketplace: ensures compatibility across wallets, now fully supporting 
+  ``ledger``, ``trezor``, ``keystore``, ``private key``. Partial support for 
+  ``metamask`` (includes sign_msg, but not sign_tx). Current support for 
+  ``Digital Bitbox`` is unknown, but believed to be supported.
+- Data Marketplace: Switched online provider from MyEtherWallet to MyCrypto.
+- Data Marketplace: Added progress indicator for data ingestion.
+
+Bug Fixes
+~~~~~~~~~
+- Changed benchmark to be constant, so it doesn't ingest data at all. Temporary
+  fix for :issue:`271`, :issue:`285`
+
+Version 0.5.5
+^^^^^^^^^^^^^
+**Release Date**: 2018-03-19
+
+Bug Fixes
+~~~~~~~~~
+- Fixed an issue with the data history in daily frequency :issue:`274`
+- Fix hourly frequency issues :issue:`227` and :issue:`114`
+
+Version 0.5.4
+^^^^^^^^^^^^^
+**Release Date**: 2018-03-14
+
+Build
+~~~~~
+- Switched Data Marketplace from Ropstein testnet to Rinkeby testnet after 
+  incorporating changes resulting from the marketplace contract audit
+- Several usability improvements of the Data Marketplace that make the 
+  `--dataset` parameter optional. If it is not included in the command line, 
+  will list available datasets, and let you choose interactively.
+
+Bug Fixes
+~~~~~~~~~
+- Fix Binance requirement of symbol to be included in the cancelled order 
+  :issue:`204`
+- Fix `notenoughcasherror` when an open order is filled minutes later 
+  :issue:`237`
+- Properly handle of empty candles received from exchanges :issue:`236`
+- Added a function to reduce open orders amount from calculated target/amount 
+  for target orders :issue:`243`
+- Fix missing file in live trading mode on date change :issue:`252`, 
+  :issue:`253`
+- Upgraded Data Marketplace to Web3==4.0.0b11, which was breaking some 
+  functionality from prior version 4.0.0b7 :issue:`257`
+- Always request more data to avoid empty bars and always give the exact bar
+  number :issue:`260`
+
+Documentation
+~~~~~~~~~~~~~
+- PyCharm documentation :issue:`195`
+- Added TA-Lib troubleshooting instructions
+- Added instructions on how to create a Conda environment for Python 3.6, and
+  updated Visual C++ instructions for Windows and Python 3
+- Linking example algorithms in the documentation to their sources
+
+
+Version 0.5.3
+^^^^^^^^^^^^^
+**Release Date**: 2018-02-09
+
+Bug Fixes
+~~~~~~~~~
+- Fixed an issue with last candle in backtesting :issue:`219`
+
+Version 0.5.2
+^^^^^^^^^^^^^
+**Release Date**: 2018-02-08
+
+Bug Fixes
+~~~~~~~~~
+- Fixed an issue with live candle values :issue:`216` and :issue:`199`
+
+Version 0.5.1
+^^^^^^^^^^^^^
+**Release Date**: 2018-02-07
+
+Bug Fixes
+~~~~~~~~~
+- Fixed an issue with orders that stay open :issue:`211`
+- Fixed Jupyter issues :issue:`179`
+- Fetching multiple tickers in one call to minimize rate limit risks :issue:`174`
+- Improved live state presentation :issue:`171`
+
+
+Build
+~~~~~
+- Introducing the Enigma Marketplace
+
 Version 0.4.7
 ^^^^^^^^^^^^^
 **Release Date**: 2018-01-19

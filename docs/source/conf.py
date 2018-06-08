@@ -1,7 +1,7 @@
 import sys
 import os
 
-#from catalyst import __version__ as version
+from catalyst import __version__ as version
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -27,8 +27,8 @@ extlinks = {
 
 # -- Docstrings ---------------------------------------------------------------
 
-#extensions += ['numpydoc']
-#numpydoc_show_class_members = False
+extensions += ['numpydoc']
+numpydoc_show_class_members = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['.templates']
@@ -44,8 +44,7 @@ project = u'Catalyst'
 copyright = u'2018, Enigma MPC, Inc.'
 
 # The full version, including alpha/beta/rc tags, but excluding the commit hash
-#release = version.split('+', 1)[0]
-release = '0.4'
+release = version.split('+', 1)[0]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -97,3 +96,6 @@ intersphinx_mapping = {
 doctest_global_setup = "import catalyst"
 
 todo_include_todos = True
+
+suppress_warnings = ['image.nonlocal_uri']
+

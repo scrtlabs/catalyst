@@ -1,10 +1,11 @@
-.. image:: https://s3.amazonaws.com/enigmaco-docs/enigma-catalyst.jpg
+.. image:: https://s3.amazonaws.com/enigmaco-docs/catalyst-crypto.png
     :target: https://enigmampc.github.io/catalyst
     :align: center
     :alt: Enigma | Catalyst
 
 |version tag|
 |version status|
+|forum|
 |discord|
 |twitter|
 
@@ -17,16 +18,16 @@ insights regarding a particular strategy's performance. Catalyst also supports
 live-trading of crypto-assets starting with three exchanges (Bitfinex, Bittrex, 
 and Poloniex) with more being added over time. Catalyst empowers users to share 
 and curate data and build profitable, data-driven investment strategies. Please 
-visit `enigma.co <https://www.enigma.co>`_ to learn more about Catalyst, or 
-refer to the `whitepaper <https://www.enigma.co/enigma_catalyst.pdf>`_ for 
-further technical details.
+visit `catalystcrypto.io <https://www.catalystcrypto.io>`_ to learn more about Catalyst.
 
 Catalyst builds on top of the well-established 
 `Zipline <https://github.com/quantopian/zipline>`_ project. We did our best to 
 minimize structural changes to the general API to maximize compatibility with 
-existing trading algorithms, developer knowledge, and tutorials. Join us on 
-`Discord <https://discord.gg/SJK32GY>`_ where we have a *#catalyst_dev* channel 
-for questions around Catalyst, algorithmic trading and technical support.
+existing trading algorithms, developer knowledge, and tutorials. Join us on the 
+`Catalyst Forum <https://forum.catalystcrypto.io/>`_ for questions around Catalyst,
+algorithmic trading and technical support. We also have a 
+`Discord <https://discord.gg/SJK32GY>`_ group with the *#catalyst_dev* and 
+*#catalyst_setup* dedicated channels.
 
 Overview
 ========
@@ -62,11 +63,14 @@ Go to our `Documentation Website <https://enigmampc.github.io/catalyst/>`_.
 
 .. |version status| image:: https://img.shields.io/pypi/pyversions/enigma-catalyst.svg
    :target: https://pypi.python.org/pypi/enigma-catalyst
+   
+.. |forum| image:: https://img.shields.io/badge/forum-join-green.svg
+   :target: https://forum.catalystcrypto.io/
 
 .. |discord| image:: https://img.shields.io/badge/discord-join%20chat-green.svg
    :target: https://discordapp.com/invite/SJK32GY
 
 .. |twitter| image:: https://img.shields.io/twitter/follow/enigmampc.svg?style=social&label=Follow&style=flat-square
-   :target: https://twitter.com/enigmampc
+   :target: https://twitter.com/catalystcrypto
 
 
