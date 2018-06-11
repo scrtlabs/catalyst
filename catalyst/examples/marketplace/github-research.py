@@ -63,7 +63,7 @@ if __name__ == '__main__':
             analyze=analyze,
             exchange_name='poloniex',
             algo_namespace='algo-github',
-            base_currency='usdt',
+            quote_currency='usdt',
             live=False,
             start=pd.to_datetime(END, utc=True),
             end=pd.to_datetime(END, utc=True),

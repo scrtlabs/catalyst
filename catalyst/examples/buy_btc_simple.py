@@ -1,4 +1,4 @@
-'''
+"""
     This is a very simple example referenced in the beginner's tutorial:
     https://enigmampc.github.io/catalyst/beginner-tutorial.html
 
@@ -20,7 +20,7 @@
 
     To see which assets are available on each exchange, visit:
     https://www.enigma.co/catalyst/status
-'''
+"""
 from catalyst import run_algorithm
 from catalyst.api import order, record, symbol
 import pandas as pd
@@ -42,8 +42,8 @@ if __name__ == '__main__':
         initialize=initialize,
         handle_data=handle_data,
         exchange_name='poloniex',
-        algo_namespace='buy_and_hodl',
-        base_currency='usdt',
+        algo_namespace='buy_btc_simple',
+        quote_currency='usdt',
         start=pd.to_datetime('2015-03-01', utc=True),
         end=pd.to_datetime('2017-10-31', utc=True),
     )

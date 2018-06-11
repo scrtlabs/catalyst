@@ -38,7 +38,7 @@ if __name__ == '__main__':
         exchange_name='binance',
         live=True,
         algo_namespace=NAMESPACE,
-        base_currency='btc',
+        quote_currency='btc',
         live_graph=False,
         simulate_orders=False,
     )

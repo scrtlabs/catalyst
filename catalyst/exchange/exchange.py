@@ -8,7 +8,7 @@ import pandas as pd
 from catalyst.constants import LOG_LEVEL
 from catalyst.data.data_portal import BASE_FIELDS
 from catalyst.exchange.exchange_bundle import ExchangeBundle
-from catalyst.exchange.exchange_errors import MismatchingBaseCurrencies, \
+from catalyst.exchange.exchange_errors import MismatchingQuoteCurrencies, \
     SymbolNotFoundOnExchange, \
     PricingDataNotLoadedError, \
     NoDataAvailableOnExchange, NoValueForField, \
@@ -28,13 +28,15 @@ log = Logger('Exchange', level=LOG_LEVEL)
 class Exchange:
     __metaclass__ = ABCMeta
 
+    MIN_MINUTES_REQUESTED = 150
+
     def __init__(self):
         self.name = None
         self.assets = []
         self._symbol_maps = [None, None]
         self.minute_writer = None
         self.minute_reader = None
-        self.base_currency = None
+        self.quote_currency = None
 
         self.num_candles_limit = None
         self.max_requests_per_minute = None
@@ -252,11 +254,11 @@ class Exchange:
 
             elif data_frequency is not None:
                 applies = (
-                    (
-                        data_frequency == 'minute' and
-                        a.end_minute is not None)
-                    or (
-                        data_frequency == 'daily' and a.end_daily is not None)
+                        (
+                                data_frequency == 'minute' and
+                                a.end_minute is not None)
+                        or (
+                                data_frequency == 'daily' and a.end_daily is not None)
                 )
 
             else:
@@ -508,11 +510,15 @@ class Exchange:
         # so we request more than needed
         # TODO: consider defining a const per asset
         # and/or some retry mechanism (in each iteration request more data)
-        kExtra_minutes_candles = 150
-        requested_bar_count = bar_count + \
-            get_candles_number_from_minutes(unit,
-                                            candle_size,
-                                            kExtra_minutes_candles)
+        min_candles_number = get_candles_number_from_minutes(
+            unit,
+            candle_size,
+            self.MIN_MINUTES_REQUESTED)
+
+        requested_bar_count = bar_count
+
+        if requested_bar_count < min_candles_number:
+            requested_bar_count = min_candles_number
 
         # The get_history method supports multiple asset
         candles = self.get_candles(
@@ -631,7 +637,7 @@ class Exchange:
                 start_dt = get_start_dt(end_dt, adj_bar_count, data_frequency)
                 trailing_dt = \
                     series[asset].index[-1] + get_delta(1, data_frequency) \
-                    if asset in series else start_dt
+                        if asset in series else start_dt
 
                 # The get_history method supports multiple asset
                 # Use the original frequency to let each api optimize
@@ -673,6 +679,15 @@ class Exchange:
         return df
 
     def _check_low_balance(self, currency, balances, amount):
+        """
+        In order to avoid spending money that the user doesn't own,
+        we are comparing to the balance on the account.
+        :param currency: str
+        :param balances: dict
+        :param amount: float
+        :return: free: float,
+                       bool
+        """
         free = balances[currency]['free'] if currency in balances else 0.0
 
         if free < amount:
@@ -680,6 +695,27 @@ class Exchange:
 
         else:
             return free, False
+
+    def _check_position_balance(self, currency, balances, amount):
+        """
+        In order to avoid spending money that the user doesn't own,
+        we are comparing to the balance on the account.
+        For positions, we want to avoid double updates, since, exchanges
+        update positions when the order is opened as used, catalyst wants
+        to take them into consideration, therefore running comparison on total.
+        :param currency: str
+        :param balances: dict
+        :param amount: float
+        :return: total: float,
+                        bool
+        """
+        total = balances[currency]['total'] if currency in balances else 0.0
+
+        if total < amount:
+            return total, True
+
+        else:
+            return total, False
 
     def sync_positions(self, positions, cash=None,
                        check_balances=False):
@@ -707,13 +743,13 @@ class Exchange:
             )
             if cash is not None:
                 free_cash, is_lower = self._check_low_balance(
-                    currency=self.base_currency,
+                    currency=self.quote_currency,
                     balances=balances,
                     amount=cash,
                 )
                 if is_lower:
                     raise NotEnoughCashError(
-                        currency=self.base_currency,
+                        currency=self.quote_currency,
                         exchange=self.name,
                         free=free_cash,
                         cash=cash,
@@ -745,11 +781,8 @@ class Exchange:
                 position.last_sale_price = ticker['last_price']
                 position.last_sale_date = ticker['last_traded']
 
-                positions_value += \
-                    position.amount * position.last_sale_price
-
                 if check_balances:
-                    free, is_lower = self._check_low_balance(
+                    total, is_lower = self._check_position_balance(
                         currency=asset.base_currency,
                         balances=balances,
                         amount=position.amount,
@@ -759,10 +792,13 @@ class Exchange:
                         log.warn(
                             'detected lower balance for {} on {}: {} < {}, '
                             'updating position amount'.format(
-                                asset.symbol, self.name, free, position.amount
+                                asset.symbol, self.name, total, position.amount
                             )
                         )
-                        position.amount = free
+                        position.amount = total
+
+                positions_value += \
+                    position.amount * position.last_sale_price
 
         return free_cash, positions_value
 
@@ -815,13 +851,13 @@ class Exchange:
             log.warn('skipping order amount of 0')
             return None
 
-        if self.base_currency is None:
-            raise ValueError('no base_currency defined for this exchange')
+        if self.quote_currency is None:
+            raise ValueError('no quote_currency defined for this exchange')
 
-        if asset.quote_currency != self.base_currency.lower():
-            raise MismatchingBaseCurrencies(
-                base_currency=asset.quote_currency,
-                algo_currency=self.base_currency
+        if asset.quote_currency != self.quote_currency.lower():
+            raise MismatchingQuoteCurrencies(
+                quote_currency=asset.quote_currency,
+                algo_currency=self.quote_currency
             )
 
         is_buy = (amount > 0)

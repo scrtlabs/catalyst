@@ -1,7 +1,7 @@
 API Reference
 -------------
 
-Running a Backtest
+Running a Strategy
 ~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: catalyst.run_algorithm(...)
@@ -13,13 +13,15 @@ The following methods are available for use in the ``initialize``,
 ``handle_data``, and ``before_trading_start`` API functions.
 
 In all listed functions, the ``self`` argument is implicitly the
-currently-executing :class:`~zipline.algorithm.TradingAlgorithm` instance.
+currently-executing :class:`~catalyst.algorithm.TradingAlgorithm` instance.
 
 Data Object
 ```````````
 
 .. autoclass:: catalyst.protocol.BarData
    :members:
+
+
 
 Scheduling Functions
 ````````````````````
@@ -93,8 +95,8 @@ Assets
 Trading Controls
 ````````````````
 
-zipline provides trading controls to help ensure that the algorithm is
-performing as expected. The functions help protect the algorithm from certian
+catalyst provides trading controls to help ensure that the algorithm is
+performing as expected. The functions help protect the algorithm from certain
 bugs that could cause undesirable behavior when trading with real money.
 
 .. autofunction:: catalyst.api.set_do_not_order_list
@@ -268,14 +270,14 @@ Miscellaneous
 ..    :members: __init__, from_files, load_adjusted_array
 ..    :member-order: bysource
 
-Asset Metadata
-~~~~~~~~~~~~~~
+.. Asset Metadata
+.. ~~~~~~~~~~~~~~
 
-.. autoclass:: catalyst.assets.Asset
+.. .. autoclass:: catalyst.assets._assets.TradingPair // TODO: add TradingPair info in a clean way
    :members:
 
-.. autoclass:: catalyst.assets.AssetConvertible
-   :members:
+.. .. autoclass:: catalyst.assets.AssetConvertible
+..   :members:
 
 
 Trading Calendar API
@@ -284,7 +286,7 @@ Trading Calendar API
 .. autofunction:: catalyst.utils.calendars.get_calendar
 
 .. autoclass:: catalyst.utils.calendars.TradingCalendar
-   :members:
+..   :members:
 
 .. autofunction:: catalyst.utils.calendars.register_calendar
 
@@ -295,8 +297,8 @@ Trading Calendar API
 .. autofunction:: catalyst.utils.calendars.clear_calendars
 
 
-Data API
-~~~~~~~~
+.. Data API
+.. ~~~~~~~~
 
 .. Writers
 .. ```````
@@ -349,23 +351,23 @@ Data API
 .. .. autofunction:: zipline.data.bundles.yahoo_equities
 
 
+.. TODO: add relevant information to this section
+.. Utilities
+.. ~~~~~~~~~
 
-Utilities
-~~~~~~~~~
+.. Caching
+.. ```````
 
-Caching
-```````
+.. .. autoclass:: catalyst.utils.cache.CachedObject
 
-.. autoclass:: catalyst.utils.cache.CachedObject
+.. .. autoclass:: catalyst.utils.cache.ExpiringCache
 
-.. autoclass:: catalyst.utils.cache.ExpiringCache
+.. .. autoclass:: catalyst.utils.cache.dataframe_cache
 
-.. autoclass:: catalyst.utils.cache.dataframe_cache
+.. .. autoclass:: catalyst.utils.cache.working_file
 
-.. autoclass:: catalyst.utils.cache.working_file
+.. .. autoclass:: catalyst.utils.cache.working_dir
 
-.. autoclass:: catalyst.utils.cache.working_dir
-
-Command Line
-````````````
-.. autofunction:: catalyst.utils.cli.maybe_show_progress
+.. Command Line
+.. ````````````
+.. .. autofunction:: catalyst.utils.cli.maybe_show_progress

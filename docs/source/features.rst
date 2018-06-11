@@ -21,7 +21,7 @@ Current Functionality
 * Granular commission models which closely simulates each exchange fee
   structure in backtesting and paper trading.
 * Standardized naming convention for all asset pairs trading on any exchange in 
-  the form ``{market_currency}_{base_currency}``. See 
+  the form ``{base_currency}_{quote_currency}``. See
   :ref:`naming`.
 * Output of performance statistics based on Pandas DataFrames to integrate 
   nicely into the existing PyData ecosystem.
@@ -61,9 +61,9 @@ Catalyst introduces a standardized naming convention for all asset pairs
 trading on any exchange in the following form:
 
 
-    **{market_currency}_{base_currency}**
+    **{base_currency}_{quote_currency}**
 
-Where {market_currency} is the asset to be traded using {base_currency} as 
+Where {base_currency} is the asset to be traded using {quote_currency} as
 the reference, both written in lowercase and separated with an underscore.
 
 This standardization is needed to overcome the lack of consistency in the 

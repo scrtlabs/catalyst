@@ -5,7 +5,6 @@ channels:
 dependencies:
 - certifi=2016.2.28=py27_0
 - mkl=2017.0.3
-- matplotlib=2.1.2=py36_0
 - numpy=1.13.1=py27_0
 - openssl=1.0.2l
 - pip=9.0.1=py27_1
@@ -22,7 +21,7 @@ dependencies:
   - bcolz==0.12.1
   - bottleneck==1.2.1
   - chardet==3.0.4
-  - ccxt==1.10.1094
+  - ccxt==1.12.131
 # The Enigma Data Marketplace requires Python3 because it depends on
 # web3, which requires Python3, as building its dependencies breaks in Python2
 #  - web3==4.0.0b7
@@ -40,7 +39,7 @@ dependencies:
   - lru-dict==1.1.6
   - mako==1.0.7
   - markupsafe==1.0
-  - matplotlib==2.1.0
+  - matplotlib==2.1.2
   - multipledispatch==0.4.9
   - networkx==2.0
   - numexpr==2.6.4

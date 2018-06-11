@@ -22,11 +22,11 @@ def _handle_data(context, data):
 
 run_algorithm(initialize=initialize,
               handle_data=_handle_data,
-            analyze=lambda _, results: True,
-            exchange_name='poloniex',
-            base_currency='usdt',
-            algo_namespace='issue-236',
-            live=True,
-            data_frequency='minute',
-            capital_base=3000,
-            simulate_orders=True)
+              analyze=lambda _, results: True,
+              exchange_name='poloniex',
+              quote_currency='usdt',
+              algo_namespace='issue-236',
+              live=True,
+              data_frequency='minute',
+              capital_base=3000,
+              simulate_orders=True)

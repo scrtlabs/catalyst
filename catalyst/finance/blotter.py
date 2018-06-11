@@ -382,6 +382,9 @@ class Blotter(object):
 
                     order.dt = txn.dt
 
+                    # added for stats
+                    txn.commission = additional_commission
+
                     transactions.append(txn)
 
                     if not order.open:

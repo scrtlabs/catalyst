@@ -12,9 +12,9 @@ log = Logger('factory', level=LOG_LEVEL)
 exchange_cache = dict()
 
 
-def get_exchange(exchange_name, base_currency=None, must_authenticate=False,
+def get_exchange(exchange_name, quote_currency=None, must_authenticate=False,
                  skip_init=False, auth_alias=None):
-    key = (exchange_name, base_currency)
+    key = (exchange_name, quote_currency)
     if key in exchange_cache:
         return exchange_cache[key]
 
@@ -35,7 +35,7 @@ def get_exchange(exchange_name, base_currency=None, must_authenticate=False,
         secret=exchange_auth['secret'],
         password=exchange_auth['password'] if 'password'
                                               in exchange_auth.keys() else '',
-        base_currency=base_currency,
+        quote_currency=quote_currency,
     )
     exchange_cache[key] = exchange
 
@@ -54,7 +54,7 @@ def get_exchanges(exchange_names):
 
 
 def find_exchanges(features=None, skip_blacklist=True, is_authenticated=False,
-                   base_currency=None):
+                   quote_currency=None):
     """
     Find exchanges filtered by a list of feature.
 
@@ -65,7 +65,7 @@ def find_exchanges(features=None, skip_blacklist=True, is_authenticated=False,
 
     skip_blacklist: bool
     is_authenticated: bool
-    base_currency: bool
+    quote_currency: bool
 
     Returns
     -------
@@ -82,7 +82,7 @@ def find_exchanges(features=None, skip_blacklist=True, is_authenticated=False,
         exchange = get_exchange(
             exchange_name=exchange_name,
             skip_init=True,
-            base_currency=base_currency,
+            quote_currency=quote_currency,
         )
 
         if features is not None:

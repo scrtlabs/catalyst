@@ -66,7 +66,7 @@ class TestSuiteAlgo(WithLogger, ZiplineTestCase):
                     analyze=TestSuiteAlgo.analyze,
                     exchange_name='poloniex',
                     algo_namespace='test_{}'.format(namespace),
-                    base_currency='eth',
+                    quote_currency='eth',
                     start=pd.to_datetime('2017-10-01', utc=True),
                     end=pd.to_datetime('2017-10-02', utc=True),
                     # output=out
