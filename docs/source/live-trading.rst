@@ -16,13 +16,13 @@ The exchanges available for backtesting are fully supported in live mode:
 - Bittrex, id = ``bittrex``
 - Poloniex, id = ``poloniex``
 
-Additionally, we have successfully tested the following exchanges:
+Additionally, we have successfully tested in live mode the following exchanges :
 
 - Binance, id = ``binance``
 - GDAX, id = ``gdax``
 
 As Catalyst is currently in Alpha and in under active development, you are 
-encouraged to throughly test any exchange in *paper trading* mode before trading
+encouraged to thoroughly test any exchange in *paper trading* mode before trading
 *live* with it.
 
 Paper Trading vs Live Trading modes
