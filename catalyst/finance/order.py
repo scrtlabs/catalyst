@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import math
+import numpy as np
 import uuid
 
 from six import text_type
@@ -59,7 +60,7 @@ class Order(object):
         """
 
         # get a string representation of the uuid.
-        self.id = self.make_id() if id is None else id
+        self.id = self.make_id(asset) if id is None else id
         self.dt = dt
         self.reason = None
         self.created = dt
@@ -76,7 +77,10 @@ class Order(object):
         self.type = zp.DATASOURCE_TYPE.ORDER
         self.broker_order_id = None
 
-    def make_id(self):
+    def make_id(self, asset=None):
+        if asset and asset.exchange == 'bitfinex':
+            return str(np.random.binomial(1 << 40, 0.5))
+
         return uuid.uuid4().hex
 
     def to_dict(self):
