@@ -1110,7 +1110,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             args=(order_id,))
 
     @api_method
-    def cancel_order(self, order_param, exchange_name,
+    def cancel_order(self, order_param, exchange_name=None,
                      symbol=None, params={}):
         """Cancel an open order.
 
@@ -1126,7 +1126,10 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         params: dict, optional
             Extra parameters to pass to the exchange
         """
-        exchange = self.exchanges[exchange_name]
+        if exchange_name is None:
+            exchange = list(self.exchanges.values())[0]
+        else:
+            exchange = self.exchanges[exchange_name]
 
         order_id = order_param
         if isinstance(order_param, zp.Order):
