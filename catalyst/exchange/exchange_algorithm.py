@@ -44,6 +44,7 @@ from catalyst.exchange.utils.stats_utils import \
 from catalyst.finance.execution import MarketOrder
 from catalyst.finance.performance import PerformanceTracker
 from catalyst.finance.performance.period import calc_period_stats
+from catalyst.finance.order import Order
 from catalyst.gens.tradesimulation import AlgorithmSimulator
 from catalyst.marketplace.marketplace import Marketplace
 from catalyst.utils.api_support import api_method
@@ -1110,7 +1111,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             args=(order_id,))
 
     @api_method
-    def cancel_order(self, order_param, exchange_name,
+    def cancel_order(self, order_param,
                      symbol=None, params={}):
         """Cancel an open order.
 
@@ -1126,16 +1127,26 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         params: dict, optional
             Extra parameters to pass to the exchange
         """
-        exchange = self.exchanges[exchange_name]
-
+        log.info("canceling an order")
         order_id = order_param
-        if isinstance(order_param, zp.Order):
+        if isinstance(order_param, zp.Order) or \
+                isinstance(order_param, Order):
             order_id = order_param.id
 
-        retry(
-            action=exchange.cancel_order,
-            attempts=self.attempts['cancel_order_attempts'],
-            sleeptime=self.attempts['retry_sleeptime'],
-            retry_exceptions=(ExchangeRequestError,),
-            cleanup=lambda: log.warn('cancelling order again.'),
-            args=(order_id, symbol, params))
+        if not self.simulate_orders:
+            exchange_name = [self.blotter.orders[id_order].asset.exchange
+                             for id_order in self.blotter.orders
+                             if order_id == id_order
+                             ][0]
+            exchange = self.exchanges[exchange_name]
+            retry(
+                action=exchange.cancel_order,
+                attempts=self.attempts['cancel_order_attempts'],
+                sleeptime=self.attempts['retry_sleeptime'],
+                retry_exceptions=(ExchangeRequestError,),
+                cleanup=lambda:
+                log.warn('attempting to cancel the order again'),
+                args=(order_id, symbol, params))
+            self.blotter.cancel(order_id)
+        else:
+            self.blotter.cancel(order_id)

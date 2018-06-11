@@ -76,6 +76,7 @@ from catalyst.finance.execution import (
     StopLimitOrder,
     StopOrder,
 )
+from catalyst.finance.order import Order
 from catalyst.finance.performance import PerformanceTracker
 from catalyst.finance.asset_restrictions import Restrictions
 from catalyst.finance.cancel_policy import NeverCancel, CancelPolicy
@@ -2104,7 +2105,8 @@ class TradingAlgorithm(object):
             The order_id or order object to cancel.
         """
         order_id = order_param
-        if isinstance(order_param, catalyst.protocol.Order):
+        if isinstance(order_param, catalyst.protocol.Order) or \
+                isinstance(order_param, Order):
             order_id = order_param.id
 
         self.blotter.cancel(order_id)
