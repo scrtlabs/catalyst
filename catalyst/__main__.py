@@ -14,8 +14,7 @@ from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.utils.exchange_utils import delete_algo_folder
 from catalyst.utils.cli import Date, Timestamp
 from catalyst.utils.run_algo import _run, load_extensions
-
-from catalyst.constants import SUPPORTED_EXCHANGES
+from catalyst.exchange.utils.bundle_utils import EXCHANGE_NAMES
 
 try:
     __IPYTHON__
@@ -587,9 +586,12 @@ def ingest_exchange(ctx, exchange_name, data_frequency, start, end,
 
     if exchange_name is None:
         ctx.fail("must specify an exchange name '-x'")
-    if exchange_name not in SUPPORTED_EXCHANGES:
-        ctx.fail("ingest-exchange does not support {}, please choose exchange from: {}".format(exchange_name,
-                                                                                               SUPPORTED_EXCHANGES))
+    if exchange_name not in EXCHANGE_NAMES:
+        ctx.fail(
+            "ingest-exchange does not support {}, "
+            "please choose exchange from: {}".format(
+                exchange_name,
+                EXCHANGE_NAMES))
 
     exchange_bundle = ExchangeBundle(exchange_name)
 
@@ -869,6 +871,32 @@ def register(ctx):
     """
     marketplace = Marketplace()
     marketplace.register()
+
+@marketplace.command()
+@click.option(
+    '--dataset',
+    default=None,
+    help='The name of the dataset to ingest from the Data Marketplace.',
+)
+@click.pass_context
+def get_withdraw_amount(ctx, dataset):
+    """Get withdraw amount owner is entitled to.
+    """
+    marketplace = Marketplace()
+    marketplace.get_withdraw_amount(dataset)
+
+@marketplace.command()
+@click.option(
+    '--dataset',
+    default=None,
+    help='The name of the dataset to ingest from the Data Marketplace.',
+)
+@click.pass_context
+def withdraw(ctx, dataset):
+    """Withdraw amount you are entitled to.
+    """
+    marketplace = Marketplace()
+    marketplace.withdraw(dataset)
 
 
 @marketplace.command()

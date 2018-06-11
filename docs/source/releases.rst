@@ -2,6 +2,21 @@
 Release Notes
 =============
 
+Version 0.5.13
+^^^^^^^^^^^^^^
+**Release Date**: 2018-06-07
+
+Build
+~~~~~
+- Added functions to marketplace client to get withdraw amount entitled to
+  and to withdraw ENG as well.
+- Updates to handle web3 upgrade on the marketplace.
+
+Bug Fixes
+~~~~~~~~~
+- Pull request :issue:`334`.
+- Raise error when trying to ingest non existing data.
+
 Version 0.5.12
 ^^^^^^^^^^^^^^
 **Release Date**: 2018-05-23

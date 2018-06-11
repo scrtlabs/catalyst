@@ -30,6 +30,7 @@ from catalyst.exchange.utils.datetime_utils import from_ms_timestamp, \
     get_periods_range
 from catalyst.finance.order import Order, ORDER_STATUS
 from catalyst.finance.transaction import Transaction
+from redo import retry
 
 log = Logger('CCXT', level=LOG_LEVEL)
 
@@ -81,6 +82,12 @@ class CCXT(Exchange):
         self.low_balance_threshold = 0.1
         self.request_cpt = dict()
         self._common_symbols = dict()
+
+        # Operations with retry features
+        self.attempts = dict(
+            missing_order_attempts=5,
+            retry_sleeptime=5,
+        )
 
         self.bundle = ExchangeBundle(self.name)
         self.markets = None
@@ -837,8 +844,9 @@ class CCXT(Exchange):
         :param adj_amount: int
         :return: missing_order: Order/ None
         """
+        symbol = asset.asset_name.replace(' ', '')
         missing_order_id, missing_order = self._fetch_missing_order(
-            dt_before=dt_before, symbol=asset.asset_name)
+            dt_before=dt_before, symbol=symbol)
 
         if missing_order_id:
             final_amount = adj_amount if amount > 0 else -adj_amount
@@ -908,9 +916,15 @@ class CCXT(Exchange):
                 'an order on {} / {}\n Checking if an order was filled '
                 'during the timeout'.format(self.name, symbol)
             )
-
-            missing_order = self._handle_request_timeout(
-                before_order_dt, asset, amount, is_buy, style, adj_amount
+            missing_order = retry(
+                action=self._handle_request_timeout,
+                attempts=self.attempts['missing_order_attempts'],
+                sleeptime=self.attempts['retry_sleeptime'],
+                retry_exceptions=(RequestTimeout, ExchangeError),
+                cleanup=lambda: log.warn('Checking missing order again..'),
+                args=(
+                    before_order_dt, asset, amount, is_buy, style, adj_amount
+                )
             )
             if missing_order is None:
                 # no order was found
@@ -920,6 +934,7 @@ class CCXT(Exchange):
                     'We encourage you to report any issue on GitHub: '
                     'https://github.com/enigmampc/catalyst/issues'
                 )
+                # In order to try ordering again
                 raise ExchangeRequestError(error=e)
             else:
                 return missing_order
