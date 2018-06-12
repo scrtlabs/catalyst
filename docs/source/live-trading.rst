@@ -138,7 +138,7 @@ algorithm for live trading. The same algorithm should work in
 backtest and live execution mode without modification.
 
 What differs are the arguments provided to the catalyst client or
-`run_algorithm()` interface. Here is the same example in both interfaces:
+``run_algorithm()`` interface. Here is the same example in both interfaces:
 
 .. code-block:: bash
 
@@ -227,3 +227,9 @@ from the exchanges.
 Currently, in paper trading and backtest modes the commissions are reduced
 **always** from the quote currency defined on the algorithm (we will align
 these modes in the future with live mode).
+
+
+.. note::
+
+    In live mode, as in backtest, at the end of the algorithm run (by reaching a predefined end date
+    or by receiving a CTRL+C interrupt) the ``analyze`` function is being called.
