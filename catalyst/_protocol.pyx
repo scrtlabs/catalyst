@@ -304,7 +304,10 @@ cdef class BarData:
         the current trade bar.  If there is no current trade bar, NaN is
         returned.
 
+        In live mode, "volume", "close" and "price" are the only available fields.
+
         In live mode, "volume" returns the last 24 hour trading volume.
+
         """
         multiple_assets = _is_iterable(assets)
         multiple_fields = _is_iterable(fields)
