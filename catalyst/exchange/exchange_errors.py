@@ -272,7 +272,7 @@ class NoValueForField(ZiplineError):
 
 class OrderTypeNotSupported(ZiplineError):
     msg = (
-        'Order type `{order_type}` not currency supported by Catalyst. '
+        'Order type `{order_type}` currently not supported by Catalyst. '
         'Please use `limit` or `market` orders only.'
     ).strip()
 
