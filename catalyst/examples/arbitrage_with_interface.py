@@ -3,8 +3,7 @@ from logbook import Logger
 from catalyst.api import (
     record,
     order,
-    symbol,
-    get_open_orders
+    symbol
 )
 from catalyst.exchange.utils.stats_utils import get_pretty_stats
 from catalyst.utils.run_algo import run_algorithm
@@ -200,12 +199,11 @@ def handle_data(context, data):
     for exchange in context.trading_pairs:
         asset = context.trading_pairs[exchange]
 
-        orders = get_open_orders(asset)
-        if orders:
+        if asset in context.blotter.open_orders:
             log.info(
                 'found {order_count} open orders on {exchange_name} '
                 'skipping bar until all open orders execute'.format(
-                    order_count=len(orders),
+                    order_count=len(context.blotter.open_orders(asset)),
                     exchange_name=exchange.name
                 )
             )
