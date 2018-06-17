@@ -729,7 +729,12 @@ class CCXT(Exchange):
 
         limit_price = price if order_type == 'limit' else None
 
-        executed_price = order_status['cost'] / order_status['amount']
+        if 'price' in order_status:
+            executed_price = order_status['price']
+        elif 'cost' in order_status and "amount" in order_status:
+            executed_price = order_status['cost'] / order_status['amount']
+        else:
+            executed_price = None
         commission = order_status['fee']
         date = from_ms_timestamp(order_status['timestamp'])
 
@@ -1143,6 +1148,25 @@ class CCXT(Exchange):
         return transactions
 
     def get_order(self, order_id, asset_or_symbol=None, return_price=False):
+        """Lookup an order based on the order id returned from one of the
+        order functions.
+
+        Parameters
+        ----------
+        order_id : str
+            The unique identifier for the order.
+        asset_or_symbol: Asset or str
+            The asset or the tradingPair symbol of the order.
+        return_price: bool
+            get the trading price in addition to the order
+
+        Returns
+        -------
+        order : Order
+            The order object.
+        execution_price: float
+            The execution price per unit of the order if return_price is True
+        """
         if asset_or_symbol is None:
             log.debug(
                 'order not found in memory, the request might fail '
