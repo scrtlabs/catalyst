@@ -122,7 +122,7 @@ Here are some examples:
 
   # With Bittrex
   ethereum_bitcoin_asset = symbol('eth_btc')
-  neo_ethereum_asset = symbol('neo_eth)
+  neo_ethereum_asset = symbol('neo_eth')
 
 Note that the trading pairs are always referenced in the same manner.
 However, not all trading pairs are available on all exchanges. An
