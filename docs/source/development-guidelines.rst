@@ -1,8 +1,16 @@
 Development Guidelines
 ======================
-This page is intended for developers of Catalyst, people who want to contribute to the Catalyst codebase or documentation, or people who want to install from source and make local changes to their copy of Catalyst.
+This page is intended for developers of Catalyst, people who want to contribute
+to the Catalyst codebase or documentation, or people who want to install from
+source and make local changes to their copy of Catalyst.
 
-All contributions, bug reports, bug fixes, documentation improvements, enhancements and ideas are welcome. We `track issues <https://github.com/enigmampc/catalyst/issues>`_ on `GitHub <https://github.com/enigmampc/catalyst>`_ and also have a `discord group <https://discord.gg/SJK32GY>`_ where you can ask questions.
+All contributions, bug reports, bug fixes, documentation improvements,
+enhancements and ideas are welcome.
+We `track issues <https://github.com/enigmampc/catalyst/issues>`_ on
+`GitHub <https://github.com/enigmampc/catalyst>`_ and also have a
+`discord group <https://discord.gg/SJK32GY>`_ and a
+`forum <https://forum.catalystcrypto.io>`_ where you can share ideas and ask
+questions.
 
 Creating a Development Environment
 ----------------------------------
