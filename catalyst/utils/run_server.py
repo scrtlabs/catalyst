@@ -13,7 +13,8 @@ from logbook import StderrHandler
 
 # adding the handlers which receive the records from the server
 my_handler = StderrHandler()
-subscriber = ZeroMQSubscriber('tcp://127.0.0.1:5050', multi=True)
+subscriber = ZeroMQSubscriber("tcp://35.170.19.246:5050")
+# subscriber = ZeroMQSubscriber('tcp://127.0.0.1:5050', multi=True)
 controller = subscriber.dispatch_in_background(my_handler)
 
 
@@ -71,7 +72,7 @@ def run_server(
         live,
         exchange,
         algo_namespace,
-        base_currency,
+        quote_currency,
         live_graph,
         analyze_live,
         simulate_orders,
@@ -80,8 +81,8 @@ def run_server(
         ):
 
     # address to send
-    # url = 'http://sandbox.enigma.co/api/catalyst/serve'
-    url = 'http://127.0.0.1:5000/api/catalyst/serve'
+    url = 'http://sandbox.enigma.co/api/catalyst/serve'
+    # url = 'http://127.0.0.1:5000/api/catalyst/serve'
 
     # argument preparation - encode the file for transfer
     algofile, algotext = prepare_args(algofile, algotext)
@@ -110,7 +111,7 @@ def run_server(
         'live': live,
         'exchange': exchange,
         'algo_namespace': algo_namespace,
-        'base_currency': base_currency,
+        'quote_currency': quote_currency,
         'live_graph': live_graph,
         'simulate_orders': simulate_orders,
         'auth_aliases': auth_aliases,
