@@ -729,7 +729,10 @@ class CCXT(Exchange):
 
         limit_price = price if order_type == 'limit' else None
 
-        executed_price = order_status['cost'] / order_status['amount']
+        if "cost" in order_status and "amount" in order_status:
+            executed_price = order_status['cost'] / order_status['amount']
+        else:
+            executed_price = None
         commission = order_status['fee']
         date = from_ms_timestamp(order_status['timestamp'])
 
