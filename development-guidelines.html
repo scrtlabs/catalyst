@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Development Guidelines &mdash; Catalyst 0.5.13 documentation</title>
+  <title>Development Guidelines &mdash; Catalyst 0.5.12 documentation</title>
   
 
   
@@ -30,7 +30,10 @@
   
 
   
-    <link rel="top" title="Catalyst 0.5.13 documentation" href="index.html"/>
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="Catalyst 0.5.12 documentation" href="index.html"/>
         <link rel="next" title="Release Notes" href="releases.html"/>
         <link rel="prev" title="Resources" href="resources.html"/> 
 
@@ -162,7 +165,7 @@
 <li class="toctree-l2"><a class="reference internal" href="resources.html#related-3rd-party-apis">Related 3rd Party APIs</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Development Guidelines</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Development Guidelines</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#creating-a-development-environment">Creating a Development Environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#development-with-docker">Development with Docker</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#git-branching-structure">Git Branching Structure</a></li>
@@ -172,142 +175,147 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="releases.html">Release Notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-13">Version 0.5.13</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-14">Version 0.5.14</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#build">Build</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#bug-fixes">Bug Fixes</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-12">Version 0.5.12</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-13">Version 0.5.13</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id1">Build</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id2">Bug Fixes</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-12">Version 0.5.12</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id3">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id4">Bug Fixes</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-11">Version 0.5.11</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id3">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id5">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-10">Version 0.5.10</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id4">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id5">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-9">Version 0.5.9</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#documentation">Documentation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id6">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id7">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-8">Version 0.5.8</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-9">Version 0.5.9</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#documentation">Documentation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id8">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id9">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-7">Version 0.5.7</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id9">Build</a></li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-8">Version 0.5.8</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id10">Bug Fixes</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-6">Version 0.5.6</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-7">Version 0.5.7</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id11">Build</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id12">Bug Fixes</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-6">Version 0.5.6</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id13">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id14">Bug Fixes</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-5">Version 0.5.5</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id13">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id15">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-4">Version 0.5.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id14">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id15">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id16">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id16">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id17">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id18">Documentation</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-3">Version 0.5.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id17">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id19">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-2">Version 0.5.2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id18">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id20">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-1">Version 0.5.1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id19">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id20">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-7">Version 0.4.7</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id21">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id22">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-6">Version 0.4.6</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-7">Version 0.4.7</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id23">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id24">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-5">Version 0.4.5</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-6">Version 0.4.6</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id25">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id26">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-4">Version 0.4.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id26">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-3">Version 0.4.3</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-5">Version 0.4.5</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id27">Bug Fixes</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-2">Version 0.4.2</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-4">Version 0.4.4</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id28">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id29">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-3">Version 0.4.3</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id29">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-2">Version 0.4.2</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id30">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id31">Build</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-0">Version 0.4.0</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id30">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id31">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#version-0-3-10">Version 0.3.10</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id32">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id33">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#version-0-3-10">Version 0.3.10</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id34">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-9">Version 0.3.9</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id33">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id34">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id35">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id36">Build</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-8">Version 0.3.8</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id35">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id37">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-7">Version 0.3.7</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id36">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id37">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id38">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id39">Build</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-6">Version 0.3.6</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id38">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id40">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-5">Version 0.3.5</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id39">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id41">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-4">Version 0.3.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id40">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id41">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id42">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id42">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id43">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id44">Documentation</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-3">Version 0.3.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id44">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id45">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-2">Version 0.3.2</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id46">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id47">Build</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-1">Version 0.3.1</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-2">Version 0.3.2</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="releases.html#id48">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id49">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-1">Version 0.3.1</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id50">Bug Fixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3">Version 0.3</a></li>
@@ -373,7 +381,7 @@
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="_sources/development-guidelines.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/development-guidelines.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -384,11 +392,19 @@
             
   <div class="section" id="development-guidelines">
 <h1>Development Guidelines<a class="headerlink" href="#development-guidelines" title="Permalink to this headline">¶</a></h1>
-<p>This page is intended for developers of Catalyst, people who want to contribute to the Catalyst codebase or documentation, or people who want to install from source and make local changes to their copy of Catalyst.</p>
-<p>All contributions, bug reports, bug fixes, documentation improvements, enhancements and ideas are welcome. We <a class="reference external" href="https://github.com/enigmampc/catalyst/issues">track issues</a> on <a class="reference external" href="https://github.com/enigmampc/catalyst">GitHub</a> and also have a <a class="reference external" href="https://discord.gg/SJK32GY">discord group</a> where you can ask questions.</p>
+<p>This page is intended for developers of Catalyst, people who want to contribute
+to the Catalyst codebase or documentation, or people who want to install from
+source and make local changes to their copy of Catalyst.</p>
+<p>All contributions, bug reports, bug fixes, documentation improvements,
+enhancements and ideas are welcome.
+We <a class="reference external" href="https://github.com/enigmampc/catalyst/issues">track issues</a> on
+<a class="reference external" href="https://github.com/enigmampc/catalyst">GitHub</a> and also have a
+<a class="reference external" href="https://discord.gg/SJK32GY">discord group</a> and a
+<a class="reference external" href="https://forum.catalystcrypto.io">forum</a> where you can share ideas and ask
+questions.</p>
 <div class="section" id="creating-a-development-environment">
 <h2>Creating a Development Environment<a class="headerlink" href="#creating-a-development-environment" title="Permalink to this headline">¶</a></h2>
-<p>First, you&#8217;ll need to clone Catalyst by running:</p>
+<p>First, you’ll need to clone Catalyst by running:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>git clone git@github.com:enigmampc/catalyst.git
 </pre></div>
 </div>
@@ -396,7 +412,7 @@
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>git checkout -b some-short-descriptive-name
 </pre></div>
 </div>
-<p>If you don&#8217;t already have them, you&#8217;ll need some C library dependencies. You can follow the <a class="reference external" href="install.html">install guide</a> to get the appropriate dependencies.</p>
+<p>If you don’t already have them, you’ll need some C library dependencies. You can follow the <a class="reference external" href="install.html">install guide</a> to get the appropriate dependencies.</p>
 <p>The following section assumes you already have virtualenvwrapper and pip installed on your system. Suggested installation of Python library dependencies used for development:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>mkvirtualenv catalyst
 <span class="nv">$ </span>./etc/ordered_pip.sh ./etc/requirements.txt
@@ -411,7 +427,7 @@
 </div>
 <div class="section" id="development-with-docker">
 <h2>Development with Docker<a class="headerlink" href="#development-with-docker" title="Permalink to this headline">¶</a></h2>
-<p>If you want to work with zipline using a <a class="reference external" href="https://docs.docker.com/get-started/">Docker</a> container, you&#8217;ll need to
+<p>If you want to work with zipline using a <a class="reference external" href="https://docs.docker.com/get-started/">Docker</a> container, you’ll need to
 build the <code class="docutils literal"><span class="pre">Dockerfile</span></code> in the Zipline root directory, and then build
 <code class="docutils literal"><span class="pre">Dockerfile-dev</span></code>. Instructions for building both containers can be found in
 <code class="docutils literal"><span class="pre">Dockerfile</span></code> and <code class="docutils literal"><span class="pre">Dockerfile-dev</span></code>, respectively.</p>
@@ -423,7 +439,7 @@ build the <code class="docutils literal"><span class="pre">Dockerfile</span></co
 </div>
 <div class="section" id="contributing-to-the-docs">
 <h2>Contributing to the Docs<a class="headerlink" href="#contributing-to-the-docs" title="Permalink to this headline">¶</a></h2>
-<p>If you&#8217;d like to contribute to the documentation on enigmampc.github.io, you can navigate to <code class="docutils literal"><span class="pre">docs/source/</span></code> where each <a class="reference external" href="https://en.wikipedia.org/wiki/ReStructuredText">reStructuredText</a> file is a separate section there. To add a section, create a new file called <code class="docutils literal"><span class="pre">some-descriptive-name.rst</span></code> and add <code class="docutils literal"><span class="pre">some-descriptive-name</span></code> to <code class="docutils literal"><span class="pre">index.rst</span></code>. To edit a section, simply open up one of the existing files, make your changes, and save them.</p>
+<p>If you’d like to contribute to the documentation on enigmampc.github.io, you can navigate to <code class="docutils literal"><span class="pre">docs/source/</span></code> where each <a class="reference external" href="https://en.wikipedia.org/wiki/ReStructuredText">reStructuredText</a> file is a separate section there. To add a section, create a new file called <code class="docutils literal"><span class="pre">some-descriptive-name.rst</span></code> and add <code class="docutils literal"><span class="pre">some-descriptive-name</span></code> to <code class="docutils literal"><span class="pre">index.rst</span></code>. To edit a section, simply open up one of the existing files, make your changes, and save them.</p>
 <p>We use <a class="reference external" href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> to generate documentation for Catalyst, which you will need to install by running:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pip install -r ./etc/requirements_docs.txt
 </pre></div>
@@ -530,7 +546,7 @@ the algorithm has little cash on hand.
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.5.13',
+            VERSION:'0.5.12',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
