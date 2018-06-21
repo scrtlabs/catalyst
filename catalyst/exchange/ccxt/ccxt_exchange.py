@@ -30,6 +30,7 @@ from catalyst.exchange.utils.datetime_utils import from_ms_timestamp, \
     get_periods_range
 from catalyst.finance.order import Order, ORDER_STATUS
 from catalyst.finance.transaction import Transaction
+from redo import retry
 
 log = Logger('CCXT', level=LOG_LEVEL)
 
@@ -81,6 +82,12 @@ class CCXT(Exchange):
         self.low_balance_threshold = 0.1
         self.request_cpt = dict()
         self._common_symbols = dict()
+
+        # Operations with retry features
+        self.attempts = dict(
+            missing_order_attempts=5,
+            retry_sleeptime=5,
+        )
 
         self.bundle = ExchangeBundle(self.name)
         self.markets = None
@@ -722,7 +729,12 @@ class CCXT(Exchange):
 
         limit_price = price if order_type == 'limit' else None
 
-        executed_price = order_status['cost'] / order_status['amount']
+        if 'price' in order_status:
+            executed_price = order_status['price']
+        elif 'cost' in order_status and "amount" in order_status:
+            executed_price = order_status['cost'] / order_status['amount']
+        else:
+            executed_price = None
         commission = order_status['fee']
         date = from_ms_timestamp(order_status['timestamp'])
 
@@ -837,8 +849,9 @@ class CCXT(Exchange):
         :param adj_amount: int
         :return: missing_order: Order/ None
         """
+        symbol = asset.asset_name.replace(' ', '')
         missing_order_id, missing_order = self._fetch_missing_order(
-            dt_before=dt_before, symbol=asset.asset_name)
+            dt_before=dt_before, symbol=symbol)
 
         if missing_order_id:
             final_amount = adj_amount if amount > 0 else -adj_amount
@@ -908,9 +921,15 @@ class CCXT(Exchange):
                 'an order on {} / {}\n Checking if an order was filled '
                 'during the timeout'.format(self.name, symbol)
             )
-
-            missing_order = self._handle_request_timeout(
-                before_order_dt, asset, amount, is_buy, style, adj_amount
+            missing_order = retry(
+                action=self._handle_request_timeout,
+                attempts=self.attempts['missing_order_attempts'],
+                sleeptime=self.attempts['retry_sleeptime'],
+                retry_exceptions=(RequestTimeout, ExchangeError),
+                cleanup=lambda: log.warn('Checking missing order again..'),
+                args=(
+                    before_order_dt, asset, amount, is_buy, style, adj_amount
+                )
             )
             if missing_order is None:
                 # no order was found
@@ -920,6 +939,7 @@ class CCXT(Exchange):
                     'We encourage you to report any issue on GitHub: '
                     'https://github.com/enigmampc/catalyst/issues'
                 )
+                # In order to try ordering again
                 raise ExchangeRequestError(error=e)
             else:
                 return missing_order
@@ -998,11 +1018,6 @@ class CCXT(Exchange):
         updated_currency = self._check_common_symbols(currency)
         return super(CCXT, self)._check_low_balance(updated_currency, balances,
                                                     amount)
-
-    def _check_position_balance(self, currency, balances, amount):
-        updated_currency = self._check_common_symbols(currency)
-        return super(CCXT, self)._check_position_balance(updated_currency,
-                                                         balances, amount)
 
     def _process_order_fallback(self, order):
         """
@@ -1128,6 +1143,25 @@ class CCXT(Exchange):
         return transactions
 
     def get_order(self, order_id, asset_or_symbol=None, return_price=False):
+        """Lookup an order based on the order id returned from one of the
+        order functions.
+
+        Parameters
+        ----------
+        order_id : str
+            The unique identifier for the order.
+        asset_or_symbol: Asset or str
+            The asset or the tradingPair symbol of the order.
+        return_price: bool
+            get the trading price in addition to the order
+
+        Returns
+        -------
+        order : Order
+            The order object.
+        execution_price: float
+            The execution price per unit of the order if return_price is True
+        """
         if asset_or_symbol is None:
             log.debug(
                 'order not found in memory, the request might fail '

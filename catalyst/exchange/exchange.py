@@ -682,24 +682,6 @@ class Exchange:
         """
         In order to avoid spending money that the user doesn't own,
         we are comparing to the balance on the account.
-        :param currency: str
-        :param balances: dict
-        :param amount: float
-        :return: free: float,
-                       bool
-        """
-        free = balances[currency]['free'] if currency in balances else 0.0
-
-        if free < amount:
-            return free, True
-
-        else:
-            return free, False
-
-    def _check_position_balance(self, currency, balances, amount):
-        """
-        In order to avoid spending money that the user doesn't own,
-        we are comparing to the balance on the account.
         For positions, we want to avoid double updates, since, exchanges
         update positions when the order is opened as used, catalyst wants
         to take them into consideration, therefore running comparison on total.
@@ -732,17 +714,17 @@ class Exchange:
             Check balances amounts against the exchange.
 
         """
-        free_cash = 0.0
+        total_cash = 0.0
         if check_balances:
             log.debug('fetching {} balances'.format(self.name))
             balances = self.get_balances()
             log.debug(
-                'got free balances for {} currencies'.format(
+                'got balances for {} currencies'.format(
                     len(balances)
                 )
             )
             if cash is not None:
-                free_cash, is_lower = self._check_low_balance(
+                total_cash, is_lower = self._check_low_balance(
                     currency=self.quote_currency,
                     balances=balances,
                     amount=cash,
@@ -751,7 +733,7 @@ class Exchange:
                     raise NotEnoughCashError(
                         currency=self.quote_currency,
                         exchange=self.name,
-                        free=free_cash,
+                        total=total_cash,
                         cash=cash,
                     )
 
@@ -782,7 +764,7 @@ class Exchange:
                 position.last_sale_date = ticker['last_traded']
 
                 if check_balances:
-                    total, is_lower = self._check_position_balance(
+                    total, is_lower = self._check_low_balance(
                         currency=asset.base_currency,
                         balances=balances,
                         amount=position.amount,
@@ -800,7 +782,7 @@ class Exchange:
                 positions_value += \
                     position.amount * position.last_sale_price
 
-        return free_cash, positions_value
+        return total_cash, positions_value
 
     def order(self, asset, amount, style):
         """Place an order.

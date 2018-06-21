@@ -16,13 +16,13 @@ The exchanges available for backtesting are fully supported in live mode:
 - Bittrex, id = ``bittrex``
 - Poloniex, id = ``poloniex``
 
-Additionally, we have successfully tested the following exchanges:
+Additionally, we have successfully tested in live mode the following exchanges :
 
 - Binance, id = ``binance``
 - GDAX, id = ``gdax``
 
 As Catalyst is currently in Alpha and in under active development, you are 
-encouraged to throughly test any exchange in *paper trading* mode before trading
+encouraged to thoroughly test any exchange in *paper trading* mode before trading
 *live* with it.
 
 Paper Trading vs Live Trading modes
@@ -122,7 +122,7 @@ Here are some examples:
 
   # With Bittrex
   ethereum_bitcoin_asset = symbol('eth_btc')
-  neo_ethereum_asset = symbol('neo_eth)
+  neo_ethereum_asset = symbol('neo_eth')
 
 Note that the trading pairs are always referenced in the same manner.
 However, not all trading pairs are available on all exchanges. An
@@ -138,7 +138,7 @@ algorithm for live trading. The same algorithm should work in
 backtest and live execution mode without modification.
 
 What differs are the arguments provided to the catalyst client or
-`run_algorithm()` interface. Here is the same example in both interfaces:
+``run_algorithm()`` interface. Here is the same example in both interfaces:
 
 .. code-block:: bash
 
@@ -227,3 +227,9 @@ from the exchanges.
 Currently, in paper trading and backtest modes the commissions are reduced
 **always** from the quote currency defined on the algorithm (we will align
 these modes in the future with live mode).
+
+
+.. note::
+
+    In live mode, as in backtest, at the end of the algorithm run (by reaching a predefined end date
+    or by receiving a CTRL+C interrupt) the ``analyze`` function is being called.
