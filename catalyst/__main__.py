@@ -586,7 +586,7 @@ def ingest_exchange(ctx, exchange_name, data_frequency, start, end,
 
     if exchange_name is None:
         ctx.fail("must specify an exchange name '-x'")
-    if exchange_name not in EXCHANGE_NAMES:
+    if not csv and exchange_name not in EXCHANGE_NAMES:
         ctx.fail(
             "ingest-exchange does not support {}, "
             "please choose exchange from: {}".format(
