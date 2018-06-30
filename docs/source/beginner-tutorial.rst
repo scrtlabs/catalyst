@@ -241,9 +241,9 @@ the available options:
                                         is '-' the perf will be written to stdout.
                                         [default: -]
         --print-algo / --no-print-algo  Print the algorithm to stdout.
-        -x, --exchange-name [poloniex|bitfinex|bittrex]
+        -x, --exchange-name [poloniex|bitfinex|bittrex|binance]
                                         The name of the targeted exchange
-                                        (supported: bitfinex, bittrex, poloniex).
+                                        (supported: binance, bitfinex, bittrex, poloniex).
         -n, --algo-namespace TEXT       A label assigned to the algorithm for data
                                         storage purposes.
         -c, --quote-currency TEXT        The quote currency used to calculate

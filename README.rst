@@ -15,7 +15,7 @@ Catalyst is an algorithmic trading library for crypto-assets written in Python.
 It allows trading strategies to be easily expressed and backtested against 
 historical data (with daily and minute resolution), providing analytics and 
 insights regarding a particular strategy's performance. Catalyst also supports
-live-trading of crypto-assets starting with three exchanges (Bitfinex, Bittrex, 
+live-trading of crypto-assets starting with four exchanges (Binance, Bitfinex, Bittrex,
 and Poloniex) with more being added over time. Catalyst empowers users to share 
 and curate data and build profitable, data-driven investment strategies. Please 
 visit `catalystcrypto.io <https://www.catalystcrypto.io>`_ to learn more about Catalyst.
@@ -38,7 +38,7 @@ Overview
    provided.
 -  Support for several of the top crypto-exchanges by trading volume:
    `Bitfinex <https://www.bitfinex.com>`_, `Bittrex <http://www.bittrex.com>`_,
-   and `Poloniex <https://www.poloniex.com>`_. 
+   `Poloniex <https://www.poloniex.com>`_ and `Binance <https://www.binance.com/>`_.
 -  Secure: You and only you have access to each exchange API keys for your accounts.
 -  Input of historical pricing data of all crypto-assets by exchange, 
    with daily and minute resolution. See 

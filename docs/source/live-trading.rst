@@ -12,13 +12,13 @@ The most supported exchanges are as follows:
 
 The exchanges available for backtesting are fully supported in live mode:
 
+- Binance, id = ``binance``
 - Bitfinex, id = ``bitfinex``
 - Bittrex, id = ``bittrex``
 - Poloniex, id = ``poloniex``
 
-Additionally, we have successfully tested in live mode the following exchanges :
+Additionally, we have successfully tested in live mode the following exchanges:
 
-- Binance, id = ``binance``
 - GDAX, id = ``gdax``
 
 As Catalyst is currently in Alpha and in under active development, you are 
