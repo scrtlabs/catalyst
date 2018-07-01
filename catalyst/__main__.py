@@ -14,6 +14,7 @@ from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.utils.exchange_utils import delete_algo_folder
 from catalyst.utils.cli import Date, Timestamp
 from catalyst.utils.run_algo import _run, load_extensions
+from catalyst.exchange.utils.bundle_utils import EXCHANGE_NAMES
 
 try:
     __IPYTHON__
@@ -400,14 +401,14 @@ def catalyst_magic(line, cell=None):
 @click.option(
     '-s',
     '--start',
-    type=Date(tz='utc', as_timestamp=True),
+    type=Date(tz='utc', as_timestamp=False),
     help='An optional future start date at '
          'which the algorithm will start at live',
 )
 @click.option(
     '-e',
     '--end',
-    type=Date(tz='utc', as_timestamp=True),
+    type=Date(tz='utc', as_timestamp=False),
     help='An optional end date at which to stop the execution.',
 )
 @click.option(
@@ -444,6 +445,7 @@ def live(ctx,
          exchange_name,
          algo_namespace,
          quote_currency,
+         start,
          end,
          live_graph,
          auth_aliases,
@@ -487,7 +489,7 @@ def live(ctx,
         data=None,
         bundle=None,
         bundle_timestamp=None,
-        start=None,
+        start=start,
         end=end,
         output=output,
         print_algo=print_algo,
@@ -584,6 +586,12 @@ def ingest_exchange(ctx, exchange_name, data_frequency, start, end,
 
     if exchange_name is None:
         ctx.fail("must specify an exchange name '-x'")
+    if not csv and exchange_name not in EXCHANGE_NAMES:
+        ctx.fail(
+            "ingest-exchange does not support {}, "
+            "please choose exchange from: {}".format(
+                exchange_name,
+                EXCHANGE_NAMES))
 
     exchange_bundle = ExchangeBundle(exchange_name)
 
@@ -863,6 +871,32 @@ def register(ctx):
     """
     marketplace = Marketplace()
     marketplace.register()
+
+@marketplace.command()
+@click.option(
+    '--dataset',
+    default=None,
+    help='The name of the dataset to ingest from the Data Marketplace.',
+)
+@click.pass_context
+def get_withdraw_amount(ctx, dataset):
+    """Get withdraw amount owner is entitled to.
+    """
+    marketplace = Marketplace()
+    marketplace.get_withdraw_amount(dataset)
+
+@marketplace.command()
+@click.option(
+    '--dataset',
+    default=None,
+    help='The name of the dataset to ingest from the Data Marketplace.',
+)
+@click.pass_context
+def withdraw(ctx, dataset):
+    """Withdraw amount you are entitled to.
+    """
+    marketplace = Marketplace()
+    marketplace.withdraw(dataset)
 
 
 @marketplace.command()

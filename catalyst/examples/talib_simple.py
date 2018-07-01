@@ -38,7 +38,6 @@ def initialize(context):
     context.ORDER_SIZE = 10
     context.SLIPPAGE_ALLOWED = 0.05
 
-    context.swallow_errors = True
     context.errors = []
 
     # Bars to look at per iteration should be bigger than SMA_SLOW

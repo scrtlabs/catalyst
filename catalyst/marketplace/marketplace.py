@@ -151,7 +151,7 @@ class Marketplace:
 
     def sign_transaction(self, tx):
 
-        url = 'https://www.mycrypto.com/#offline-transaction'
+        url = 'https://legacy.mycrypto.com/#offline-transaction'
         print('\nVisit {url} and enter the following parameters:\n\n'
               'From Address:\t\t{_from}\n'
               '\n\tClick the "Generate Information" button\n\n'
@@ -249,7 +249,7 @@ class Marketplace:
 
         address = self.choose_pubaddr()[0]
         provider_info = self.mkt_contract.functions.getDataProviderInfo(
-            Web3.toHex(dataset)
+            Web3.toHex(dataset.encode())
         ).call()
 
         if not provider_info[4]:
@@ -261,7 +261,7 @@ class Marketplace:
         price = from_grains(grains)
 
         subscribed = self.mkt_contract.functions.checkAddressSubscription(
-            address, Web3.toHex(dataset)
+            address, Web3.toHex(dataset.encode())
         ).call()
 
         if subscribed[5]:
@@ -372,7 +372,7 @@ class Marketplace:
               'Now processing second transaction.')
 
         tx = self.mkt_contract.functions.subscribe(
-            Web3.toHex(dataset),
+            Web3.toHex(dataset.encode()),
         ).buildTransaction({
             'from': address,
             'nonce': self.web3.eth.getTransactionCount(address)})
@@ -472,7 +472,7 @@ class Marketplace:
 
         # TODO: catch error conditions
         provider_info = self.mkt_contract.functions.getDataProviderInfo(
-            Web3.toHex(ds_name)
+            Web3.toHex(ds_name.encode())
         ).call()
 
         if not provider_info[4]:
@@ -483,7 +483,7 @@ class Marketplace:
         address, address_i = self.choose_pubaddr()
         fns = self.mkt_contract.functions
         check_sub = fns.checkAddressSubscription(
-            address, Web3.toHex(ds_name)
+            address, Web3.toHex(ds_name.encode())
         ).call()
 
         if check_sub[0] != address or self.to_text(check_sub[1]) != ds_name:
@@ -565,19 +565,15 @@ class Marketplace:
         bundle_folder = get_data_source_folder(ds_name)
         z = bcolz.ctable(rootdir=bundle_folder, mode='r')
 
-        # if start is not None and end is not None:
-        #     z = z.fetchwhere('(date>=start_date) & (date<end_date)', user_dict={'start_date': start.to_datetime64(),
-        #                                                                          'end_date': end.to_datetime64()})
-        # elif start is not None:
-        #     z = z.fetchwhere('(date>=start_date)', user_dict={'start_date': start.to_datetime64()})
-        # elif end is not None:
-        #     z = z.fetchwhere('(date<end_date)', user_dict={'end_date': end.to_datetime64()})
+        if start is not None and end is not None:
+            z = z.fetchwhere('(date>=start_date) & (date<end_date)', user_dict={'start_date': start.encode(),
+                                                                                 'end_date': end.encode()})
+        elif start is not None:
+            z = z.fetchwhere('(date>=start_date)', user_dict={'start_date': start.encode()})
+        elif end is not None:
+            z = z.fetchwhere('(date<end_date)', user_dict={'end_date': end.encode()})
         df = z.todataframe()  # type: pd.DataFrame
         df.set_index(['date', 'symbol'], drop=True, inplace=True)
-
-        # TODO: implement the filter more carefully
-        # if start and end is None:
-        #     df = df.xs(start, level=0)
 
         return df
 
@@ -654,7 +650,7 @@ class Marketplace:
             desc = input('Enter the name of the dataset to register: ')
             dataset = desc.lower().strip()
             provider_info = self.mkt_contract.functions.getDataProviderInfo(
-                Web3.toHex(dataset)
+                Web3.toHex(dataset.encode())
             ).call()
 
             if provider_info[4]:
@@ -714,7 +710,7 @@ class Marketplace:
         grains = to_grains(price)
 
         tx = self.mkt_contract.functions.register(
-            Web3.toHex(dataset),
+            Web3.toHex(dataset.encode()),
             grains,
             address,
         ).buildTransaction(
@@ -768,7 +764,7 @@ class Marketplace:
     def publish(self, dataset, datadir, watch):
         dataset = dataset.lower()
         provider_info = self.mkt_contract.functions.getDataProviderInfo(
-            Web3.toHex(dataset)
+            Web3.toHex(dataset.encode())
         ).call()
 
         if not provider_info[4]:
@@ -824,3 +820,125 @@ class Marketplace:
 
         print('\nDataset {} uploaded and processed successfully.'.format(
             dataset))
+
+    def get_withdraw_amount(self, dataset=None):
+
+        if dataset is None:
+
+            df_sets = self._list()
+            if df_sets.empty:
+                print('There are no datasets available yet.')
+                return
+
+            set_print_settings()
+            while True:
+                print(df_sets)
+                dataset_num = input('Choose the dataset you want to '
+                                    'get the withdraw amount for [0..{}]: '.format(
+                                        df_sets.size - 1))
+                try:
+                    dataset_num = int(dataset_num)
+                except ValueError:
+                    print('Enter a number between 0 and {}'.format(
+                        df_sets.size - 1))
+                else:
+                    if dataset_num not in range(0, df_sets.size):
+                        print('Enter a number between 0 and {}'.format(
+                            df_sets.size - 1))
+                    else:
+                        dataset = df_sets.iloc[dataset_num]['dataset']
+                        break
+
+        dataset = dataset.lower()
+
+        address = self.choose_pubaddr()[0]
+        provider_info = self.mkt_contract.functions.getDataProviderInfo(
+            Web3.toHex(dataset.encode())
+        ).call()
+
+        if not provider_info[4]:
+            print('The requested "{}" dataset is not registered in '
+                  'the Data Marketplace.'.format(dataset))
+            return
+
+        withdraw_amount = from_grains(self.mkt_contract.functions.getWithdrawAmount(Web3.toHex(dataset.encode())).call())
+        print('{} ENG'.format(withdraw_amount))
+
+    def withdraw(self, dataset=None):
+        if dataset is None:
+            df_sets = self._list()
+            if df_sets.empty:
+                print('There are no datasets available yet.')
+                return
+
+            set_print_settings()
+            while True:
+                print(df_sets)
+                dataset_num = input('Choose the dataset you want to '
+                                    'withdraw from [0..{}]: '.format(
+                    df_sets.size - 1))
+                try:
+                    dataset_num = int(dataset_num)
+                except ValueError:
+                    print('Enter a number between 0 and {}'.format(
+                        df_sets.size - 1))
+                else:
+                    if dataset_num not in range(0, df_sets.size):
+                        print('Enter a number between 0 and {}'.format(
+                            df_sets.size - 1))
+                    else:
+                        dataset = df_sets.iloc[dataset_num]['dataset']
+                        break
+
+        dataset = dataset.lower()
+
+        address = self.choose_pubaddr()[0]
+        provider_info = self.mkt_contract.functions.getDataProviderInfo(
+            Web3.toHex(dataset.encode())
+        ).call()
+
+        if not provider_info[4]:
+            print('The requested "{}" dataset is not registered in '
+                  'the Data Marketplace.'.format(dataset))
+            return
+
+        try:
+            tx = self.mkt_contract.functions.withdrawProvider(
+                Web3.toHex(dataset.encode()),
+            ).buildTransaction(
+                {'from': address,
+                 'nonce': self.web3.eth.getTransactionCount(address)}
+            )
+
+            signed_tx = self.sign_transaction(tx)
+
+            tx_hash = '0x{}'.format(
+                bin_hex(self.web3.eth.sendRawTransaction(signed_tx))
+            )
+            print(
+                '\nThis is the TxHash for this transaction: {}'.format(tx_hash)
+            )
+
+        except Exception as e:
+            print('Unable to withdraw: {}'.format(e))
+            return
+
+        self.check_transaction(tx_hash)
+
+        print('Waiting for the transaction to succeed...')
+
+        while True:
+            try:
+                if self.web3.eth.getTransactionReceipt(tx_hash).status:
+                    break
+                else:
+                    print('\nTransaction failed. Aborting...')
+                    return
+            except AttributeError:
+                pass
+            for i in range(0, 10):
+                print('.', end='', flush=True)
+                time.sleep(1)
+
+        print('\nTransaction successful!\n'
+              'You have successfully withdrawn your earned ENG\n')

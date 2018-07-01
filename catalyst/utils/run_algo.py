@@ -228,6 +228,11 @@ def _run(handle_data,
         if start is None:
             start = pd.Timestamp.utcnow()
             is_start = False
+        elif start:
+            assert pd.Timestamp.utcnow() <= start, \
+                "specified start date is in the past."
+        elif start and end:
+            assert start < end, "start date is later than end date."
 
         # TODO: fix the end data.
         # is_end checks if an end date was specified by user
@@ -278,8 +283,8 @@ def _run(handle_data,
         # We still need to support bundles for other misc data, but we
         # can handle this later.
 
-        if start != pd.tslib.normalize_date(start) or \
-                end != pd.tslib.normalize_date(end):
+        if (start and start != pd.tslib.normalize_date(start)) or \
+                (end and end != pd.tslib.normalize_date(end)):
             # todo: add to Sim_Params the option to
             # start & end at specific times
             log.warn(

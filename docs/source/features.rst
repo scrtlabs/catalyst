@@ -10,10 +10,10 @@ Current Functionality
 * Backtesting and live-trading modes to run your trading algorithms, with a 
   seamless transition between the two.
 * Paper trading simulates order in live-trading mode.
-* Support for 3 exchanges: Bitfinex, Bittrex and Poloniex in both modes 
+* Support for four exchanges: Binance, Bitfinex, Bittrex and Poloniex in both modes
   (backtesting and live-trading). Historical data for backtesting is provided 
-  with daily resolution for all three exchanges, and minute resolution for 
-  Bitfinex and Poloniex. No minute-resolution data is currently available for 
+  with daily resolution for all four exchanges, and minute resolution for
+  Binance, Bitfinex and Poloniex. No minute-resolution data is currently available for
   Bittrex. Refer to 
   `Catalyst Market Coverage <https://www.enigma.co/catalyst/status>`_ for 
   details.

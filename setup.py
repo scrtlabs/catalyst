@@ -164,7 +164,6 @@ def _filter_requirements(lines_iter, filter_names=None,
 
 
 REQ_UPPER_BOUNDS = {
-    'bcolz': '<1',
     'pandas': '<0.20',
     'empyrical': '<0.2.2',
 }
@@ -317,7 +316,8 @@ setup(
         'Topic :: Scientific/Engineering :: Information Analysis',
         'Topic :: System :: Distributed Computing',
     ],
-    install_requires=install_requires(conda_format=conda_build),
+    install_requires=install_requires(strict_bounds=True,
+                                      conda_format=conda_build),
     extras_require=extras_requires(conda_format=conda_build),
     **conditional_arguments
 )

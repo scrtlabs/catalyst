@@ -50,13 +50,17 @@ def batch_market_order(share_counts):
     """
 
 
-def cancel_order(order_param):
+def cancel_order(order_param, symbol=None, params={}):
     """Cancel an open order.
 
     Parameters
     ----------
     order_param : str or Order
         The order_id or order object to cancel.
+    symbol: str
+        The tradingPair symbol
+    params: dict, optional
+        Extra parameters to pass to the exchange
     """
 
 
@@ -209,7 +213,7 @@ def get_environment(field='platform'):
     """
 
 
-def get_order(order_id):
+def get_order(order_id, asset_or_symbol=None, return_price=False):
     """Lookup an order based on the order id returned from one of the
     order functions.
 
@@ -217,6 +221,10 @@ def get_order(order_id):
     ----------
     order_id : str
         The unique identifier for the order.
+    asset_or_symbol: Asset or str
+            The asset or the tradingPair symbol of the order.
+        return_price: bool
+            get the trading price in addition to the order
 
     Returns
     -------
