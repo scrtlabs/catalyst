@@ -13,10 +13,10 @@ from logbook import StderrHandler
 
 # adding the handlers which receive the records from the server
 my_handler = StderrHandler()
-subscriber = ZeroMQSubscriber("tcp://35.170.19.246:5050")
+subscriber = ZeroMQSubscriber(uri="tcp://34.202.72.107:5050")
 # subscriber = ZeroMQSubscriber('tcp://127.0.0.1:5050', multi=True)
 controller = subscriber.dispatch_in_background(my_handler)
-
+# subscriber.dispatch_forever()
 
 def prepare_args(file, text):
     """
@@ -81,7 +81,7 @@ def run_server(
         ):
 
     # address to send
-    url = 'http://sandbox.enigma.co/api/catalyst/serve'
+    url = 'https://sandbox2.enigma.co/api/catalyst/serve'
     # url = 'http://127.0.0.1:5000/api/catalyst/serve'
 
     # argument preparation - encode the file for transfer
@@ -123,16 +123,20 @@ def run_server(
                              json=json.dumps(
                                     json_file,
                                     default=convert_date
-                                )
+                                ),
+                             verify=False
                              )
     # close the handlers, which are not needed anymore
-    controller.stop()
+    # controller.stop()
     subscriber.close()
 
     if response.status_code == 500:
         raise Exception("issues with cloud connections, "
                         "unable to run catalyst on the cloud")
-
+    elif response.status_code == 502:
+        raise Exception("The server is down at the moment, please contact "
+                        "Catalyst support to fix this issue at "
+                        "https://github.com/enigmampc/catalyst/issues/")
     elif response.status_code == 202:
         print(response.json()['error'])
 
