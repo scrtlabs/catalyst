@@ -1,7 +1,7 @@
 # Incompatible with earlier PIP versions
 pip>=7.1.0
 # bcolz fails to install if this is not in the build_requires.
-setuptools>36.0
+setuptools==38.5.1
 
 # Logging
 Logbook==0.12.5
@@ -11,78 +11,80 @@ Logbook==0.12.5
 pytz==2016.4
 
 # FF: Upgraded numpy because of errors with version 1.11
-numpy==1.13.1
+numpy==1.14.0
 
 # for pandas-datareader
-requests-file==1.4.1
+requests-file==1.4.3
 
 # scipy and pandas are required for statsmodels,
 # statsmodels in turn is required for some pandas packages
-scipy==0.17.1
+scipy==1.0.0
 pandas==0.19.2
-pandas-datareader==0.2.1
+pandas-datareader==0.6.0
 # Needed for parts of pandas.stats
-patsy==0.4.0
-statsmodels==0.6.1
+patsy==0.5.0
+statsmodels==0.8.0
 
-python-dateutil==2.4.2
-six==1.10.0
+python-dateutil==2.7.3
+six==1.11.0
 
 # For fetching remote data
-requests==2.9.1
+requests==2.18.4
 
-Cython==0.25.2
+Cython==0.27.3
 
 # faster OrderedDict
-cyordereddict==0.2.2
+cyordereddict==1.0.0
 
 # faster array ops.
-bottleneck==1.0.0
+bottleneck==1.2.1
 
-contextlib2==0.4.0
+contextlib2==0.5.5
 
 # networkx requires decorator
-decorator==4.0.0
+decorator==4.3.0
 
 # Graph algorithms used by catalyst.pipeline
-networkx==1.9.1
+networkx==2.1
 
 # NumericalExpression pipeline terms.
-numexpr==2.6.1
+numexpr==2.6.4
 
 # On disk storage format for pipeline data.
 bcolz==1.2.1
 
 # Command line interface helper
-click==4.0.0
+click==6.7
 
 # FUNctional programming utilities
-toolz==0.8.2
-multipledispatch==0.4.8
+toolz==0.9.0
+multipledispatch==0.4.9
 
 # for alembic
-MarkupSafe==0.23
-Mako==1.0.1
+MarkupSafe==1.0
+Mako==1.0.7
 # Asset writer and finder
-sqlalchemy==1.0.8
+sqlalchemy==1.2.2
 # For asset db management
-alembic==0.7.7
+alembic==0.9.7
 
 # for intervaltree
-sortedcontainers==1.4.4
+sortedcontainers==1.5.9
 intervaltree==2.1.0
 
 # for caching
-lru-dict==1.1.4
+lru-dict==1.1.6
 
 # For financial risk calculations
 empyrical==0.2.1
 
-tables==3.3.0
+tables==3.4.2
+
+certifi==2018.1.18
 
 #Catalyst dependencies
 ccxt==1.12.131
-boto3==1.4.8
+boto3==1.5.27
 redo==1.6
-web3==4.0.0b11; python_version > '3.4'
+web3==4.2.1; python_version > '3.4'
 requests-toolbelt==0.8.0
