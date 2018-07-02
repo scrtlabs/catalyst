@@ -2,6 +2,20 @@
 Release Notes
 =============
 
+Version 0.5.15
+^^^^^^^^^^^^^^
+**Release Date**: 2018-07-02
+
+Build
+~~~~~
+- Add support for Binance historical data.
+
+Bug Fixes
+~~~~~~~~~
+- Fixed a bug preventing ingestion from a csv if specifying an unsupported
+  exchange.
+- Fixed issues with installing catalyst using pip.
+
 Version 0.5.14
 ^^^^^^^^^^^^^^
 **Release Date**: 2018-06-21
