@@ -3,9 +3,11 @@ import random
 import tempfile
 
 from catalyst.assets._assets import TradingPair
+from catalyst.exchange.exchange_bundle import ExchangeBundle
 from catalyst.exchange.utils.exchange_utils import get_exchange_folder
 from catalyst.exchange.utils.factory import find_exchanges
 from catalyst.utils.paths import ensure_directory
+
 
 
 def handle_exchange_error(exchange, e):
@@ -80,3 +82,19 @@ def output_df(df, assets, name=None):
     df.to_csv(path)
 
     return path, folder
+
+
+# Clean exchange
+def clean_exchange_bundles(exchange_name, data_freq):
+    exchange_bundle = ExchangeBundle(exchange_name)
+    exchange_bundle.clean(data_frequency=data_freq)
+
+
+# Ingest exchange
+def ingest_exchange_bundles(exchange_name, data_freq, symbols):
+    exchange_bundle = ExchangeBundle(exchange_name)
+
+    exchange_bundle.ingest(
+        include_symbols=symbols,
+        data_frequency=data_freq,
+    )

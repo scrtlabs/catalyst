@@ -43,7 +43,7 @@ from catalyst.exchange.exchange_data_portal import DataPortalExchangeLive, \
     DataPortalExchangeBacktest
 from catalyst.exchange.exchange_asset_finder import ExchangeAssetFinder
 
-from catalyst.constants import LOG_LEVEL
+from catalyst.constants import LOG_LEVEL, ALPHA_WARNING_MESSAGE
 
 log = Logger('run_algo', level=LOG_LEVEL)
 
@@ -146,12 +146,7 @@ def _run(handle_data,
         else:
             click.echo(algotext)
 
-    log.warn(
-        'Catalyst is currently in ALPHA. It is going through rapid '
-        'development and it is subject to errors. Please use carefully. '
-        'We encourage you to report any issue on GitHub: '
-        'https://github.com/enigmampc/catalyst/issues'
-    )
+    log.warn(ALPHA_WARNING_MESSAGE)
     log.info('Catalyst version {}'.format(catalyst.__version__))
     sleep(3)
 
