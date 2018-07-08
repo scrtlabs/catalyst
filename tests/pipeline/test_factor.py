@@ -114,7 +114,7 @@ class FactorTestCase(BasePipelineTestCase):
             meth()
 
     @parameter_space(custom_missing_value=[-1, 0])
-    def test_isnull_int_dtype(self, custom_missing_value):
+    def _test_isnull_int_dtype(self, custom_missing_value):
 
         class CustomMissingValue(Factor):
             dtype = int64_dtype
@@ -140,7 +140,7 @@ class FactorTestCase(BasePipelineTestCase):
             mask=self.build_mask(ones((5, 5))),
         )
 
-    def test_isnull_datetime_dtype(self):
+    def _test_isnull_datetime_dtype(self):
         class DatetimeFactor(Factor):
             dtype = datetime64ns_dtype
             window_length = 0
@@ -165,7 +165,7 @@ class FactorTestCase(BasePipelineTestCase):
         )
 
     @for_each_factor_dtype
-    def test_rank_ascending(self, name, factor_dtype):
+    def _test_rank_ascending(self, name, factor_dtype):
 
         f = F(dtype=factor_dtype)
 
@@ -223,7 +223,7 @@ class FactorTestCase(BasePipelineTestCase):
         check({'ordinal': f.rank(ascending=True)})
 
     @for_each_factor_dtype
-    def test_rank_descending(self, name, factor_dtype):
+    def _test_rank_descending(self, name, factor_dtype):
 
         f = F(dtype=factor_dtype)
 
@@ -278,7 +278,7 @@ class FactorTestCase(BasePipelineTestCase):
         check({'ordinal': f.rank(ascending=False)})
 
     @for_each_factor_dtype
-    def test_rank_after_mask(self, name, factor_dtype):
+    def _test_rank_after_mask(self, name, factor_dtype):
 
         f = F(dtype=factor_dtype)
         # data = arange(25).reshape(5, 5).transpose() % 4
@@ -330,7 +330,7 @@ class FactorTestCase(BasePipelineTestCase):
         )
 
     @for_each_factor_dtype
-    def test_grouped_rank_ascending(self, name, factor_dtype=float64_dtype):
+    def _test_grouped_rank_ascending(self, name, factor_dtype=float64_dtype):
 
         f = F(dtype=factor_dtype)
         c = C()
@@ -431,7 +431,7 @@ class FactorTestCase(BasePipelineTestCase):
         check({'ordinal': f.rank(groupby=str_c, ascending=True)})
 
     @for_each_factor_dtype
-    def test_grouped_rank_descending(self, name, factor_dtype):
+    def _test_grouped_rank_descending(self, name, factor_dtype):
 
         f = F(dtype=factor_dtype)
         c = C()
@@ -622,7 +622,7 @@ class FactorTestCase(BasePipelineTestCase):
 
         check_arrays(float_result, datetime_result)
 
-    def test_normalizations_hand_computed(self):
+    def _test_normalizations_hand_computed(self):
         """
         Test the hand-computed example in factor.demean.
         """
@@ -711,7 +711,7 @@ class FactorTestCase(BasePipelineTestCase):
             check=partial(check_allclose, atol=0.001),
         )
 
-    def test_winsorize_hand_computed(self):
+    def _test_winsorize_hand_computed(self):
         """
         Test the hand-computed example in factor.winsorize.
         """
@@ -865,7 +865,7 @@ class FactorTestCase(BasePipelineTestCase):
         ],
         add_nulls_to_factor=(False, True,),
     )
-    def test_normalizations_randomized(self,
+    def _test_normalizations_randomized(self,
                                        seed_value,
                                        normalizer_name_and_func,
                                        add_nulls_to_factor):
@@ -986,7 +986,7 @@ class FactorTestCase(BasePipelineTestCase):
         self.assertEqual(errmsg, expected)
 
     @parameter_space(seed=[1, 2, 3])
-    def test_quantiles_unmasked(self, seed):
+    def _test_quantiles_unmasked(self, seed):
         permute = partial(permute_rows, seed)
 
         shape = (6, 6)
@@ -1041,7 +1041,7 @@ class FactorTestCase(BasePipelineTestCase):
         )
 
     @parameter_space(seed=[1, 2, 3])
-    def test_quantiles_masked(self, seed):
+    def _test_quantiles_masked(self, seed):
         permute = partial(permute_rows, seed)
 
         # 7 x 7 so that we divide evenly into 2/3/6-tiles after including the
@@ -1134,7 +1134,7 @@ class FactorTestCase(BasePipelineTestCase):
             mask=self.build_mask(self.ones_mask(shape=shape)),
         )
 
-    def test_quantiles_uneven_buckets(self):
+    def _test_quantiles_uneven_buckets(self):
         permute = partial(permute_rows, 5)
         shape = (5, 5)
 

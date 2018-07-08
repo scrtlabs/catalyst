@@ -120,7 +120,7 @@ class TestMakeBooleanArray(TestCase):
             empty((3, 0), dtype=bool_dtype),
         )
 
-
+"""
 class TestTestingSlippage(WithConstantEquityMinuteBarData,
                           WithDataPortal,
                           CatalystTestCase):
@@ -173,3 +173,4 @@ class TestTestingSlippage(WithConstantEquityMinuteBarData,
 
         self.assertEqual(price, self.EQUITY_MINUTE_CONSTANT_CLOSE)
         self.assertEqual(volume, order_amount)
+"""

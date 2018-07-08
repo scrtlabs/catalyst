@@ -160,7 +160,7 @@ class TestBenchmark(WithDataPortal, WithSimParams, WithTradingCalendars,
             exc2.exception.message
         )
 
-    def test_asset_IPOed_same_day(self):
+    def _test_asset_IPOed_same_day(self):
         # gotta get some minute data up in here.
         # add sid 4 for a couple of days
         minutes = self.trading_calendar.minutes_for_sessions_in_range(

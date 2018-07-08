@@ -1,5 +1,4 @@
 import importlib
-from os.path import join, isfile
 
 import pandas as pd
 import os
@@ -16,7 +15,7 @@ from catalyst.testing.fixtures import WithLogger, CatalystTestCase
 from logbook import TestHandler, WARNING
 
 filter_algos = [
-    'buy_and_hodl.py',
+    #'buy_and_hodl.py',
     'buy_btc_simple.py',
     'buy_low_sell_high.py',
     #'mean_reversion_simple.py',
@@ -42,8 +41,11 @@ class TestSuiteAlgo(WithLogger, CatalystTestCase):
         pass
 
     def test_run_examples(self):
-        folder = join('..', '..', '..', 'catalyst', 'examples')
-        files = [f for f in os.listdir(folder) if isfile(join(folder, f))]
+        #folder = join('..', '..', '..', 'catalyst', 'examples')
+        HERE = os.path.dirname(os.path.abspath(__file__))
+        folder = os.path.join(HERE, '..', '..', '..', 'catalyst', 'examples')
+
+        files = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
 
         algo_list = []
         for filename in files:

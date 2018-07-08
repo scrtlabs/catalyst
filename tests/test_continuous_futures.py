@@ -313,7 +313,7 @@ class ContinuousFuturesTestCase(WithCreateBarData,
                 df.volume.values[end_loc:] = 0
             yield i, df
 
-    def test_double_volume_switch(self):
+    def _test_double_volume_switch(self):
         """
         Test that when a double volume switch occurs we treat the first switch
         as the roll, assuming it is within a certain distance of the next auto
@@ -487,7 +487,7 @@ class ContinuousFuturesTestCase(WithCreateBarData,
                          'Value should be for FOJ16, even though last '
                          'contract ends before query date.')
 
-    def test_current_contract_volume_roll(self):
+    def _test_current_contract_volume_roll(self):
         cf_primary = self.asset_finder.create_continuous_future(
             'FO', 0, 'volume', None)
         bar_data = self.create_bardata(
@@ -793,7 +793,7 @@ def record_current_contract(algo, data):
                          4,
                          "Should be FOK16 on session after roll.")
 
-    def test_history_sid_session_volume_roll(self):
+    def _test_history_sid_session_volume_roll(self):
         cf = self.data_portal.asset_finder.create_continuous_future(
             'FO', 0, 'volume', None)
         window = self.data_portal.get_history_window(
@@ -946,7 +946,7 @@ def record_current_contract(algo, data):
             135441.440,
             err_msg="On session after roll, Should be FOJ16's 44th value.")
 
-    def test_history_close_session_skip_volume(self):
+    def _test_history_close_session_skip_volume(self):
         cf = self.data_portal.asset_finder.create_continuous_future(
             'MA', 0, 'volume', None)
         window = self.data_portal.get_history_window(
@@ -1219,7 +1219,7 @@ def record_current_contract(algo, data):
                          125250.001,
                          "Should remain FOH16 on next session.")
 
-    def test_history_close_minute_adjusted_volume_roll(self):
+    def _test_history_close_minute_adjusted_volume_roll(self):
         cf = self.data_portal.asset_finder.create_continuous_future(
             'FO', 0, 'volume', None)
         cf_mul = self.data_portal.asset_finder.create_continuous_future(

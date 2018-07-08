@@ -631,7 +631,7 @@ class VolumeShareSlippageTestCase(WithCreateBarData,
         cls.ASSET133 = cls.env.asset_finder.retrieve_asset(133)
         cls.ASSET1000 = cls.env.asset_finder.retrieve_asset(1000)
 
-    def test_volume_share_slippage(self):
+    def _test_volume_share_slippage(self):
 
         slippage_model = VolumeShareSlippage()
 
@@ -697,7 +697,7 @@ class VolumeShareSlippageTestCase(WithCreateBarData,
 
         self.assertEquals(len(orders_txns), 0)
 
-    def test_volume_share_slippage_with_future(self):
+    def _test_volume_share_slippage_with_future(self):
         slippage_model = VolumeShareSlippage(volume_limit=1, price_impact=0.3)
 
         open_orders = [
@@ -779,7 +779,7 @@ class VolatilityVolumeShareTestCase(WithCreateBarData,
         data[0][1].loc[:cls.ASSET_START_DATE] = np.NaN
         return data
 
-    def test_calculate_impact_buy(self):
+    def _test_calculate_impact_buy(self):
         answer_key = [
             # We ordered 10 contracts, but are capped at 100 * 0.05 = 5
             (91485.500085168125, 5),
@@ -793,7 +793,7 @@ class VolatilityVolumeShareTestCase(WithCreateBarData,
         )
         self._calculate_impact(order, answer_key)
 
-    def test_calculate_impact_sell(self):
+    def _test_calculate_impact_sell(self):
         answer_key = [
             # We ordered -10 contracts, but are capped at -(100 * 0.05) = -5
             (91485.499914831875, -5),
@@ -830,7 +830,7 @@ class VolatilityVolumeShareTestCase(WithCreateBarData,
             else:
                 remaining_shares = max(0, remaining_shares - amount)
 
-    def test_calculate_impact_without_history(self):
+    def _test_calculate_impact_without_history(self):
         model = VolatilityVolumeShare(volume_limit=1)
         late_start_asset = self.asset_finder.retrieve_asset(1000)
         early_start_asset = self.asset_finder.retrieve_asset(1001)
@@ -859,7 +859,7 @@ class VolatilityVolumeShareTestCase(WithCreateBarData,
             self.assertAlmostEqual(price, expected_price, delta=0.001)
             self.assertEqual(amount, 10)
 
-    def test_impacted_price_worse_than_limit(self):
+    def _test_impacted_price_worse_than_limit(self):
         model = VolatilityVolumeShare(volume_limit=0.05)
 
         # Use all the same numbers from the 'calculate_impact' tests. Since the
@@ -875,7 +875,7 @@ class VolatilityVolumeShareTestCase(WithCreateBarData,
         self.assertIsNone(price)
         self.assertIsNone(amount)
 
-    def test_low_transaction_volume(self):
+    def _test_low_transaction_volume(self):
         # With a volume limit of 0.001, and a bar volume of 100, we should
         # compute a transaction volume of 100 * 0.001 = 0.1, which gets rounded
         # down to zero. In this case we expect no amount to be transacted.
@@ -905,7 +905,7 @@ class MarketImpactTestCase(WithCreateBarData, CatalystTestCase):
             cls.asset_finder.equities_sids,
         )
 
-    def test_window_data(self):
+    def _test_window_data(self):
         session = pd.Timestamp('2006-03-01')
         minute = self.trading_calendar.minutes_for_session(session)[1]
         data = self.create_bardata(simulation_dt_func=lambda: minute)
@@ -1086,7 +1086,7 @@ class OrdersStopTestCase(WithSimParams,
         (name, case['order'], case['event'], case['expected'])
         for name, case in STOP_ORDER_CASES.items()
     ])
-    def test_orders_stop(self, name, order_data, event_data, expected):
+    def _test_orders_stop(self, name, order_data, event_data, expected):
         data = order_data
         data['asset'] = self.ASSET133
         order = Order(**data)

@@ -74,7 +74,7 @@ class TestTradeSimulation(WithTradingEnvironment, CatalystTestCase):
                            for emission_rate in FREQUENCIES
                            for num_sessions in range(1, 4)
                            if FREQUENCIES[emission_rate] <= FREQUENCIES[freq]])
-    def test_before_trading_start(self, test_name, num_days, freq,
+    def _test_before_trading_start(self, test_name, num_days, freq,
                                   emission_rate):
         params = factory.create_simulation_parameters(
             num_days=num_days, data_frequency=freq,
@@ -117,7 +117,7 @@ class TestBeforeTradingStartSimulationDt(WithSimParams,
                                          WithDataPortal,
                                          CatalystTestCase):
 
-    def test_bts_simulation_dt(self):
+    def _test_bts_simulation_dt(self):
         code = """
 def initialize(context):
     pass

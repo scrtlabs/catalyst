@@ -448,7 +448,7 @@ class USEquityPricingLoaderTestCase(WithAdjustmentReader,
             create_expected_div_table(DIVIDENDS, div_name)
         )
 
-    def test_read_no_adjustments(self):
+    def _test_read_no_adjustments(self):
         adjustment_reader = NullAdjustmentReader()
         columns = [USEquityPricing.close, USEquityPricing.volume]
         query_days = self.calendar_days_between(
@@ -534,7 +534,7 @@ class USEquityPricingLoaderTestCase(WithAdjustmentReader,
             values[:eff_date_loc + 1, asset_col] *= ratio
         return values.astype(orig_dtype)
 
-    def test_read_with_adjustments(self):
+    def _test_read_with_adjustments(self):
         columns = [USEquityPricing.high, USEquityPricing.volume]
         query_days = self.calendar_days_between(
             TEST_QUERY_START,

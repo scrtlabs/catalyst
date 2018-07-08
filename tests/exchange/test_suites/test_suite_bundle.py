@@ -186,7 +186,7 @@ class TestSuiteBundle:
             )
             pass
 
-    def test_validate_bundles(self):
+    def _test_validate_bundles(self):
         # exchange_population = 3
         asset_population = 3
         data_frequency = random.choice(['minute'])
@@ -238,7 +238,7 @@ class TestSuiteBundle:
             )
         pass
 
-    def test_validate_last_candle(self):
+    def _test_validate_last_candle(self):
         # exchange_population = 3
         asset_population = 3
         data_frequency = random.choice(['minute'])

@@ -292,7 +292,7 @@ class EventsLoaderEmptyTestCase(WithAssetFinder,
                 frame[c.name] = frame[c.name].astype('category')
         return frame
 
-    def test_load_empty(self):
+    def _test_load_empty(self):
         """
         For the case where raw data is empty, make sure we have a result for
         all sids, that the dimensions are correct, and that we have the
@@ -397,7 +397,7 @@ class EventsLoaderTestCase(WithAssetFinder,
         # This method exists to be overridden by BlazeEventsLoaderTestCase
         return EventsLoader(events, next_value_columns, previous_value_columns)
 
-    def test_load_with_trading_calendar(self):
+    def _test_load_with_trading_calendar(self):
         engine = SimplePipelineEngine(
             lambda x: self.loader,
             self.trading_days,
@@ -426,7 +426,7 @@ class EventsLoaderTestCase(WithAssetFinder,
             else:
                 raise AssertionError("Unexpected column %s." % c)
 
-    def test_load_properly_forward_fills(self):
+    def _test_load_properly_forward_fills(self):
         engine = SimplePipelineEngine(
             lambda x: self.loader,
             self.trading_days,

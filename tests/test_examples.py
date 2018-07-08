@@ -64,7 +64,7 @@ class ExamplesTests(WithTmpDir, CatalystTestCase):
             )
 
     @parameterized.expand(sorted(examples.EXAMPLE_MODULES))
-    def test_example(self, example_name):
+    def _test_example(self, example_name):
         actual_perf = examples.run_example(
             example_name,
             # This should match the invocation in

@@ -229,7 +229,7 @@ class WithOneDayPipeline(WithEstimates):
         cls.sid0 = cls.asset_finder.retrieve_asset(0)
         cls.expected_out = cls.make_expected_out()
 
-    def test_load_one_day(self):
+    def _test_load_one_day(self):
         # We want to test multiple columns
         dataset = MultipleColumnsQuartersEstimates(1)
         engine = SimplePipelineEngine(
@@ -330,7 +330,7 @@ class WithWrongLoaderDefinition(WithEstimates):
     def make_events(cls):
         return dummy_df
 
-    def test_wrong_num_announcements_passed(self):
+    def _test_wrong_num_announcements_passed(self):
         bad_dataset1 = QuartersEstimates(-1)
         bad_dataset2 = QuartersEstimates(-2)
         good_dataset = QuartersEstimates(1)
@@ -354,7 +354,7 @@ class WithWrongLoaderDefinition(WithEstimates):
             )
             assert_raises_regex(e, INVALID_NUM_QTRS_MESSAGE % "-1,-2")
 
-    def test_no_num_announcements_attr(self):
+    def _test_no_num_announcements_attr(self):
         dataset = QuartersEstimatesNoNumQuartersAttr(1)
         engine = SimplePipelineEngine(
             lambda x: self.loader,
@@ -581,7 +581,7 @@ class WithEstimatesTimeZero(WithEstimates):
                               comparable_date):
         return pd.DataFrame()
 
-    def test_estimates(self):
+    def _test_estimates(self):
         dataset = QuartersEstimates(1)
         engine = SimplePipelineEngine(
             lambda x: self.loader,
@@ -768,7 +768,7 @@ class WithEstimateMultipleQuarters(WithEstimates):
         cls.fill_expected_out(expected)
         return expected.reindex(cls.trading_days)
 
-    def test_multiple_qtrs_requested(self):
+    def _test_multiple_qtrs_requested(self):
         dataset1 = QuartersEstimates(1)
         dataset2 = QuartersEstimates(2)
         engine = SimplePipelineEngine(
@@ -947,7 +947,7 @@ class WithVaryingNumEstimates(WithEstimates):
     def assert_compute(cls, estimate, today):
         raise NotImplementedError('assert_compute')
 
-    def test_windows_with_varying_num_estimates(self):
+    def _test_windows_with_varying_num_estimates(self):
         dataset = QuartersEstimates(1)
         assert_compute = self.assert_compute
 
@@ -1155,7 +1155,7 @@ class WithEstimateWindows(WithEstimates):
         cls.timelines = cls.make_expected_timelines()
 
     @parameterized.expand(window_test_cases)
-    def test_estimate_windows_at_quarter_boundaries(self,
+    def _test_estimate_windows_at_quarter_boundaries(self,
                                                     start_date,
                                                     num_announcements_out):
         dataset = QuartersEstimates(num_announcements_out)
@@ -2072,7 +2072,7 @@ class WithSplitAdjustedMultipleEstimateColumns(WithEstimates):
         cls.timelines_1q_out = cls.make_expected_timelines_1q_out()
         cls.timelines_2q_out = cls.make_expected_timelines_2q_out()
 
-    def test_adjustments_with_multiple_adjusted_columns(self):
+    def _test_adjustments_with_multiple_adjusted_columns(self):
         dataset = MultipleColumnsQuartersEstimates(1)
         timelines = self.timelines_1q_out
         window_len = 3
@@ -2097,7 +2097,7 @@ class WithSplitAdjustedMultipleEstimateColumns(WithEstimates):
             end_date=self.test_end_date,
         )
 
-    def test_multiple_datasets_different_num_announcements(self):
+    def _test_multiple_datasets_different_num_announcements(self):
         dataset1 = MultipleColumnsQuartersEstimates(1)
         dataset2 = MultipleColumnsQuartersEstimates(2)
         timelines_1q_out = self.timelines_1q_out
@@ -2447,7 +2447,7 @@ class WithAdjustmentBoundaries(WithEstimates):
                           sid_4_splits])
 
     @parameterized.expand(split_adjusted_asof_dates)
-    def test_boundaries(self, split_date):
+    def _test_boundaries(self, split_date):
         dataset = QuartersEstimates(1)
         loader = self.loader(split_adjusted_asof=split_date)
         engine = SimplePipelineEngine(

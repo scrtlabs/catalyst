@@ -126,7 +126,7 @@ class BcolzDailyBarTestCase(WithBcolzEquityDailyBarReader, CatalystTestCase):
         start, end = self.asset_start(asset_id), self.asset_end(asset_id)
         return self.trading_days_between(start, end)
 
-    def test_write_ohlcv_content(self):
+    def _test_write_ohlcv_content(self):
         result = self.bcolz_daily_bar_ctable
         for column in OHLCV:
             idx = 0
@@ -228,7 +228,7 @@ class BcolzDailyBarTestCase(WithBcolzEquityDailyBarReader, CatalystTestCase):
         (['volume', 'high', 'low'],),
         (['open', 'high', 'low', 'close', 'volume'],),
     ])
-    def test_read(self, columns):
+    def _test_read(self, columns):
         self._check_read_results(
             columns,
             self.assets,
@@ -236,7 +236,7 @@ class BcolzDailyBarTestCase(WithBcolzEquityDailyBarReader, CatalystTestCase):
             TEST_QUERY_STOP,
         )
 
-    def test_start_on_asset_start(self):
+    def _test_start_on_asset_start(self):
         """
         Test loading with queries that starts on the first day of each asset's
         lifetime.
@@ -250,7 +250,7 @@ class BcolzDailyBarTestCase(WithBcolzEquityDailyBarReader, CatalystTestCase):
                 end_date=self.sessions[-1],
             )
 
-    def test_start_on_asset_end(self):
+    def _test_start_on_asset_end(self):
         """
         Test loading with queries that start on the last day of each asset's
         lifetime.
@@ -264,7 +264,7 @@ class BcolzDailyBarTestCase(WithBcolzEquityDailyBarReader, CatalystTestCase):
                 end_date=self.sessions[-1],
             )
 
-    def test_end_on_asset_start(self):
+    def _test_end_on_asset_start(self):
         """
         Test loading with queries that end on the first day of each asset's
         lifetime.
@@ -278,7 +278,7 @@ class BcolzDailyBarTestCase(WithBcolzEquityDailyBarReader, CatalystTestCase):
                 end_date=self.asset_start(asset),
             )
 
-    def test_end_on_asset_end(self):
+    def _test_end_on_asset_end(self):
         """
         Test loading with queries that end on the last day of each asset's
         lifetime.
@@ -292,7 +292,7 @@ class BcolzDailyBarTestCase(WithBcolzEquityDailyBarReader, CatalystTestCase):
                 end_date=self.asset_end(asset),
             )
 
-    def test_unadjusted_get_value(self):
+    def _test_unadjusted_get_value(self):
         reader = self.bcolz_equity_daily_bar_reader
         # At beginning
         price = reader.get_value(1, Timestamp('2015-06-01', tz='UTC'),

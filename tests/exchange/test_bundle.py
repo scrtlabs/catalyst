@@ -40,7 +40,7 @@ class TestExchangeBundle:
         # )
         pass
 
-    def test_ingest_minute(self):
+    def _test_ingest_minute(self):
         data_frequency = 'minute'
         exchange_name = 'binance'
 
@@ -77,7 +77,7 @@ class TestExchangeBundle:
             )
         pass
 
-    def test_ingest_minute_all(self):
+    def _test_ingest_minute_all(self):
         exchange_name = 'bitfinex'
 
         # start = pd.to_datetime('2017-09-01', utc=True)
@@ -96,7 +96,7 @@ class TestExchangeBundle:
         )
         pass
 
-    def test_ingest_exchange(self):
+    def _test_ingest_exchange(self):
         # exchange_name = 'bitfinex'
         # data_frequency = 'daily'
         # include_symbols = 'neo_btc,bch_btc,eth_btc'
@@ -119,7 +119,7 @@ class TestExchangeBundle:
 
         pass
 
-    def test_ingest_daily(self):
+    def _test_ingest_daily(self):
         exchange_name = 'bitfinex'
         data_frequency = 'minute'
         include_symbols = 'neo_btc'
@@ -171,7 +171,7 @@ class TestExchangeBundle:
             )
         pass
 
-    def test_merge_ctables(self):
+    def _test_merge_ctables(self):
         exchange_name = 'bittrex'
 
         # Switch between daily and minute for testing
@@ -227,7 +227,7 @@ class TestExchangeBundle:
             )
         pass
 
-    def test_daily_data_to_minute_table(self):
+    def _test_daily_data_to_minute_table(self):
         exchange_name = 'poloniex'
 
         # Switch between daily and minute for testing
@@ -302,7 +302,7 @@ class TestExchangeBundle:
             )
         pass
 
-    def test_minute_bundle(self):
+    def _test_minute_bundle(self):
         # exchange_name = 'poloniex'
         # data_frequency = 'minute'
 
@@ -317,14 +317,14 @@ class TestExchangeBundle:
         # )
         pass
 
-    def test_hash_symbol(self):
+    def _test_hash_symbol(self):
         # symbol = 'etc_btc'
         # sid = int(
         #     hashlib.sha256(symbol.encode('utf-8')).hexdigest(), 16
         # ) % 10 ** 6
         pass
 
-    def test_validate_data(self):
+    def _test_validate_data(self):
         exchange_name = 'bitfinex'
         data_frequency = 'minute'
 
@@ -379,7 +379,7 @@ class TestExchangeBundle:
         print('\n' + df_to_string(df))
         pass
 
-    def test_ingest_candles(self):
+    def _test_ingest_candles(self):
         exchange_name = 'bitfinex'
         data_frequency = 'minute'
 
@@ -524,7 +524,7 @@ class TestExchangeBundle:
         df.to_csv(path)
         pass
 
-    def test_ingest_csv(self):
+    def _test_ingest_csv(self):
         data_frequency = 'minute'
         exchange_name = 'bittrex'
         path = '/Users/fredfortier/Dropbox/Enigma/Data/bittrex_bat_eth.csv'

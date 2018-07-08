@@ -72,7 +72,7 @@ class FinanceTestCase(WithLogger,
     # TODO: write a test to do massive buying or shorting.
 
     @timed(DEFAULT_TIMEOUT)
-    def test_partially_filled_orders(self):
+    def _test_partially_filled_orders(self):
 
         # create a scenario where order size and trade size are equal
         # so that orders must be spread out over several trades.
@@ -108,7 +108,7 @@ class FinanceTestCase(WithLogger,
         self.transaction_sim(**params2)
 
     @timed(DEFAULT_TIMEOUT)
-    def test_collapsing_orders(self):
+    def _test_collapsing_orders(self):
         # create a scenario where order.amount <<< trade.volume
         # to test that several orders can be covered properly by one trade,
         # but are represented by multiple transactions.
@@ -151,7 +151,7 @@ class FinanceTestCase(WithLogger,
         self.transaction_sim(**params3)
 
     @timed(DEFAULT_TIMEOUT)
-    def test_alternating_long_short(self):
+    def _test_alternating_long_short(self):
         # create a scenario where we alternate buys and sells
         params1 = {
             'trade_count': int(6.5 * 60 * 4),

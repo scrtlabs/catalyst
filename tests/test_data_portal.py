@@ -455,7 +455,7 @@ class DataPortalTestBase(WithDataPortal,
         self.assertEqual([], splits)
 
     @parameter_space(frequency=HISTORY_FREQUENCIES, field=OHLCV_FIELDS)
-    def test_price_rounding(self, frequency, field):
+    def _test_price_rounding(self, frequency, field):
         equity = self.asset_finder.retrieve_asset(2)
         future = self.asset_finder.retrieve_asset(10001)
         cf = self.data_portal.asset_finder.create_continuous_future(

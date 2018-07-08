@@ -115,7 +115,7 @@ class StatisticalBuiltInsTestCase(WithTradingEnvironment, CatalystTestCase):
         )
 
     @parameter_space(returns_length=[2, 3], correlation_length=[3, 4])
-    def test_correlation_factors(self, returns_length, correlation_length):
+    def _test_correlation_factors(self, returns_length, correlation_length):
         """
         Tests for the built-in factors `RollingPearsonOfReturns` and
         `RollingSpearmanOfReturns`.
@@ -213,7 +213,7 @@ class StatisticalBuiltInsTestCase(WithTradingEnvironment, CatalystTestCase):
             assert_frame_equal(spearman_results, expected_spearman_results)
 
     @parameter_space(returns_length=[2, 3], regression_length=[3, 4])
-    def test_regression_of_returns_factor(self,
+    def _test_regression_of_returns_factor(self,
                                           returns_length,
                                           regression_length):
         """
@@ -308,7 +308,7 @@ class StatisticalBuiltInsTestCase(WithTradingEnvironment, CatalystTestCase):
                 )
                 assert_frame_equal(output_result, expected_output_result)
 
-    def test_correlation_and_regression_with_bad_asset(self):
+    def _test_correlation_and_regression_with_bad_asset(self):
         """
         Test that `RollingPearsonOfReturns`, `RollingSpearmanOfReturns` and
         `RollingLinearRegressionOfReturns` raise the proper exception when
@@ -430,7 +430,7 @@ class StatisticalMethodsTestCase(WithSeededRandomPipelineEngine,
         cls.col = TestingDataSet.float_col
 
     @parameter_space(returns_length=[2, 3], correlation_length=[3, 4])
-    def test_factor_correlation_methods(self,
+    def _test_factor_correlation_methods(self,
                                         returns_length,
                                         correlation_length):
         """
@@ -487,7 +487,7 @@ class StatisticalMethodsTestCase(WithSeededRandomPipelineEngine,
         assert_frame_equal(pearson_results, expected_pearson_results)
         assert_frame_equal(spearman_results, expected_spearman_results)
 
-    def test_correlation_methods_bad_type(self):
+    def _test_correlation_methods_bad_type(self):
         """
         Make sure we cannot call the Factor correlation methods on factors or
         slices that are not of float or int dtype.
@@ -531,7 +531,7 @@ class StatisticalMethodsTestCase(WithSeededRandomPipelineEngine,
             )
 
     @parameter_space(returns_length=[2, 3], regression_length=[3, 4])
-    def test_factor_regression_method(self, returns_length, regression_length):
+    def _test_factor_regression_method(self, returns_length, regression_length):
         """
         Ensure that `Factor.linear_regression` is consistent with the built-in
         factor `RollingLinearRegressionOfReturns`.
@@ -571,7 +571,7 @@ class StatisticalMethodsTestCase(WithSeededRandomPipelineEngine,
 
         assert_frame_equal(regression_results, expected_regression_results)
 
-    def test_regression_method_bad_type(self):
+    def _test_regression_method_bad_type(self):
         """
         Make sure we cannot call the Factor linear regression method on factors
         or slices that are not of float or int dtype.
@@ -606,7 +606,7 @@ class StatisticalMethodsTestCase(WithSeededRandomPipelineEngine,
             )
 
     @parameter_space(correlation_length=[2, 3, 4])
-    def test_factor_correlation_methods_two_factors(self, correlation_length):
+    def _test_factor_correlation_methods_two_factors(self, correlation_length):
         """
         Tests for `Factor.pearsonr` and `Factor.spearmanr` when passed another
         2D factor instead of a Slice.
@@ -707,7 +707,7 @@ class StatisticalMethodsTestCase(WithSeededRandomPipelineEngine,
         assert_frame_equal(spearman_results, expected_spearman_results)
 
     @parameter_space(regression_length=[2, 3, 4])
-    def test_factor_regression_method_two_factors(self, regression_length):
+    def _test_factor_regression_method_two_factors(self, regression_length):
         """
         Tests for `Factor.linear_regression` when passed another 2D factor
         instead of a Slice.

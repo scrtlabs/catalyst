@@ -36,7 +36,7 @@ class TestExchangeDataPortal:
             first_trading_day=None  # will set dynamically based on assets
         )
 
-    def test_get_history_window_live(self):
+    def _test_get_history_window_live(self):
         # asset_finder = self.data_portal_live.asset_finder
 
         # assets = [
@@ -52,7 +52,7 @@ class TestExchangeDataPortal:
         #     'price')
         pass
 
-    def test_get_spot_value_live(self):
+    def _test_get_spot_value_live(self):
         # asset_finder = self.data_portal_live.asset_finder
 
         # assets = [
@@ -64,7 +64,7 @@ class TestExchangeDataPortal:
         #     assets, 'price', now, '1m')
         pass
 
-    def test_get_history_window_backtest(self):
+    def _test_get_history_window_backtest(self):
         asset_finder = self.data_portal_live.asset_finder
 
         assets = [
@@ -83,7 +83,7 @@ class TestExchangeDataPortal:
         log.info('found history window: {}'.format(data))
         pass
 
-    def test_get_spot_value_backtest(self):
+    def _test_get_spot_value_backtest(self):
         asset_finder = self.data_portal_backtest.asset_finder
 
         assets = [
@@ -113,5 +113,5 @@ class TestExchangeDataPortal:
     #
     #     log.info('found history window: {}'.format(data))
 
-    def test_validate_resample(self):
+    def _test_validate_resample(self):
         pass

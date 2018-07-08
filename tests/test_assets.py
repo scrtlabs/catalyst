@@ -410,7 +410,7 @@ class TestFuture(WithAssetFinder, CatalystTestCase):
             self.future.to_dict(),
         )
 
-    def test_to_and_from_dict(self):
+    def _test_to_and_from_dict(self):
         dictd = self.future.to_dict()
         for field in _futures_defaults.keys():
             self.assertTrue(field in dictd)

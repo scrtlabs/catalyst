@@ -24,7 +24,7 @@ unicode_dtype = np.dtype('U3')
 class ClassifierTestCase(BasePipelineTestCase):
 
     @parameter_space(mv=[-1, 0, 1, 999])
-    def test_integral_isnull(self, mv):
+    def _test_integral_isnull(self, mv):
 
         class C(Classifier):
             dtype = int64_dtype
@@ -55,7 +55,7 @@ class ClassifierTestCase(BasePipelineTestCase):
         )
 
     @parameter_space(mv=['0', None])
-    def test_string_isnull(self, mv):
+    def _test_string_isnull(self, mv):
 
         class C(Classifier):
             dtype = categorical_dtype
@@ -90,7 +90,7 @@ class ClassifierTestCase(BasePipelineTestCase):
         )
 
     @parameter_space(compval=[0, 1, 999])
-    def test_eq(self, compval):
+    def _test_eq(self, compval):
 
         class C(Classifier):
             dtype = int64_dtype
@@ -123,7 +123,7 @@ class ClassifierTestCase(BasePipelineTestCase):
         compval=['a', 'ab', 'not in the array'],
         labelarray_dtype=(bytes_dtype, categorical_dtype, unicode_dtype),
     )
-    def test_string_eq(self, compval, labelarray_dtype):
+    def _test_string_eq(self, compval, labelarray_dtype):
 
         compval = labelarray_dtype.type(compval)
 
@@ -187,7 +187,7 @@ class ClassifierTestCase(BasePipelineTestCase):
         )
 
     @parameter_space(compval=[0, 1, 999], missing=[-1, 0, 999])
-    def test_not_equal(self, compval, missing):
+    def _test_not_equal(self, compval, missing):
 
         class C(Classifier):
             dtype = int64_dtype
@@ -221,7 +221,7 @@ class ClassifierTestCase(BasePipelineTestCase):
         missing=['a', 'ab', '', 'not in the array'],
         labelarray_dtype=(bytes_dtype, unicode_dtype, categorical_dtype),
     )
-    def test_string_not_equal(self, compval, missing, labelarray_dtype):
+    def _test_string_not_equal(self, compval, missing, labelarray_dtype):
 
         compval = labelarray_dtype.type(compval)
 
@@ -268,7 +268,7 @@ class ClassifierTestCase(BasePipelineTestCase):
         missing=[u'a', u'ab', u'', u'not in the array'],
         labelarray_dtype=(categorical_dtype, bytes_dtype, unicode_dtype),
     )
-    def test_string_elementwise_predicates(self,
+    def _test_string_elementwise_predicates(self,
                                            compval,
                                            missing,
                                            labelarray_dtype):
@@ -335,7 +335,7 @@ class ClassifierTestCase(BasePipelineTestCase):
         container_type=(set, list, tuple, frozenset),
         labelarray_dtype=(categorical_dtype, bytes_dtype, unicode_dtype),
     )
-    def test_element_of_strings(self, container_type, labelarray_dtype):
+    def _test_element_of_strings(self, container_type, labelarray_dtype):
 
         missing = labelarray_dtype.type("not in the array")
 
@@ -380,7 +380,7 @@ class ClassifierTestCase(BasePipelineTestCase):
             mask=self.build_mask(self.ones_mask(shape=data.shape)),
         )
 
-    def test_element_of_integral(self):
+    def _test_element_of_integral(self):
         """
         Element of is well-defined for integral classifiers.
         """
@@ -478,7 +478,7 @@ class ClassifierTestCase(BasePipelineTestCase):
             lambda s: None,
         ]
     )
-    def test_relabel_strings(self, relabel_func, labelarray_dtype):
+    def _test_relabel_strings(self, relabel_func, labelarray_dtype):
 
         class C(Classifier):
             inputs = ()
@@ -517,7 +517,7 @@ class ClassifierTestCase(BasePipelineTestCase):
         __fail_fast=True,
         missing_value=[None, 'M'],
     )
-    def test_relabel_missing_value_interactions(self, missing_value):
+    def _test_relabel_missing_value_interactions(self, missing_value):
 
         mv = missing_value
 

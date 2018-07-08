@@ -14,11 +14,6 @@ from catalyst.exchange.utils.bundle_utils import get_df_from_arrays, \
     get_bcolz_chunk
 from catalyst.exchange.utils.factory import get_exchange
 
-EXCHANGE_NAMES = ['bitfinex', 'bittrex', 'poloniex']
-exchanges = dict((e, getattr(importlib.import_module(
-    'catalyst.exchange.{0}.{0}'.format(e)), e.capitalize()))
-                 for e in EXCHANGE_NAMES)
-
 
 class ValidateChunks(object):
     def __init__(self):

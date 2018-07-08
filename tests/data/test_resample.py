@@ -602,7 +602,7 @@ class TestResampleSessionBars(WithBcolzFutureMinuteBarReader,
             self.bcolz_future_minute_bar_reader
         )
 
-    def test_resample(self):
+    def _test_resample(self):
         calendar = self.trading_calendar
         for sid in self.ASSET_FINDER_FUTURE_SIDS:
             case_frame = FUTURE_CASES[sid]
@@ -634,7 +634,7 @@ class TestResampleSessionBars(WithBcolzFutureMinuteBarReader,
 
         self.assertEqual(self.END_DATE, session_bar_reader.last_available_dt)
 
-    def test_get_value(self):
+    def _test_get_value(self):
         calendar = self.trading_calendar
         session_bar_reader = MinuteResampleSessionBarReader(
             calendar,

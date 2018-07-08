@@ -142,8 +142,8 @@ class TestBcolzWriter(object):
         assert_equals(df.equals(dx), True)
         pass
 
-    def test_bcolz_bitfinex_daily_write_read(self):
+    def _test_bcolz_bitfinex_daily_write_read(self):
         self.bcolz_exchange_daily_write_read('bitfinex')
 
-    def test_bcolz_poloniex_daily_write_read(self):
+    def _test_bcolz_poloniex_daily_write_read(self):
         self.bcolz_exchange_daily_write_read('poloniex')

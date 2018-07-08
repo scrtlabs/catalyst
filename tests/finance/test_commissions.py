@@ -344,7 +344,7 @@ class CommissionAlgorithmTests(WithDataPortal, WithSimParams, CatalystTestCase):
 
         return algo.run(self.data_portal)
 
-    def test_per_trade(self):
+    def _test_per_trade(self):
         results = self.get_results(
             self.code.format(
                 commission="set_commission(commission.PerTrade(1))",
@@ -361,7 +361,7 @@ class CommissionAlgorithmTests(WithDataPortal, WithSimParams, CatalystTestCase):
 
         self.verify_capital_used(results, [-1001, -1000, -1000])
 
-    def test_futures_per_trade(self):
+    def _test_futures_per_trade(self):
         results = self.get_results(
             self.code.format(
                 commission=(
@@ -378,7 +378,7 @@ class CommissionAlgorithmTests(WithDataPortal, WithSimParams, CatalystTestCase):
         self.assertEqual(results.orders[1][0]['commission'], 1.0)
         self.assertEqual(results.capital_used[1], -1.0)
 
-    def test_per_share_no_minimum(self):
+    def _test_per_share_no_minimum(self):
         results = self.get_results(
             self.code.format(
                 commission="set_commission(commission.PerShare(0.05, None))",
@@ -395,7 +395,7 @@ class CommissionAlgorithmTests(WithDataPortal, WithSimParams, CatalystTestCase):
 
         self.verify_capital_used(results, [-1005, -1005, -1005])
 
-    def test_per_share_with_minimum(self):
+    def _test_per_share_with_minimum(self):
         # minimum hit by first trade
         results = self.get_results(
             self.code.format(
@@ -469,7 +469,7 @@ class CommissionAlgorithmTests(WithDataPortal, WithSimParams, CatalystTestCase):
         # Minimum not hit by first trade, so use the minimum.
         (3, 3.0),
     ])
-    def test_per_contract(self, min_trade_cost, expected_commission):
+    def _test_per_contract(self, min_trade_cost, expected_commission):
         results = self.get_results(
             self.code.format(
                 commission=(
@@ -486,7 +486,7 @@ class CommissionAlgorithmTests(WithDataPortal, WithSimParams, CatalystTestCase):
         )
         self.assertEqual(results.capital_used[1], -expected_commission)
 
-    def test_per_dollar(self):
+    def _test_per_dollar(self):
         results = self.get_results(
             self.code.format(
                 commission="set_commission(commission.PerDollar(0.01))",

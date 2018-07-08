@@ -142,7 +142,7 @@ class BcolzMinuteBarTestCase(WithTradingCalendars,
 
         self.assertEquals(50.0, volume_price)
 
-    def test_write_one_ohlcv_with_ratios(self):
+    def _test_write_one_ohlcv_with_ratios(self):
         minute = self.market_opens[self.test_calendar_start]
         sid = 1
         data = DataFrame(
@@ -626,7 +626,7 @@ class BcolzMinuteBarTestCase(WithTradingCalendars,
             self.writer._minutes_per_day * 2,
         )
 
-    def test_nans(self):
+    def _test_nans(self):
         """
         Test writing empty data.
         """
@@ -665,7 +665,7 @@ class BcolzMinuteBarTestCase(WithTradingCalendars,
             else:
                 assert_array_equal(zeros(9), ohlcv_window[i][0])
 
-    def test_differing_nans(self):
+    def _test_differing_nans(self):
         """
         Also test nans of differing values/construction.
         """
@@ -776,7 +776,7 @@ class BcolzMinuteBarTestCase(WithTradingCalendars,
         with self.assertRaises(BcolzMinuteWriterColumnMismatch):
             self.writer.write_cols(sid, dts, cols)
 
-    def test_unadjusted_minutes(self):
+    def _test_unadjusted_minutes(self):
         """
         Test unadjusted minutes.
         """
@@ -821,7 +821,7 @@ class BcolzMinuteBarTestCase(WithTradingCalendars,
             for j, sid in enumerate(sids):
                 assert_almost_equal(data[sid][col], arrays[i][j])
 
-    def test_unadjusted_minutes_early_close(self):
+    def _test_unadjusted_minutes_early_close(self):
         """
         Test unadjusted minute window, ensuring that early closes are filtered
         out.
@@ -1169,7 +1169,7 @@ class BcolzMinuteBarTestCase(WithTradingCalendars,
     #                       "close, even when data is written between the early "
     #                       "close and the next open.")
 
-    def test_minute_updates(self):
+    def _test_minute_updates(self):
         """
         Test minute updates.
         """
