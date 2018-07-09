@@ -71,8 +71,8 @@ Lets take a look at a very simple algorithm from the ``examples`` directory:
 As you can see, we first have to import some functions we would like to
 use. All functions commonly used in your algorithm can be found in
 ``catalyst.api``. Here we are using :func:`~catalyst.api.order()` which takes 
-twoarguments: a cryptoasset object, and a number specifying how many assets you 
-wouldlike to order (if negative, :func:`~catalyst.api.order()` will sell/short
+two arguments: a cryptoasset object, and a number specifying how many assets you
+would like to order (if negative, :func:`~catalyst.api.order()` will sell
 assets). In this case we want to order 1 bitcoin at each iteration. 
 
 .. For more documentation on ``order()``, see the `Quantopian docs

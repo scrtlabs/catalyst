@@ -1298,11 +1298,7 @@ class CCXT(Exchange):
     def get_orderbook(self, asset, order_type='all', limit=None):
         ccxt_symbol = self.get_symbol(asset)
 
-        params = dict()
-        if limit is not None:
-            params['depth'] = limit
-
-        order_book = self.api.fetch_order_book(ccxt_symbol, params)
+        order_book = self.api.fetch_order_book(ccxt_symbol, limit=limit)
 
         order_types = ['bids', 'asks'] if order_type == 'all' else [order_type]
         result = dict(last_traded=from_ms_timestamp(order_book['timestamp']))

@@ -1422,8 +1422,9 @@ class TradingAlgorithm(object):
             The asset/TradingPair that this order is for.
         amount : int
             The amount of currency to order. If ``amount`` is positive, this is
-            the number of ``base_currency`` (the first asset in the pair) to buy. If ``amount`` is negative,
-            this is the number of ``base_currency`` to sell (buy ``quote_currency``).
+            the number of ``base_currency`` (the first asset in the pair) to
+            buy. If ``amount`` is negative, this is the number of
+            ``base_currency`` to sell (buy ``quote_currency``).
         limit_price : float, optional
             The limit price for the order.
         stop_price : float, optional
