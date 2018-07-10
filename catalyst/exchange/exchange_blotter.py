@@ -81,16 +81,16 @@ class TradingPairFixedSlippage(SlippageModel):
     Parameters
     ----------
     spread : float, optional
-        spread / 2 will be added to buys and subtracted from sells.
+        fixed slippage will be added to buys and subtracted from sells.
     """
 
-    def __init__(self, spread=0.0001):
+    def __init__(self, slippage=0.0001):
         super(TradingPairFixedSlippage, self).__init__()
-        self.spread = spread
+        self.slippage = slippage
 
     def __repr__(self):
-        return '{class_name}(spread={spread})'.format(
-            class_name=self.__class__.__name__, spread=self.spread,
+        return '{class_name}(slippage={slippage})'.format(
+            class_name=self.__class__.__name__, slippage=self.slippage,
         )
 
     def simulate(self, data, asset, orders_for_asset):
@@ -124,10 +124,10 @@ class TradingPairFixedSlippage(SlippageModel):
 
         if order.amount > 0:
             # Buy order
-            adj_price = price * (1 + self.spread)
+            adj_price = price * (1 + self.slippage)
         else:
             # Sell order
-            adj_price = price * (1 - self.spread)
+            adj_price = price * (1 - self.slippage)
 
         log.debug('added slippage to price: {} => {}'.format(price, adj_price))
 
