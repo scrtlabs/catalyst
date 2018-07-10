@@ -44,3 +44,9 @@ ENIGMA_CONTRACT_ABI = 'https://raw.githubusercontent.com/enigmampc/' \
 
 SUPPORTED_WALLETS = ['metamask', 'ledger', 'trezor', 'bitbox', 'keystore',
                      'key']
+
+ALPHA_WARNING_MESSAGE = 'Catalyst is currently in ALPHA. It is going through ' \
+                        'rapid development and it is subject to errors. ' \
+                        'Please use carefully. We encourage you to report ' \
+                        'any issue on GitHub: ' \
+                        'https://github.com/enigmampc/catalyst/issues'

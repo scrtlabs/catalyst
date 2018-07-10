@@ -46,7 +46,7 @@ from catalyst.testing import (
 from catalyst.testing.fixtures import (
     WithLogger,
     WithTradingEnvironment,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 
 import catalyst.utils.factory as factory
@@ -59,10 +59,10 @@ _multiprocess_can_split_ = False
 
 class FinanceTestCase(WithLogger,
                       WithTradingEnvironment,
-                      ZiplineTestCase):
+                      CatalystTestCase):
     ASSET_FINDER_EQUITY_SIDS = 1, 2, 133
-    start = START_DATE = pd.Timestamp('2006-01-01', tz='utc')
-    end = END_DATE = pd.Timestamp('2006-12-31', tz='utc')
+    start = START_DATE = pd.Timestamp('2016-01-01', tz='utc')
+    end = END_DATE = pd.Timestamp('2016-12-31', tz='utc')
 
     def init_instance_fixtures(self):
         super(FinanceTestCase, self).init_instance_fixtures()
@@ -72,7 +72,7 @@ class FinanceTestCase(WithLogger,
     # TODO: write a test to do massive buying or shorting.
 
     @timed(DEFAULT_TIMEOUT)
-    def test_partially_filled_orders(self):
+    def _test_partially_filled_orders(self):
 
         # create a scenario where order size and trade size are equal
         # so that orders must be spread out over several trades.
@@ -108,7 +108,7 @@ class FinanceTestCase(WithLogger,
         self.transaction_sim(**params2)
 
     @timed(DEFAULT_TIMEOUT)
-    def test_collapsing_orders(self):
+    def _test_collapsing_orders(self):
         # create a scenario where order.amount <<< trade.volume
         # to test that several orders can be covered properly by one trade,
         # but are represented by multiple transactions.
@@ -151,7 +151,7 @@ class FinanceTestCase(WithLogger,
         self.transaction_sim(**params3)
 
     @timed(DEFAULT_TIMEOUT)
-    def test_alternating_long_short(self):
+    def _test_alternating_long_short(self):
         # create a scenario where we alternate buys and sells
         params1 = {
             'trade_count': int(6.5 * 60 * 4),
@@ -236,7 +236,7 @@ class FinanceTestCase(WithLogger,
                 data_portal = DataPortal(
                     env.asset_finder, self.trading_calendar,
                     first_trading_day=equity_minute_reader.first_trading_day,
-                    equity_minute_reader=equity_minute_reader,
+                    minute_reader=equity_minute_reader,
                 )
             else:
                 sim_params = factory.create_simulation_parameters(
@@ -267,7 +267,7 @@ class FinanceTestCase(WithLogger,
                 data_portal = DataPortal(
                     env.asset_finder, self.trading_calendar,
                     first_trading_day=equity_daily_reader.first_trading_day,
-                    equity_daily_reader=equity_daily_reader,
+                    daily_reader=equity_daily_reader,
                 )
 
             if "default_slippage" not in params or \
@@ -403,7 +403,7 @@ class FinanceTestCase(WithLogger,
 
 class TradingEnvironmentTestCase(WithLogger,
                                  WithTradingEnvironment,
-                                 ZiplineTestCase):
+                                 CatalystTestCase):
     """
     Tests for date management utilities in catalyst.finance.trading.
     """

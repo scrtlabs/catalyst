@@ -1,4 +1,4 @@
-from catalyst.testing.fixtures import ZiplineTestCase
+from catalyst.testing.fixtures import CatalystTestCase
 from catalyst.testing.predicates import (
     assert_equal,
     assert_is,
@@ -31,7 +31,7 @@ class D(object):
         return 'D.delegate'
 
 
-class ComposeTypesTestCase(ZiplineTestCase):
+class ComposeTypesTestCase(CatalystTestCase):
 
     def test_identity(self):
         assert_is(
@@ -67,7 +67,7 @@ class N(type):
         return super(N, mcls).__new__(mcls, name, bases, dict_)
 
 
-class WithMetaclassesTestCase(ZiplineTestCase):
+class WithMetaclassesTestCase(CatalystTestCase):
     def test_with_metaclasses_no_subclasses(self):
         class E(with_metaclasses((M, N))):
             pass

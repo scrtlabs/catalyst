@@ -3,7 +3,7 @@ Tests for catalyst/utils/pandas_utils.py
 """
 import pandas as pd
 
-from catalyst.testing import parameter_space, ZiplineTestCase
+from catalyst.testing import parameter_space, CatalystTestCase
 from catalyst.testing.predicates import assert_equal
 from catalyst.utils.pandas_utils import (
     categorical_df_concat,
@@ -11,7 +11,7 @@ from catalyst.utils.pandas_utils import (
 )
 
 
-class TestNearestUnequalElements(ZiplineTestCase):
+class TestNearestUnequalElements(CatalystTestCase):
 
     @parameter_space(tz=['UTC', 'US/Eastern'], __fail_fast=True)
     def test_nearest_unequal_elements(self, tz):
@@ -86,7 +86,7 @@ class TestNearestUnequalElements(ZiplineTestCase):
         )
 
 
-class TestCatDFConcat(ZiplineTestCase):
+class TestCatDFConcat(CatalystTestCase):
 
     def test_categorical_df_concat(self):
 

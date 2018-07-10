@@ -50,7 +50,7 @@ from catalyst.testing.fixtures import (
     WithBcolzEquityDailyBarReader,
     WithTmpDir,
     WithTradingCalendars,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 from catalyst.utils.calendars import get_calendar
 
@@ -86,7 +86,7 @@ EQUITY_INFO['symbol'] = [chr(ord('A') + n) for n in range(len(EQUITY_INFO))]
 TEST_QUERY_ASSETS = EQUITY_INFO.index
 
 
-class BcolzDailyBarTestCase(WithBcolzEquityDailyBarReader, ZiplineTestCase):
+class BcolzDailyBarTestCase(WithBcolzEquityDailyBarReader, CatalystTestCase):
     EQUITY_DAILY_BAR_START_DATE = TEST_CALENDAR_START
     EQUITY_DAILY_BAR_END_DATE = TEST_CALENDAR_STOP
 
@@ -126,7 +126,7 @@ class BcolzDailyBarTestCase(WithBcolzEquityDailyBarReader, ZiplineTestCase):
         start, end = self.asset_start(asset_id), self.asset_end(asset_id)
         return self.trading_days_between(start, end)
 
-    def test_write_ohlcv_content(self):
+    def _test_write_ohlcv_content(self):
         result = self.bcolz_daily_bar_ctable
         for column in OHLCV:
             idx = 0
@@ -228,7 +228,7 @@ class BcolzDailyBarTestCase(WithBcolzEquityDailyBarReader, ZiplineTestCase):
         (['volume', 'high', 'low'],),
         (['open', 'high', 'low', 'close', 'volume'],),
     ])
-    def test_read(self, columns):
+    def _test_read(self, columns):
         self._check_read_results(
             columns,
             self.assets,
@@ -236,7 +236,7 @@ class BcolzDailyBarTestCase(WithBcolzEquityDailyBarReader, ZiplineTestCase):
             TEST_QUERY_STOP,
         )
 
-    def test_start_on_asset_start(self):
+    def _test_start_on_asset_start(self):
         """
         Test loading with queries that starts on the first day of each asset's
         lifetime.
@@ -250,7 +250,7 @@ class BcolzDailyBarTestCase(WithBcolzEquityDailyBarReader, ZiplineTestCase):
                 end_date=self.sessions[-1],
             )
 
-    def test_start_on_asset_end(self):
+    def _test_start_on_asset_end(self):
         """
         Test loading with queries that start on the last day of each asset's
         lifetime.
@@ -264,7 +264,7 @@ class BcolzDailyBarTestCase(WithBcolzEquityDailyBarReader, ZiplineTestCase):
                 end_date=self.sessions[-1],
             )
 
-    def test_end_on_asset_start(self):
+    def _test_end_on_asset_start(self):
         """
         Test loading with queries that end on the first day of each asset's
         lifetime.
@@ -278,7 +278,7 @@ class BcolzDailyBarTestCase(WithBcolzEquityDailyBarReader, ZiplineTestCase):
                 end_date=self.asset_start(asset),
             )
 
-    def test_end_on_asset_end(self):
+    def _test_end_on_asset_end(self):
         """
         Test loading with queries that end on the last day of each asset's
         lifetime.
@@ -292,7 +292,7 @@ class BcolzDailyBarTestCase(WithBcolzEquityDailyBarReader, ZiplineTestCase):
                 end_date=self.asset_end(asset),
             )
 
-    def test_unadjusted_get_value(self):
+    def _test_unadjusted_get_value(self):
         reader = self.bcolz_equity_daily_bar_reader
         # At beginning
         price = reader.get_value(1, Timestamp('2015-06-01', tz='UTC'),
@@ -372,7 +372,7 @@ class BcolzDailyBarNeverReadAllTestCase(BcolzDailyBarTestCase):
 class BcolzDailyBarWriterMissingDataTestCase(WithAssetFinder,
                                              WithTmpDir,
                                              WithTradingCalendars,
-                                             ZiplineTestCase):
+                                             CatalystTestCase):
     # Sid 3 is active from 2015-06-02 to 2015-06-30.
     MISSING_DATA_SID = 3
     # Leave out data for a day in the middle of the query range.

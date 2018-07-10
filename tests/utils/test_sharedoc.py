@@ -1,8 +1,8 @@
-from catalyst.testing import ZiplineTestCase
+from catalyst.testing import CatalystTestCase
 from catalyst.utils.sharedoc import copydoc
 
 
-class TestSharedoc(ZiplineTestCase):
+class TestSharedoc(CatalystTestCase):
 
     def test_copydoc(self):
         def original_docstring_function():

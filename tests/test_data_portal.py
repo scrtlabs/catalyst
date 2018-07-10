@@ -27,7 +27,7 @@ from catalyst.data.minute_bars import (
 )
 from catalyst.testing import parameter_space
 from catalyst.testing.fixtures import (
-    ZiplineTestCase,
+    CatalystTestCase,
     WithTradingSessions,
     WithDataPortal,
     alias,
@@ -38,7 +38,7 @@ from catalyst.utils.numpy_utils import float64_dtype
 
 class DataPortalTestBase(WithDataPortal,
                          WithTradingSessions,
-                         ZiplineTestCase):
+                         CatalystTestCase):
 
     ASSET_FINDER_EQUITY_SIDS = (1, 2)
     START_DATE = pd.Timestamp('2016-08-01')
@@ -455,7 +455,7 @@ class DataPortalTestBase(WithDataPortal,
         self.assertEqual([], splits)
 
     @parameter_space(frequency=HISTORY_FREQUENCIES, field=OHLCV_FIELDS)
-    def test_price_rounding(self, frequency, field):
+    def _test_price_rounding(self, frequency, field):
         equity = self.asset_finder.retrieve_asset(2)
         future = self.asset_finder.retrieve_asset(10001)
         cf = self.data_portal.asset_finder.create_continuous_future(

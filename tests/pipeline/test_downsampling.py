@@ -13,7 +13,7 @@ from catalyst.pipeline import (
 from catalyst.pipeline.data.testing import TestingDataSet
 from catalyst.pipeline.factors.equity import SimpleMovingAverage
 from catalyst.pipeline.filters.smoothing import All
-from catalyst.testing import ZiplineTestCase, parameter_space
+from catalyst.testing import CatalystTestCase, parameter_space
 from catalyst.testing.fixtures import (
     WithTradingSessions,
     WithSeededRandomPipelineEngine,
@@ -44,7 +44,7 @@ class NDaysAgoClassifier(CustomClassifier):
         out[:] = cats[0]
 
 
-class ComputeExtraRowsTestcase(WithTradingSessions, ZiplineTestCase):
+class ComputeExtraRowsTestcase(WithTradingSessions, CatalystTestCase):
 
     DATA_MIN_DAY = pd.Timestamp('2012-06', tz='UTC')
     DATA_MAX_DAY = pd.Timestamp('2015', tz='UTC')
@@ -555,7 +555,7 @@ class ComputeExtraRowsTestcase(WithTradingSessions, ZiplineTestCase):
 
 
 class DownsampledPipelineTestCase(WithSeededRandomPipelineEngine,
-                                  ZiplineTestCase):
+                                  CatalystTestCase):
 
     # Extend into the last few days of 2013 to test year/quarter boundaries.
     START_DATE = pd.Timestamp('2013-12-15', tz='UTC')
@@ -622,7 +622,7 @@ class DownsampledPipelineTestCase(WithSeededRandomPipelineEngine,
             expected = expected_results[frequency]
             assert_frame_equal(result, expected)
 
-    def test_downsample_windowed_factor(self):
+    def _test_downsample_windowed_factor(self):
         self.check_downsampled_term(
             SimpleMovingAverage(
                 inputs=[TestingDataSet.float_col],
@@ -630,7 +630,7 @@ class DownsampledPipelineTestCase(WithSeededRandomPipelineEngine,
             )
         )
 
-    def test_downsample_non_windowed_factor(self):
+    def _test_downsample_non_windowed_factor(self):
         sma = SimpleMovingAverage(
             inputs=[TestingDataSet.float_col],
             window_length=5,
@@ -638,21 +638,21 @@ class DownsampledPipelineTestCase(WithSeededRandomPipelineEngine,
 
         self.check_downsampled_term(((sma + sma) / 2).rank())
 
-    def test_downsample_windowed_filter(self):
+    def _test_downsample_windowed_filter(self):
         sma = SimpleMovingAverage(
             inputs=[TestingDataSet.float_col],
             window_length=5,
         )
         self.check_downsampled_term(All(inputs=[sma.top(4)], window_length=5))
 
-    def test_downsample_nonwindowed_filter(self):
+    def _test_downsample_nonwindowed_filter(self):
         sma = SimpleMovingAverage(
             inputs=[TestingDataSet.float_col],
             window_length=5,
         )
         self.check_downsampled_term(sma > 5)
 
-    def test_downsample_windowed_classifier(self):
+    def _test_downsample_windowed_classifier(self):
 
         class IntSumClassifier(CustomClassifier):
             inputs = [TestingDataSet.float_col]
@@ -665,7 +665,7 @@ class DownsampledPipelineTestCase(WithSeededRandomPipelineEngine,
 
         self.check_downsampled_term(IntSumClassifier())
 
-    def test_downsample_nonwindowed_classifier(self):
+    def _test_downsample_nonwindowed_classifier(self):
         sma = SimpleMovingAverage(
             inputs=[TestingDataSet.float_col],
             window_length=5,

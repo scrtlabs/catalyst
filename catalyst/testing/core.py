@@ -643,7 +643,7 @@ def create_data_portal_from_trade_history(asset_finder, trading_calendar,
         return DataPortal(
             asset_finder, trading_calendar,
             first_trading_day=equity_daily_reader.first_trading_day,
-            equity_daily_reader=equity_daily_reader,
+            daily_reader=equity_daily_reader,
         )
     else:
         minutes = trading_calendar.minutes_in_range(

@@ -18,7 +18,7 @@ from catalyst.finance.asset_restrictions import (
 from catalyst.testing import parameter_space
 from catalyst.testing.fixtures import (
     WithDataPortal,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 
 
@@ -31,7 +31,7 @@ ALLOWED = RESTRICTION_STATES.ALLOWED
 MINUTE = pd.Timedelta(minutes=1)
 
 
-class RestrictionsTestCase(WithDataPortal, ZiplineTestCase):
+class RestrictionsTestCase(WithDataPortal, CatalystTestCase):
 
     ASSET_FINDER_EQUITY_SIDS = 1, 2, 3
 
