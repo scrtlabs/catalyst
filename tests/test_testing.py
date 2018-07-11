@@ -6,9 +6,9 @@ from unittest import TestCase
 
 from numpy import array, empty
 
-from catalyst._protocol import BarData
-from catalyst.finance.asset_restrictions import NoRestrictions
-from catalyst.finance.order import Order
+# from catalyst._protocol import BarData
+# from catalyst.finance.asset_restrictions import NoRestrictions
+# from catalyst.finance.order import Order
 
 from catalyst.testing import (
     check_arrays,
@@ -16,12 +16,12 @@ from catalyst.testing import (
     make_cascading_boolean_array,
     parameter_space,
 )
-from catalyst.testing.fixtures import (
-    WithConstantEquityMinuteBarData,
-    WithDataPortal,
-    CatalystTestCase,
-)
-from catalyst.testing.slippage import TestingSlippage
+# from catalyst.testing.fixtures import (
+#     WithConstantEquityMinuteBarData,
+#     WithDataPortal,
+#     CatalystTestCase,
+# )
+# from catalyst.testing.slippage import TestingSlippage
 from catalyst.utils.numpy_utils import bool_dtype
 
 
@@ -119,6 +119,7 @@ class TestMakeBooleanArray(TestCase):
             make_cascading_boolean_array((3, 0)),
             empty((3, 0), dtype=bool_dtype),
         )
+
 
 """
 class TestTestingSlippage(WithConstantEquityMinuteBarData,

@@ -292,7 +292,7 @@ class BlotterTestCase(WithCreateBarData,
 
             order_size = 100
             expected_filled = float(trade_amt *
-                                  DEFAULT_EQUITY_VOLUME_SLIPPAGE_BAR_LIMIT)
+                                    DEFAULT_EQUITY_VOLUME_SLIPPAGE_BAR_LIMIT)
             expected_open = order_size - expected_filled
             expected_status = ORDER_STATUS.OPEN if expected_open else \
                 ORDER_STATUS.FILLED

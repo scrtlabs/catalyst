@@ -10,25 +10,17 @@ from os.path import (
 from nose_parameterized import parameterized
 import numpy as np
 from numpy import (
-    array,
     arange,
     full_like,
-    float64,
     nan,
-    uint32,
 )
-from numpy.testing import assert_almost_equal
 import pandas as pd
 from pandas import (
-    concat,
     DataFrame,
     date_range,
-    read_csv,
     Series,
     Timestamp,
 )
-from pandas.tseries.tools import normalize_date
-from six import iteritems, itervalues
 
 from catalyst.algorithm import TradingAlgorithm
 from catalyst.api import (
@@ -43,22 +35,9 @@ from catalyst.errors import (
 )
 from catalyst.lib.adjustment import MULTIPLY
 from catalyst.pipeline import Pipeline
-from catalyst.pipeline.factors.equity import VWAP
 from catalyst.pipeline.data import USEquityPricing
 from catalyst.pipeline.loaders.frame import DataFrameLoader
-from catalyst.pipeline.loaders.equity_pricing_loader import (
-    USEquityPricingLoader,
-)
-from catalyst.testing import (
-    str_to_seconds
-)
-from catalyst.testing import (
-    create_empty_splits_mergers_frame,
-    FakeDataPortal,
-)
 from catalyst.testing.fixtures import (
-    WithAdjustmentReader,
-    WithBcolzEquityDailyBarReaderFromCSVs,
     WithDataPortal,
     CatalystTestCase,
 )
@@ -351,6 +330,7 @@ class MockDailyBarSpotReader(object):
     """
     def get_value(self, sid, day, column):
         return 100.0
+
 
 """
 class PipelineAlgorithmTestCase(WithBcolzEquityDailyBarReaderFromCSVs,

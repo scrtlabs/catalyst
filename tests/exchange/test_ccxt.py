@@ -5,7 +5,7 @@ import pandas as pd
 from ccxt.base.errors import RequestTimeout
 
 from catalyst.exchange.exchange_errors import ExchangeRequestError
-from catalyst.exchange.utils.stats_utils import set_print_settings
+# from catalyst.exchange.utils.stats_utils import set_print_settings
 from .base import BaseExchangeTestCase
 from catalyst.exchange.ccxt.ccxt_exchange import CCXT
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
@@ -158,9 +158,9 @@ class TestCCXT(BaseExchangeTestCase):
         :return: bool
         """
         return observed.id == expected.id and \
-               observed.amount == expected.amount and \
-               observed.asset == expected.asset and \
-               observed.limit == expected.limit
+            observed.amount == expected.amount and \
+            observed.asset == expected.asset and \
+            observed.limit == expected.limit
 
     def test_create_order_timeout_order(self):
         """
@@ -351,6 +351,7 @@ class TestCCXT(BaseExchangeTestCase):
             try:
                 observed_fetchTrade_None = self.exchange.create_order(
                     asset, amount, is_buy, style)
+                print(observed_fetchTrade_None)
             except ExchangeRequestError as e:
                 pass
 
@@ -383,6 +384,7 @@ class TestCCXT(BaseExchangeTestCase):
             try:
                 observed_fetchTradeOrder_None = self.exchange.create_order(
                     asset, amount, is_buy, style)
+                print(observed_fetchTradeOrder_None)
             except ExchangeRequestError as e:
                 pass
 
@@ -417,6 +419,7 @@ class TestCCXT(BaseExchangeTestCase):
             mock_trades.side_effect = RequestTimeout
             try:
                 observed_transactions = self.exchange.process_order(order)
+                print(observed_transactions)
             except ExchangeRequestError as e:
                 pass
 

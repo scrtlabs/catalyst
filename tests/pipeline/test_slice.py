@@ -360,8 +360,8 @@ class SliceTestCase(WithSeededRandomPipelineEngine, CatalystTestCase):
 
     @parameter_space(returns_length=[2, 3], correlation_length=[3, 4])
     def _test_factor_correlation_methods(self,
-                                        returns_length,
-                                        correlation_length):
+                                         returns_length,
+                                         correlation_length):
         """
         Ensure that `Factor.pearsonr` and `Factor.spearmanr` are consistent
         with the built-in factors `RollingPearsonOfReturns` and
@@ -451,7 +451,9 @@ class SliceTestCase(WithSeededRandomPipelineEngine, CatalystTestCase):
             )
 
     @parameter_space(returns_length=[2, 3], regression_length=[3, 4])
-    def _test_factor_regression_method(self, returns_length, regression_length):
+    def _test_factor_regression_method(self,
+                                       returns_length,
+                                       regression_length):
         """
         Ensure that `Factor.linear_regression` is consistent with the built-in
         factor `RollingLinearRegressionOfReturns`.

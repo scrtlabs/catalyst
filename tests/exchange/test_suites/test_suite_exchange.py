@@ -151,7 +151,7 @@ class TestSuiteExchange(WithLogger, CatalystTestCase):
         pass
 
     def _test_orders(self):
-        population = 3
+        # population = 3
         quote_currency = 'eth'
         order_amount = 0.1
 

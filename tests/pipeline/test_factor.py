@@ -866,9 +866,9 @@ class FactorTestCase(BasePipelineTestCase):
         add_nulls_to_factor=(False, True,),
     )
     def _test_normalizations_randomized(self,
-                                       seed_value,
-                                       normalizer_name_and_func,
-                                       add_nulls_to_factor):
+                                        seed_value,
+                                        normalizer_name_and_func,
+                                        add_nulls_to_factor):
 
         name, kwargs, func = normalizer_name_and_func
 

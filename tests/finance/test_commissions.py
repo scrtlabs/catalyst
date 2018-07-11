@@ -272,7 +272,9 @@ class CommissionUnitTests(WithAssetFinder, CatalystTestCase):
         self.assertAlmostEqual(15.3, model.calculate(order, txns[2]))
 
 
-class CommissionAlgorithmTests(WithDataPortal, WithSimParams, CatalystTestCase):
+class CommissionAlgorithmTests(WithDataPortal,
+                               WithSimParams,
+                               CatalystTestCase):
     # make sure order commissions are properly incremented
 
     sidint, = ASSET_FINDER_EQUITY_SIDS = (133,)

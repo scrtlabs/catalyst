@@ -1156,8 +1156,8 @@ class WithEstimateWindows(WithEstimates):
 
     @parameterized.expand(window_test_cases)
     def _test_estimate_windows_at_quarter_boundaries(self,
-                                                    start_date,
-                                                    num_announcements_out):
+                                                     start_date,
+                                                     num_announcements_out):
         dataset = QuartersEstimates(num_announcements_out)
         trading_days = self.trading_days
         timelines = self.timelines

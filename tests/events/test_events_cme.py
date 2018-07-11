@@ -14,7 +14,7 @@
 # limitations under the License.
 
 '''
-#   ZIPLINE legacy test: Catalyst only uses OPEN calendar, and thus 
+#   ZIPLINE legacy test: Catalyst only uses OPEN calendar, and thus
 #   this test suite is irrelevant, and is commented out in its entirety
 
 from unittest import TestCase

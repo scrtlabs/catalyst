@@ -2709,7 +2709,9 @@ def order_stuff(context, data):
         ('intraday_delta', [('2016-01-04 17:00', 500.0),
                             ('2016-01-04 18:00', 500.0)]),
     ])
-    def _test_capital_changes_minute_mode_minute_emission(self, change, values):
+    def _test_capital_changes_minute_mode_minute_emission(self,
+                                                          change,
+                                                          values):
         change_loc, change_type = change.split('_')
 
         sim_params = factory.create_simulation_parameters(
@@ -4100,7 +4102,9 @@ class TestOrderCancelation(WithDataPortal,
             self.assertFalse(log_catcher.has_warnings)
 
 
-class TestEquityAutoClose(WithTradingEnvironment, WithTmpDir, CatalystTestCase):
+class TestEquityAutoClose(WithTradingEnvironment,
+                          WithTmpDir,
+                          CatalystTestCase):
     """
     Tests if delisted equities are properly removed from a portfolio holding
     positions in said equities.
@@ -4279,9 +4283,9 @@ class TestEquityAutoClose(WithTradingEnvironment, WithTmpDir, CatalystTestCase):
         auto_close_lag=[1, 2],
     )
     def _test_daily_delisted_equities(self,
-                                     order_size,
-                                     capital_base,
-                                     auto_close_lag):
+                                      order_size,
+                                      capital_base,
+                                      auto_close_lag):
         """
         Make sure that after an equity gets delisted, our portfolio holds the
         correct number of equities and correct amount of cash.

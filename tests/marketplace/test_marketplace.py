@@ -21,6 +21,7 @@ class TestMarketplace(WithLogger, CatalystTestCase):
     def _test_ingest(self):
         marketplace = Marketplace()
         ds_def = marketplace.ingest('marketcap')
+        print(ds_def)
         pass
 
     def _test_publish(self):

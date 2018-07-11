@@ -15,13 +15,13 @@ from catalyst.testing.fixtures import WithLogger, CatalystTestCase
 from logbook import TestHandler, WARNING
 
 filter_algos = [
-    #'buy_and_hodl.py',
+    # 'buy_and_hodl.py',
     'buy_btc_simple.py',
     'buy_low_sell_high.py',
-    #'mean_reversion_simple.py',
-    #'rsi_profit_target.py',
-    #'simple_loop.py',
-    #'simple_universe.py',
+    # 'mean_reversion_simple.py',
+    # 'rsi_profit_target.py',
+    # 'simple_loop.py',
+    # 'simple_universe.py',
 ]
 
 
@@ -41,11 +41,12 @@ class TestSuiteAlgo(WithLogger, CatalystTestCase):
         pass
 
     def test_run_examples(self):
-        #folder = join('..', '..', '..', 'catalyst', 'examples')
+        # folder = join('..', '..', '..', 'catalyst', 'examples')
         HERE = os.path.dirname(os.path.abspath(__file__))
         folder = os.path.join(HERE, '..', '..', '..', 'catalyst', 'examples')
 
-        files = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
+        files = [f for f in os.listdir(folder)
+                 if os.path.isfile(os.path.join(folder, f))]
 
         algo_list = []
         for filename in files:
@@ -71,7 +72,7 @@ class TestSuiteAlgo(WithLogger, CatalystTestCase):
 
             for module_name in algo_list:
                 algo = importlib.import_module(module_name)
-                namespace = module_name.replace('.', '_')
+                # namespace = module_name.replace('.', '_')
 
                 log_catcher = TestHandler()
                 with log_catcher:
@@ -97,4 +98,3 @@ class TestSuiteAlgo(WithLogger, CatalystTestCase):
                     assert (not log_catcher.has_criticals)
 
             clean_exchange_bundles(exchange_name, data_freq)
-

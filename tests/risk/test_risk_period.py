@@ -252,7 +252,7 @@ class TestRisk(WithTradingEnvironment, CatalystTestCase):
         )
 
         for x in self.metrics.month_periods:
-            print (type(x.sortino))
+            print(type(x.sortino))
 
         np.testing.assert_equal(
             all(isinstance(x.sortino, float)

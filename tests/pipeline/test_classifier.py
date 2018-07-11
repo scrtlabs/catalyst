@@ -269,9 +269,9 @@ class ClassifierTestCase(BasePipelineTestCase):
         labelarray_dtype=(categorical_dtype, bytes_dtype, unicode_dtype),
     )
     def _test_string_elementwise_predicates(self,
-                                           compval,
-                                           missing,
-                                           labelarray_dtype):
+                                            compval,
+                                            missing,
+                                            labelarray_dtype):
         if labelarray_dtype == bytes_dtype:
             compval = compval.encode('utf-8')
             missing = missing.encode('utf-8')

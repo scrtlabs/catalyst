@@ -855,7 +855,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, CatalystTestCase):
         ))
         assert_frame_equal(result, expected, check_dtype=False)
 
-    def _test_id(self):
+    def _test_id(self):  # noqa F811
         """
         input (self.df):
            asof_date  sid  timestamp int_value value
@@ -1738,7 +1738,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, CatalystTestCase):
                 compute_fn=op.itemgetter(-1),
             )
 
-    def _test_checkpoints_macro(self):
+    def _test_checkpoints_macro(self):  # noqa F811
         ffilled_value = 0.0
 
         checkpoints_ts = pd.Timestamp('2014-01-02')
@@ -1836,7 +1836,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, CatalystTestCase):
                 compute_fn=op.itemgetter(-1),
             )
 
-    def _test_checkpoints(self):
+    def _test_checkpoints(self):  # noqa F811
         nassets = len(simple_asset_info)
         ffilled_values = (np.arange(nassets, dtype=np.float64) + 1) * 10
         dates = [pd.Timestamp('2014-01-02')] * nassets
