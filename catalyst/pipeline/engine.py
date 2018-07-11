@@ -485,7 +485,7 @@ class SimplePipelineEngine(PipelineEngine):
             )
 
             if isinstance(term, LoadableTerm):
-                term_key = loader_group_key(term)
+                # term_key = loader_group_key(term)
                 # TODO: temp workaround
                 to_load = sorted(
                     six.next(six.itervalues(loader_groups)),

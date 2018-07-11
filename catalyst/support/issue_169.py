@@ -1,4 +1,3 @@
-import pandas as pd
 from catalyst.utils.run_algo import run_algorithm
 from catalyst.api import symbol
 from exchange.utils.stats_utils import set_print_settings

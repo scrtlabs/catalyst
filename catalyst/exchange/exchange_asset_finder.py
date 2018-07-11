@@ -173,7 +173,7 @@ class ExchangeAssetFinder(object):
 
             data.append(exists)
 
-        sids = [asset.sid for asset in exchange.assets]
+        # sids = [asset.sid for asset in exchange.assets]
         df = pd.DataFrame(data, index=dates, columns=exchange.assets)
 
         return df

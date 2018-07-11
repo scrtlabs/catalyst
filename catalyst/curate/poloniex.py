@@ -35,7 +35,7 @@ class PoloniexCurator(object):
                 os.makedirs(CSV_OUT_FOLDER)
             except Exception as e:
                 log.error('Failed to create data folder: {}'.format(
-                            CSV_OUT_FOLDER))
+                    CSV_OUT_FOLDER))
                 log.exception(e)
 
     def get_currency_pairs(self):
@@ -58,8 +58,7 @@ class PoloniexCurator(object):
         self.currency_pairs.sort()
 
         log.debug('Currency pairs retrieved successfully: {}'.format(
-                    len(self.currency_pairs)
-                    ))
+            len(self.currency_pairs)))
 
     def _retrieve_tradeID_date(self, row):
         '''
@@ -95,26 +94,26 @@ class PoloniexCurator(object):
                 if(f.tell() > 2):                   # Check file size is not 0
                     f.seek(0)                       # Go to start to read
                     last_tradeID, end_file = self._retrieve_tradeID_date(
-                                                    f.readline())
+                        f.readline())
                     f.seek(-2, os.SEEK_END)         # Jump to the 2nd last byte
                     while f.read(1) != b"\n":       # Until EOL is found...
                         # ...jump back the read byte plus one more.
                         f.seek(-2, os.SEEK_CUR)
                     first_tradeID, start_file = self._retrieve_tradeID_date(
-                                                    f.readline())
+                        f.readline())
 
-                    if(end_file + 3600 * 6 > DT_END
-                        and (first_tradeID == 1
-                             or (currencyPair == 'BTC_HUC'
-                                 and first_tradeID == 2)
-                             or (currencyPair == 'BTC_RIC'
-                                 and first_tradeID == 2)
-                             or (currencyPair == 'BTC_XCP'
-                                 and first_tradeID == 2)
-                             or (currencyPair == 'BTC_NAV'
-                                 and first_tradeID == 4569)
-                             or (currencyPair == 'BTC_POT'
-                                 and first_tradeID == 23511))):
+                    if(end_file + 3600 * 6 > DT_END and
+                        (first_tradeID == 1 or
+                         (currencyPair == 'BTC_HUC' and
+                          first_tradeID == 2) or
+                         (currencyPair == 'BTC_RIC' and
+                          first_tradeID == 2) or
+                         (currencyPair == 'BTC_XCP' and
+                          first_tradeID == 2) or
+                         (currencyPair == 'BTC_NAV' and
+                          first_tradeID == 4569) or
+                         (currencyPair == 'BTC_POT' and
+                          first_tradeID == 23511))):
                         return
 
         except Exception as e:
@@ -132,16 +131,15 @@ class PoloniexCurator(object):
             newstart = start
 
         log.debug('{}: Retrieving from {} to {}\t {} - {}'.format(
-                    currencyPair, str(newstart), str(end),
-                    time.ctime(newstart), time.ctime(end)))
+            currencyPair, str(newstart), str(end),
+            time.ctime(newstart), time.ctime(end)))
 
         url = '{path}command=returnTradeHistory&currencyPair={pair}' \
               '&start={start}&end={end}'.format(
-                    path=self._api_path,
-                    pair=currencyPair,
-                    start=str(newstart),
-                    end=str(end)
-                )
+                  path=self._api_path,
+                  pair=currencyPair,
+                  start=str(newstart),
+                  end=str(end))
 
         attempts = 0
         success = 0
@@ -155,13 +153,12 @@ class PoloniexCurator(object):
                 attempts += 1
             else:
                 try:
-                    if(isinstance(response.json(), dict)
-                       and response.json()['error']):
+                    if(isinstance(response.json(), dict) and
+                       response.json()['error']):
                         log.error('Failed to to retrieve trade history data '
                                   'for {}: {}'.format(
-                                    currencyPair,
-                                    response.json()['error']
-                                    ))
+                                      currencyPair,
+                                      response.json()['error']))
                         attempts += 1
                 except Exception as e:
                     log.exception(e)
@@ -177,8 +174,8 @@ class PoloniexCurator(object):
         If we get to transactionId == 1, and we already have that on
         disk, we got to the end of TradeHistory for this coin.
         '''
-        if('first_tradeID' in locals()
-                and response.json()[-1]['tradeID'] == first_tradeID):
+        if('first_tradeID' in locals() and
+           response.json()[-1]['tradeID'] == first_tradeID):
             return
 
         '''
@@ -193,8 +190,8 @@ class PoloniexCurator(object):
                    for this currencyPair
         '''
         try:
-            if(temp is not None
-                    or ('end_file' in locals() and end_file + 3600 < end)):
+            if(temp is not None or
+                    ('end_file' in locals() and end_file + 3600 < end)):
                 if (temp is None):
                     temp = os.tmpfile()
                 tempcsv = csv.writer(temp)
@@ -228,8 +225,8 @@ class PoloniexCurator(object):
                 with open(csv_fn, 'ab') as csvfile:
                     csvwriter = csv.writer(csvfile)
                     for item in response.json():
-                        if('first_tradeID' in locals()
-                                and item['tradeID'] >= first_tradeID):
+                        if('first_tradeID' in locals() and
+                                item['tradeID'] >= first_tradeID):
                             continue
                         csvwriter.writerow([
                             item['tradeID'],
@@ -241,7 +238,8 @@ class PoloniexCurator(object):
                             item['globalTradeID']
                         ])
                 end = pd.to_datetime(response.json()[-1]['date'],
-                                     infer_datetime_format=True).value//10**9
+                                     infer_datetime_format=True
+                                     ).value // 10 ** 9
 
         except Exception as e:
             log.error('Error opening {}'.format(csv_fn))
@@ -276,7 +274,7 @@ class PoloniexCurator(object):
         csv_trades = CSV_OUT_FOLDER + 'crypto_trades-' + currencyPair + '.csv'
         csv_1min = CSV_OUT_FOLDER + 'crypto_1min-' + currencyPair + '.csv'
         if(os.path.getmtime(csv_1min) > time.time() - 7200):
-            log.debug(currencyPair+': 1min data file already up to date. '
+            log.debug(currencyPair + ': 1min data file already up to date. '
                       'Delete the file if you want to rebuild it.')
         else:
             df = pd.read_csv(csv_trades,
@@ -346,9 +344,8 @@ class PoloniexCurator(object):
         with open(filename, 'w') as symbols:
             for currencyPair in self.currency_pairs:
                 start = None
-                csv_fn = '{}crypto_trades-{}.csv'.format(
-                                                    CSV_OUT_FOLDER,
-                                                    currencyPair)
+                csv_fn = '{}crypto_trades-{}.csv'.format(CSV_OUT_FOLDER,
+                                                         currencyPair)
                 with open(csv_fn, 'r') as f:
                     f.seek(0, os.SEEK_END)
                     if(f.tell() > 2):               # Check file size is not 0

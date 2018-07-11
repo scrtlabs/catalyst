@@ -174,15 +174,14 @@ def _choose_wallet(pubAddr, missing):
         for idx, wallet in enumerate(SUPPORTED_WALLETS):
             print('{}\t{}'.format(idx, wallet))
 
-        lw = len(SUPPORTED_WALLETS)-1
-        w = input('Choose a number between 0 and {}: '.format(
-                    lw))
+        lw = len(SUPPORTED_WALLETS) - 1
+        w = input('Choose a number between 0 and {}: '.format(lw))
         try:
             w = int(w)
         except ValueError:
             print('Enter a number between 0 and {}'.format(lw))
         else:
-            if w not in range(0, lw+1):
+            if w not in range(0, lw + 1):
                 print('Enter a number between 0 and '
                       '{}'.format(lw))
             else:

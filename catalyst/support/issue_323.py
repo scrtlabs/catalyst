@@ -1,6 +1,7 @@
 from catalyst.api import symbol
 from catalyst.utils.run_algo import run_algorithm
 
+
 def initialize(context):
     pass
 
@@ -29,4 +30,3 @@ if live:
                   data_frequency='daily',
                   capital_base=3000,
                   )
-

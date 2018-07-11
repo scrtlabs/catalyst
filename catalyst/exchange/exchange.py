@@ -253,14 +253,10 @@ class Exchange:
                 applies = (a.data_source == data_source)
 
             elif data_frequency is not None:
-                applies = (
-                        (
-                                data_frequency == 'minute' and
-                                a.end_minute is not None)
-                        or (
-                                data_frequency == 'daily' and a.end_daily is not None)
-                )
-
+                applies = ((data_frequency == 'minute' and
+                            a.end_minute is not None)
+                           or (data_frequency == 'daily' and
+                               a.end_daily is not None))
             else:
                 applies = True
 
@@ -637,7 +633,7 @@ class Exchange:
                 start_dt = get_start_dt(end_dt, adj_bar_count, data_frequency)
                 trailing_dt = \
                     series[asset].index[-1] + get_delta(1, data_frequency) \
-                        if asset in series else start_dt
+                    if asset in series else start_dt
 
                 # The get_history method supports multiple asset
                 # Use the original frequency to let each api optimize

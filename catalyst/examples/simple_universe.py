@@ -42,7 +42,8 @@ from catalyst.exchange.utils.exchange_utils import get_exchange_symbols
 def initialize(context):
     context.i = -1  # minute counter
     context.exchange = list(context.exchanges.values())[0].name.lower()
-    context.quote_currency = list(context.exchanges.values())[0].quote_currency.lower()
+    context.quote_currency = list(
+        context.exchanges.values())[0].quote_currency.lower()
 
 
 def handle_data(context, data):
@@ -127,9 +128,9 @@ def universe(context, lookback_date, current_date):
     # convert into a DataFrame for easier processing
     df = pd.DataFrame.from_dict(json_symbols).transpose().astype(str)
     df['quote_currency'] = df.apply(lambda row: row.symbol.split('_')[1],
-                                   axis=1)
+                                    axis=1)
     df['base_currency'] = df.apply(lambda row: row.symbol.split('_')[0],
-                                     axis=1)
+                                   axis=1)
 
     # Filter all the pairs to get only the ones for a given quote_currency
     df = df[df['quote_currency'] == context.quote_currency]

@@ -722,8 +722,7 @@ class TradingCalendar(with_metaclass(ABCMeta)):
                 np.arange(
                     opens_in_ns[day_idx],
                     closes_in_ns[day_idx] + NANOS_IN_MINUTE,
-                    nanos_in_interval
-                )
+                    nanos_in_interval)
 
             idx += size_int
 

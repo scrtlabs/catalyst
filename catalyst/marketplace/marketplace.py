@@ -69,7 +69,7 @@ class Marketplace:
 
         abi_url = urllib.urlopen(MARKETPLACE_CONTRACT_ABI)
         abi_url = abi_url.read().decode(
-                abi_url.info().get_content_charset())
+            abi_url.info().get_content_charset())
 
         abi = json.loads(abi_url)
 
@@ -86,7 +86,7 @@ class Marketplace:
 
         abi_url = urllib.urlopen(ENIGMA_CONTRACT_ABI)
         abi_url = abi_url.read().decode(
-                abi_url.info().get_content_charset())
+            abi_url.info().get_content_charset())
 
         abi = json.loads(abi_url)
 
@@ -161,13 +161,13 @@ class Marketplace:
               'Gas Price:\t\t[Accept the default value]\n'
               'Nonce:\t\t\t{nonce}\n'
               'Data:\t\t\t{data}\n'.format(
-                url=url,
-                _from=tx['from'],
-                to=tx['to'],
-                value=tx['value'],
-                gas=tx['gas'],
-                nonce=tx['nonce'],
-                data=tx['data'], )
+                  url=url,
+                  _from=tx['from'],
+                  to=tx['to'],
+                  value=tx['value'],
+                  gas=tx['gas'],
+                  nonce=tx['nonce'],
+                  data=tx['data'], )
               )
 
         webbrowser.open_new(url)
@@ -194,8 +194,9 @@ class Marketplace:
               '{}\n\n'.format(etherscan))
 
     def _list(self):
-        num_data_sources = self.mkt_contract.functions.getProviderNamesSize().call()
-        data_sources = [self.mkt_contract.functions.getNameAt(x).call() for x in range(num_data_sources)]
+        n_d_sources = self.mkt_contract.functions.getProviderNamesSize().call()
+        data_sources = [self.mkt_contract.functions.getNameAt(x).call()
+                        for x in range(n_d_sources)]
 
         data = []
         for index, data_source in enumerate(data_sources):
@@ -306,14 +307,14 @@ class Marketplace:
                   'buy: {} ENG. Get enough ENG to cover the costs of the '
                   'monthly\nsubscription for what you are trying to buy, '
                   'and try again.'.format(
-                    address, from_grains(balance), price))
+                      address, from_grains(balance), price))
             return
 
         while True:
             agree_pay = input('Please confirm that you agree to pay {} ENG '
                               'for a monthly subscription to the dataset "{}" '
                               'starting today. [default: Y] '.format(
-                                price, dataset)) or 'y'
+                                  price, dataset)) or 'y'
             if agree_pay.lower() not in ('y', 'n'):
                 print("Please answer Y or N.")
             else:
@@ -412,7 +413,7 @@ class Marketplace:
               'You can now ingest this dataset anytime during the '
               'next month by running the following command:\n'
               'catalyst marketplace ingest --dataset={}'.format(
-                dataset, address, dataset))
+                  dataset, address, dataset))
 
     def process_temp_bundle(self, ds_name, path):
         """
@@ -495,9 +496,9 @@ class Marketplace:
             print('Your subscription to dataset "{}" expired on {} UTC.'
                   'Please renew your subscription by running:\n'
                   'catalyst marketplace subscribe --dataset={}'.format(
-                    ds_name,
-                    pd.to_datetime(check_sub[4], unit='s', utc=True),
-                    ds_name)
+                      ds_name,
+                      pd.to_datetime(check_sub[4], unit='s', utc=True),
+                      ds_name)
                   )
 
         if 'key' in self.addresses[address_i]:
@@ -566,12 +567,15 @@ class Marketplace:
         z = bcolz.ctable(rootdir=bundle_folder, mode='r')
 
         if start is not None and end is not None:
-            z = z.fetchwhere('(date>=start_date) & (date<end_date)', user_dict={'start_date': start.encode(),
-                                                                                 'end_date': end.encode()})
+            z = z.fetchwhere('(date>=start_date) & (date<end_date)',
+                             user_dict={'start_date': start.encode(),
+                                        'end_date': end.encode()})
         elif start is not None:
-            z = z.fetchwhere('(date>=start_date)', user_dict={'start_date': start.encode()})
+            z = z.fetchwhere('(date>=start_date)',
+                             user_dict={'start_date': start.encode()})
         elif end is not None:
-            z = z.fetchwhere('(date<end_date)', user_dict={'end_date': end.encode()})
+            z = z.fetchwhere('(date<end_date)',
+                             user_dict={'end_date': end.encode()})
         df = z.todataframe()  # type: pd.DataFrame
         df.set_index(['date', 'symbol'], drop=True, inplace=True)
 
@@ -800,7 +804,7 @@ class Marketplace:
         files = []
         for idx, file in enumerate(filenames):
             log.info('Uploading file {} of {}: {}'.format(
-                idx+1, len(filenames), file))
+                idx + 1, len(filenames), file))
             files.append(('file', (os.path.basename(file), read_file(file))))
 
         headers = get_signed_headers(dataset, key, secret)
@@ -834,8 +838,8 @@ class Marketplace:
             while True:
                 print(df_sets)
                 dataset_num = input('Choose the dataset you want to '
-                                    'get the withdraw amount for [0..{}]: '.format(
-                                        df_sets.size - 1))
+                                    'get the withdraw amount for '
+                                    '[0..{}]: '.format(df_sets.size - 1))
                 try:
                     dataset_num = int(dataset_num)
                 except ValueError:
@@ -851,7 +855,7 @@ class Marketplace:
 
         dataset = dataset.lower()
 
-        address = self.choose_pubaddr()[0]
+        # address = self.choose_pubaddr()[0]
         provider_info = self.mkt_contract.functions.getDataProviderInfo(
             Web3.toHex(dataset.encode())
         ).call()
@@ -861,7 +865,9 @@ class Marketplace:
                   'the Data Marketplace.'.format(dataset))
             return
 
-        withdraw_amount = from_grains(self.mkt_contract.functions.getWithdrawAmount(Web3.toHex(dataset.encode())).call())
+        withdraw_amount = from_grains(
+            self.mkt_contract.functions.getWithdrawAmount(
+                Web3.toHex(dataset.encode())).call())
         print('{} ENG'.format(withdraw_amount))
 
     def withdraw(self, dataset=None):
@@ -876,7 +882,7 @@ class Marketplace:
                 print(df_sets)
                 dataset_num = input('Choose the dataset you want to '
                                     'withdraw from [0..{}]: '.format(
-                    df_sets.size - 1))
+                                        df_sets.size - 1))
                 try:
                     dataset_num = int(dataset_num)
                 except ValueError:

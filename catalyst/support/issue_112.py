@@ -14,6 +14,7 @@ def handle_data(context, data):
                       bar_count=10,
                       frequency='5T',
                       )
+    print(df)
 
 
 if __name__ == '__main__':

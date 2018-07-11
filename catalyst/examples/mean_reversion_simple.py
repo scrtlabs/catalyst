@@ -11,7 +11,7 @@ import talib
 from logbook import Logger
 
 from catalyst import run_algorithm
-from catalyst.api import symbol, record, order_target_percent, get_open_orders
+from catalyst.api import symbol, record, order_target_percent
 from catalyst.exchange.utils.stats_utils import extract_transactions
 # We give a name to the algorithm which Catalyst will use to persist its state.
 # In this example, Catalyst will create the `.catalyst/data/live_algos`

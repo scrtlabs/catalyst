@@ -128,8 +128,7 @@ class Term(with_metaclass(ABCMeta, object)):
                     window_safe=window_safe,
                     ndim=ndim,
                     params=params,
-                    *args, **kwargs
-                )
+                    *args, **kwargs)
             return new_instance
 
     @classmethod
@@ -562,8 +561,8 @@ class ComputableTerm(Term):
         with instances of np.ndarray as inputs.
         """
         return (
-            self.window_length is not NotSpecified
-            and self.window_length > 0
+            self.window_length is not NotSpecified and
+            self.window_length > 0
         )
 
     @lazyval

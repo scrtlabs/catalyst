@@ -9,7 +9,6 @@ from catalyst.exchange.utils.factory import find_exchanges
 from catalyst.utils.paths import ensure_directory
 
 
-
 def handle_exchange_error(exchange, e):
     try:
         message = '{}: {}'.format(

@@ -22,7 +22,7 @@
     https://www.enigma.co/catalyst/status
 '''
 from catalyst import run_algorithm
-from catalyst.api import order_target, record, symbol, order, order_target_percent, set_commission
+from catalyst.api import order_target, record, symbol, order
 import pandas as pd
 
 
@@ -45,17 +45,23 @@ def initialize(context):
 
 def handle_data(context, data):
     if not context.blotter.open_orders:
-        if context.portfolio.positions and context.portfolio.positions[context.asset].amount >= 2:
-            order(context.asset, -2, limit_price=(data.current(context.asset, 'price')-0.00000002))
+        if(context.portfolio.positions and
+           context.portfolio.positions[context.asset].amount >= 2):
+            order(context.asset, -2, limit_price=(
+                data.current(context.asset, 'price') - 0.00000002))
         else:
-            order_target(context.asset, 3, limit_price=(data.current(context.asset, 'price')+0.00000002))
+            order_target(context.asset, 3, limit_price=(
+                data.current(context.asset, 'price') + 0.00000002))
 
     record(btc=data.current(context.asset, 'price'))
 
 # def handle_data(context, data):
 #     context.i += 1
 #     if context.i % 2 == 1:# if not context.blotter.open_orders:
-#         order_target(context.asset, 1, limit_price=data.current(context.asset, 'price'))
+#         order_target(
+#            context.asset,
+#            1,
+#            limit_price=data.current(context.asset, 'price'))
 
     # record(btc=data.current(context.asset, 'price'))
 
@@ -78,13 +84,13 @@ if __name__ == '__main__':
         )
     else:
         run_algorithm(
-                capital_base=100000,
-                data_frequency='daily',
-                initialize=initialize,
-                handle_data=handle_data,
-                exchange_name='poloniex',
-                algo_namespace='buy_btc_simple',
-                quote_currency='usdt',
-                start=pd.to_datetime('2016-01-01', utc=True),
-                end=pd.to_datetime('2016-01-03', utc=True),
-            )
+            capital_base=100000,
+            data_frequency='daily',
+            initialize=initialize,
+            handle_data=handle_data,
+            exchange_name='poloniex',
+            algo_namespace='buy_btc_simple',
+            quote_currency='usdt',
+            start=pd.to_datetime('2016-01-01', utc=True),
+            end=pd.to_datetime('2016-01-03', utc=True),
+        )

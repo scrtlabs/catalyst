@@ -30,9 +30,8 @@ def get_key_secret(pubAddr, wallet):
     """
     session = requests.Session()
     response = session.get('{}/marketplace/getkeysecret'.format(AUTH_SERVER),
-                           headers={
-                            'Authorization': 'Digest username="{0}"'.format(
-                                pubAddr)})
+                           headers={'Authorization': 'Digest '
+                                    'username="{0}"'.format(pubAddr)})
 
     if response.status_code != 401:
         raise MarketplaceHTTPRequest(request=str('obtain key/secret'),
@@ -53,8 +52,8 @@ def get_key_secret(pubAddr, wallet):
               'Visit {url} and sign the '
               'following message (copy the entire line, without the '
               'line break at the end):\n\n{nonce}'.format(
-                url=url,
-                nonce=nonce))
+                  url=url,
+                  nonce=nonce))
 
         webbrowser.open_new(url)
 
@@ -75,13 +74,13 @@ def get_key_secret(pubAddr, wallet):
 
     response = session.get('{}/marketplace/getkeysecret'.format(AUTH_SERVER),
                            headers={
-                'Authorization': 'Digest username="{0}",realm="{1}",'
-                'nonce="{2}",uri="/marketplace/getkeysecret",response="{3}",'
-                'opaque="{4}"'.format(pubAddr,
-                                      d['realm'],
-                                      d['nonce'],
-                                      ','.join(str(e) for e in vrs+[wallet]),
-                                      d['opaque'])})
+        'Authorization': 'Digest username="{0}",realm="{1}",'
+        'nonce="{2}",uri="/marketplace/getkeysecret",response="{3}",'
+        'opaque="{4}"'.format(pubAddr,
+                              d['realm'],
+                              d['nonce'],
+                              ','.join(str(e) for e in vrs + [wallet]),
+                              d['opaque'])})
 
     if response.status_code == 200:
 

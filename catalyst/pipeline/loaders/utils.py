@@ -20,8 +20,7 @@ def validate_event_metadata(event_dates,
         "mismatched arrays: %d != %d != %d" % (
             len(event_sids),
             len(event_dates),
-            len(event_timestamps),
-        )
+            len(event_timestamps))
 
 
 def next_event_indexer(all_dates,

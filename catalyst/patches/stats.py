@@ -564,7 +564,7 @@ def sharpe_ratio(returns, risk_free=0, period=DAILY, annualization=None):
         return np.nan
 
     return np.mean(returns_risk_adj) / np.std(returns_risk_adj, ddof=1) * \
-           np.sqrt(ann_factor)
+        np.sqrt(ann_factor)
 
 
 def sortino_ratio(returns, required_return=0, period=DAILY,
@@ -1047,7 +1047,7 @@ def tail_ratio(returns):
         return np.nan
 
     return np.abs(np.percentile(returns, 95)) / \
-           np.abs(np.percentile(returns, 5))
+        np.abs(np.percentile(returns, 5))
 
 
 def cagr(returns, period=DAILY, annualization=None):
