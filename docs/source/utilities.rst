@@ -82,20 +82,20 @@ Simpler case for daily data
         filename = os.path.splitext(os.path.basename(__file__))[0]
         data.to_csv(filename + '.csv')
 
-        ''' Bitcoin data is available on Poloniex since 2015-3-1.
-             Dates vary for other tokens. In the example below, we choose the
-             full month of July of 2017.
-        '''
-        start = datetime(2017, 1, 1, 0, 0, 0, 0, pytz.utc)
-        end = datetime(2017, 7, 31, 0, 0, 0, 0, pytz.utc)
-        results = run_algorithm(initialize=initialize,
-                                        handle_data=handle_data,
-                                        analyze=analyze,
-                                        start=start,
-                                        end=end,
-                                        exchange_name='poloniex',
-                                        capital_base=10000,
-                                        quote_currency = 'usdt')
+    ''' Bitcoin data is available on Poloniex since 2015-3-1.
+         Dates vary for other tokens. In the example below, we choose the
+         full month of July of 2017.
+    '''
+    start = datetime(2017, 1, 1, 0, 0, 0, 0, pytz.utc)
+    end = datetime(2017, 7, 31, 0, 0, 0, 0, pytz.utc)
+    results = run_algorithm(initialize=initialize,
+                                    handle_data=handle_data,
+                                    analyze=analyze,
+                                    start=start,
+                                    end=end,
+                                    exchange_name='poloniex',
+                                    capital_base=10000,
+                                    quote_currency = 'usdt')
 
 More versatile case for minute data
 
