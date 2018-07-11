@@ -352,7 +352,7 @@ class TestCCXT(BaseExchangeTestCase):
                 observed_fetchTrade_None = self.exchange.create_order(
                     asset, amount, is_buy, style)
                 print(observed_fetchTrade_None)
-            except ExchangeRequestError as e:
+            except ExchangeRequestError:
                 pass
 
         # check the case there are trades which form a neew order
