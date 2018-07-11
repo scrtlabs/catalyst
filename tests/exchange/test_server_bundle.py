@@ -14,7 +14,7 @@ from catalyst.exchange.utils.bundle_utils import get_df_from_arrays, \
     get_bcolz_chunk
 from catalyst.exchange.utils.factory import get_exchange
 
-
+"""
 class ValidateChunks(object):
     def __init__(self):
         self.columns = ['open', 'high', 'low', 'close', 'volume']
@@ -113,3 +113,4 @@ v.plot_ohlcv(df)
 # v.plot(
 #     ex
 # )
+"""
