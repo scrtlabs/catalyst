@@ -27,8 +27,8 @@ import pandas as pd
 
 
 def initialize(context):
-    context.asset = symbol('btc_usdt')
-    # context.asset = symbol('etc_btc')
+    # context.asset = symbol('btc_usdt')
+    context.asset = symbol('xrp_btc')
     context.i = 0
     # context.set_commission(maker=0.4,taker=0.3)
 
@@ -45,10 +45,10 @@ def initialize(context):
 
 def handle_data(context, data):
     if not context.blotter.open_orders:
-        if context.portfolio.positions and context.portfolio.positions[context.asset].amount > 0.5:
-            order_target(context.asset, 0, limit_price=(data.current(context.asset, 'price')+0.00013))
+        if context.portfolio.positions and context.portfolio.positions[context.asset].amount >= 2:
+            order(context.asset, -2, limit_price=(data.current(context.asset, 'price')-0.00000002))
         else:
-            order_target(context.asset, 1, limit_price=(data.current(context.asset, 'price')+0.00003))
+            order_target(context.asset, 3, limit_price=(data.current(context.asset, 'price')+0.00000002))
 
     record(btc=data.current(context.asset, 'price'))
 
@@ -72,9 +72,9 @@ if __name__ == '__main__':
             algo_namespace='buy_btc_simple',
             quote_currency='btc',
             live=True,
-            # simulate_orders=False,
+            simulate_orders=False,
             # start=pd.to_datetime('2018-05-01 17:18', utc=True),
-            end=pd.to_datetime('2018-05-14 08:28', utc=True),
+            # end=pd.to_datetime('2018-05-14 08:28', utc=True),
         )
     else:
         run_algorithm(

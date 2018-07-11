@@ -889,7 +889,6 @@ class CCXT(Exchange):
                 self.api.load_markets()
 
             # https://github.com/ccxt/ccxt/issues/1483
-            adj_amount = round(abs(amount), asset.decimals)
             market = self.api.markets[symbol]
             if 'lots' in market and market['lots'] > amount:
                 raise CreateOrderError(
@@ -899,9 +898,8 @@ class CCXT(Exchange):
                     )
                 )
 
-        else:
-            adj_amount = round(abs(amount), asset.decimals)
-
+        adj_amount = round(abs(amount), asset.decimals)
+        adj_amount = self.api.amount_to_precision(symbol, adj_amount)
         before_order_dt = pd.Timestamp.utcnow()
         try:
             result = self.api.create_order(
