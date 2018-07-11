@@ -289,7 +289,7 @@ def _run(handle_data,
             )
 
         data = DataPortalExchangeBacktest(
-            exchange_names=[exchange_name for exchange_name in exchanges],
+            exchange_names=[ex_name for ex_name in exchanges],
             asset_finder=None,
             trading_calendar=open_calendar,
             first_trading_day=start,

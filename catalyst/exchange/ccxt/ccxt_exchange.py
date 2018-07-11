@@ -206,7 +206,7 @@ class CCXT(Exchange):
 
                 frequencies.append(freq)
 
-        except Exception as e:
+        except Exception:
             log.warn(
                 'candle frequencies not available for exchange {}'.format(
                     self.name

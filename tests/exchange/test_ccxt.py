@@ -385,7 +385,7 @@ class TestCCXT(BaseExchangeTestCase):
                 observed_fetchTradeOrder_None = self.exchange.create_order(
                     asset, amount, is_buy, style)
                 print(observed_fetchTradeOrder_None)
-            except ExchangeRequestError as e:
+            except ExchangeRequestError:
                 pass
 
     def test_process_order_timeout(self):
@@ -420,7 +420,7 @@ class TestCCXT(BaseExchangeTestCase):
             try:
                 observed_transactions = self.exchange.process_order(order)
                 print(observed_transactions)
-            except ExchangeRequestError as e:
+            except ExchangeRequestError:
                 pass
 
     # def test_order(self):
