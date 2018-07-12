@@ -8,6 +8,7 @@
 |forum|
 |discord|
 |twitter|
+|travis|
 
 |
 
@@ -72,5 +73,10 @@ Go to our `Documentation Website <https://enigmampc.github.io/catalyst/>`_.
 
 .. |twitter| image:: https://img.shields.io/twitter/follow/enigmampc.svg?style=social&label=Follow&style=flat-square
    :target: https://twitter.com/catalystcrypto
+
+.. |travis| image:: https://travis-ci.com/enigmampc/catalyst.svg?branch=develop
+   :target: https://travis-ci.com/enigmampc/catalyst.svg?branch=develop
+
+
 
 
