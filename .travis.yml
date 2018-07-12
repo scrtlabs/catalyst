@@ -1,5 +1,6 @@
+dist: trusty
 language: python
-sudo: false
+sudo: required
 fast_finish: true
 
 matrix:
