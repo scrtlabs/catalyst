@@ -2,73 +2,66 @@ dist: trusty
 language: python
 sudo: required
 fast_finish: true
-
 matrix:
   include:
-    - python: 2.7
-      env: NUMPY_VERSION=1.13.1 SCIPY_VERSION=0.19.1
-    - python: 3.6
-      env: NUMPY_VERSION=1.14 SCIPY_VERSION=1.0.0 
-
-cache: 
+  - python: 2.7
+    env: NUMPY_VERSION=1.13.1 SCIPY_VERSION=0.19.1
+  - python: 3.6
+    env: NUMPY_VERSION=1.14 SCIPY_VERSION=1.0.0
+cache:
   directories:
-    - $HOME/.cache/pip
-    - $HOME/miniconda
-  timeout: 1000   # defaults to 3 min, set in seconds
-
+  - "$HOME/.cache/pip"
+  - "$HOME/miniconda"
+  timeout: 1000
 env:
   global:
-    - MINICONDA_DIR="$HOME/miniconda${TRAVIS_PYTHON_VERSION:0:1}"
-
+  - MINICONDA_DIR="$HOME/miniconda${TRAVIS_PYTHON_VERSION:0:1}"
 before_install:
-  - curl -L http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz --output ta-lib-0.4.0-src.tar.gz
-  - tar zxf ta-lib-0.4.0-src.tar.gz
-  - cd ta-lib && ./configure --prefix=/usr && make && sudo make install && cd ..
-  - |
-    if [ -d "$MINICONDA_DIR" ] && [ -e "$MINICONDA_DIR/bin/conda" ]; then
-      echo "Miniconda install already present from cache: $MINICONDA_DIR"
-      export PATH="$MINICONDA_DIR/bin:$PATH"
-    else
-      rm -rf "$MINICONDA_DIR"
-      if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh; else wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh; fi
-      bash miniconda.sh -b -p "$MINICONDA_DIR"
-    fi
-  - export PATH="$MINICONDA_DIR/bin:$PATH"
-  - conda update --yes conda
-
+- curl -L http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz --output
+  ta-lib-0.4.0-src.tar.gz
+- tar zxf ta-lib-0.4.0-src.tar.gz
+- cd ta-lib && ./configure --prefix=/usr && make && sudo make install && cd ..
+- |
+  if [ -d "$MINICONDA_DIR" ] && [ -e "$MINICONDA_DIR/bin/conda" ]; then
+    echo "Miniconda install already present from cache: $MINICONDA_DIR"
+    export PATH="$MINICONDA_DIR/bin:$PATH"
+  else
+    rm -rf "$MINICONDA_DIR"
+    if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh; else wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh; fi
+    bash miniconda.sh -b -p "$MINICONDA_DIR"
+  fi
+- export PATH="$MINICONDA_DIR/bin:$PATH"
+- conda update --yes conda
 install:
-  - conda info -a
-
-  - TALIB_VERSION=$(cat ./etc/requirements_talib.txt | sed "s/TA-Lib==\(.*\)/\1/")
-  - IFS='.' read -r -a NPY_VERSION_ARR <<< "$NUMPY_VERSION"
-  - CONDA_NPY=${NPY_VERSION_ARR[0]}${NPY_VERSION_ARR[1]}
-  - CONDA_PY=$TRAVIS_PYTHON_VERSION
-
-  - |
-    if [ ! -d "$MINICONDA_DIR/envs/testenv$TRAVIS_PYTHON_VERSION" ]; then
-      conda create -n testenv$TRAVIS_PYTHON_VERSION --use-local --yes pip python=$TRAVIS_PYTHON_VERSION numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION libgfortran=3.0 certifi=2018.1.18
-    fi  
-  - source activate testenv$TRAVIS_PYTHON_VERSION
-
-  - CACHE_DIR="$HOME/.cache/pip/pip_np""$CONDA_NPY"
-  - pip install --upgrade pip coverage coveralls --cache-dir=$CACHE_DIR
-  - pip install -r etc/requirements.txt --cache-dir=$CACHE_DIR
-  - pip install -r etc/requirements_dev.txt --cache-dir=$CACHE_DIR
-  - pip install -r etc/requirements_blaze.txt --cache-dir=$CACHE_DIR  # this uses git requirements right now
-  - pip install -r etc/requirements_talib.txt --cache-dir=$CACHE_DIR
-  - pip install -e . --cache-dir=$CACHE_DIR
-
+- conda info -a
+- TALIB_VERSION=$(cat ./etc/requirements_talib.txt | sed "s/TA-Lib==\(.*\)/\1/")
+- IFS='.' read -r -a NPY_VERSION_ARR <<< "$NUMPY_VERSION"
+- CONDA_NPY=${NPY_VERSION_ARR[0]}${NPY_VERSION_ARR[1]}
+- CONDA_PY=$TRAVIS_PYTHON_VERSION
+- "if [ ! -d \"$MINICONDA_DIR/envs/testenv$TRAVIS_PYTHON_VERSION\" ]; then\n  conda
+  create -n testenv$TRAVIS_PYTHON_VERSION --use-local --yes pip python=$TRAVIS_PYTHON_VERSION
+  numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION libgfortran=3.0 certifi=2018.1.18\nfi
+  \ \n"
+- source activate testenv$TRAVIS_PYTHON_VERSION
+- CACHE_DIR="$HOME/.cache/pip/pip_np""$CONDA_NPY"
+- pip install --upgrade pip coverage coveralls --cache-dir=$CACHE_DIR
+- pip install -r etc/requirements.txt --cache-dir=$CACHE_DIR
+- pip install -r etc/requirements_dev.txt --cache-dir=$CACHE_DIR
+- pip install -r etc/requirements_blaze.txt --cache-dir=$CACHE_DIR
+- pip install -r etc/requirements_talib.txt --cache-dir=$CACHE_DIR
+- pip install -e . --cache-dir=$CACHE_DIR
 before_script:
-  - pip freeze | sort
-
+- pip freeze | sort
 script:
-  - flake8 catalyst tests
-  - cd tests && nosetests
-
+- flake8 catalyst tests
+- cd tests && nosetests
 after_success:
-  - coveralls
-
+- coveralls
 notifications:
   email:
     on_success: always
-    on_failure: always  
+    on_failure: always
+  slack:
+    secure: fHljfb3xrbZ0hif2VX+01caMcUelWJLPWv+P3gclUSQfRwT9yNTUomENNsF4OVN90SKPJx+rZt4Ws4NWnr9CRDyFeddlwlDG4FSm5q94tBk0UQPodG0TKxd/j7bV9Mo0ELRHuHsYf4l55xC4pmfm4wFk9EILvzrnGRfNqCtXwYeuvTIlgwaLSeyWSWxjhD4F7cUyoFlqDzc7emBriYqYfnxDZ9Qr41/BhWo3N/l9rugKyWWJ7dpkPLQOhUHi1iPxV5BtkoKmCMoawS4wXllLR2tnF2vOQZLEwPg7POw8whROA95tH28L6VZAQGoPe5XLyjA/rgvz/75ZgtTCbgl5DZTvuoE17uK0BLGGEAy3J60HiwdrveDNHCOFqGby59OVjOBtm1cXaYhCCkGYwc/rbgczbH3fahR5N7qeNd9d/STdnoFpGtHGIV5YnZVqC1HZAkdAVXi+InsVUkD2xqIJjbqyKCJ0GDkadrb23k3ah+Q7X8AqBR2l4t3UJ0yUNq1qN3ESX4U6IHVmNm5viupZ8DpNwHdLM6VAB3kKjrX3TfAgrVTS5xDRDDPUWFZvke+5EXPbC0HBpODJz0M4DqwqM2vC5gANo9QAOVhvVUr41QnGUDg8lXQKc0GIKCmg6DBZIlLgAl79uMqTxSgeLhPWrPBbpFRXu3OrCckNTDoSxao=
+    on_success: change
+    on_failure: always
