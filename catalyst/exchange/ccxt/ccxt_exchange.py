@@ -834,7 +834,7 @@ class CCXT(Exchange):
         return None, missing_order
 
     def _handle_request_timeout(self, dt_before, asset, amount, is_buy, style,
-                                adj_amount):
+                                prec_amount):
         """
         Check if an order was received during the timeout, if it appeared
         on the orders dict return it to the user.
@@ -846,7 +846,7 @@ class CCXT(Exchange):
         :param amount: float
         :param is_buy: Bool
         :param style:
-        :param adj_amount: int
+        :param prec_amount: int
         :return: missing_order: Order/ None
         """
         symbol = asset.asset_name.replace(' ', '')
@@ -854,7 +854,7 @@ class CCXT(Exchange):
             dt_before=dt_before, symbol=symbol)
 
         if missing_order_id:
-            final_amount = adj_amount if amount > 0 else -adj_amount
+            final_amount = prec_amount if amount > 0 else -prec_amount
             missing_order = Order(
                 dt=dt_before,
                 asset=asset,
@@ -899,14 +899,14 @@ class CCXT(Exchange):
                 )
 
         adj_amount = round(abs(amount), asset.decimals)
-        adj_amount = self.api.amount_to_precision(symbol, adj_amount)
+        prec_amount = self.api.amount_to_precision(symbol, adj_amount)
         before_order_dt = pd.Timestamp.utcnow()
         try:
             result = self.api.create_order(
                 symbol=symbol,
                 type=order_type,
                 side=side,
-                amount=adj_amount,
+                amount=prec_amount,
                 price=price
             )
         except InvalidOrder as e:
@@ -926,7 +926,7 @@ class CCXT(Exchange):
                 retry_exceptions=(RequestTimeout, ExchangeError),
                 cleanup=lambda: log.warn('Checking missing order again..'),
                 args=(
-                    before_order_dt, asset, amount, is_buy, style, adj_amount
+                    before_order_dt, asset, amount, is_buy, style, prec_amount
                 )
             )
             if missing_order is None:
@@ -951,7 +951,7 @@ class CCXT(Exchange):
             raise ExchangeRequestError(error=e)
 
         exchange_amount = None
-        if 'amount' in result and result['amount'] != adj_amount:
+        if 'amount' in result and result['amount'] != prec_amount:
             exchange_amount = result['amount']
 
         elif 'info' in result:
@@ -961,15 +961,15 @@ class CCXT(Exchange):
         if exchange_amount:
             log.info(
                 'order amount adjusted by {} from {} to {}'.format(
-                    self.name, adj_amount, exchange_amount
+                    self.name, prec_amount, exchange_amount
                 )
             )
-            adj_amount = exchange_amount
+            prec_amount = exchange_amount
 
         if 'info' not in result:
             raise ValueError('cannot use order without info attribute')
 
-        final_amount = adj_amount if side == 'buy' else -adj_amount
+        final_amount = prec_amount if side == 'buy' else -prec_amount
         order_id = result['id']
         order = Order(
             dt=pd.Timestamp.utcnow(),

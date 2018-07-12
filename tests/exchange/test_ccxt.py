@@ -1,11 +1,10 @@
 from logbook import Logger
-from mock import patch, create_autospec, MagicMock
+from mock import patch, create_autospec, MagicMock, Mock
 import pandas as pd
 
 from ccxt.base.errors import RequestTimeout
 
 from catalyst.exchange.exchange_errors import ExchangeRequestError
-# from catalyst.exchange.utils.stats_utils import set_print_settings
 from .base import BaseExchangeTestCase
 from catalyst.exchange.ccxt.ccxt_exchange import CCXT
 from catalyst.exchange.exchange_execution import ExchangeLimitOrder
@@ -158,9 +157,9 @@ class TestCCXT(BaseExchangeTestCase):
         :return: bool
         """
         return observed.id == expected.id and \
-            observed.amount == expected.amount and \
-            observed.asset == expected.asset and \
-            observed.limit == expected.limit
+               observed.amount == expected.amount and \
+               observed.asset == expected.asset and \
+               observed.limit == expected.limit
 
     def test_create_order_timeout_order(self):
         """
@@ -177,7 +176,8 @@ class TestCCXT(BaseExchangeTestCase):
         price = 0.00254
 
         self.exchange.api = MagicMock(
-            spec=[u'create_order', u'fetch_orders', u'orders', u'has'])
+            spec=[u'create_order', u'fetch_orders', u'orders', u'has',
+                  u'amount_to_precision'])
         self.exchange.api.create_order.side_effect = RequestTimeout
 
         orders_dict = self.create_orders_dict(asset, self.last_order)
@@ -188,6 +188,9 @@ class TestCCXT(BaseExchangeTestCase):
         mock_style = create_autospec(ExchangeLimitOrder, return_value=price)
         mock_style.get_limit_price.return_value = price
         style = mock_style
+
+        self.exchange.api.amount_to_precision = Mock(
+            return_value=float(amount))
 
         with patch('catalyst.exchange.ccxt.ccxt_exchange.CCXT.get_symbol') as \
                 mock_symbol:
@@ -222,7 +225,7 @@ class TestCCXT(BaseExchangeTestCase):
 
         self.exchange.api = MagicMock(
             spec=[u'create_order', u'fetch_open_orders',
-                  u'fetch_orders', u'orders', u'has'
+                  u'fetch_orders', u'orders', u'has', u'amount_to_precision'
                   ]
         )
         self.exchange.api.create_order.side_effect = RequestTimeout
@@ -239,6 +242,9 @@ class TestCCXT(BaseExchangeTestCase):
                                      return_value=price)
         mock_style.get_limit_price.return_value = price
         style = mock_style
+
+        self.exchange.api.amount_to_precision = Mock(
+            return_value=float(amount))
 
         with patch('catalyst.exchange.ccxt.ccxt_exchange.CCXT.get_symbol') as \
                 mock_symbol:
@@ -272,7 +278,8 @@ class TestCCXT(BaseExchangeTestCase):
         price = 0.00254
 
         self.exchange.api = MagicMock(
-            spec=[u'create_order', u'fetch_closed_orders', u'orders', u'has'])
+            spec=[u'create_order', u'fetch_closed_orders', u'orders', u'has',
+                  u'amount_to_precision'])
         self.exchange.api.create_order.side_effect = RequestTimeout
 
         orders_dict = self.create_orders_dict(asset, self.last_order)
@@ -286,6 +293,9 @@ class TestCCXT(BaseExchangeTestCase):
                                      return_value=price)
         mock_style.get_limit_price.return_value = price
         style = mock_style
+
+        self.exchange.api.amount_to_precision = Mock(
+            return_value=float(amount))
 
         with patch('catalyst.exchange.ccxt.ccxt_exchange.CCXT.get_symbol') as \
                 mock_symbol:
@@ -326,7 +336,8 @@ class TestCCXT(BaseExchangeTestCase):
 
         self.exchange.api = MagicMock(
             spec=[u'create_order', u'fetch_my_trades', u'has',
-                  u'fetch_open_orders', u'orders', u'fetch_closed_orders']
+                  u'fetch_open_orders', u'orders', u'fetch_closed_orders',
+                  u'amount_to_precision']
         )
         self.exchange.api.create_order.side_effect = RequestTimeout
 
@@ -344,6 +355,9 @@ class TestCCXT(BaseExchangeTestCase):
         mock_style.get_stop_price.return_value = stop_price
         style = mock_style
 
+        self.exchange.api.amount_to_precision = Mock(
+            return_value=float(amount))
+
         # check the case there are no new trades and an exception is raised
         with patch('catalyst.exchange.ccxt.ccxt_exchange.CCXT.get_symbol') as \
                 mock_symbol:
@@ -351,8 +365,7 @@ class TestCCXT(BaseExchangeTestCase):
             try:
                 observed_fetchTrade_None = self.exchange.create_order(
                     asset, amount, is_buy, style)
-                print(observed_fetchTrade_None)
-            except ExchangeRequestError:
+            except ExchangeRequestError as e:
                 pass
 
         # check the case there are trades which form a neew order
@@ -384,8 +397,7 @@ class TestCCXT(BaseExchangeTestCase):
             try:
                 observed_fetchTradeOrder_None = self.exchange.create_order(
                     asset, amount, is_buy, style)
-                print(observed_fetchTradeOrder_None)
-            except ExchangeRequestError:
+            except ExchangeRequestError as e:
                 pass
 
     def test_process_order_timeout(self):
@@ -419,8 +431,7 @@ class TestCCXT(BaseExchangeTestCase):
             mock_trades.side_effect = RequestTimeout
             try:
                 observed_transactions = self.exchange.process_order(order)
-                print(observed_transactions)
-            except ExchangeRequestError:
+            except ExchangeRequestError as e:
                 pass
 
     # def test_order(self):
