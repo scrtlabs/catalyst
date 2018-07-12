@@ -1,8 +1,5 @@
 -e git://github.com/quantopian/datashape.git@bf06a41dc0908baf7c324aeacadba8820468ee78#egg=datashape-dev
 
-# Keep cytoolz version in sync with toolz version in requirements.txt
-cytoolz==0.8.2
-
 # Transitive dependencies of blaze:
 dask[dataframe]==0.13.0
 partd==0.3.7
