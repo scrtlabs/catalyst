@@ -6,17 +6,12 @@ import pandas as pd
 import json
 import zlib
 import pickle
-
 from logbook.queues import ZeroMQSubscriber
-from logbook import StderrHandler
 
-
-# adding the handlers which receive the records from the server
-my_handler = StderrHandler()
 subscriber = ZeroMQSubscriber(uri="tcp://34.202.72.107:5050")
-# subscriber = ZeroMQSubscriber('tcp://127.0.0.1:5050', multi=True)
-controller = subscriber.dispatch_in_background(my_handler)
-# subscriber.dispatch_forever()
+# subscriber = ZeroMQSubscriber(uri="tcp://127.0.0.1:5050")
+controller = subscriber.dispatch_in_background()
+
 
 def prepare_args(file, text):
     """
@@ -81,7 +76,7 @@ def run_server(
         ):
 
     # address to send
-    url = 'https://sandbox2.enigma.co/api/catalyst/serve'
+    url = 'http://34.202.72.107:5000/api/catalyst/serve'
     # url = 'http://127.0.0.1:5000/api/catalyst/serve'
 
     # argument preparation - encode the file for transfer
@@ -124,10 +119,11 @@ def run_server(
                                     json_file,
                                     default=convert_date
                                 ),
-                             verify=False
+                             verify=False,
                              )
+
     # close the handlers, which are not needed anymore
-    # controller.stop()
+    controller.stop()
     subscriber.close()
 
     if response.status_code == 500:
@@ -137,11 +133,12 @@ def run_server(
         raise Exception("The server is down at the moment, please contact "
                         "Catalyst support to fix this issue at "
                         "https://github.com/enigmampc/catalyst/issues/")
-    elif response.status_code == 202:
-        print(response.json()['error'])
+    elif response.status_code == 202 or response.status_code == 400:
+        print(response.json()['error']) if response.json()['error'] else None
 
     else:  # if the run was successful
         received_data = response.json()
         data_perf_compressed = base64.b64decode(received_data["data"])
         data_perf_pickled = zlib.decompress(data_perf_compressed)
         data_perf = pickle.loads(data_perf_pickled)
+        print(data_perf)

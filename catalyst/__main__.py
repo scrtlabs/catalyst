@@ -581,7 +581,6 @@ def live(ctx,
 @click.option(
     '-o',
     '--output',
-    default='-',
     metavar='FILENAME',
     show_default=True,
     help="The location to write the perf data. If this is '-' the perf"
@@ -683,7 +682,7 @@ def run(ctx,
         bundle_timestamp=bundle_timestamp,
         start=start,
         end=end,
-        output=output,
+        output='-',
         print_algo=print_algo,
         local_namespace=local_namespace,
         environ=os.environ,
@@ -700,6 +699,8 @@ def run(ctx,
 
     if output == '-':
         click.echo(str(perf), sys.stdout)
+    elif output is None:
+        pass
     elif output != os.devnull:  # make the catalyst magic not write any data
         perf.to_pickle(output)
 
