@@ -1105,10 +1105,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         execution_price: float
             The execution price per unit of the order if return_price is True
         """
-        exchange_name = [self.blotter.orders[id_order].asset.exchange
-                         for id_order in self.blotter.orders
-                         if order_id == id_order
-                         ][0]
+        exchange_name = self.blotter.orders[order_id].asset.exchange
         exchange = self.exchanges[exchange_name]
         return retry(
             action=exchange.get_order,
@@ -1139,10 +1136,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             order_id = order_param.id
 
         if not self.simulate_orders:
-            exchange_name = [self.blotter.orders[id_order].asset.exchange
-                             for id_order in self.blotter.orders
-                             if order_id == id_order
-                             ][0]
+            exchange_name = self.blotter.orders[order_id].asset.exchange
             exchange = self.exchanges[exchange_name]
             retry(
                 action=exchange.cancel_order,

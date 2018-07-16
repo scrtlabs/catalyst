@@ -1038,7 +1038,7 @@ class CCXT(Exchange):
         )
         order.status = exc_order.status
         order.commission = exc_order.commission
-        order.filled = exc_order.amount
+        order.filled = exc_order.filled
 
         transactions = []
         if exc_order.status == ORDER_STATUS.FILLED:
