@@ -109,7 +109,7 @@ def extract_bundle(tar_filename):
 
 def get_user_pubaddr(environ=None):
     """
-    The de-serialized contend of the user's addresses.json file.
+    The de-serialized content of the user's addresses.json file.
 
     Parameters
     ----------
@@ -154,7 +154,7 @@ def get_user_pubaddr(environ=None):
 
     else:
         data = []
-        data.append(dict(pubAddr='', desc='', wallet=''))
+        data.append(dict(pubAddr='', desc='', wallet='', accepted_terms=False))
         with open(filename, 'w') as f:
             json.dump(data, f, sort_keys=False, indent=2,
                       separators=(',', ':'))
