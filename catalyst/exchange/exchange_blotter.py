@@ -77,11 +77,11 @@ class TradingPairFeeSchedule(CommissionModel):
 
 class TradingPairFixedSlippage(SlippageModel):
     """
-    Model slippage as a fixed spread.
+    Model slippage as a fixed value.
 
     Parameters
     ----------
-    spread : float, optional
+    slippage : float, optional
         fixed slippage will be added to buys and subtracted from sells.
     """
 
