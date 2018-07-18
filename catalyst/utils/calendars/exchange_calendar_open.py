@@ -26,10 +26,11 @@ class OpenExchangeCalendar(TradingCalendar):
     def close_time(self):
         return time(23, 59)
 
+
     @lazyval
     def day(self):
         return DateOffset(days=1)
 
     def __init__(self, *args, **kwargs):
         super(OpenExchangeCalendar, self).__init__(
-            start=Timestamp('2015-3-1', tz='UTC'), **kwargs)
+            start=Timestamp('2013-4-1', tz='UTC'), **kwargs)
