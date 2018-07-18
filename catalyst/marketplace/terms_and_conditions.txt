@@ -1,0 +1,48 @@
+
+***** TERMS AND CONDITIONS *****
+
+THESE ARE THE EXCLUSIVE TERMS AND CONDITIONS BETWEEN YOU (TOGETHER WITH THE ENTITY FOR WHICH YOU ACQUIRE OR USE THE
+DATA, LICENSEE) AND THE SUPPLIER OF THE DATA THAT YOU HAVE ELECTED TO RECEIVE (LICENSOR). YOU REPRESENT AND WARRANT
+THAT YOU HAVE FULL LEGAL AUTHORITY TO AGREE TO THESE TERMS AND CONDITIONS UNDER ALL APPLICABLE LAWS AND ON BEHALF OF
+LICENSEE.
+
+IF YOU CANNOT OR DO NOT AGREE TO THESE TERMS AND CONDITIONS, THEN YOU ARE PROHIBITED FROM ACCESSING OR USING THE DATA.
+
+LICENSE: All Data are licensed, not sold. Any reference to the sale or price of any Data or copy thereof refers to its
+license or license fee. Subject to payment in full and compliance with these Terms and Conditions, Licensor grants
+Licensee a non-exclusive, non-transferable license to (i) analyze and use the Data solely for Licensee's internal
+business purposes and (ii) make a reasonable number of copies of the Data for inactive backup and archival
+purposes.
+
+RESTRICTIONS: Licensee shall not, directly or indirectly (i) encumber, sublicense, distribute, transfer, rent, lease, lend
+or otherwise disclose any Data or use any Data in any time-share, service bureau or similar arrangement, (ii) use or
+allow the transmission, export, re-export or other transfer of any Data (or any direct product thereof) in violation of any
+export control or other laws and regulations of the United States or any other relevant jurisdiction or (iii) permit any
+third party to do any of the foregoing.
+
+OWNERSHIP: Except for the limited license expressly granted hereunder, no other license is granted (by implication,
+estoppel or otherwise), no other use is permitted and (as between the parties) Licensor owns and retains all rights,
+title and interests (including all intellectual property and proprietary rights) in and the Data.
+
+NO WARRANTIES: ALL DATA ARE PROVIDED "AS IS" AND "AS AVAILABLE,"; WITHOUT REPRESENTATION OR WARRANTY OF
+ANY KIND. TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, LICENSOR HEREBY DISCLAIMS (FOR ITSELF AND ITS ASSOCIATES) ALL
+REPRESENTATIONS AND WARRANTIES, WHETHER EXPRESS OR IMPLIED, ORAL OR WRITTEN, WITH RESPECT TO THE DATA, INCLUDING WITHOUT
+LIMITATION, ALL IMPLIED WARRANTIES OF NON-INFRINGEMENT, QUIET ENJOYMENT, ACCURACY, INTEGRATION, MERCHANTABILITY OR FITNESS
+FOR ANY PARTICULAR PURPOSE AND ALL WARRANTIES ARISING FROM ANY COURSE OF DEALING, COURSE OF PERFORMANCE OR USAGE OF TRADE.
+
+SOME STATES AND OTHER JURISDICTIONS DO NOT ALLOW THE EXCLUSION OF CERTAIN WARRANTIES, SO SOME OF THE ABOVE EXCLUSIONS MAY
+NOT APPLY TO YOU.
+
+LIABILITY LIMITS: EXCEPT TO THE EXTENT THAT ANY EXCLUSION OR LIMITATION OF LIABILITY IS VOID, PROHIBITED OR UNENFORCEABLE
+BY APPLICABLE LAW, IN NO EVENT SHALL LICENSOR OR ITS ASSOCIATES BE LIABLE CONCERNING THE DATA, REGARDLESS OF THE FORM OF
+ANY CLAIM OR ACTION (WHETHER IN CONTRACT, NEGLIGENCE, STRICT LIABILITY OR OTHERWISE), FOR ANY (I) INDIRECT, PUNITIVE,
+INCIDENTAL, RELIANCE, SPECIAL, EXEMPLARY OR CONSEQUENTIAL DAMAGES, INCLUDING WITHOUT LIMITATION, LOSS OF BUSINESS, REVENUES,
+PROFITS OR GOODWILL OR (II) AGGREGATE DAMAGES IN EXCESS OF THE FEES RECEIVED BY IT FOR THE APPLICABLE DATA, EVEN IF IT HAS
+BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. THESE LIMITATIONS ARE INDEPENDENT FROM ALL OTHER PROVISIONS HEREIN AND
+SHALL APPLY NOTWITHSTANDING THE FAILURE OF ANY REMEDY. SOME STATES AND OTHER JURISDICTIONS DO NOT ALLOW THE EXCLUSION OR
+LIMITATION OF LIABILITY FOR INCIDENTAL OR CONSEQUENTIAL DAMAGES, SO SOME OF THE ABOVE LIMITATIONS AND EXCLUSIONS MAY NOT
+APPLY TO YOU.
+
+THIRD PARTY BENEFICIARIES: Licensor's licensors, resellers, marketing partners and other business associates
+(collectively, Associates) are intended beneficiaries of these Terms and Conditions and are entitled to (and to
+enforce) all of Licensor's protections provided herein.
