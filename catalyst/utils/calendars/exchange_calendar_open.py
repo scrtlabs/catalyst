@@ -26,7 +26,6 @@ class OpenExchangeCalendar(TradingCalendar):
     def close_time(self):
         return time(23, 59)
 
-
     @lazyval
     def day(self):
         return DateOffset(days=1)
