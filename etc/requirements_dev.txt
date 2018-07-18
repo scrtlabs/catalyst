@@ -50,6 +50,7 @@ tornado==4.2.1
 pyparsing==2.2.0
 cycler==0.10.0
 matplotlib==2.2.2
+mpl_finance==0.10.0
 
 Markdown==2.6.2
 
