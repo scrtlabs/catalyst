@@ -8,9 +8,12 @@
 |forum|
 |discord|
 |twitter|
-|travis|
 
-|
+=========  ===============           ================
+Service    Master                    Develop
+---------  ---------------           ----------------
+CI Badge   |travis-master|           |travis-develop|
+=========  ===============           ================
 
 Catalyst is an algorithmic trading library for crypto-assets written in Python.
 It allows trading strategies to be easily expressed and backtested against 
@@ -74,8 +77,11 @@ Go to our `Documentation Website <https://enigmampc.github.io/catalyst/>`_.
 .. |twitter| image:: https://img.shields.io/twitter/follow/enigmampc.svg?style=social&label=Follow&style=flat-square
    :target: https://twitter.com/catalystcrypto
 
-.. |travis| image:: https://travis-ci.com/enigmampc/catalyst.svg?branch=develop
-   :target: https://travis-ci.com/enigmampc/catalyst.svg?branch=develop
+.. |travis-develop| image:: https://travis-ci.com/enigmampc/catalyst.svg?branch=develop
+   :target: https://travis-ci.com/enigmampc/catalyst
+
+.. |travis-master| image:: https://travis-ci.com/enigmampc/catalyst.svg?branch=master
+   :target: https://travis-ci.com/enigmampc/catalyst
 
 
 
