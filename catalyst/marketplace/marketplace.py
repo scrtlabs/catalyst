@@ -23,7 +23,7 @@ from catalyst.constants import (
     TERMS_AND_CONDITIONS)
 from catalyst.exchange.utils.stats_utils import set_print_settings
 from catalyst.marketplace.marketplace_errors import (
-    MarketplacePubAddressEmpty, MarketplaceDatasetNotFound,
+    MarketplaceDatasetNotFound,
     MarketplaceNoAddressMatch, MarketplaceHTTPRequest,
     MarketplaceNoCSVFiles, MarketplaceRequiresPython3)
 from catalyst.marketplace.utils.auth_utils import get_key_secret, \
@@ -59,7 +59,8 @@ class Marketplace:
                 .decode(terms_and_conditions_url.info().get_content_charset())
             print(terms_and_conditions)
             while True:
-                accepted_terms = input('Do you accept these terms and conditions? [y, n] ').lower().strip()
+                accepted_terms = input('Do you accept these terms and '
+                                       'conditions? [y, n] ').lower().strip()
                 if accepted_terms == 'y':
                     for address in self.addresses:
                         address['accepted_terms'] = True
@@ -68,22 +69,30 @@ class Marketplace:
                     break
 
         if self.addresses[0]['pubAddr'] == '':
-            print('We need to populate a file located at {} to be used for future marketplace requests. \n'
-                  'You shouldn\'t need to interact with this file from here on out, but if you need to, you can go '
-                  'ahead and edit this file directly.'.format(os.path.join(get_marketplace_folder(),
-                                                                                      'addresses.json')))
+            print('We need to populate a file located at {} to be used for '
+                  'future marketplace requests. \n'
+                  'You shouldn\'t need to interact with this file from here '
+                  'on out, but if you need to, you can go '
+                  'ahead and edit this file directly.'
+                  .format(os.path.join(get_marketplace_folder(),
+                                       'addresses.json')))
             while True:
-                pub_addr = input('What is your Ethereum public address? ').strip()
+                pub_addr = input('What is your Ethereum public address? ')\
+                    .strip()
                 if pub_addr:
                     break
-            desc = input('What is a description for this address (optional, but helpful to distinguish between '
+            desc = input('What is a description for this address (optional, '
+                         'but helpful to distinguish between '
                          'multiple accounts you may be using)? ')
             while True:
-                wallet = input('What wallet type are you using (strongly recommend metamask)? [metamask, ledger, '
+                wallet = input('What wallet type are you using (strongly '
+                               'recommend metamask)? [metamask, ledger, '
                                'bitbox, keystore, key] ')
-                if wallet in ['metamask', 'ledger', 'bitbox', 'keystore', 'key']:
+                if wallet in ['metamask', 'ledger', 'bitbox', 'keystore',
+                              'key']:
                     break
-            self.addresses[0].update({'pubAddr': pub_addr, 'desc': desc, 'wallet': wallet})
+            self.addresses[0].update({'pubAddr': pub_addr,
+                                      'desc': desc, 'wallet': wallet})
             save_user_pubaddr(self.addresses)
             print()
 
