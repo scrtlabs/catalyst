@@ -2,6 +2,15 @@
 Release Notes
 =============
 
+Version 0.5.17
+^^^^^^^^^^^^^^
+**Release Date**: 2018-07-19
+
+Bug Fixes
+~~~~~~~~~
+- Reverted the start date of the trading clock to `2015-03-01`. This should be
+  addressed after the entire data is acquired :issue:`408`
+
 Version 0.5.16
 ^^^^^^^^^^^^^^
 **Release Date**: 2018-07-19
