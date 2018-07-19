@@ -4,13 +4,14 @@ Release Notes
 
 Version 0.5.16
 ^^^^^^^^^^^^^^
-**Release Date**: 2018-07-18
+**Release Date**: 2018-07-19
 
 Build
 ~~~~~
 - Enabled the `get_orderbook` function in live and paper trading.
 - Utilized unit tests and added travis CI integration.
 - Updated the trading calender start date to `2013-04-01`.
+- Terms and conditions were added to the marketplace.
 
 Bug Fixes
 ~~~~~~~~~
