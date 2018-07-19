@@ -8,9 +8,11 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Development Guidelines &mdash; Catalyst 0.5.12 documentation</title>
+  <title>Development Guidelines &mdash; Catalyst 0.5.16 documentation</title>
   
 
+  
+  
   
   
 
@@ -22,43 +24,46 @@
 
   
 
-  
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="Catalyst 0.5.12 documentation" href="index.html"/>
-        <link rel="next" title="Release Notes" href="releases.html"/>
-        <link rel="prev" title="Resources" href="resources.html"/> 
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Release Notes" href="releases.html" />
+    <link rel="prev" title="Resources" href="resources.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
+   
   <div class="wy-grid-for-nav">
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-nav-search">
-        
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
 
-        
-          <a href="index.html" class="icon icon-home"> Catalyst
-        
+          
+            <a href="index.html" class="icon icon-home"> Catalyst
+          
 
-        
-        </a>
+          
+          </a>
 
-        
+          
+            
+            
+              <div class="version">
+                0.5.16
+              </div>
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -67,104 +72,25 @@
   </form>
 </div>
 
-        
-      </div>
+          
+        </div>
 
-      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
-          
+            
+            
+              
+            
+            
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="install.html">Install</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="install.html#installing-with-conda">Installing with <code class="docutils literal"><span class="pre">conda</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="install.html#troubleshooting-conda-install">Troubleshooting <code class="docutils literal"><span class="pre">conda</span></code> Install</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#installing-with-pip">Installing with <code class="docutils literal"><span class="pre">pip</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="install.html#troubleshooting-pip-install">Troubleshooting <code class="docutils literal"><span class="pre">pip</span></code> Install</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#installing-with-pipenv">Installing with <code class="docutils literal"><span class="pre">pipenv</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#gnu-linux-requirements">GNU/Linux Requirements</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="install.html#amazon-linux-ami-notes">Amazon Linux AMI Notes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#macos-requirements">MacOS Requirements</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="install.html#macos-virtualenv-conda-matplotlib">MacOS + virtualenv/conda + matplotlib</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#windows-requirements">Windows Requirements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#updating-catalyst">Updating Catalyst</a></li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#getting-help">Getting Help</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="beginner-tutorial.html">Catalyst Beginner Tutorial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#basics">Basics</a></li>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#my-first-algorithm">My first algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#ingesting-data">Ingesting data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#running-the-algorithm">Running the algorithm</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="beginner-tutorial.html#command-line-interface">Command line interface</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#access-to-previous-prices-using-history">Access to previous prices using <code class="docutils literal"><span class="pre">history</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="beginner-tutorial.html#working-example-dual-moving-average-cross-over">Working example: Dual Moving Average Cross-Over</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#jupyter-notebook">Jupyter Notebook</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="beginner-tutorial.html#install">Install</a></li>
-<li class="toctree-l3"><a class="reference internal" href="beginner-tutorial.html#running-algorithms">Running Algorithms</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#pycharm-ide">PyCharm IDE</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="beginner-tutorial.html#id1">Install</a></li>
-<li class="toctree-l3"><a class="reference internal" href="beginner-tutorial.html#setup">Setup</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="beginner-tutorial.html#next-steps">Next steps</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="live-trading.html">Live Trading</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="live-trading.html#supported-exchanges">Supported Exchanges</a></li>
-<li class="toctree-l2"><a class="reference internal" href="live-trading.html#paper-trading-vs-live-trading-modes">Paper Trading vs Live Trading modes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="live-trading.html#authentication">Authentication</a></li>
-<li class="toctree-l2"><a class="reference internal" href="live-trading.html#currency-symbols">Currency Symbols</a></li>
-<li class="toctree-l2"><a class="reference internal" href="live-trading.html#trading-an-algorithm">Trading an Algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="live-trading.html#algorithm-state">Algorithm State</a></li>
-<li class="toctree-l2"><a class="reference internal" href="live-trading.html#commissions">Commissions</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="features.html#current-functionality">Current Functionality</a></li>
-<li class="toctree-l2"><a class="reference internal" href="features.html#upcoming-features">Upcoming features</a></li>
-<li class="toctree-l2"><a class="reference internal" href="features.html#naming-convention">Naming Convention</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="example-algos.html">Example Algorithms</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="example-algos.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="example-algos.html#buy-btc-simple-algorithm">Buy BTC Simple Algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="example-algos.html#buy-and-hodl-algorithm">Buy and Hodl Algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="example-algos.html#dual-moving-average-crossover">Dual Moving Average Crossover</a></li>
-<li class="toctree-l2"><a class="reference internal" href="example-algos.html#mean-reversion-algorithm">Mean Reversion Algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="example-algos.html#simple-universe">Simple Universe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="example-algos.html#portfolio-optimization">Portfolio Optimization</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="utilities.html#output-to-csv-file">Output to CSV file</a></li>
-<li class="toctree-l2"><a class="reference internal" href="utilities.html#extracting-market-data">Extracting market data</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="videos.html">Videos</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="videos.html#installation-macos">Installation: MacOS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="videos.html#installation-windows">Installation: Windows</a></li>
-<li class="toctree-l2"><a class="reference internal" href="videos.html#backtesting-a-strategy">Backtesting a Strategy</a></li>
-<li class="toctree-l2"><a class="reference internal" href="videos.html#live-trading-a-strategy">Live Trading a Strategy</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="resources.html">Resources</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="resources.html#related-3rd-party-apis">Related 3rd Party APIs</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="beginner-tutorial.html">Catalyst Beginner Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="live-trading.html">Live Trading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-algos.html">Example Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="videos.html">Videos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resources.html">Resources</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Development Guidelines</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#creating-a-development-environment">Creating a Development Environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#development-with-docker">Development with Docker</a></li>
@@ -174,226 +100,71 @@
 <li class="toctree-l2"><a class="reference internal" href="#formatting-docstrings">Formatting Docstrings</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="releases.html">Release Notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-15">Version 0.5.15</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#build">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#bug-fixes">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-14">Version 0.5.14</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id1">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id2">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-13">Version 0.5.13</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id3">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id4">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-12">Version 0.5.12</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id5">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id6">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-11">Version 0.5.11</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id7">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-10">Version 0.5.10</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id8">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id9">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-9">Version 0.5.9</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#documentation">Documentation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id10">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id11">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-8">Version 0.5.8</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id12">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-7">Version 0.5.7</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id13">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id14">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-6">Version 0.5.6</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id15">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id16">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-5">Version 0.5.5</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id17">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-4">Version 0.5.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id18">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id19">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id20">Documentation</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-3">Version 0.5.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id21">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-2">Version 0.5.2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id22">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-1">Version 0.5.1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id23">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id24">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-7">Version 0.4.7</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id25">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id26">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-6">Version 0.4.6</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id27">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id28">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-5">Version 0.4.5</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id29">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-4">Version 0.4.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id30">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-3">Version 0.4.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id31">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-2">Version 0.4.2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id32">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id33">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-0">Version 0.4.0</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id34">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id35">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#version-0-3-10">Version 0.3.10</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id36">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-9">Version 0.3.9</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id37">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id38">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-8">Version 0.3.8</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id39">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-7">Version 0.3.7</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id40">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id41">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-6">Version 0.3.6</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id42">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-5">Version 0.3.5</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id43">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-4">Version 0.3.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id44">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id45">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id46">Documentation</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-3">Version 0.3.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id48">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id49">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-2">Version 0.3.2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id50">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id51">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-1">Version 0.3.1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="releases.html#id52">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3">Version 0.3</a></li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-2-dev5">Version 0.2.dev5</a></li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-2-dev4">Version 0.2.dev4</a></li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-2-dev3">Version 0.2.dev3</a></li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-2-dev2">Version 0.2.dev2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-2-dev1">Version 0.2.dev1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-1-dev9">Version 0.1.dev9</a></li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-1-dev8">Version 0.1.dev8</a></li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-1-dev7">Version 0.1.dev7</a></li>
-<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-1-dev6">Version 0.1.dev6</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="appendix.html">API Reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="appendix.html#running-a-strategy">Running a Strategy</a></li>
-<li class="toctree-l2"><a class="reference internal" href="appendix.html#algorithm-api">Algorithm API</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#data-object">Data Object</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#scheduling-functions">Scheduling Functions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#orders">Orders</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="appendix.html#order-cancellation-policies">Order Cancellation Policies</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#assets">Assets</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#trading-controls">Trading Controls</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#simulation-parameters">Simulation Parameters</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="appendix.html#commission-models">Commission Models</a></li>
-<li class="toctree-l4"><a class="reference internal" href="appendix.html#slippage-models">Slippage Models</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#pipeline">Pipeline</a></li>
-<li class="toctree-l3"><a class="reference internal" href="appendix.html#miscellaneous">Miscellaneous</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="appendix.html#trading-calendar-api">Trading Calendar API</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="releases.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="appendix.html">API Reference</a></li>
 </ul>
 
+            
           
-        
+        </div>
       </div>
-      &nbsp;
     </nav>
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">Catalyst</a>
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Catalyst</a>
+        
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
-          <div role="navigation" aria-label="breadcrumbs navigation">
-  <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
-    <li>Development Guidelines</li>
-      <li class="wy-breadcrumbs-aside">
         
           
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Development Guidelines</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
             <a href="_sources/development-guidelines.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
-          <div role="main" class="document">
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
             
   <div class="section" id="development-guidelines">
 <h1>Development Guidelines<a class="headerlink" href="#development-guidelines" title="Permalink to this headline">¶</a></h1>
@@ -410,23 +181,23 @@ questions.</p>
 <div class="section" id="creating-a-development-environment">
 <h2>Creating a Development Environment<a class="headerlink" href="#creating-a-development-environment" title="Permalink to this headline">¶</a></h2>
 <p>First, you’ll need to clone Catalyst by running:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>git clone git@github.com:enigmampc/catalyst.git
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ git clone git@github.com:enigmampc/catalyst.git
 </pre></div>
 </div>
 <p>Then check out to a new branch where you can make your changes:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>git checkout -b some-short-descriptive-name
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ git checkout -b some-short-descriptive-name
 </pre></div>
 </div>
 <p>If you don’t already have them, you’ll need some C library dependencies. You can follow the <a class="reference external" href="install.html">install guide</a> to get the appropriate dependencies.</p>
 <p>The following section assumes you already have virtualenvwrapper and pip installed on your system. Suggested installation of Python library dependencies used for development:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>mkvirtualenv catalyst
-<span class="nv">$ </span>./etc/ordered_pip.sh ./etc/requirements.txt
-<span class="nv">$ </span>pip install -r ./etc/requirements_dev.txt
-<span class="nv">$ </span>pip install -r ./etc/requirements_blaze.txt
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ mkvirtualenv catalyst
+$ ./etc/ordered_pip.sh ./etc/requirements.txt
+$ pip install -r ./etc/requirements_dev.txt
+$ pip install -r ./etc/requirements_blaze.txt
 </pre></div>
 </div>
 <p>Finally, you can build the C extensions by running:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>python setup.py build_ext --inplace
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ python setup.py build_ext --inplace
 </pre></div>
 </div>
 </div>
@@ -446,20 +217,20 @@ build the <code class="docutils literal"><span class="pre">Dockerfile</span></co
 <h2>Contributing to the Docs<a class="headerlink" href="#contributing-to-the-docs" title="Permalink to this headline">¶</a></h2>
 <p>If you’d like to contribute to the documentation on enigmampc.github.io, you can navigate to <code class="docutils literal"><span class="pre">docs/source/</span></code> where each <a class="reference external" href="https://en.wikipedia.org/wiki/ReStructuredText">reStructuredText</a> file is a separate section there. To add a section, create a new file called <code class="docutils literal"><span class="pre">some-descriptive-name.rst</span></code> and add <code class="docutils literal"><span class="pre">some-descriptive-name</span></code> to <code class="docutils literal"><span class="pre">index.rst</span></code>. To edit a section, simply open up one of the existing files, make your changes, and save them.</p>
 <p>We use <a class="reference external" href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> to generate documentation for Catalyst, which you will need to install by running:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pip install -r ./etc/requirements_docs.txt
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ pip install -r ./etc/requirements_docs.txt
 </pre></div>
 </div>
 <p>To build and view the docs locally, run:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="c"># assuming you&#39;re in the Catalyst root directory</span>
-<span class="nv">$ </span><span class="nb">cd </span>docs
-<span class="nv">$ </span>make html
-<span class="nv">$ </span><span class="o">{</span>BROWSER<span class="o">}</span> build/html/index.html
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="c1"># assuming you&#39;re in the Catalyst root directory</span>
+$ <span class="nb">cd</span> docs
+$ make html
+$ <span class="o">{</span>BROWSER<span class="o">}</span> build/html/index.html
 </pre></div>
 </div>
 <p>There is a <a class="reference external" href="https://github.com/sphinx-doc/sphinx/issues/3212">documented issue</a>
 with <code class="docutils literal"><span class="pre">sphinx</span></code> and <code class="docutils literal"><span class="pre">docutils</span></code> that causes the error below when trying to build
 the docs.</p>
-<div class="highlight-text"><div class="highlight"><pre>Exception occurred:
+<div class="highlight-text"><div class="highlight"><pre><span></span>Exception occurred:
   File &quot;(...)/env-c/lib/python2.7/site-packages/docutils/writers/_html_base.py&quot;, line 671, in depart_document
     assert not self.context, &#39;len(context) = %s&#39; % len(self.context)
 AssertionError: len(context) = 3
@@ -467,14 +238,14 @@ AssertionError: len(context) = 3
 </div>
 <p>If you get this error, you need to downgrade your version of <code class="docutils literal"><span class="pre">docutils</span></code> as
 follows, and build the docs again:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pip install <span class="nv">docutils</span><span class="o">==</span>0.12
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ pip install <span class="nv">docutils</span><span class="o">==</span><span class="m">0</span>.12
 </pre></div>
 </div>
 </div>
 <div class="section" id="commit-messages">
 <h2>Commit messages<a class="headerlink" href="#commit-messages" title="Permalink to this headline">¶</a></h2>
 <p>Standard prefixes to start a commit message:</p>
-<div class="highlight-text"><div class="highlight"><pre>BLD: change related to building Catalyst
+<div class="highlight-text"><div class="highlight"><pre><span></span>BLD: change related to building Catalyst
 BUG: bug fix
 DEP: deprecate something, or remove a deprecated object
 DEV: development tool or utility
@@ -491,7 +262,7 @@ PERF: performance enhancements
 <p>Some commit style guidelines:</p>
 <p>Commit lines should be no longer than <a class="reference external" href="https://git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project">72 characters</a>. The first line of the commit should include one of the above prefixes. There should be an empty line between the commit subject and the body of the commit. In general, the message should be in the imperative tense. Best practice is to include not only what the change is, but why the change was made.</p>
 <p><strong>Example:</strong></p>
-<div class="highlight-text"><div class="highlight"><pre>MAINT: Remove unused calculations of max_leverage, et al.
+<div class="highlight-text"><div class="highlight"><pre><span></span>MAINT: Remove unused calculations of max_leverage, et al.
 
 In the performance period the max_leverage, max_capital_used,
 cumulative_capital_used were calculated but not used.
@@ -513,15 +284,17 @@ the algorithm has little cash on hand.
 </div>
 
 
+           </div>
+           
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="releases.html" class="btn btn-neutral float-right" title="Release Notes" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="releases.html" class="btn btn-neutral float-right" title="Release Notes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="resources.html" class="btn btn-neutral" title="Resources" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="resources.html" class="btn btn-neutral" title="Resources" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -531,9 +304,10 @@ the algorithm has little cash on hand.
   <div role="contentinfo">
     <p>
         &copy; Copyright 2018, Enigma MPC, Inc..
+
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -551,10 +325,12 @@ the algorithm has little cash on hand.
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.5.12',
+            VERSION:'0.5.16',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>
@@ -563,19 +339,13 @@ the algorithm has little cash on hand.
 
   
 
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="_static/js/theme.js"></script>
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

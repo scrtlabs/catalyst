@@ -8,9 +8,11 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>catalyst.utils.calendars.trading_calendar &mdash; Catalyst 0.5.12 documentation</title>
+  <title>catalyst.utils.calendars.trading_calendar &mdash; Catalyst 0.5.16 documentation</title>
   
 
+  
+  
   
   
 
@@ -22,42 +24,44 @@
 
   
 
-  
-  
-    <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
-  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
 
   
-
-  
-        <link rel="index" title="Index"
-              href="../../../../genindex.html"/>
-        <link rel="search" title="Search" href="../../../../search.html"/>
-    <link rel="top" title="Catalyst 0.5.12 documentation" href="../../../../index.html"/>
-        <link rel="up" title="Module code" href="../../../index.html"/> 
-
-  
-  <script src="_static/js/modernizr.min.js"></script>
+  <script src="../../../../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
+   
   <div class="wy-grid-for-nav">
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-nav-search">
-        
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
 
-        
-          <a href="../../../../index.html" class="icon icon-home"> Catalyst
-        
+          
+            <a href="../../../../index.html" class="icon icon-home"> Catalyst
+          
 
-        
-        </a>
+          
+          </a>
 
-        
+          
+            
+            
+              <div class="version">
+                0.5.16
+              </div>
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -66,349 +70,105 @@
   </form>
 </div>
 
-        
-      </div>
+          
+        </div>
 
-      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
-          
+            
+            
+              
+            
+            
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../../install.html">Install</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../../install.html#installing-with-conda">Installing with <code class="docutils literal"><span class="pre">conda</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../install.html#troubleshooting-conda-install">Troubleshooting <code class="docutils literal"><span class="pre">conda</span></code> Install</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../install.html#installing-with-pip">Installing with <code class="docutils literal"><span class="pre">pip</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../install.html#troubleshooting-pip-install">Troubleshooting <code class="docutils literal"><span class="pre">pip</span></code> Install</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../install.html#installing-with-pipenv">Installing with <code class="docutils literal"><span class="pre">pipenv</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../install.html#gnu-linux-requirements">GNU/Linux Requirements</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../install.html#amazon-linux-ami-notes">Amazon Linux AMI Notes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../install.html#macos-requirements">MacOS Requirements</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../install.html#macos-virtualenv-conda-matplotlib">MacOS + virtualenv/conda + matplotlib</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../install.html#windows-requirements">Windows Requirements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../install.html#updating-catalyst">Updating Catalyst</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../install.html#getting-help">Getting Help</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../beginner-tutorial.html">Catalyst Beginner Tutorial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../../beginner-tutorial.html#basics">Basics</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../beginner-tutorial.html#my-first-algorithm">My first algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../beginner-tutorial.html#ingesting-data">Ingesting data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../beginner-tutorial.html#running-the-algorithm">Running the algorithm</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../beginner-tutorial.html#command-line-interface">Command line interface</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../beginner-tutorial.html#access-to-previous-prices-using-history">Access to previous prices using <code class="docutils literal"><span class="pre">history</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../beginner-tutorial.html#working-example-dual-moving-average-cross-over">Working example: Dual Moving Average Cross-Over</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../beginner-tutorial.html#jupyter-notebook">Jupyter Notebook</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../beginner-tutorial.html#install">Install</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../beginner-tutorial.html#running-algorithms">Running Algorithms</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../beginner-tutorial.html#pycharm-ide">PyCharm IDE</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../beginner-tutorial.html#id1">Install</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../beginner-tutorial.html#setup">Setup</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../beginner-tutorial.html#next-steps">Next steps</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../live-trading.html">Live Trading</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../../live-trading.html#supported-exchanges">Supported Exchanges</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../live-trading.html#paper-trading-vs-live-trading-modes">Paper Trading vs Live Trading modes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../live-trading.html#authentication">Authentication</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../live-trading.html#currency-symbols">Currency Symbols</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../live-trading.html#trading-an-algorithm">Trading an Algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../live-trading.html#algorithm-state">Algorithm State</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../live-trading.html#commissions">Commissions</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../features.html">Features</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../../features.html#current-functionality">Current Functionality</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../features.html#upcoming-features">Upcoming features</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../features.html#naming-convention">Naming Convention</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../example-algos.html">Example Algorithms</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../../example-algos.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../example-algos.html#buy-btc-simple-algorithm">Buy BTC Simple Algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../example-algos.html#buy-and-hodl-algorithm">Buy and Hodl Algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../example-algos.html#dual-moving-average-crossover">Dual Moving Average Crossover</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../example-algos.html#mean-reversion-algorithm">Mean Reversion Algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../example-algos.html#simple-universe">Simple Universe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../example-algos.html#portfolio-optimization">Portfolio Optimization</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../utilities.html">Utilities</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../../utilities.html#output-to-csv-file">Output to CSV file</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../utilities.html#extracting-market-data">Extracting market data</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../videos.html">Videos</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../../videos.html#installation-macos">Installation: MacOS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../videos.html#installation-windows">Installation: Windows</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../videos.html#backtesting-a-strategy">Backtesting a Strategy</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../videos.html#live-trading-a-strategy">Live Trading a Strategy</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../resources.html">Resources</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../../resources.html#related-3rd-party-apis">Related 3rd Party APIs</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../development-guidelines.html">Development Guidelines</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../../development-guidelines.html#creating-a-development-environment">Creating a Development Environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../development-guidelines.html#development-with-docker">Development with Docker</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../development-guidelines.html#git-branching-structure">Git Branching Structure</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../development-guidelines.html#contributing-to-the-docs">Contributing to the Docs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../development-guidelines.html#commit-messages">Commit messages</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../development-guidelines.html#formatting-docstrings">Formatting Docstrings</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../releases.html">Release Notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-5-15">Version 0.5.15</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#build">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#bug-fixes">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-5-14">Version 0.5.14</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id1">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id2">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-5-13">Version 0.5.13</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id3">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id4">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-5-12">Version 0.5.12</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id5">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id6">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-5-11">Version 0.5.11</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id7">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-5-10">Version 0.5.10</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id8">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id9">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-5-9">Version 0.5.9</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#documentation">Documentation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id10">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id11">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-5-8">Version 0.5.8</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id12">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-5-7">Version 0.5.7</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id13">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id14">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-5-6">Version 0.5.6</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id15">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id16">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-5-5">Version 0.5.5</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id17">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-5-4">Version 0.5.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id18">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id19">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id20">Documentation</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-5-3">Version 0.5.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id21">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-5-2">Version 0.5.2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id22">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-5-1">Version 0.5.1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id23">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id24">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-4-7">Version 0.4.7</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id25">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id26">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-4-6">Version 0.4.6</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id27">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id28">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-4-5">Version 0.4.5</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id29">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-4-4">Version 0.4.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id30">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-4-3">Version 0.4.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id31">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-4-2">Version 0.4.2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id32">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id33">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-4-0">Version 0.4.0</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id34">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id35">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#version-0-3-10">Version 0.3.10</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id36">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-3-9">Version 0.3.9</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id37">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id38">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-3-8">Version 0.3.8</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id39">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-3-7">Version 0.3.7</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id40">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id41">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-3-6">Version 0.3.6</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id42">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-3-5">Version 0.3.5</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id43">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-3-4">Version 0.3.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id44">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id45">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id46">Documentation</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-3-3">Version 0.3.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id48">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id49">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-3-2">Version 0.3.2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id50">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id51">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-3-1">Version 0.3.1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../releases.html#id52">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-3">Version 0.3</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-2-dev5">Version 0.2.dev5</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-2-dev4">Version 0.2.dev4</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-2-dev3">Version 0.2.dev3</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-2-dev2">Version 0.2.dev2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-2-dev1">Version 0.2.dev1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-1-dev9">Version 0.1.dev9</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-1-dev8">Version 0.1.dev8</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-1-dev7">Version 0.1.dev7</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../releases.html#version-0-1-dev6">Version 0.1.dev6</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../appendix.html">API Reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../../appendix.html#running-a-strategy">Running a Strategy</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../appendix.html#algorithm-api">Algorithm API</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../appendix.html#data-object">Data Object</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../appendix.html#scheduling-functions">Scheduling Functions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../appendix.html#orders">Orders</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../../../appendix.html#order-cancellation-policies">Order Cancellation Policies</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../appendix.html#assets">Assets</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../appendix.html#trading-controls">Trading Controls</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../appendix.html#simulation-parameters">Simulation Parameters</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../../../appendix.html#commission-models">Commission Models</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../../appendix.html#slippage-models">Slippage Models</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../appendix.html#pipeline">Pipeline</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../appendix.html#miscellaneous">Miscellaneous</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../appendix.html#trading-calendar-api">Trading Calendar API</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../beginner-tutorial.html">Catalyst Beginner Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../live-trading.html">Live Trading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-algos.html">Example Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../utilities.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../videos.html">Videos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../resources.html">Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../development-guidelines.html">Development Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../releases.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../appendix.html">API Reference</a></li>
 </ul>
 
+            
           
-        
+        </div>
       </div>
-      &nbsp;
     </nav>
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="../../../../index.html">Catalyst</a>
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Catalyst</a>
+        
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
-          <div role="navigation" aria-label="breadcrumbs navigation">
-  <ul class="wy-breadcrumbs">
-    <li><a href="../../../../index.html">Docs</a> &raquo;</li>
-      
-          <li><a href="../../../index.html">Module code</a> &raquo;</li>
-      
-    <li>catalyst.utils.calendars.trading_calendar</li>
-      <li class="wy-breadcrumbs-aside">
         
           
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>catalyst.utils.calendars.trading_calendar</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
-          <div role="main" class="document">
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
             
   <h1>Source code for catalyst.utils.calendars.trading_calendar</h1><div class="highlight"><pre>
-<span class="c">#</span>
-<span class="c"># Copyright 2016 Quantopian, Inc.</span>
-<span class="c">#</span>
-<span class="c"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
-<span class="c"># you may not use this file except in compliance with the License.</span>
-<span class="c"># You may obtain a copy of the License at</span>
-<span class="c">#</span>
-<span class="c">#     http://www.apache.org/licenses/LICENSE-2.0</span>
-<span class="c">#</span>
-<span class="c"># Unless required by applicable law or agreed to in writing, software</span>
-<span class="c"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
-<span class="c"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
-<span class="c"># See the License for the specific language governing permissions and</span>
-<span class="c"># limitations under the License.</span>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2016 Quantopian, Inc.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractproperty</span>
 <span class="kn">from</span> <span class="nn">lru</span> <span class="kn">import</span> <span class="n">LRU</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
@@ -437,10 +197,10 @@
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">catalyst.utils.memoize</span> <span class="kn">import</span> <span class="n">lazyval</span>
 
-<span class="n">start_default</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s">&#39;1990-01-01&#39;</span><span class="p">,</span> <span class="n">tz</span><span class="o">=</span><span class="s">&#39;UTC&#39;</span><span class="p">)</span>
-<span class="n">end_base</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s">&#39;today&#39;</span><span class="p">,</span> <span class="n">tz</span><span class="o">=</span><span class="s">&#39;UTC&#39;</span><span class="p">)</span>
-<span class="c"># Give an aggressive buffer for logic that needs to use the next trading</span>
-<span class="c"># day or minute.</span>
+<span class="n">start_default</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s1">&#39;1990-01-01&#39;</span><span class="p">,</span> <span class="n">tz</span><span class="o">=</span><span class="s1">&#39;UTC&#39;</span><span class="p">)</span>
+<span class="n">end_base</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s1">&#39;today&#39;</span><span class="p">,</span> <span class="n">tz</span><span class="o">=</span><span class="s1">&#39;UTC&#39;</span><span class="p">)</span>
+<span class="c1"># Give an aggressive buffer for logic that needs to use the next trading</span>
+<span class="c1"># day or minute.</span>
 <span class="n">end_default</span> <span class="o">=</span> <span class="n">end_base</span> <span class="o">+</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">365</span><span class="p">)</span>
 
 <span class="n">NANOS_IN_MINUTE</span> <span class="o">=</span> <span class="mi">60000000000</span>
@@ -461,49 +221,49 @@
 
 <span class="sd">    For each session, we store the open and close time in UTC time.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start_default</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end_default</span><span class="p">):</span>
-        <span class="c"># Midnight in UTC for each trading day.</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start_default</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end_default</span><span class="p">):</span>
+        <span class="c1"># Midnight in UTC for each trading day.</span>
 
-        <span class="c"># In pandas 0.18.1, pandas calls into its own code here in a way that</span>
-        <span class="c"># fires a warning. The calling code in pandas tries to suppress the</span>
-        <span class="c"># warning, but does so incorrectly, causing it to bubble out here.</span>
-        <span class="c"># Actually catch and suppress the warning here:</span>
+        <span class="c1"># In pandas 0.18.1, pandas calls into its own code here in a way that</span>
+        <span class="c1"># fires a warning. The calling code in pandas tries to suppress the</span>
+        <span class="c1"># warning, but does so incorrectly, causing it to bubble out here.</span>
+        <span class="c1"># Actually catch and suppress the warning here:</span>
         <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s">&#39;ignore&#39;</span><span class="p">)</span>
-            <span class="n">_all_days</span> <span class="o">=</span> <span class="n">date_range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="n">tz</span><span class="o">=</span><span class="s">&#39;UTC&#39;</span><span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+            <span class="n">_all_days</span> <span class="o">=</span> <span class="n">date_range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="n">tz</span><span class="o">=</span><span class="s1">&#39;UTC&#39;</span><span class="p">)</span>
 
-        <span class="c"># `DatetimeIndex`s of standard opens/closes for each day.</span>
+        <span class="c1"># `DatetimeIndex`s of standard opens/closes for each day.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_opens</span> <span class="o">=</span> <span class="n">days_at_time</span><span class="p">(</span><span class="n">_all_days</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">open_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tz</span><span class="p">,</span>
                                    <span class="bp">self</span><span class="o">.</span><span class="n">open_offset</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_closes</span> <span class="o">=</span> <span class="n">days_at_time</span><span class="p">(</span>
             <span class="n">_all_days</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">close_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tz</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">close_offset</span>
         <span class="p">)</span>
 
-        <span class="c"># `DatetimeIndex`s of nonstandard opens/closes</span>
+        <span class="c1"># `DatetimeIndex`s of nonstandard opens/closes</span>
         <span class="n">_special_opens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_special_opens</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
         <span class="n">_special_closes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_special_closes</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
 
-        <span class="c"># Overwrite the special opens and closes on top of the standard ones.</span>
+        <span class="c1"># Overwrite the special opens and closes on top of the standard ones.</span>
         <span class="n">_overwrite_special_dates</span><span class="p">(</span><span class="n">_all_days</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_opens</span><span class="p">,</span> <span class="n">_special_opens</span><span class="p">)</span>
         <span class="n">_overwrite_special_dates</span><span class="p">(</span><span class="n">_all_days</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closes</span><span class="p">,</span> <span class="n">_special_closes</span><span class="p">)</span>
 
-        <span class="c"># In pandas 0.16.1 _opens and _closes will lose their timezone</span>
-        <span class="c"># information. This looks like it has been resolved in 0.17.1.</span>
-        <span class="c"># http://pandas.pydata.org/pandas-docs/stable/whatsnew.html#datetime-with-tz  # noqa</span>
+        <span class="c1"># In pandas 0.16.1 _opens and _closes will lose their timezone</span>
+        <span class="c1"># information. This looks like it has been resolved in 0.17.1.</span>
+        <span class="c1"># http://pandas.pydata.org/pandas-docs/stable/whatsnew.html#datetime-with-tz  # noqa</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span>
             <span class="n">index</span><span class="o">=</span><span class="n">_all_days</span><span class="p">,</span>
-            <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;market_open&#39;</span><span class="p">,</span> <span class="s">&#39;market_close&#39;</span><span class="p">],</span>
+            <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;market_open&#39;</span><span class="p">,</span> <span class="s1">&#39;market_close&#39;</span><span class="p">],</span>
             <span class="n">data</span><span class="o">=</span><span class="p">{</span>
-                <span class="s">&#39;market_open&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_opens</span><span class="p">,</span>
-                <span class="s">&#39;market_close&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closes</span><span class="p">,</span>
+                <span class="s1">&#39;market_open&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_opens</span><span class="p">,</span>
+                <span class="s1">&#39;market_close&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closes</span><span class="p">,</span>
             <span class="p">},</span>
-            <span class="n">dtype</span><span class="o">=</span><span class="s">&#39;datetime64[ns, UTC]&#39;</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;datetime64[ns, UTC]&#39;</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="c"># Simple cache to avoid recalculating the same minute -&gt; session in</span>
-        <span class="c"># &quot;next&quot; mode. Analysis of current catalyst code paths show that</span>
-        <span class="c"># `minute_to_session_label` is often called consecutively with the same</span>
-        <span class="c"># inputs.</span>
+        <span class="c1"># Simple cache to avoid recalculating the same minute -&gt; session in</span>
+        <span class="c1"># &quot;next&quot; mode. Analysis of current catalyst code paths show that</span>
+        <span class="c1"># `minute_to_session_label` is often called consecutively with the same</span>
+        <span class="c1"># inputs.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_minute_to_session_label_cache</span> <span class="o">=</span> <span class="n">LRU</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">market_opens_nanos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="o">.</span><span class="n">market_open</span><span class="o">.</span><span class="n">values</span><span class="o">.</span>\
@@ -556,7 +316,7 @@
     <span class="nd">@lazyval</span>
     <span class="k">def</span> <span class="nf">_minutes_per_session</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">diff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="o">.</span><span class="n">market_close</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="o">.</span><span class="n">market_open</span>
-        <span class="n">diff</span> <span class="o">=</span> <span class="n">diff</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;timedelta64[m]&#39;</span><span class="p">)</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="n">diff</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;timedelta64[m]&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">diff</span> <span class="o">+</span> <span class="mi">1</span>
 
     <span class="k">def</span> <span class="nf">minutes_count_for_sessions_in_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_session</span><span class="p">,</span> <span class="n">end_session</span><span class="p">):</span>
@@ -632,7 +392,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[]</span>
 
-    <span class="c"># -----</span>
+    <span class="c1"># -----</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">opens</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -697,7 +457,7 @@
 <span class="sd">            The UTC timestamp of the next open.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">idx</span> <span class="o">=</span> <span class="n">next_divider_idx</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">market_opens_nanos</span><span class="p">,</span> <span class="n">dt</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">market_opens_nanos</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">tz</span><span class="o">=</span><span class="s">&#39;UTC&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">market_opens_nanos</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">tz</span><span class="o">=</span><span class="s1">&#39;UTC&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">next_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -714,7 +474,7 @@
 <span class="sd">            The UTC timestamp of the next close.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">idx</span> <span class="o">=</span> <span class="n">next_divider_idx</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">market_closes_nanos</span><span class="p">,</span> <span class="n">dt</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">market_closes_nanos</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">tz</span><span class="o">=</span><span class="s">&#39;UTC&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">market_closes_nanos</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">tz</span><span class="o">=</span><span class="s1">&#39;UTC&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">previous_open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -731,7 +491,7 @@
 <span class="sd">            The UTC imestamp of the previous open.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">idx</span> <span class="o">=</span> <span class="n">previous_divider_idx</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">market_opens_nanos</span><span class="p">,</span> <span class="n">dt</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">market_opens_nanos</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">tz</span><span class="o">=</span><span class="s">&#39;UTC&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">market_opens_nanos</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">tz</span><span class="o">=</span><span class="s1">&#39;UTC&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">previous_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -748,7 +508,7 @@
 <span class="sd">            The UTC timestamp of the previous close.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">idx</span> <span class="o">=</span> <span class="n">previous_divider_idx</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">market_closes_nanos</span><span class="p">,</span> <span class="n">dt</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">market_closes_nanos</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">tz</span><span class="o">=</span><span class="s">&#39;UTC&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">market_closes_nanos</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">tz</span><span class="o">=</span><span class="s1">&#39;UTC&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">next_minute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -812,8 +572,8 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="o">.</span><span class="n">index</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;There is no next session as this is the end&quot;</span>
-                                 <span class="s">&quot; of the exchange calendar.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;There is no next session as this is the end&quot;</span>
+                                 <span class="s2">&quot; of the exchange calendar.&quot;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span>
 
@@ -838,8 +598,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_loc</span><span class="p">(</span><span class="n">session_label</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;There is no previous session as this is the&quot;</span>
-                             <span class="s">&quot; beginning of the exchange calendar.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;There is no previous session as this is the&quot;</span>
+                             <span class="s2">&quot; beginning of the exchange calendar.&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
 
@@ -858,8 +618,8 @@
 <span class="sd">            All the minutes for the given session.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">minutes_in_range</span><span class="p">(</span>
-            <span class="n">start_minute</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">session_label</span><span class="p">,</span> <span class="s">&#39;market_open&#39;</span><span class="p">],</span>
-            <span class="n">end_minute</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">session_label</span><span class="p">,</span> <span class="s">&#39;market_close&#39;</span><span class="p">],</span>
+            <span class="n">start_minute</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">session_label</span><span class="p">,</span> <span class="s1">&#39;market_open&#39;</span><span class="p">],</span>
+            <span class="n">end_minute</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">session_label</span><span class="p">,</span> <span class="s1">&#39;market_close&#39;</span><span class="p">],</span>
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">minutes_window</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_dt</span><span class="p">,</span> <span class="n">count</span><span class="p">):</span>
@@ -867,13 +627,13 @@
         <span class="n">all_minutes_nanos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trading_minutes_nanos</span>
         <span class="n">start_idx</span> <span class="o">=</span> <span class="n">all_minutes_nanos</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">start_dt_nanos</span><span class="p">)</span>
 
-        <span class="c"># searchsorted finds the index of the minute **on or after** start_dt.</span>
-        <span class="c"># If the latter, push back to the prior minute.</span>
+        <span class="c1"># searchsorted finds the index of the minute **on or after** start_dt.</span>
+        <span class="c1"># If the latter, push back to the prior minute.</span>
         <span class="k">if</span> <span class="n">all_minutes_nanos</span><span class="p">[</span><span class="n">start_idx</span><span class="p">]</span> <span class="o">!=</span> <span class="n">start_dt_nanos</span><span class="p">:</span>
             <span class="n">start_idx</span> <span class="o">-=</span> <span class="mi">1</span>
 
         <span class="k">if</span> <span class="n">start_idx</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">start_idx</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_minutes_nanos</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s">&quot;Can&#39;t start minute window at {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start_dt</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Can&#39;t start minute window at {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start_dt</span><span class="p">))</span>
 
         <span class="n">end_idx</span> <span class="o">=</span> <span class="n">start_idx</span> <span class="o">+</span> <span class="n">count</span>
 
@@ -990,7 +750,7 @@
                                <span class="n">end_minute</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">end_minute</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trading_minutes_nanos</span><span class="p">[</span><span class="n">end_idx</span><span class="p">]:</span>
-            <span class="c"># if the end minute is a market minute, increase by 1</span>
+            <span class="c1"># if the end minute is a market minute, increase by 1</span>
             <span class="n">end_idx</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_minutes</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:</span><span class="n">end_idx</span><span class="p">]</span>
@@ -1037,37 +797,37 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">sched</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span>
 
-        <span class="c"># `market_open` and `market_close` should be timezone aware, but pandas</span>
-        <span class="c"># 0.16.1 does not appear to support this:</span>
-        <span class="c"># http://pandas.pydata.org/pandas-docs/stable/whatsnew.html#datetime-with-tz  # noqa</span>
+        <span class="c1"># `market_open` and `market_close` should be timezone aware, but pandas</span>
+        <span class="c1"># 0.16.1 does not appear to support this:</span>
+        <span class="c1"># http://pandas.pydata.org/pandas-docs/stable/whatsnew.html#datetime-with-tz  # noqa</span>
         <span class="k">return</span> <span class="p">(</span>
-            <span class="n">sched</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">session_label</span><span class="p">,</span> <span class="s">&#39;market_open&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="s">&#39;UTC&#39;</span><span class="p">),</span>
-            <span class="n">sched</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">session_label</span><span class="p">,</span> <span class="s">&#39;market_close&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="s">&#39;UTC&#39;</span><span class="p">),</span>
+            <span class="n">sched</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">session_label</span><span class="p">,</span> <span class="s1">&#39;market_open&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="s1">&#39;UTC&#39;</span><span class="p">),</span>
+            <span class="n">sched</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">session_label</span><span class="p">,</span> <span class="s1">&#39;market_close&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="s1">&#39;UTC&#39;</span><span class="p">),</span>
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">session_open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_label</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="o">.</span><span class="n">at</span><span class="p">[</span>
             <span class="n">session_label</span><span class="p">,</span>
-            <span class="s">&#39;market_open&#39;</span>
-        <span class="p">]</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="s">&#39;UTC&#39;</span><span class="p">)</span>
+            <span class="s1">&#39;market_open&#39;</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="s1">&#39;UTC&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">session_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_label</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="o">.</span><span class="n">at</span><span class="p">[</span>
             <span class="n">session_label</span><span class="p">,</span>
-            <span class="s">&#39;market_close&#39;</span>
-        <span class="p">]</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="s">&#39;UTC&#39;</span><span class="p">)</span>
+            <span class="s1">&#39;market_close&#39;</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="s1">&#39;UTC&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">session_opens_in_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_session_label</span><span class="p">,</span> <span class="n">end_session_label</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
             <span class="n">start_session_label</span><span class="p">:</span><span class="n">end_session_label</span><span class="p">,</span>
-            <span class="s">&#39;market_open&#39;</span><span class="p">,</span>
-        <span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">tz_convert</span><span class="p">(</span><span class="s">&#39;UTC&#39;</span><span class="p">)</span>
+            <span class="s1">&#39;market_open&#39;</span><span class="p">,</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">tz_convert</span><span class="p">(</span><span class="s1">&#39;UTC&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">session_closes_in_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_session_label</span><span class="p">,</span> <span class="n">end_session_label</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
             <span class="n">start_session_label</span><span class="p">:</span><span class="n">end_session_label</span><span class="p">,</span>
-            <span class="s">&#39;market_close&#39;</span><span class="p">,</span>
-        <span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">tz_convert</span><span class="p">(</span><span class="s">&#39;UTC&#39;</span><span class="p">)</span>
+            <span class="s1">&#39;market_close&#39;</span><span class="p">,</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">tz_convert</span><span class="p">(</span><span class="s1">&#39;UTC&#39;</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">all_sessions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1092,39 +852,38 @@
 <span class="sd">        Returns a DatetimeIndex representing all the minutes in this calendar.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">opens_in_ns</span> <span class="o">=</span> \
-            <span class="bp">self</span><span class="o">.</span><span class="n">_opens</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;datetime64[ns]&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_opens</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;datetime64[ns]&#39;</span><span class="p">)</span>
 
         <span class="n">closes_in_ns</span> <span class="o">=</span> \
-            <span class="bp">self</span><span class="o">.</span><span class="n">_closes</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;datetime64[ns]&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_closes</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;datetime64[ns]&#39;</span><span class="p">)</span>
 
         <span class="n">deltas</span> <span class="o">=</span> <span class="n">closes_in_ns</span> <span class="o">-</span> <span class="n">opens_in_ns</span>
 
         <span class="n">nanos_in_interval</span> <span class="o">=</span> <span class="n">interval</span> <span class="o">*</span> <span class="n">NANOS_IN_MINUTE</span>
 
-        <span class="c"># + 1 because we want 390 days per standard day, not 389</span>
+        <span class="c1"># + 1 because we want 390 days per standard day, not 389</span>
         <span class="n">daily_sizes</span> <span class="o">=</span> <span class="p">(</span><span class="n">deltas</span> <span class="o">/</span> <span class="n">nanos_in_interval</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="n">num_minutes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">daily_sizes</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
 
-        <span class="c"># One allocation for the entire thing. This assumes that each day</span>
-        <span class="c"># represents a contiguous block of minutes.</span>
-        <span class="n">all_minutes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">num_minutes</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s">&#39;datetime64[ns]&#39;</span><span class="p">)</span>
+        <span class="c1"># One allocation for the entire thing. This assumes that each day</span>
+        <span class="c1"># represents a contiguous block of minutes.</span>
+        <span class="n">all_minutes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">num_minutes</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;datetime64[ns]&#39;</span><span class="p">)</span>
 
         <span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">day_idx</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">daily_sizes</span><span class="p">):</span>
-            <span class="c"># lots of small allocations, but it&#39;s fast enough for now.</span>
+            <span class="c1"># lots of small allocations, but it&#39;s fast enough for now.</span>
 
-            <span class="c"># size is a np.timedelta64, so we need to int it</span>
+            <span class="c1"># size is a np.timedelta64, so we need to int it</span>
             <span class="n">size_int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
             <span class="n">all_minutes</span><span class="p">[</span><span class="n">idx</span><span class="p">:(</span><span class="n">idx</span> <span class="o">+</span> <span class="n">size_int</span><span class="p">)]</span> <span class="o">=</span> \
                 <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
                     <span class="n">opens_in_ns</span><span class="p">[</span><span class="n">day_idx</span><span class="p">],</span>
                     <span class="n">closes_in_ns</span><span class="p">[</span><span class="n">day_idx</span><span class="p">]</span> <span class="o">+</span> <span class="n">NANOS_IN_MINUTE</span><span class="p">,</span>
-                    <span class="n">nanos_in_interval</span>
-                <span class="p">)</span>
+                    <span class="n">nanos_in_interval</span><span class="p">)</span>
 
             <span class="n">idx</span> <span class="o">+=</span> <span class="n">size_int</span>
 
-        <span class="k">return</span> <span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">all_minutes</span><span class="p">)</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="s">&quot;UTC&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">all_minutes</span><span class="p">)</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="s2">&quot;UTC&quot;</span><span class="p">)</span>
 
     <span class="nd">@lazyval</span>
     <span class="k">def</span> <span class="nf">all_minutes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1133,8 +892,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_minutes_with_interval</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
-    <span class="nd">@preprocess</span><span class="p">(</span><span class="n">dt</span><span class="o">=</span><span class="nb">coerce</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">,</span> <span class="n">attrgetter</span><span class="p">(</span><span class="s">&#39;value&#39;</span><span class="p">)))</span>
-    <span class="k">def</span> <span class="nf">minute_to_session_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s">&quot;next&quot;</span><span class="p">):</span>
+    <span class="nd">@preprocess</span><span class="p">(</span><span class="n">dt</span><span class="o">=</span><span class="nb">coerce</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">,</span> <span class="n">attrgetter</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">)))</span>
+    <span class="k">def</span> <span class="nf">minute_to_session_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;next&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Given a minute, get the label of its containing session.</span>
 
@@ -1158,7 +917,7 @@
 <span class="sd">        pd.Timestamp (midnight UTC)</span>
 <span class="sd">            The label of the containing session.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s">&quot;next&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;next&quot;</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minute_to_session_label_cache</span><span class="p">[</span><span class="n">dt</span><span class="p">]</span>
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
@@ -1168,22 +927,22 @@
         <span class="n">current_or_next_session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_minute_to_session_label_cache</span><span class="p">[</span><span class="n">dt</span><span class="p">]</span> <span class="o">=</span> <span class="n">current_or_next_session</span>
 
-        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s">&quot;next&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;next&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">current_or_next_session</span>
-        <span class="k">elif</span> <span class="n">direction</span> <span class="o">==</span> <span class="s">&quot;previous&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;previous&quot;</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">is_open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">market_opens_nanos</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">market_closes_nanos</span><span class="p">,</span>
                            <span class="n">dt</span><span class="p">):</span>
-                <span class="c"># if the exchange is closed, use the previous session</span>
+                <span class="c1"># if the exchange is closed, use the previous session</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-        <span class="k">elif</span> <span class="n">direction</span> <span class="o">==</span> <span class="s">&quot;none&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">is_open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">market_opens_nanos</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">market_closes_nanos</span><span class="p">,</span>
                            <span class="n">dt</span><span class="p">):</span>
-                <span class="c"># if the exchange is closed, blow up</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;The given dt is not an exchange minute!&quot;</span><span class="p">)</span>
+                <span class="c1"># if the exchange is closed, blow up</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The given dt is not an exchange minute!&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="c"># invalid direction</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Invalid direction parameter: &quot;</span>
-                             <span class="s">&quot;{0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">direction</span><span class="p">))</span>
+            <span class="c1"># invalid direction</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid direction parameter: &quot;</span>
+                             <span class="s2">&quot;{0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">direction</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">current_or_next_session</span>
 
@@ -1209,7 +968,7 @@
             <span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
             <span class="n">minute_to_session_label_nanos</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">market_closes_nanos</span><span class="p">,</span>
-        <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;datetime64[ns]&#39;</span><span class="p">),</span> <span class="n">tz</span><span class="o">=</span><span class="s">&#39;UTC&#39;</span><span class="p">)</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;datetime64[ns]&#39;</span><span class="p">),</span> <span class="n">tz</span><span class="o">=</span><span class="s1">&#39;UTC&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_special_dates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calendars</span><span class="p">,</span> <span class="n">ad_hoc_dates</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1218,7 +977,7 @@
 
 <span class="sd">        (This is shared logic for computing special opens and special closes.)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">_dates</span> <span class="o">=</span> <span class="n">DatetimeIndex</span><span class="p">([],</span> <span class="n">tz</span><span class="o">=</span><span class="s">&#39;UTC&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">union_many</span><span class="p">(</span>
+        <span class="n">_dates</span> <span class="o">=</span> <span class="n">DatetimeIndex</span><span class="p">([],</span> <span class="n">tz</span><span class="o">=</span><span class="s1">&#39;UTC&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">union_many</span><span class="p">(</span>
             <span class="p">[</span>
                 <span class="n">holidays_at_time</span><span class="p">(</span><span class="n">calendar</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">,</span> <span class="n">time_</span><span class="p">,</span>
                                  <span class="bp">self</span><span class="o">.</span><span class="n">tz</span><span class="p">)</span>
@@ -1281,7 +1040,7 @@
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">days</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">days</span>
 
-    <span class="c"># Offset days without tz to avoid timezone issues.</span>
+    <span class="c1"># Offset days without tz to avoid timezone issues.</span>
     <span class="n">days</span> <span class="o">=</span> <span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">days</span><span class="p">)</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
     <span class="n">delta</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span>
         <span class="n">days</span><span class="o">=</span><span class="n">day_offset</span><span class="p">,</span>
@@ -1289,7 +1048,7 @@
         <span class="n">minutes</span><span class="o">=</span><span class="n">t</span><span class="o">.</span><span class="n">minute</span><span class="p">,</span>
         <span class="n">seconds</span><span class="o">=</span><span class="n">t</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">days</span> <span class="o">+</span> <span class="n">delta</span><span class="p">)</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="n">tz</span><span class="p">)</span><span class="o">.</span><span class="n">tz_convert</span><span class="p">(</span><span class="s">&#39;UTC&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">days</span> <span class="o">+</span> <span class="n">delta</span><span class="p">)</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="n">tz</span><span class="p">)</span><span class="o">.</span><span class="n">tz_convert</span><span class="p">(</span><span class="s1">&#39;UTC&#39;</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">holidays_at_time</span><span class="p">(</span><span class="n">calendar</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">tz</span><span class="p">):</span>
@@ -1307,40 +1066,42 @@
 <span class="sd">    Overwrite dates in open_or_closes with corresponding dates in</span>
 <span class="sd">    special_opens_or_closes, using midnight_utcs for alignment.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c"># Short circuit when nothing to apply.</span>
+    <span class="c1"># Short circuit when nothing to apply.</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">special_opens_or_closes</span><span class="p">):</span>
         <span class="k">return</span>
 
     <span class="n">len_m</span><span class="p">,</span> <span class="n">len_oc</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">midnight_utcs</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">opens_or_closes</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">len_m</span> <span class="o">!=</span> <span class="n">len_oc</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s">&quot;Found misaligned dates while building calendar.</span><span class="se">\n</span><span class="s">&quot;</span>
-            <span class="s">&quot;Expected midnight_utcs to be the same length as open_or_closes,</span><span class="se">\n</span><span class="s">&quot;</span>
-            <span class="s">&quot;but len(midnight_utcs)=</span><span class="si">%d</span><span class="s">, len(open_or_closes)=</span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">len_m</span><span class="p">,</span> <span class="n">len_oc</span>
+            <span class="s2">&quot;Found misaligned dates while building calendar.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;Expected midnight_utcs to be the same length as open_or_closes,</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;but len(midnight_utcs)=</span><span class="si">%d</span><span class="s2">, len(open_or_closes)=</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">len_m</span><span class="p">,</span> <span class="n">len_oc</span>
         <span class="p">)</span>
 
-    <span class="c"># Find the array indices corresponding to each special date.</span>
+    <span class="c1"># Find the array indices corresponding to each special date.</span>
     <span class="n">indexer</span> <span class="o">=</span> <span class="n">midnight_utcs</span><span class="o">.</span><span class="n">get_indexer</span><span class="p">(</span><span class="n">special_opens_or_closes</span><span class="o">.</span><span class="n">normalize</span><span class="p">())</span>
 
-    <span class="c"># -1 indicates that no corresponding entry was found.  If any -1s are</span>
-    <span class="c"># present, then we have special dates that doesn&#39;t correspond to any</span>
-    <span class="c"># trading day.</span>
+    <span class="c1"># -1 indicates that no corresponding entry was found.  If any -1s are</span>
+    <span class="c1"># present, then we have special dates that doesn&#39;t correspond to any</span>
+    <span class="c1"># trading day.</span>
     <span class="k">if</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">in</span> <span class="n">indexer</span><span class="p">:</span>
         <span class="n">bad_dates</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">special_opens_or_closes</span><span class="p">[</span><span class="n">indexer</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Special dates </span><span class="si">%s</span><span class="s"> are not trading days.&quot;</span> <span class="o">%</span> <span class="n">bad_dates</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Special dates </span><span class="si">%s</span><span class="s2"> are not trading days.&quot;</span> <span class="o">%</span> <span class="n">bad_dates</span><span class="p">)</span>
 
-    <span class="c"># NOTE: This is a slightly dirty hack.  We&#39;re in-place overwriting the</span>
-    <span class="c"># internal data of an Index, which is conceptually immutable.  Since we&#39;re</span>
-    <span class="c"># maintaining sorting, this should be ok, but this is a good place to</span>
-    <span class="c"># sanity check if things start going haywire with calendar computations.</span>
+    <span class="c1"># NOTE: This is a slightly dirty hack.  We&#39;re in-place overwriting the</span>
+    <span class="c1"># internal data of an Index, which is conceptually immutable.  Since we&#39;re</span>
+    <span class="c1"># maintaining sorting, this should be ok, but this is a good place to</span>
+    <span class="c1"># sanity check if things start going haywire with calendar computations.</span>
     <span class="n">opens_or_closes</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">indexer</span><span class="p">]</span> <span class="o">=</span> <span class="n">special_opens_or_closes</span><span class="o">.</span><span class="n">values</span>
 
 
 <span class="k">class</span> <span class="nc">HolidayCalendar</span><span class="p">(</span><span class="n">AbstractHolidayCalendar</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rules</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">HolidayCalendar</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">rules</span><span class="o">=</span><span class="n">rules</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rules</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">HolidayCalendar</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">rules</span><span class="o">=</span><span class="n">rules</span><span class="p">)</span>
 </pre></div>
 
+           </div>
+           
           </div>
           <footer>
   
@@ -1350,9 +1111,10 @@
   <div role="contentinfo">
     <p>
         &copy; Copyright 2018, Enigma MPC, Inc..
+
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -1370,10 +1132,12 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../../',
-            VERSION:'0.5.12',
+            VERSION:'0.5.16',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="../../../../_static/jquery.js"></script>
@@ -1382,19 +1146,13 @@
 
   
 
-  
-  
-    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>
