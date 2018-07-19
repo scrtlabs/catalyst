@@ -37,8 +37,8 @@ from ._factorize import (
 def compare_arrays(left, right):
     "Eq check with a short-circuit for identical objects."
     return (
-        left is right
-        or ((left.shape == right.shape) and (left == right).all())
+        left is right or
+        ((left.shape == right.shape) and (left == right).all())
     )
 
 
@@ -439,9 +439,9 @@ class LabelArray(ndarray):
                     raise CategoryMismatch(self_categories, other_categories)
 
                 return (
-                    op(self.as_int_array(), other.as_int_array())
-                    & self.not_missing()
-                    & other.not_missing()
+                    op(self.as_int_array(), other.as_int_array()) &
+                    self.not_missing() &
+                    other.not_missing()
                 )
 
             elif isinstance(other, ndarray):

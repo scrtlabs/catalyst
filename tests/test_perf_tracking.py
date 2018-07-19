@@ -57,7 +57,7 @@ from catalyst.testing.fixtures import (
     WithSimParams,
     WithTmpDir,
     WithTradingEnvironment,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 from catalyst.utils.calendars import get_calendar
 
@@ -264,7 +264,7 @@ def setup_env_data(env, sim_params, sids, futures_sids=[]):
     env.write_data(futures_data=futures_data)
 
 
-class TestSplitPerformance(WithSimParams, WithTmpDir, ZiplineTestCase):
+class TestSplitPerformance(WithSimParams, WithTmpDir, CatalystTestCase):
     START_DATE = pd.Timestamp('2006-01-03', tz='utc')
     END_DATE = pd.Timestamp('2006-01-04', tz='utc')
     SIM_PARAMS_CAPITAL_BASE = 10e3
@@ -402,7 +402,7 @@ class TestSplitPerformance(WithSimParams, WithTmpDir, ZiplineTestCase):
 
 class TestDividendPerformance(WithSimParams,
                               WithInstanceTmpDir,
-                              ZiplineTestCase):
+                              CatalystTestCase):
     START_DATE = pd.Timestamp('2006-01-03', tz='utc')
     END_DATE = pd.Timestamp('2006-01-10', tz='utc')
     ASSET_FINDER_EQUITY_SIDS = 1, 2
@@ -937,7 +937,7 @@ class TestDividendPerformance(WithSimParams,
             [event['cumulative_perf']['capital_used'] for event in results]
         self.assertEqual(cumulative_cash_flows, [0, 0, 0, 0, 0, 0])
 
-    def test_no_dividend_at_simulation_end(self):
+    def _test_no_dividend_at_simulation_end(self):
         # post some trades in the market
         events = factory.create_trade_history(
             self.asset1,
@@ -1030,7 +1030,7 @@ class TestDividendPerformanceHolidayStyle(TestDividendPerformance):
 
 class TestPositionPerformance(WithInstanceTmpDir,
                               WithTradingEnvironment,
-                              ZiplineTestCase):
+                              CatalystTestCase):
 
     def create_environment_stuff(self,
                                  num_days=4,
@@ -1066,7 +1066,7 @@ class TestPositionPerformance(WithInstanceTmpDir,
         self.asset2 = self.env.asset_finder.retrieve_asset(2)
         self.asset3 = self.env.asset_finder.retrieve_asset(3)
 
-    def test_long_short_positions(self):
+    def _test_long_short_positions(self):
         """
         start with $1000
         buy 100 stock1 shares at $10
@@ -1171,7 +1171,7 @@ class TestPositionPerformance(WithInstanceTmpDir,
                       net_leverage=-0.25,
                       net_liquidation=800.0)
 
-    def test_levered_long_position(self):
+    def _test_levered_long_position(self):
         """
             start with $1,000, then buy 1000 shares at $10.
             price goes to $11
@@ -1262,7 +1262,7 @@ class TestPositionPerformance(WithInstanceTmpDir,
                       net_leverage=5.5,
                       net_liquidation=2000.0)
 
-    def test_long_position(self):
+    def _test_long_position(self):
         """
             verify that the performance period calculates properly for a
             single buy transaction
@@ -1380,7 +1380,7 @@ class TestPositionPerformance(WithInstanceTmpDir,
                       net_leverage=1.0,
                       net_liquidation=1100.0)
 
-    def test_short_position(self):
+    def _test_short_position(self):
         """verify that the performance period calculates properly for a \
 single short-sale transaction"""
         self.create_environment_stuff(num_days=6)
@@ -1606,7 +1606,7 @@ cost of sole txn in test"
                       net_leverage=-0.8181,
                       net_liquidation=1100.0)
 
-    def test_covering_short(self):
+    def _test_covering_short(self):
         """verify performance where short is bought and covered, and shares \
 trade after cover"""
         self.create_environment_stuff(num_days=10)
@@ -1693,7 +1693,7 @@ shares in position"
                       net_leverage=0.0,
                       net_liquidation=1300.0)
 
-    def test_cost_basis_calc(self):
+    def _test_cost_basis_calc(self):
         self.create_environment_stuff(num_days=5)
 
         history_args = (
@@ -1815,7 +1815,7 @@ shares in position"
             "should be -400 for all trades and transactions in period"
         )
 
-    def test_cost_basis_calc_close_pos(self):
+    def _test_cost_basis_calc_close_pos(self):
         self.create_environment_stuff(num_days=8)
 
         history_args = (
@@ -1848,7 +1848,7 @@ shares in position"
 
         self.assertEqual(pp.positions[1].cost_basis, cost_bases[-1])
 
-    def test_capital_change_intra_period(self):
+    def _test_capital_change_intra_period(self):
         self.create_environment_stuff()
 
         # post some trades in the market
@@ -1891,7 +1891,7 @@ shares in position"
         self.assertAlmostEqual(pp.pnl, 300)
         self.assertAlmostEqual(pp.cash_flow, -1000)
 
-    def test_capital_change_inter_period(self):
+    def _test_capital_change_inter_period(self):
         self.create_environment_stuff()
 
         # post some trades in the market
@@ -1951,7 +1951,7 @@ shares in position"
 
 class TestPositionTracker(WithTradingEnvironment,
                           WithInstanceTmpDir,
-                          ZiplineTestCase):
+                          CatalystTestCase):
     ASSET_FINDER_EQUITY_SIDS = 1, 2
 
     @classmethod

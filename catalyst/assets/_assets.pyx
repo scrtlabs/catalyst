@@ -396,18 +396,18 @@ cdef class Future(Asset):
         return super_dict
 
 cdef class TradingPair(Asset):
-    cdef readonly float leverage
+    cdef readonly object leverage
     cdef readonly object quote_currency
     cdef readonly object base_currency
     cdef readonly object end_daily
     cdef readonly object end_minute
     cdef readonly object exchange_symbol
-    cdef readonly float maker
-    cdef readonly float taker
+    cdef readonly object maker
+    cdef readonly object taker
     cdef readonly int trading_state
     cdef readonly object data_source
-    cdef readonly float max_trade_size
-    cdef readonly float lot
+    cdef readonly object max_trade_size
+    cdef readonly object lot
     cdef readonly int decimals
 
     _kwargnames = frozenset({
@@ -441,7 +441,7 @@ cdef class TradingPair(Asset):
                  object start_date=None,
                  object asset_name=None,
                  int sid=0,
-                 float leverage=1.0,
+                 object leverage=1.0,
                  object end_daily=None,
                  object end_minute=None,
                  object end_date=None,
@@ -449,11 +449,11 @@ cdef class TradingPair(Asset):
                  object first_traded=None,
                  object auto_close_date=None,
                  object exchange_full=None,
-                 float min_trade_size=0.0001,
-                 float max_trade_size=1000000,
-                 float maker=0.0015,
-                 float taker=0.0025,
-                 float lot=0,
+                 object min_trade_size=0.0001,
+                 object max_trade_size=1000000,
+                 object maker=0.0015,
+                 object taker=0.0025,
+                 object lot=0,
                  int decimals = 8,
                  int trading_state=0,
                  object data_source='catalyst'):

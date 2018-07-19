@@ -1,21 +1,12 @@
 import os
 import tarfile
-from datetime import datetime
 
 import numpy as np
 import pandas as pd
 
 from catalyst.data.bundles.core import download_without_progress
 from catalyst.exchange.utils.exchange_utils import get_exchange_bundles_folder
-import os
-import tarfile
-from datetime import datetime
 
-import numpy as np
-import pandas as pd
-
-from catalyst.data.bundles.core import download_without_progress
-from catalyst.exchange.utils.exchange_utils import get_exchange_bundles_folder
 
 EXCHANGE_NAMES = ['bitfinex', 'bittrex', 'poloniex', 'binance']
 API_URL = 'http://data.enigma.co/api/v1'
@@ -50,8 +41,8 @@ def get_bcolz_chunk(exchange_name, symbol, data_frequency, period):
     if not os.path.isdir(path):
         url = 'https://s3.amazonaws.com/enigmaco/catalyst-bundles/' \
               'exchange-{exchange}/{name}.tar.gz'.format(
-            exchange=exchange_name,
-            name=name)
+                exchange=exchange_name,
+                name=name)
 
         bytes = download_without_progress(url)
         with tarfile.open('r', fileobj=bytes) as tar:

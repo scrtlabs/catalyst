@@ -44,7 +44,7 @@ def crossover(source, target):
     """
     if isinstance(target, numbers.Number):
         if source[-1] is np.nan or source[-2] is np.nan \
-            or target is np.nan:
+           or target is np.nan:
             return False
 
         if source[-1] >= target > source[-2]:
@@ -54,7 +54,7 @@ def crossover(source, target):
 
     else:
         if source[-1] is np.nan or source[-2] is np.nan \
-            or target[-1] is np.nan or target[-2] is np.nan:
+           or target[-1] is np.nan or target[-2] is np.nan:
             return False
 
         if source[-1] > target[-1] and source[-2] < target[-2]:
@@ -81,7 +81,7 @@ def crossunder(source, target):
     """
     if isinstance(target, numbers.Number):
         if source[-1] is np.nan or source[-2] is np.nan \
-            or target is np.nan:
+           or target is np.nan:
             return False
 
         if source[-1] < target <= source[-2]:
@@ -90,7 +90,7 @@ def crossunder(source, target):
             return False
     else:
         if source[-1] is np.nan or source[-2] is np.nan \
-            or target[-1] is np.nan or target[-2] is np.nan:
+           or target[-1] is np.nan or target[-2] is np.nan:
             return False
 
         if source[-1] < target[-1] and source[-2] >= target[-2]:

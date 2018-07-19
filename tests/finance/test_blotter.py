@@ -37,7 +37,7 @@ from catalyst.testing.fixtures import (
     WithDataPortal,
     WithLogger,
     WithSimParams,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 from catalyst.utils.classproperty import classproperty
 
@@ -46,7 +46,7 @@ class BlotterTestCase(WithCreateBarData,
                       WithLogger,
                       WithDataPortal,
                       WithSimParams,
-                      ZiplineTestCase):
+                      CatalystTestCase):
     START_DATE = pd.Timestamp('2006-01-05', tz='utc')
     END_DATE = pd.Timestamp('2006-01-06', tz='utc')
     ASSET_FINDER_EQUITY_SIDS = 24, 25
@@ -291,8 +291,8 @@ class BlotterTestCase(WithCreateBarData,
             dt = data[1]
 
             order_size = 100
-            expected_filled = int(trade_amt *
-                                  DEFAULT_EQUITY_VOLUME_SLIPPAGE_BAR_LIMIT)
+            expected_filled = float(trade_amt *
+                                    DEFAULT_EQUITY_VOLUME_SLIPPAGE_BAR_LIMIT)
             expected_open = order_size - expected_filled
             expected_status = ORDER_STATUS.OPEN if expected_open else \
                 ORDER_STATUS.FILLED
@@ -377,12 +377,12 @@ class BlotterTestCase(WithCreateBarData,
         blotter = Blotter(
             self.sim_params.data_frequency,
             equity_slippage=FixedSlippage(spread=0.0),
-            future_slippage=FixedSlippage(spread=2.0),
+            # future_slippage=FixedSlippage(spread=2.0),
             equity_commission=PerTrade(cost=1.0),
-            future_commission=PerTrade(cost=2.0),
+            # future_commission=PerTrade(cost=2.0),
         )
         blotter.order(self.asset_24, 1, MarketOrder())
-        blotter.order(self.future_cl, 1, MarketOrder())
+        # blotter.order(self.future_cl, 1, MarketOrder())
 
         bar_data = self.create_bardata(
             simulation_dt_func=lambda: self.sim_params.sessions[-1],
@@ -399,12 +399,12 @@ class BlotterTestCase(WithCreateBarData,
         )
         self.assertEqual(commissions[0]['cost'], 1.0)
 
-        # The future transaction price should be 1.0 more than its current
-        # price because half of the 'future_slippage' spread is added. Its
-        # commission should be $2.00.
-        future_txn = txns[1]
-        self.assertEqual(
-            future_txn.price,
-            bar_data.current(future_txn.asset, 'price') + 1.0,
-        )
-        self.assertEqual(commissions[1]['cost'], 2.0)
+        # # The future transaction price should be 1.0 more than its current
+        # # price because half of the 'future_slippage' spread is added. Its
+        # # commission should be $2.00.
+        # future_txn = txns[1]
+        # self.assertEqual(
+        #     future_txn.price,
+        #     bar_data.current(future_txn.asset, 'price') + 1.0,
+        # )
+        # self.assertEqual(commissions[1]['cost'], 2.0)

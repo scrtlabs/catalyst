@@ -814,7 +814,7 @@ def subscribe(ctx, dataset):
     marketplace.subscribe(dataset)
 
 
-@marketplace.command()
+@marketplace.command()  # noqa: F811
 @click.option(
     '--dataset',
     default=None,
@@ -850,7 +850,7 @@ def ingest(ctx, dataset, data_frequency, start, end):
     marketplace.ingest(dataset, data_frequency, start, end)
 
 
-@marketplace.command()
+@marketplace.command()  # noqa: F811
 @click.option(
     '--dataset',
     default=None,
@@ -872,6 +872,7 @@ def register(ctx):
     marketplace = Marketplace()
     marketplace.register()
 
+
 @marketplace.command()
 @click.option(
     '--dataset',
@@ -884,6 +885,7 @@ def get_withdraw_amount(ctx, dataset):
     """
     marketplace = Marketplace()
     marketplace.get_withdraw_amount(dataset)
+
 
 @marketplace.command()
 @click.option(

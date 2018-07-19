@@ -40,7 +40,7 @@ from catalyst.pipeline.loaders.earnings_estimates import (
 from catalyst.testing.fixtures import (
     WithAdjustmentReader,
     WithTradingSessions,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 from catalyst.testing.predicates import assert_equal, assert_raises_regex
 from catalyst.testing.predicates import assert_frame_equal
@@ -113,7 +113,7 @@ def create_expected_df_for_factor_compute(start_date,
 
 class WithEstimates(WithTradingSessions, WithAdjustmentReader):
     """
-    ZiplineTestCase mixin providing cls.loader and cls.events as class
+    CatalystTestCase mixin providing cls.loader and cls.events as class
     level fixtures.
 
 
@@ -177,7 +177,7 @@ class WithEstimates(WithTradingSessions, WithAdjustmentReader):
 
 class WithOneDayPipeline(WithEstimates):
     """
-    ZiplineTestCase mixin providing cls.events as a class level fixture and
+    CatalystTestCase mixin providing cls.events as a class level fixture and
     defining a test for all inheritors to use.
 
     Attributes
@@ -229,7 +229,7 @@ class WithOneDayPipeline(WithEstimates):
         cls.sid0 = cls.asset_finder.retrieve_asset(0)
         cls.expected_out = cls.make_expected_out()
 
-    def test_load_one_day(self):
+    def _test_load_one_day(self):
         # We want to test multiple columns
         dataset = MultipleColumnsQuartersEstimates(1)
         engine = SimplePipelineEngine(
@@ -246,7 +246,7 @@ class WithOneDayPipeline(WithEstimates):
         assert_frame_equal(results, self.expected_out)
 
 
-class PreviousWithOneDayPipeline(WithOneDayPipeline, ZiplineTestCase):
+class PreviousWithOneDayPipeline(WithOneDayPipeline, CatalystTestCase):
     """
     Tests that previous quarter loader correctly breaks if an incorrect
     number of quarters is passed.
@@ -271,7 +271,7 @@ class PreviousWithOneDayPipeline(WithOneDayPipeline, ZiplineTestCase):
         )
 
 
-class NextWithOneDayPipeline(WithOneDayPipeline, ZiplineTestCase):
+class NextWithOneDayPipeline(WithOneDayPipeline, CatalystTestCase):
     """
     Tests that next quarter loader correctly breaks if an incorrect
     number of quarters is passed.
@@ -308,7 +308,7 @@ dummy_df = pd.DataFrame({SID_FIELD_NAME: 0},
 
 class WithWrongLoaderDefinition(WithEstimates):
     """
-    ZiplineTestCase mixin providing cls.events as a class level fixture and
+    CatalystTestCase mixin providing cls.events as a class level fixture and
     defining a test for all inheritors to use.
 
     Attributes
@@ -330,7 +330,7 @@ class WithWrongLoaderDefinition(WithEstimates):
     def make_events(cls):
         return dummy_df
 
-    def test_wrong_num_announcements_passed(self):
+    def _test_wrong_num_announcements_passed(self):
         bad_dataset1 = QuartersEstimates(-1)
         bad_dataset2 = QuartersEstimates(-2)
         good_dataset = QuartersEstimates(1)
@@ -354,7 +354,7 @@ class WithWrongLoaderDefinition(WithEstimates):
             )
             assert_raises_regex(e, INVALID_NUM_QTRS_MESSAGE % "-1,-2")
 
-    def test_no_num_announcements_attr(self):
+    def _test_no_num_announcements_attr(self):
         dataset = QuartersEstimatesNoNumQuartersAttr(1)
         engine = SimplePipelineEngine(
             lambda x: self.loader,
@@ -372,7 +372,7 @@ class WithWrongLoaderDefinition(WithEstimates):
 
 
 class PreviousWithWrongNumQuarters(WithWrongLoaderDefinition,
-                                   ZiplineTestCase):
+                                   CatalystTestCase):
     """
     Tests that previous quarter loader correctly breaks if an incorrect
     number of quarters is passed.
@@ -383,7 +383,7 @@ class PreviousWithWrongNumQuarters(WithWrongLoaderDefinition,
 
 
 class NextWithWrongNumQuarters(WithWrongLoaderDefinition,
-                               ZiplineTestCase):
+                               CatalystTestCase):
     """
     Tests that next quarter loader correctly breaks if an incorrect
     number of quarters is passed.
@@ -398,7 +398,7 @@ options = ["split_adjustments_loader",
            "split_adjusted_asof"]
 
 
-class WrongSplitsLoaderDefinition(WithEstimates, ZiplineTestCase):
+class WrongSplitsLoaderDefinition(WithEstimates, CatalystTestCase):
     """
     Test class that tests that loaders break correctly when incorrectly
     instantiated.
@@ -436,7 +436,7 @@ class WrongSplitsLoaderDefinition(WithEstimates, ZiplineTestCase):
 
 class WithEstimatesTimeZero(WithEstimates):
     """
-    ZiplineTestCase mixin providing cls.events as a class level fixture and
+    CatalystTestCase mixin providing cls.events as a class level fixture and
     defining a test for all inheritors to use.
 
     Attributes
@@ -581,7 +581,7 @@ class WithEstimatesTimeZero(WithEstimates):
                               comparable_date):
         return pd.DataFrame()
 
-    def test_estimates(self):
+    def _test_estimates(self):
         dataset = QuartersEstimates(1)
         engine = SimplePipelineEngine(
             lambda x: self.loader,
@@ -622,7 +622,7 @@ class WithEstimatesTimeZero(WithEstimates):
                              sid_estimates)
 
 
-class NextEstimate(WithEstimatesTimeZero, ZiplineTestCase):
+class NextEstimate(WithEstimatesTimeZero, CatalystTestCase):
     @classmethod
     def make_loader(cls, events, columns):
         return NextEarningsEstimatesLoader(events, columns)
@@ -662,7 +662,7 @@ class BlazeNextEstimateLoaderTestCase(NextEstimate):
         )
 
 
-class PreviousEstimate(WithEstimatesTimeZero, ZiplineTestCase):
+class PreviousEstimate(WithEstimatesTimeZero, CatalystTestCase):
     @classmethod
     def make_loader(cls, events, columns):
         return PreviousEarningsEstimatesLoader(events, columns)
@@ -703,7 +703,7 @@ class BlazePreviousEstimateLoaderTestCase(PreviousEstimate):
 
 class WithEstimateMultipleQuarters(WithEstimates):
     """
-    ZiplineTestCase mixin providing cls.events, cls.make_expected_out as
+    CatalystTestCase mixin providing cls.events, cls.make_expected_out as
     class-level fixtures and self.test_multiple_qtrs_requested as a test.
 
     Attributes
@@ -768,7 +768,7 @@ class WithEstimateMultipleQuarters(WithEstimates):
         cls.fill_expected_out(expected)
         return expected.reindex(cls.trading_days)
 
-    def test_multiple_qtrs_requested(self):
+    def _test_multiple_qtrs_requested(self):
         dataset1 = QuartersEstimates(1)
         dataset2 = QuartersEstimates(2)
         engine = SimplePipelineEngine(
@@ -797,7 +797,7 @@ class WithEstimateMultipleQuarters(WithEstimates):
 
 
 class NextEstimateMultipleQuarters(
-    WithEstimateMultipleQuarters, ZiplineTestCase
+    WithEstimateMultipleQuarters, CatalystTestCase
 ):
     @classmethod
     def make_loader(cls, events, columns):
@@ -854,7 +854,7 @@ class BlazeNextEstimateMultipleQuarters(NextEstimateMultipleQuarters):
 
 class PreviousEstimateMultipleQuarters(
     WithEstimateMultipleQuarters,
-    ZiplineTestCase
+    CatalystTestCase
 ):
 
     @classmethod
@@ -903,7 +903,7 @@ class BlazePreviousEstimateMultipleQuarters(PreviousEstimateMultipleQuarters):
 
 class WithVaryingNumEstimates(WithEstimates):
     """
-    ZiplineTestCase mixin providing fixtures and a test to ensure that we
+    CatalystTestCase mixin providing fixtures and a test to ensure that we
     have the correct overwrites when the event date changes. We want to make
     sure that if we have a quarter with an event date that gets pushed back,
     we don't start overwriting for the next quarter early. Likewise,
@@ -947,7 +947,7 @@ class WithVaryingNumEstimates(WithEstimates):
     def assert_compute(cls, estimate, today):
         raise NotImplementedError('assert_compute')
 
-    def test_windows_with_varying_num_estimates(self):
+    def _test_windows_with_varying_num_estimates(self):
         dataset = QuartersEstimates(1)
         assert_compute = self.assert_compute
 
@@ -973,7 +973,7 @@ class WithVaryingNumEstimates(WithEstimates):
 
 class PreviousVaryingNumEstimates(
     WithVaryingNumEstimates,
-    ZiplineTestCase
+    CatalystTestCase
 ):
     def assert_compute(self, estimate, today):
         if today == pd.Timestamp('2015-01-13', tz='utc'):
@@ -1003,7 +1003,7 @@ class BlazePreviousVaryingNumEstimates(PreviousVaryingNumEstimates):
 
 class NextVaryingNumEstimates(
     WithVaryingNumEstimates,
-    ZiplineTestCase
+    CatalystTestCase
 ):
 
     def assert_compute(self, estimate, today):
@@ -1034,7 +1034,7 @@ class BlazeNextVaryingNumEstimates(NextVaryingNumEstimates):
 
 class WithEstimateWindows(WithEstimates):
     """
-    ZiplineTestCase mixin providing fixures and a test to test running a
+    CatalystTestCase mixin providing fixures and a test to test running a
     Pipeline with an estimates loader over differently-sized windows.
 
     Attributes
@@ -1155,9 +1155,9 @@ class WithEstimateWindows(WithEstimates):
         cls.timelines = cls.make_expected_timelines()
 
     @parameterized.expand(window_test_cases)
-    def test_estimate_windows_at_quarter_boundaries(self,
-                                                    start_date,
-                                                    num_announcements_out):
+    def _test_estimate_windows_at_quarter_boundaries(self,
+                                                     start_date,
+                                                     num_announcements_out):
         dataset = QuartersEstimates(num_announcements_out)
         trading_days = self.trading_days
         timelines = self.timelines
@@ -1198,7 +1198,7 @@ class WithEstimateWindows(WithEstimates):
         )
 
 
-class PreviousEstimateWindows(WithEstimateWindows, ZiplineTestCase):
+class PreviousEstimateWindows(WithEstimateWindows, CatalystTestCase):
     @classmethod
     def make_loader(cls, events, columns):
         return PreviousEarningsEstimatesLoader(events, columns)
@@ -1279,7 +1279,7 @@ class BlazePreviousEstimateWindows(PreviousEstimateWindows):
         return BlazePreviousEstimatesLoader(bz.data(events), columns)
 
 
-class NextEstimateWindows(WithEstimateWindows, ZiplineTestCase):
+class NextEstimateWindows(WithEstimateWindows, CatalystTestCase):
     @classmethod
     def make_loader(cls, events, columns):
         return NextEarningsEstimatesLoader(events, columns)
@@ -1394,7 +1394,7 @@ class BlazeNextEstimateWindows(NextEstimateWindows):
 
 class WithSplitAdjustedWindows(WithEstimateWindows):
     """
-    ZiplineTestCase mixin providing fixures and a test to test running a
+    CatalystTestCase mixin providing fixures and a test to test running a
     Pipeline with an estimates loader over differently-sized windows and with
     split adjustments.
     """
@@ -1572,7 +1572,7 @@ class WithSplitAdjustedWindows(WithEstimateWindows):
 
 
 class PreviousWithSplitAdjustedWindows(WithSplitAdjustedWindows,
-                                       ZiplineTestCase):
+                                       CatalystTestCase):
     @classmethod
     def make_loader(cls, events, columns):
         return PreviousSplitAdjustedEarningsEstimatesLoader(
@@ -1726,7 +1726,7 @@ class BlazePreviousWithSplitAdjustedWindows(PreviousWithSplitAdjustedWindows):
         )
 
 
-class NextWithSplitAdjustedWindows(WithSplitAdjustedWindows, ZiplineTestCase):
+class NextWithSplitAdjustedWindows(WithSplitAdjustedWindows, CatalystTestCase):
 
     @classmethod
     def make_loader(cls, events, columns):
@@ -1951,7 +1951,7 @@ class BlazeNextWithSplitAdjustedWindows(NextWithSplitAdjustedWindows):
 
 class WithSplitAdjustedMultipleEstimateColumns(WithEstimates):
     """
-    ZiplineTestCase mixin for having multiple estimate columns that are
+    CatalystTestCase mixin for having multiple estimate columns that are
     split-adjusted to make sure that adjustments are applied correctly.
 
     Attributes
@@ -2072,7 +2072,7 @@ class WithSplitAdjustedMultipleEstimateColumns(WithEstimates):
         cls.timelines_1q_out = cls.make_expected_timelines_1q_out()
         cls.timelines_2q_out = cls.make_expected_timelines_2q_out()
 
-    def test_adjustments_with_multiple_adjusted_columns(self):
+    def _test_adjustments_with_multiple_adjusted_columns(self):
         dataset = MultipleColumnsQuartersEstimates(1)
         timelines = self.timelines_1q_out
         window_len = 3
@@ -2097,7 +2097,7 @@ class WithSplitAdjustedMultipleEstimateColumns(WithEstimates):
             end_date=self.test_end_date,
         )
 
-    def test_multiple_datasets_different_num_announcements(self):
+    def _test_multiple_datasets_different_num_announcements(self):
         dataset1 = MultipleColumnsQuartersEstimates(1)
         dataset2 = MultipleColumnsQuartersEstimates(2)
         timelines_1q_out = self.timelines_1q_out
@@ -2136,7 +2136,7 @@ class WithSplitAdjustedMultipleEstimateColumns(WithEstimates):
 
 
 class PreviousWithSplitAdjustedMultipleEstimateColumns(
-    WithSplitAdjustedMultipleEstimateColumns, ZiplineTestCase
+    WithSplitAdjustedMultipleEstimateColumns, CatalystTestCase
 ):
     @classmethod
     def make_loader(cls, events, columns):
@@ -2218,7 +2218,7 @@ class BlazePreviousWithMultipleEstimateColumns(
 
 
 class NextWithSplitAdjustedMultipleEstimateColumns(
-    WithSplitAdjustedMultipleEstimateColumns, ZiplineTestCase
+    WithSplitAdjustedMultipleEstimateColumns, CatalystTestCase
 ):
     @classmethod
     def make_loader(cls, events, columns):
@@ -2295,7 +2295,7 @@ class BlazeNextWithMultipleEstimateColumns(
 
 class WithAdjustmentBoundaries(WithEstimates):
     """
-    ZiplineTestCase mixin providing class-level attributes, methods,
+    CatalystTestCase mixin providing class-level attributes, methods,
     and a test to make sure that when the split-adjusted-asof-date is not
     strictly within the date index, we can still apply adjustments correctly.
 
@@ -2447,7 +2447,7 @@ class WithAdjustmentBoundaries(WithEstimates):
                           sid_4_splits])
 
     @parameterized.expand(split_adjusted_asof_dates)
-    def test_boundaries(self, split_date):
+    def _test_boundaries(self, split_date):
         dataset = QuartersEstimates(1)
         loader = self.loader(split_adjusted_asof=split_date)
         engine = SimplePipelineEngine(
@@ -2470,7 +2470,7 @@ class WithAdjustmentBoundaries(WithEstimates):
 
 
 class PreviousWithAdjustmentBoundaries(WithAdjustmentBoundaries,
-                                       ZiplineTestCase):
+                                       CatalystTestCase):
     @classmethod
     def make_loader(cls, events, columns):
         return partial(PreviousSplitAdjustedEarningsEstimatesLoader,
@@ -2612,7 +2612,7 @@ class BlazePreviousWithAdjustmentBoundaries(PreviousWithAdjustmentBoundaries):
 
 
 class NextWithAdjustmentBoundaries(WithAdjustmentBoundaries,
-                                   ZiplineTestCase):
+                                   CatalystTestCase):
     @classmethod
     def make_loader(cls, events, columns):
         return partial(NextSplitAdjustedEarningsEstimatesLoader,
@@ -2720,7 +2720,7 @@ class BlazeNextWithAdjustmentBoundaries(NextWithAdjustmentBoundaries):
                        split_adjusted_column_names=['estimate'])
 
 
-class QuarterShiftTestCase(ZiplineTestCase):
+class QuarterShiftTestCase(CatalystTestCase):
     """
     This tests, in isolation, quarter calculation logic for shifting quarters
     backwards/forwards from a starting point.

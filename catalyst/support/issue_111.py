@@ -1,12 +1,15 @@
 from logbook import Logger
 
 from catalyst import run_algorithm
-from catalyst.api import order_target_percent
+from catalyst.api import (
+    order_target_percent,
+    record,
+    symbol
+)
+
 
 NAMESPACE = 'goose7'
 log = Logger(NAMESPACE)
-
-from catalyst.api import record, symbol
 
 
 def initialize(context):

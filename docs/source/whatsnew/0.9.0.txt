@@ -105,7 +105,7 @@ None
 Miscellaneous
 ~~~~~~~~~~~~~
 
-* Adds :class:`~zipline.testing.fixtures.ZiplineTestCase` which provides hooks
+* Adds :class:`~zipline.testing.fixtures.CatalystTestCase` which provides hooks
   to consume test fixtures. Fixtures are things like:
   :class:`~zipline.testing.fixtures.WithAssetFinder` which will make
   ``self.asset_finder`` available to your test with some mock data

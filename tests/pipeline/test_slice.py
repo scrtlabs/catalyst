@@ -31,12 +31,12 @@ from catalyst.testing import (
 )
 from catalyst.testing.fixtures import (
     WithSeededRandomPipelineEngine,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 from catalyst.utils.numpy_utils import datetime64ns_dtype
 
 
-class SliceTestCase(WithSeededRandomPipelineEngine, ZiplineTestCase):
+class SliceTestCase(WithSeededRandomPipelineEngine, CatalystTestCase):
     sids = ASSET_FINDER_EQUITY_SIDS = Int64Index([1, 2, 3])
     START_DATE = Timestamp('2015-01-31', tz='UTC')
     END_DATE = Timestamp('2015-03-01', tz='UTC')
@@ -57,7 +57,7 @@ class SliceTestCase(WithSeededRandomPipelineEngine, ZiplineTestCase):
         cls.col = TestingDataSet.float_col
 
     @parameter_space(my_asset_column=[0, 1, 2], window_length_=[1, 2, 3])
-    def test_slice(self, my_asset_column, window_length_):
+    def _test_slice(self, my_asset_column, window_length_):
         """
         Test that slices can be created by indexing into a term, and that they
         have the correct shape when used as inputs.
@@ -89,7 +89,7 @@ class SliceTestCase(WithSeededRandomPipelineEngine, ZiplineTestCase):
         )
 
     @parameter_space(unmasked_column=[0, 1, 2], slice_column=[0, 1, 2])
-    def test_slice_with_masking(self, unmasked_column, slice_column):
+    def _test_slice_with_masking(self, unmasked_column, slice_column):
         """
         Test that masking a factor that uses slices as inputs does not mask the
         slice data.
@@ -160,7 +160,7 @@ class SliceTestCase(WithSeededRandomPipelineEngine, ZiplineTestCase):
         with self.assertRaises(NonSliceableTerm):
             USEquityPricing.close[my_asset]
 
-    def test_non_existent_asset(self):
+    def _test_non_existent_asset(self):
         """
         Test that indexing into a term with a non-existent asset raises the
         proper exception.
@@ -183,7 +183,7 @@ class SliceTestCase(WithSeededRandomPipelineEngine, ZiplineTestCase):
                 self.pipeline_end_date,
             )
 
-    def test_window_safety_of_slices(self):
+    def _test_window_safety_of_slices(self):
         """
         Test that slices correctly inherit the `window_safe` property of the
         term from which they are derived.
@@ -258,7 +258,7 @@ class SliceTestCase(WithSeededRandomPipelineEngine, ZiplineTestCase):
                 target=my_unsafe_factor_slice, correlation_length=10,
             )
 
-    def test_single_column_output(self):
+    def _test_single_column_output(self):
         """
         Tests for custom factors that compute a 1D out.
         """
@@ -305,7 +305,7 @@ class SliceTestCase(WithSeededRandomPipelineEngine, ZiplineTestCase):
             # `compute` function of our custom factors above.
             self.run_pipeline(Pipeline(columns=columns), start_date, end_date)
 
-    def test_masked_single_column_output(self):
+    def _test_masked_single_column_output(self):
         """
         Tests for masking custom factors that compute a 1D out.
         """
@@ -359,9 +359,9 @@ class SliceTestCase(WithSeededRandomPipelineEngine, ZiplineTestCase):
             self.run_pipeline(Pipeline(columns=columns), start_date, end_date)
 
     @parameter_space(returns_length=[2, 3], correlation_length=[3, 4])
-    def test_factor_correlation_methods(self,
-                                        returns_length,
-                                        correlation_length):
+    def _test_factor_correlation_methods(self,
+                                         returns_length,
+                                         correlation_length):
         """
         Ensure that `Factor.pearsonr` and `Factor.spearmanr` are consistent
         with the built-in factors `RollingPearsonOfReturns` and
@@ -451,7 +451,9 @@ class SliceTestCase(WithSeededRandomPipelineEngine, ZiplineTestCase):
             )
 
     @parameter_space(returns_length=[2, 3], regression_length=[3, 4])
-    def test_factor_regression_method(self, returns_length, regression_length):
+    def _test_factor_regression_method(self,
+                                       returns_length,
+                                       regression_length):
         """
         Ensure that `Factor.linear_regression` is consistent with the built-in
         factor `RollingLinearRegressionOfReturns`.

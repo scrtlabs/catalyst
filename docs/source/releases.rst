@@ -2,6 +2,23 @@
 Release Notes
 =============
 
+Version 0.5.16
+^^^^^^^^^^^^^^
+**Release Date**: 2018-07-19
+
+Build
+~~~~~
+- Enabled the `get_orderbook` function in live and paper trading.
+- Utilized unit tests and added travis CI integration.
+- Updated the trading calender start date to `2013-04-01`.
+- Terms and conditions were added to the marketplace.
+
+Bug Fixes
+~~~~~~~~~
+- Fixed a bug in the filled order amount calculation at live mode :issue:`384`
+- Fixed an issue with the order creation procedure for exchanges that do not
+  support `fetchMyTrades` method :issue:`404`
+
 Version 0.5.15
 ^^^^^^^^^^^^^^
 **Release Date**: 2018-07-02

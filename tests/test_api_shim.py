@@ -17,7 +17,7 @@ from catalyst.testing.fixtures import (
     WithCreateBarData,
     WithDataPortal,
     WithSimParams,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 from catalyst.catalyst_warnings import ZiplineDeprecationWarning
 
@@ -133,7 +133,7 @@ def handle_data(context, data):
 class TestAPIShim(WithCreateBarData,
                   WithDataPortal,
                   WithSimParams,
-                  ZiplineTestCase,
+                  CatalystTestCase,
                   ):
     START_DATE = pd.Timestamp("2016-01-05", tz='UTC')
     END_DATE = pd.Timestamp("2016-01-28", tz='UTC')
@@ -192,7 +192,7 @@ class TestAPIShim(WithCreateBarData,
             algo_filename=filename
         )
 
-    def test_old_new_data_api_paths(self):
+    def _test_old_new_data_api_paths(self):
         """
         Test that the new and old data APIs hit the same code paths.
 
@@ -304,7 +304,7 @@ class TestAPIShim(WithCreateBarData,
             is_legacy=False
         )
 
-    def test_sid_accessor(self):
+    def _test_sid_accessor(self):
         """
         Test that we maintain backwards compat for sid access on a data object.
 
@@ -335,7 +335,7 @@ class TestAPIShim(WithCreateBarData,
                     str(warning.message)
                 )
 
-    def test_data_items(self):
+    def _test_data_items(self):
         """
         Test that we maintain backwards compat for data.[items | iteritems].
 
@@ -366,7 +366,7 @@ class TestAPIShim(WithCreateBarData,
                         str(warning.message)
                     )
 
-    def test_iterate_data(self):
+    def _test_iterate_data(self):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("ignore", PerformanceWarning)
             warnings.simplefilter("default", ZiplineDeprecationWarning)
@@ -397,7 +397,7 @@ class TestAPIShim(WithCreateBarData,
                         str(warning.message)
                     )
 
-    def test_history(self):
+    def _test_history(self):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("ignore", PerformanceWarning)
             warnings.simplefilter("default", ZiplineDeprecationWarning)
@@ -418,7 +418,7 @@ class TestAPIShim(WithCreateBarData,
             self.assertEqual("The `history` method is deprecated.  Use "
                              "`data.history` instead.", str(w[0].message))
 
-    def test_old_new_history_bts_paths(self):
+    def _test_old_new_history_bts_paths(self):
         """
         Tests that calling history in before_trading_start gets us the correct
         values, which involves 1) calling data_portal.get_history_window as of
@@ -439,7 +439,7 @@ class TestAPIShim(WithCreateBarData,
         np.testing.assert_array_equal(window[self.asset3].values,
                                       expected_vol_with_split)
 
-    def test_simple_transforms(self):
+    def _test_simple_transforms(self):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("ignore", PerformanceWarning)
             warnings.simplefilter("default", ZiplineDeprecationWarning)
@@ -510,7 +510,7 @@ class TestAPIShim(WithCreateBarData,
             self.assertAlmostEqual(451.34355, algo.stddev, places=5)
             self.assertAlmostEqual(346, algo.returns)
 
-    def test_manipulation(self):
+    def _test_manipulation(self):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("ignore", PerformanceWarning)
             warnings.simplefilter("default", ZiplineDeprecationWarning)
@@ -533,7 +533,7 @@ class TestAPIShim(WithCreateBarData,
                                      "deprecated.",
                                      str(warning.message))
 
-    def test_reference_empty_position_by_int(self):
+    def _test_reference_empty_position_by_int(self):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("default", ZiplineDeprecationWarning)
 
@@ -547,7 +547,7 @@ class TestAPIShim(WithCreateBarData,
                 "instead."
             )
 
-    def test_reference_empty_position_by_unexpected_type(self):
+    def _test_reference_empty_position_by_unexpected_type(self):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("default", ZiplineDeprecationWarning)
 

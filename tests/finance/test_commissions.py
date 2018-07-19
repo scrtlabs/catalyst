@@ -19,7 +19,7 @@ from catalyst.finance.commission import (
 )
 from catalyst.finance.order import Order
 from catalyst.finance.transaction import Transaction
-from catalyst.testing import ZiplineTestCase, trades_by_sid_to_dfs
+from catalyst.testing import CatalystTestCase, trades_by_sid_to_dfs
 from catalyst.testing.fixtures import (
     WithAssetFinder,
     WithSimParams,
@@ -28,7 +28,7 @@ from catalyst.testing.fixtures import (
 from catalyst.utils import factory
 
 
-class CommissionUnitTests(WithAssetFinder, ZiplineTestCase):
+class CommissionUnitTests(WithAssetFinder, CatalystTestCase):
     ASSET_FINDER_EQUITY_SIDS = 1, 2
 
     @classmethod
@@ -272,7 +272,9 @@ class CommissionUnitTests(WithAssetFinder, ZiplineTestCase):
         self.assertAlmostEqual(15.3, model.calculate(order, txns[2]))
 
 
-class CommissionAlgorithmTests(WithDataPortal, WithSimParams, ZiplineTestCase):
+class CommissionAlgorithmTests(WithDataPortal,
+                               WithSimParams,
+                               CatalystTestCase):
     # make sure order commissions are properly incremented
 
     sidint, = ASSET_FINDER_EQUITY_SIDS = (133,)
@@ -344,7 +346,7 @@ class CommissionAlgorithmTests(WithDataPortal, WithSimParams, ZiplineTestCase):
 
         return algo.run(self.data_portal)
 
-    def test_per_trade(self):
+    def _test_per_trade(self):
         results = self.get_results(
             self.code.format(
                 commission="set_commission(commission.PerTrade(1))",
@@ -361,7 +363,7 @@ class CommissionAlgorithmTests(WithDataPortal, WithSimParams, ZiplineTestCase):
 
         self.verify_capital_used(results, [-1001, -1000, -1000])
 
-    def test_futures_per_trade(self):
+    def _test_futures_per_trade(self):
         results = self.get_results(
             self.code.format(
                 commission=(
@@ -378,7 +380,7 @@ class CommissionAlgorithmTests(WithDataPortal, WithSimParams, ZiplineTestCase):
         self.assertEqual(results.orders[1][0]['commission'], 1.0)
         self.assertEqual(results.capital_used[1], -1.0)
 
-    def test_per_share_no_minimum(self):
+    def _test_per_share_no_minimum(self):
         results = self.get_results(
             self.code.format(
                 commission="set_commission(commission.PerShare(0.05, None))",
@@ -395,7 +397,7 @@ class CommissionAlgorithmTests(WithDataPortal, WithSimParams, ZiplineTestCase):
 
         self.verify_capital_used(results, [-1005, -1005, -1005])
 
-    def test_per_share_with_minimum(self):
+    def _test_per_share_with_minimum(self):
         # minimum hit by first trade
         results = self.get_results(
             self.code.format(
@@ -469,7 +471,7 @@ class CommissionAlgorithmTests(WithDataPortal, WithSimParams, ZiplineTestCase):
         # Minimum not hit by first trade, so use the minimum.
         (3, 3.0),
     ])
-    def test_per_contract(self, min_trade_cost, expected_commission):
+    def _test_per_contract(self, min_trade_cost, expected_commission):
         results = self.get_results(
             self.code.format(
                 commission=(
@@ -486,7 +488,7 @@ class CommissionAlgorithmTests(WithDataPortal, WithSimParams, ZiplineTestCase):
         )
         self.assertEqual(results.capital_used[1], -expected_commission)
 
-    def test_per_dollar(self):
+    def _test_per_dollar(self):
         results = self.get_results(
             self.code.format(
                 commission="set_commission(commission.PerDollar(0.01))",

@@ -26,7 +26,7 @@ from catalyst.testing import FetcherDataPortal
 from catalyst.testing.fixtures import (
     WithResponses,
     WithSimParams,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 from .resources.fetcher_inputs.fetcher_test_data import (
     AAPL_CSV_DATA,
@@ -45,7 +45,7 @@ from .resources.fetcher_inputs.fetcher_test_data import (
 
 class FetcherTestCase(WithResponses,
                       WithSimParams,
-                      ZiplineTestCase):
+                      CatalystTestCase):
 
     @classmethod
     def make_equity_info(cls):
@@ -113,7 +113,7 @@ class FetcherTestCase(WithResponses,
 
         return results
 
-    def test_minutely_fetcher(self):
+    def _test_minutely_fetcher(self):
         self.responses.add(
             self.responses.GET,
             'https://fake.urls.com/aapl_minute_csv_data.csv',
@@ -174,7 +174,7 @@ def handle_data(context, data):
         np.testing.assert_array_equal([3] * 780, signal[780:1560])
         np.testing.assert_array_equal([4] * 780, signal[1560:])
 
-    def test_fetch_csv_with_multi_symbols(self):
+    def _test_fetch_csv_with_multi_symbols(self):
         self.responses.add(
             self.responses.GET,
             'https://fake.urls.com/multi_signal_csv_data.csv',
@@ -198,7 +198,7 @@ def handle_data(context, data):
         self.assertEqual(5, results["ibm_signal"].iloc[-1])
         self.assertEqual(5, results["dell_signal"].iloc[-1])
 
-    def test_fetch_csv_with_pure_signal_file(self):
+    def _test_fetch_csv_with_pure_signal_file(self):
         self.responses.add(
             self.responses.GET,
             'https://fake.urls.com/cpiaucsl_data.csv',
@@ -230,7 +230,7 @@ def handle_data(context, data):
 
         self.assertEqual(results["cpi"][-1], 203.1)
 
-    def test_algo_fetch_csv(self):
+    def _test_algo_fetch_csv(self):
         self.responses.add(
             self.responses.GET,
             'https://fake.urls.com/aapl_csv_data.csv',
@@ -262,7 +262,7 @@ def handle_data(context, data):
         self.assertEqual(50, results["scaled"][-1])
         self.assertEqual(24, results["price"][-1])  # fake value
 
-    def test_algo_fetch_csv_with_extra_symbols(self):
+    def _test_algo_fetch_csv_with_extra_symbols(self):
         self.responses.add(
             self.responses.GET,
             'https://fake.urls.com/aapl_ibm_csv_data.csv',
@@ -299,7 +299,7 @@ def handle_data(context, data):
                            ("none", "usecols=None"),
                            ("without date", "usecols=['Value']"),
                            ("with date", "usecols=('Value', 'Date')")])
-    def test_usecols(self, testname, usecols):
+    def _test_usecols(self, testname, usecols):
         self.responses.add(
             self.responses.GET,
             'https://fake.urls.com/cpiaucsl_data.csv',
@@ -330,7 +330,7 @@ def handle_data(context, data):
         # 251 trading days in 2006
         self.assertEqual(len(results), 251)
 
-    def test_sources_merge_custom_ticker(self):
+    def _test_sources_merge_custom_ticker(self):
         requests_kwargs = {}
 
         def capture_kwargs(zelf, url, **kwargs):
@@ -381,7 +381,7 @@ def handle_data(context, data):
     @parameterized.expand([("symbol", FETCHER_UNIVERSE_DATA, None),
                            ("arglebargle", FETCHER_UNIVERSE_DATA_TICKER_COLUMN,
                             FETCHER_ALTERNATE_COLUMN_HEADER)])
-    def test_fetcher_universe(self, name, data, column_name):
+    def _test_fetcher_universe(self, name, data, column_name):
         # Patching fetch_url here rather than using responses because (a) it's
         # easier given the paramaterization, and (b) there are enough tests
         # using responses that the fetch_url code is getting a good workout so
@@ -435,7 +435,7 @@ def handle_data(context, data):
             self.assertEqual(3, results["sid_count"].iloc[1])
             self.assertEqual(4, results["sid_count"].iloc[2])
 
-    def test_fetcher_universe_non_security_return(self):
+    def _test_fetcher_universe_non_security_return(self):
         self.responses.add(
             self.responses.GET,
             'https://fake.urls.com/bad_fetcher_universe_data.csv',
@@ -493,7 +493,7 @@ def handle_data(context, data):
     order('palladium', 100)
             """)
 
-    def test_fetcher_universe_minute(self):
+    def _test_fetcher_universe_minute(self):
         self.responses.add(
             self.responses.GET,
             'https://fake.urls.com/fetcher_universe_data.csv',
@@ -542,7 +542,7 @@ def handle_data(context, data):
         self.assertEqual(3, results["sid_count"].iloc[1])
         self.assertEqual(4, results["sid_count"].iloc[2])
 
-    def test_fetcher_in_before_trading_start(self):
+    def _test_fetcher_in_before_trading_start(self):
         self.responses.add(
             self.responses.GET,
             'https://fake.urls.com/fetcher_nflx_data.csv',
@@ -577,7 +577,7 @@ def before_trading_start(context, data):
         np.testing.assert_array_almost_equal(values[64:75], [2.550829] * 11)
         np.testing.assert_array_almost_equal(values[75:], [2.64484] * 35)
 
-    def test_fetcher_bad_data(self):
+    def _test_fetcher_bad_data(self):
         self.responses.add(
             self.responses.GET,
             'https://fake.urls.com/fetcher_nflx_data.csv',

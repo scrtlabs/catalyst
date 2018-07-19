@@ -149,7 +149,7 @@ def analyze(context, perf):
 
 
 if __name__ == '__main__':
-    
+
     run_algorithm(
             capital_base=1000,
             data_frequency='minute',

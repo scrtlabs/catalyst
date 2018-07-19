@@ -1,7 +1,7 @@
 from pandas import Timestamp
 from nose_parameterized import parameterized
 
-from catalyst.testing import ZiplineTestCase
+from catalyst.testing import CatalystTestCase
 from catalyst.utils.calendars import get_calendar
 from catalyst.utils.date_utils import compute_date_range_chunks
 
@@ -13,7 +13,7 @@ def T(s):
     return Timestamp(s, tz='UTC')
 
 
-class TestDateUtils(ZiplineTestCase):
+class TestDateUtils(CatalystTestCase):
 
     @classmethod
     def init_class_fixtures(cls):

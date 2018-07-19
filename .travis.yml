@@ -1,82 +1,67 @@
+dist: trusty
 language: python
-sudo: false
+sudo: required
 fast_finish: true
-python:
-  - 2.7
-  - 3.4
-  - 3.5
-env:
-  global:
-    # 1. Generated a token for travis at https://anaconda.org/quantopian/settings/access with scope api:write.
-    #   Can also be done via anaconda CLI with
-    #     $ TOKEN=$(anaconda auth --create --name my_travis_token)
-    # 2. Generated secure env var below with travis gem via
-    #     $ travis encrypt ANACONDA_TOKEN=$TOKEN
-    #   See https://github.com/travis-ci/travis.rb#installation.
-    #   If authenticating travis gem with github, a github token with the following scopes
-    #   is sufficient: ["read:org", "user:email", "repo_deployment", "repo:status", "write:repo_hook"]
-    #   See https://docs.travis-ci.com/api#external-apis.
-    - secure: "W2tTHoZYLuEjoIMI/K3adv7QW7yx4iVOIkVOn73jUkv3IlyZZ+BraL0hBw5Dh/iBA9PnO1qOKeRFLDDfDza/1S+2QxZMBmJ8HAkcZehbtTPdCgn/+CYSlauUlJ2izxgnXFw49qJDllQWtwsK2PEuvHrir6wbdElkXKvIJoD7jQ4="
-    - CONDA_ROOT_PYTHON_VERSION: "2.7"
-  matrix:
-    - NUMPY_VERSION=1.11.1 SCIPY_VERSION=0.17.1
+matrix:
+  include:
+  - python: 2.7
+    env: NUMPY_VERSION=1.13.1 SCIPY_VERSION=0.19.1
+  - python: 3.6
+    env: NUMPY_VERSION=1.14 SCIPY_VERSION=1.0.0
 cache:
   directories:
-    - $HOME/.cache/.pip/
-
+  - "$HOME/.cache/pip"
+  - "$HOME/miniconda"
+  timeout: 1000
+env:
+  global:
+  - MINICONDA_DIR="$HOME/miniconda${TRAVIS_PYTHON_VERSION:0:1}"
 before_install:
-  - if [ ${CONDA_ROOT_PYTHON_VERSION:0:1} == "2" ]; then wget https://repo.continuum.io/miniconda/Miniconda-3.7.0-Linux-x86_64.sh -O miniconda.sh; else wget https://repo.continuum.io/miniconda/Miniconda3-3.7.0-Linux-x86_64.sh -O miniconda.sh; fi
-  - chmod +x miniconda.sh
-  - ./miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
+- curl -L http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz --output
+  ta-lib-0.4.0-src.tar.gz
+- tar zxf ta-lib-0.4.0-src.tar.gz
+- cd ta-lib && ./configure --prefix=/usr && make && sudo make install && cd ..
+- |
+  if [ -d "$MINICONDA_DIR" ] && [ -e "$MINICONDA_DIR/bin/conda" ]; then
+    echo "Miniconda install already present from cache: $MINICONDA_DIR"
+    export PATH="$MINICONDA_DIR/bin:$PATH"
+  else
+    rm -rf "$MINICONDA_DIR"
+    if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh; else wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh; fi
+    bash miniconda.sh -b -p "$MINICONDA_DIR"
+  fi
+- export PATH="$MINICONDA_DIR/bin:$PATH"
+- conda update --yes conda
 install:
-  - conda info -a
-  - conda install conda=4.1.11 conda-build=1.21.11 anaconda-client=1.5.1 --yes
-
-  - TALIB_VERSION=$(cat ./etc/requirements_talib.txt | sed "s/TA-Lib==\(.*\)/\1/")
-  - IFS='.' read -r -a NPY_VERSION_ARR <<< "$NUMPY_VERSION"
-  - CONDA_NPY=${NPY_VERSION_ARR[0]}${NPY_VERSION_ARR[1]}
-  - CONDA_PY=$TRAVIS_PYTHON_VERSION
-
-  - if [[ "$TRAVIS_SECURE_ENV_VARS" = "true" && "$TRAVIS_BRANCH" = "master" && "$TRAVIS_PULL_REQUEST" = "false" ]]; then DO_UPLOAD="true"; else DO_UPLOAD="false"; fi
-  - |
-    for recipe in $(ls -d conda/*/ | xargs -I {} basename {}); do
-      if [[ "$recipe" = "catalyst" ]]; then continue; fi
-
-      conda build conda/$recipe --python=$CONDA_PY --numpy=$CONDA_NPY --skip-existing -c quantopian -c quantopian/label/ci
-      RECIPE_OUTPUT=$(conda build conda/$recipe --python=$CONDA_PY --numpy=$CONDA_NPY --output)
-      if [[ -f "$RECIPE_OUTPUT" && "$DO_UPLOAD" = "true" ]]; then anaconda -t $ANACONDA_TOKEN upload "$RECIPE_OUTPUT" -u quantopian --label ci; fi
-    done
-
-  - conda create -n testenv --use-local --yes -c quantopian pip python=$TRAVIS_PYTHON_VERSION numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION libgfortran=3.0 ta-lib=$TALIB_VERSION
-  - source activate testenv
-
-  - CACHE_DIR="$HOME/.cache/.pip/pip_np""$CONDA_NPY"
-  - pip install --upgrade pip coverage coveralls --cache-dir=$CACHE_DIR
-  - pip install -r etc/requirements.txt --cache-dir=$CACHE_DIR
-  - pip install -r etc/requirements_dev.txt --cache-dir=$CACHE_DIR
-  - pip install -r etc/requirements_blaze.txt --cache-dir=$CACHE_DIR  # this uses git requirements right now
-  - pip install -r etc/requirements_talib.txt --cache-dir=$CACHE_DIR
-  - pip install -e .[all] --cache-dir=$CACHE_DIR
+- conda info -a
+- TALIB_VERSION=$(cat ./etc/requirements_talib.txt | sed "s/TA-Lib==\(.*\)/\1/")
+- IFS='.' read -r -a NPY_VERSION_ARR <<< "$NUMPY_VERSION"
+- CONDA_NPY=${NPY_VERSION_ARR[0]}${NPY_VERSION_ARR[1]}
+- CONDA_PY=$TRAVIS_PYTHON_VERSION
+- "if [ ! -d \"$MINICONDA_DIR/envs/testenv$TRAVIS_PYTHON_VERSION\" ]; then\n  conda
+  create -n testenv$TRAVIS_PYTHON_VERSION --use-local --yes pip python=$TRAVIS_PYTHON_VERSION
+  numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION libgfortran=3.0 certifi=2018.1.18\nfi
+  \ \n"
+- source activate testenv$TRAVIS_PYTHON_VERSION
+- CACHE_DIR="$HOME/.cache/pip/pip_np""$CONDA_NPY"
+- pip install --upgrade pip coverage coveralls --cache-dir=$CACHE_DIR
+- pip install -r etc/requirements.txt --cache-dir=$CACHE_DIR
+- pip install -r etc/requirements_dev.txt --cache-dir=$CACHE_DIR
+- pip install -r etc/requirements_blaze.txt --cache-dir=$CACHE_DIR
+- pip install -r etc/requirements_talib.txt --cache-dir=$CACHE_DIR
+- pip install -e . --cache-dir=$CACHE_DIR
 before_script:
-  - pip freeze | sort
+- pip freeze | sort
 script:
-  - flake8 catalyst tests
-  - nosetests --with-coverage
-  # deactive env to get access to anaconda command
-  - source deactivate
-
-  # unshallow the clone so the conda build can clone it.
-  - git fetch --unshallow
-  - exec 3>&1; ZP_OUT=$(conda build conda/catalyst --python=$CONDA_PY --numpy=$CONDA_NPY -c quantopian -c quantopian/label/ci | tee >(cat - >&3))
-  - ZP_OUTPUT=$(echo "$ZP_OUT" | grep "anaconda upload" | awk '{print $NF}')
-  - if [[ "$DO_UPLOAD" = "true" ]]; then anaconda -t $ANACONDA_TOKEN upload $ZP_OUTPUT -u quantopian --label ci; fi
-  # reactivate env (necessary for coveralls)
-  - source activate testenv
-
+- flake8 catalyst tests
+- cd tests && nosetests
 after_success:
-  - coveralls
-
-branches:
-  only:
-    - master
+- coveralls
+notifications:
+  email:
+    on_success: always
+    on_failure: always
+  slack:
+    secure: fHljfb3xrbZ0hif2VX+01caMcUelWJLPWv+P3gclUSQfRwT9yNTUomENNsF4OVN90SKPJx+rZt4Ws4NWnr9CRDyFeddlwlDG4FSm5q94tBk0UQPodG0TKxd/j7bV9Mo0ELRHuHsYf4l55xC4pmfm4wFk9EILvzrnGRfNqCtXwYeuvTIlgwaLSeyWSWxjhD4F7cUyoFlqDzc7emBriYqYfnxDZ9Qr41/BhWo3N/l9rugKyWWJ7dpkPLQOhUHi1iPxV5BtkoKmCMoawS4wXllLR2tnF2vOQZLEwPg7POw8whROA95tH28L6VZAQGoPe5XLyjA/rgvz/75ZgtTCbgl5DZTvuoE17uK0BLGGEAy3J60HiwdrveDNHCOFqGby59OVjOBtm1cXaYhCCkGYwc/rbgczbH3fahR5N7qeNd9d/STdnoFpGtHGIV5YnZVqC1HZAkdAVXi+InsVUkD2xqIJjbqyKCJ0GDkadrb23k3ah+Q7X8AqBR2l4t3UJ0yUNq1qN3ESX4U6IHVmNm5viupZ8DpNwHdLM6VAB3kKjrX3TfAgrVTS5xDRDDPUWFZvke+5EXPbC0HBpODJz0M4DqwqM2vC5gANo9QAOVhvVUr41QnGUDg8lXQKc0GIKCmg6DBZIlLgAl79uMqTxSgeLhPWrPBbpFRXu3OrCckNTDoSxao=
+    on_success: change
+    on_failure: always

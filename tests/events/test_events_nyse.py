@@ -12,6 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+'''
+#   ZIPLINE legacy test: Catalyst only uses OPEN calendar, and thus
+#   this test suite is irrelevant, and is commented out in its entirety
+
 from unittest import TestCase
 from datetime import timedelta
 import pandas as pd
@@ -162,3 +167,5 @@ class TestStatelessRulesNYSE(StatelessRulesTests, TestCase):
 
 class TestStatefulRulesNYSE(StatefulRulesTests, TestCase):
     CALENDAR_STRING = "NYSE"
+
+'''

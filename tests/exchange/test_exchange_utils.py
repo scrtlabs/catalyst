@@ -1,14 +1,14 @@
 from catalyst.exchange.utils.exchange_utils import transform_candles_to_df, \
     forward_fill_df_if_needed, get_candles_df
 
-from catalyst.testing.fixtures import WithLogger, ZiplineTestCase
+from catalyst.testing.fixtures import WithLogger, CatalystTestCase
 from datetime import timedelta
 from pandas import Timestamp, DataFrame, concat
 
 import numpy as np
 
 
-class TestExchangeUtils(WithLogger, ZiplineTestCase):
+class TestExchangeUtils(WithLogger, CatalystTestCase):
     @classmethod
     def get_specific_field_from_df(cls, df, field, asset):
         new_df = DataFrame(df[field])

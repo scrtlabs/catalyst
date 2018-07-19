@@ -35,7 +35,7 @@ from catalyst.testing.fixtures import (
     WithBcolzEquityMinuteBarReader,
     WithBcolzEquityDailyBarReader,
     WithBcolzFutureMinuteBarReader,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 
 OHLC = ['open', 'high', 'low', 'close']
@@ -254,7 +254,7 @@ EXPECTED_SESSIONS = {
 
 class MinuteToDailyAggregationTestCase(WithBcolzEquityMinuteBarReader,
                                        WithBcolzFutureMinuteBarReader,
-                                       ZiplineTestCase):
+                                       CatalystTestCase):
 
     #    March 2016
     # Su Mo Tu We Th Fr Sa
@@ -525,7 +525,7 @@ class MinuteToDailyAggregationTestCase(WithBcolzEquityMinuteBarReader,
 
 
 class TestMinuteToSession(WithEquityMinuteBarData,
-                          ZiplineTestCase):
+                          CatalystTestCase):
 
     #    March 2016
     # Su Mo Tu We Th Fr Sa
@@ -565,7 +565,7 @@ class TestMinuteToSession(WithEquityMinuteBarData,
 
 
 class TestResampleSessionBars(WithBcolzFutureMinuteBarReader,
-                              ZiplineTestCase):
+                              CatalystTestCase):
 
     TRADING_CALENDAR_STRS = ('us_futures',)
     TRADING_CALENDAR_PRIMARY_CAL = 'us_futures'
@@ -602,7 +602,7 @@ class TestResampleSessionBars(WithBcolzFutureMinuteBarReader,
             self.bcolz_future_minute_bar_reader
         )
 
-    def test_resample(self):
+    def _test_resample(self):
         calendar = self.trading_calendar
         for sid in self.ASSET_FINDER_FUTURE_SIDS:
             case_frame = FUTURE_CASES[sid]
@@ -634,7 +634,7 @@ class TestResampleSessionBars(WithBcolzFutureMinuteBarReader,
 
         self.assertEqual(self.END_DATE, session_bar_reader.last_available_dt)
 
-    def test_get_value(self):
+    def _test_get_value(self):
         calendar = self.trading_calendar
         session_bar_reader = MinuteResampleSessionBarReader(
             calendar,
@@ -667,7 +667,7 @@ class TestResampleSessionBars(WithBcolzFutureMinuteBarReader,
 
 
 class TestReindexMinuteBars(WithBcolzEquityMinuteBarReader,
-                            ZiplineTestCase):
+                            CatalystTestCase):
 
     TRADING_CALENDAR_STRS = ('us_futures', 'NYSE')
     TRADING_CALENDAR_PRIMARY_CAL = 'us_futures'
@@ -736,7 +736,7 @@ class TestReindexMinuteBars(WithBcolzEquityMinuteBarReader,
 
 
 class TestReindexSessionBars(WithBcolzEquityDailyBarReader,
-                             ZiplineTestCase):
+                             CatalystTestCase):
 
     TRADING_CALENDAR_STRS = ('us_futures', 'NYSE')
     TRADING_CALENDAR_PRIMARY_CAL = 'us_futures'

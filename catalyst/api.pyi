@@ -246,9 +246,9 @@ def order(asset, amount, limit_price=None, stop_price=None, style=None):
     asset : Asset
         The asset that this order is for.
     amount : int
-        The amount of shares to order. If ``amount`` is positive, this is
-        the number of shares to buy or cover. If ``amount`` is negative,
-        this is the number of shares to sell or short.
+        The amount of assets to order. If ``amount`` is positive, this is
+        the number of assets to buy or cover. If ``amount`` is negative,
+        this is the number of assets to sell.
     limit_price : float, optional
         The limit price for the order.
     stop_price : float, optional

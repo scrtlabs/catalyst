@@ -6,7 +6,7 @@ import numpy as np
 from toolz import take
 
 from catalyst.lib.labelarray import LabelArray
-from catalyst.testing import check_arrays, parameter_space, ZiplineTestCase
+from catalyst.testing import check_arrays, parameter_space, CatalystTestCase
 from catalyst.testing.predicates import assert_equal
 from catalyst.utils.compat import unicode
 
@@ -31,7 +31,7 @@ def all_ufuncs():
     return (f for f in vars(np).values() if isinstance(f, ufunc_type))
 
 
-class LabelArrayTestCase(ZiplineTestCase):
+class LabelArrayTestCase(CatalystTestCase):
 
     @classmethod
     def init_class_fixtures(cls):

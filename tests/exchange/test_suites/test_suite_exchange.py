@@ -13,14 +13,14 @@ from catalyst.exchange.exchange_execution import ExchangeLimitOrder
 from catalyst.exchange.utils.exchange_utils import get_exchange_folder
 from catalyst.exchange.utils.test_utils import select_random_exchanges, \
     handle_exchange_error, select_random_assets
-from catalyst.testing import ZiplineTestCase
+from catalyst.testing import CatalystTestCase
 from catalyst.testing.fixtures import WithLogger
 from catalyst.exchange.utils.factory import get_exchanges, get_exchange
 
 log = Logger('TestSuiteExchange')
 
 
-class TestSuiteExchange(WithLogger, ZiplineTestCase):
+class TestSuiteExchange(WithLogger, CatalystTestCase):
     def _test_markets_exchange(self, exchange, attempts=0):
         assets = None
         try:
@@ -56,7 +56,7 @@ class TestSuiteExchange(WithLogger, ZiplineTestCase):
 
         return assets
 
-    def test_markets(self):
+    def _test_markets(self):
         population = 3
         results = dict()
 
@@ -150,8 +150,8 @@ class TestSuiteExchange(WithLogger, ZiplineTestCase):
                 exchange_population -= 1
         pass
 
-    def test_orders(self):
-        population = 3
+    def _test_orders(self):
+        # population = 3
         quote_currency = 'eth'
         order_amount = 0.1
 

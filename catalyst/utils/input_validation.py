@@ -688,9 +688,9 @@ def expect_strictly_bounded(__funcname=_qualified_name, **named):
 def _expect_bounded(make_bounded_check, __funcname, **named):
     def valid_bounds(t):
         return (
-            isinstance(t, tuple)
-            and len(t) == 2
-            and t != (None, None)
+            isinstance(t, tuple) and
+            len(t) == 2 and
+            t != (None, None)
         )
 
     for name, bounds in iteritems(named):

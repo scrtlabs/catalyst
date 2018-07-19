@@ -326,6 +326,6 @@ class BalanceTooLowError(ZiplineError):
 
 class NoCandlesReceivedFromExchange(ZiplineError):
     msg = (
-        'Although requesting {bar_count} candles until {end_dt} of asset {asset}, '
-        'an empty list of candles was received for {exchange}.'
+        'Although requesting {bar_count} candles until {end_dt} of '
+        'asset {asset}, an empty list of candles was received for {exchange}.'
     ).strip()

@@ -248,8 +248,7 @@ class EarningsEstimatesLoader(PipelineLoader):
         (requested_qtr_data[FISCAL_YEAR_FIELD_NAME],
          requested_qtr_data[FISCAL_QUARTER_FIELD_NAME]) = \
             split_normalized_quarters(
-                requested_qtr_data[SHIFTED_NORMALIZED_QTRS]
-            )
+                requested_qtr_data[SHIFTED_NORMALIZED_QTRS])
         # Once we're left with just dates as the index, we can reindex by all
         # dates so that we have a value for each calendar date.
         return requested_qtr_data.unstack(SID_FIELD_NAME).reindex(dates)
@@ -939,8 +938,7 @@ class SplitAdjustedEstimatesLoader(EarningsEstimatesLoader):
             dates, sid, split_adjusted_asof_idx
         )
         sid_estimates = self.estimates[
-            self.estimates[SID_FIELD_NAME] == sid
-            ]
+            self.estimates[SID_FIELD_NAME] == sid]
         # We might not have any overwrites but still have
         # adjustments, and we will need to manually add columns if
         # that is the case.

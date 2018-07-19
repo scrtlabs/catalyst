@@ -37,7 +37,7 @@ from catalyst.testing import (
 from catalyst.testing.fixtures import (
     WithCreateBarData,
     WithDataPortal,
-    ZiplineTestCase,
+    CatalystTestCase,
     alias,
 )
 
@@ -530,7 +530,7 @@ MINUTE_FIELD_INFO = {
 }
 
 
-class MinuteEquityHistoryTestCase(WithHistory, ZiplineTestCase):
+class MinuteEquityHistoryTestCase(WithHistory, CatalystTestCase):
 
     EQUITY_DAILY_BAR_SOURCE_FROM_MINUTE = True
     DATA_PORTAL_FIRST_TRADING_DAY = alias('TRADING_START_DT')
@@ -707,7 +707,7 @@ class MinuteEquityHistoryTestCase(WithHistory, ZiplineTestCase):
             # should not be adjusted
             np.testing.assert_array_equal([1389, 1009], window4)
 
-    def test_daily_dividends(self):
+    def _test_daily_dividends(self):
         # self.DIVIDEND_ASSET had dividends on 1/6 and 1/7
 
         jan5 = pd.Timestamp('2015-01-05', tz='UTC')
@@ -1083,7 +1083,7 @@ class MinuteEquityHistoryTestCase(WithHistory, ZiplineTestCase):
             # should not be adjusted, should be 1005 to 1009
             np.testing.assert_array_equal(range(1005, 1010), window4)
 
-    def test_minute_dividends(self):
+    def _test_minute_dividends(self):
         # self.DIVIDEND_ASSET had dividends on 1/6 and 1/7
 
         # before any of the dividends
@@ -1401,7 +1401,7 @@ class MinuteEquityHistoryTestCase(WithHistory, ZiplineTestCase):
                     'minute',
                 )[self.ASSET1]
 
-    def test_daily_history_blended(self):
+    def _test_daily_history_blended(self):
         # daily history windows that end mid-day use minute values for the
         # last day
 
@@ -1598,7 +1598,7 @@ class NoPrefetchMinuteEquityHistoryTestCase(MinuteEquityHistoryTestCase):
     DATA_PORTAL_DAILY_HISTORY_PREFETCH = 0
 
 
-class DailyEquityHistoryTestCase(WithHistory, ZiplineTestCase):
+class DailyEquityHistoryTestCase(WithHistory, CatalystTestCase):
     CREATE_BARDATA_DATA_FREQUENCY = 'daily'
 
     @classmethod
@@ -1657,7 +1657,7 @@ class DailyEquityHistoryTestCase(WithHistory, ZiplineTestCase):
 
         return df
 
-    def test_daily_before_assets_trading(self):
+    def _test_daily_before_assets_trading(self):
         # asset2 and asset3 both started trading in 2015
 
         days = self.trading_calendar.sessions_in_range(
@@ -1693,7 +1693,7 @@ class DailyEquityHistoryTestCase(WithHistory, ZiplineTestCase):
                         asset3_series
                     )
 
-    def test_daily_regular(self):
+    def _test_daily_regular(self):
         # asset2 and asset3 both started on 1/5/2015, but asset3 trades every
         # 10 days
 
@@ -1707,7 +1707,7 @@ class DailyEquityHistoryTestCase(WithHistory, ZiplineTestCase):
         for idx, day in enumerate(days):
             self.verify_regular_dt(idx, day, 'daily')
 
-    def test_daily_some_assets_stopped(self):
+    def _test_daily_some_assets_stopped(self):
         # asset1 ends on 2016-01-30
         # asset2 ends on 2015-12-13
 
@@ -1741,7 +1741,7 @@ class DailyEquityHistoryTestCase(WithHistory, ZiplineTestCase):
 
         self.assertNotEqual(0, volume_window[self.ASSET2][-3])
 
-    def test_daily_after_asset_stopped(self):
+    def _test_daily_after_asset_stopped(self):
         # SHORT_ASSET trades on 1/5, 1/6, that's it.
 
         days = self.trading_calendar.sessions_in_range(
@@ -1866,7 +1866,7 @@ class DailyEquityHistoryTestCase(WithHistory, ZiplineTestCase):
             elif asset == self.MERGER_ASSET:
                 np.testing.assert_array_equal(window3_volume, [200, 300, 400])
 
-    def test_daily_dividends(self):
+    def _test_daily_dividends(self):
         # self.DIVIDEND_ASSET had dividends on 1/6 and 1/7
 
         # before any dividend
@@ -1910,7 +1910,7 @@ class DailyEquityHistoryTestCase(WithHistory, ZiplineTestCase):
         # digits. second value should be 0.96 of its original value
         np.testing.assert_array_equal([1.882, 2.88, 4], window3)
 
-    def test_daily_blended_some_assets_stopped(self):
+    def _test_daily_blended_some_assets_stopped(self):
         # asset1 ends on 2016-01-30
         # asset2 ends on 2016-01-04
 
