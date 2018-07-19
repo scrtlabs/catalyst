@@ -1,0 +1,493 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>catalyst.exchange.exchange_blotter &mdash; Catalyst 0.5.16 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> Catalyst
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5.16
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../beginner-tutorial.html">Catalyst Beginner Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../live-trading.html">Live Trading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../example-algos.html">Example Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../utilities.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../videos.html">Videos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../resources.html">Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../development-guidelines.html">Development Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../releases.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../appendix.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Catalyst</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>catalyst.exchange.exchange_blotter</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for catalyst.exchange.exchange_blotter</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">logbook</span> <span class="kn">import</span> <span class="n">Logger</span>
+<span class="kn">from</span> <span class="nn">redo</span> <span class="kn">import</span> <span class="n">retry</span>
+
+<span class="kn">from</span> <span class="nn">catalyst.assets._assets</span> <span class="kn">import</span> <span class="n">TradingPair</span>
+<span class="kn">from</span> <span class="nn">catalyst.constants</span> <span class="kn">import</span> <span class="n">LOG_LEVEL</span>
+<span class="kn">from</span> <span class="nn">catalyst.exchange.exchange_errors</span> <span class="kn">import</span> <span class="n">ExchangeRequestError</span>
+<span class="kn">from</span> <span class="nn">catalyst.finance.blotter</span> <span class="kn">import</span> <span class="n">Blotter</span>
+<span class="kn">from</span> <span class="nn">catalyst.finance.commission</span> <span class="kn">import</span> <span class="n">CommissionModel</span>
+<span class="kn">from</span> <span class="nn">catalyst.finance.order</span> <span class="kn">import</span> <span class="n">ORDER_STATUS</span>
+<span class="kn">from</span> <span class="nn">catalyst.finance.slippage</span> <span class="kn">import</span> <span class="n">SlippageModel</span>
+<span class="kn">from</span> <span class="nn">catalyst.finance.transaction</span> <span class="kn">import</span> <span class="n">create_transaction</span>
+<span class="kn">from</span> <span class="nn">catalyst.utils.input_validation</span> <span class="kn">import</span> <span class="n">expect_types</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(</span><span class="s1">&#39;exchange_blotter&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">LOG_LEVEL</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">TradingPairFeeSchedule</span><span class="p">(</span><span class="n">CommissionModel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates a commission for a transaction based on a per percentage fee.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    maker : float, optional</span>
+<span class="sd">        The percentage maker fee.</span>
+
+<span class="sd">    taker: float, optional</span>
+<span class="sd">        The percentage taker fee.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">maker</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">taker</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maker</span> <span class="o">=</span> <span class="n">maker</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">taker</span> <span class="o">=</span> <span class="n">taker</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="s1">&#39;{class_name}(maker={maker}, &#39;</span>
+            <span class="s1">&#39;taker={taker})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">class_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                <span class="n">maker</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">maker</span><span class="p">,</span>
+                <span class="n">taker</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">taker</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_maker_taker</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">asset</span><span class="p">):</span>
+        <span class="n">maker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maker</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">maker</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">asset</span><span class="o">.</span><span class="n">maker</span>
+        <span class="n">taker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">taker</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">taker</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">asset</span><span class="o">.</span><span class="n">taker</span>
+        <span class="k">return</span> <span class="n">maker</span><span class="p">,</span> <span class="n">taker</span>
+
+    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">transaction</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the final fee based on the order parameters.</span>
+
+<span class="sd">        :param order: Order</span>
+<span class="sd">        :param transaction: Transaction</span>
+
+<span class="sd">        :return float:</span>
+<span class="sd">            The total commission.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cost</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">transaction</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span> <span class="o">*</span> <span class="n">transaction</span><span class="o">.</span><span class="n">price</span>
+
+        <span class="n">asset</span> <span class="o">=</span> <span class="n">order</span><span class="o">.</span><span class="n">asset</span>
+        <span class="n">maker</span><span class="p">,</span> <span class="n">taker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_maker_taker</span><span class="p">(</span><span class="n">asset</span><span class="p">)</span>
+
+        <span class="n">multiplier</span> <span class="o">=</span> <span class="n">taker</span>
+        <span class="k">if</span> <span class="n">order</span><span class="o">.</span><span class="n">limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">multiplier</span> <span class="o">=</span> <span class="n">maker</span> \
+                <span class="k">if</span> <span class="p">((</span><span class="n">order</span><span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">order</span><span class="o">.</span><span class="n">limit</span> <span class="o">&lt;</span> <span class="n">transaction</span><span class="o">.</span><span class="n">price</span><span class="p">)</span>
+                    <span class="ow">or</span> <span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">amount</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">and</span>
+                        <span class="n">order</span><span class="o">.</span><span class="n">limit</span> <span class="o">&gt;</span> <span class="n">transaction</span><span class="o">.</span><span class="n">price</span><span class="p">))</span> \
+                <span class="ow">and</span> <span class="n">order</span><span class="o">.</span><span class="n">limit_reached</span> <span class="k">else</span> <span class="n">taker</span>
+
+        <span class="n">fee</span> <span class="o">=</span> <span class="n">cost</span> <span class="o">*</span> <span class="n">multiplier</span>
+        <span class="k">return</span> <span class="n">fee</span>
+
+
+<div class="viewcode-block" id="TradingPairFixedSlippage"><a class="viewcode-back" href="../../../appendix.html#catalyst.exchange.exchange_blotter.TradingPairFixedSlippage">[docs]</a><span class="k">class</span> <span class="nc">TradingPairFixedSlippage</span><span class="p">(</span><span class="n">SlippageModel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Model slippage as a fixed value.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    slippage : float, optional</span>
+<span class="sd">        fixed slippage will be added to buys and subtracted from sells.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">slippage</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TradingPairFixedSlippage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slippage</span> <span class="o">=</span> <span class="n">slippage</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;{class_name}(slippage={slippage})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">class_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">slippage</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">slippage</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">asset</span><span class="p">,</span> <span class="n">orders_for_asset</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_volume_for_bar</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">price</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">asset</span><span class="p">,</span> <span class="s1">&#39;close&#39;</span><span class="p">)</span>
+
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">current_dt</span>
+        <span class="k">for</span> <span class="n">order</span> <span class="ow">in</span> <span class="n">orders_for_asset</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">order</span><span class="o">.</span><span class="n">open_amount</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">order</span><span class="o">.</span><span class="n">check_triggers</span><span class="p">(</span><span class="n">price</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">order</span><span class="o">.</span><span class="n">triggered</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="s1">&#39;order has not reached the trigger at current &#39;</span>
+                    <span class="s1">&#39;price {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">price</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="n">execution_price</span><span class="p">,</span> <span class="n">execution_volume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_order</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">execution_price</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">transaction</span> <span class="o">=</span> <span class="n">create_transaction</span><span class="p">(</span>
+                    <span class="n">order</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">execution_price</span><span class="p">,</span> <span class="n">execution_volume</span>
+                <span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">_volume_for_bar</span> <span class="o">+=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">transaction</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="n">order</span><span class="p">,</span> <span class="n">transaction</span>
+
+    <span class="k">def</span> <span class="nf">process_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span>
+        <span class="n">price</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s1">&#39;close&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">order</span><span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Buy order</span>
+            <span class="n">adj_price</span> <span class="o">=</span> <span class="n">price</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">slippage</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Sell order</span>
+            <span class="n">adj_price</span> <span class="o">=</span> <span class="n">price</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">slippage</span><span class="p">)</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;added slippage to price: {} =&gt; {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">price</span><span class="p">,</span> <span class="n">adj_price</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">adj_price</span><span class="p">,</span> <span class="n">order</span><span class="o">.</span><span class="n">amount</span></div>
+
+
+<span class="k">class</span> <span class="nc">ExchangeBlotter</span><span class="p">(</span><span class="n">Blotter</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulate_orders</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;simulate_orders&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attempts</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;attempts&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">exchanges</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;exchanges&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">exchanges</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s1">&#39;ExchangeBlotter must have an `exchanges` attribute.&#39;</span>
+            <span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">ExchangeBlotter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># Using the equity models for now</span>
+        <span class="c1"># We may be able to define more sophisticated models based on the fee</span>
+        <span class="c1"># structure of each exchange.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slippage_models</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">TradingPair</span><span class="p">:</span> <span class="n">TradingPairFixedSlippage</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">commission_models</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">TradingPair</span><span class="p">:</span> <span class="n">TradingPairFeeSchedule</span><span class="p">()</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">exchange_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">asset</span><span class="p">,</span> <span class="n">amount</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">exchange</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exchanges</span><span class="p">[</span><span class="n">asset</span><span class="o">.</span><span class="n">exchange</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">exchange</span><span class="o">.</span><span class="n">order</span><span class="p">(</span>
+            <span class="n">asset</span><span class="p">,</span> <span class="n">amount</span><span class="p">,</span> <span class="n">style</span>
+        <span class="p">)</span>
+
+    <span class="nd">@expect_types</span><span class="p">(</span><span class="n">asset</span><span class="o">=</span><span class="n">TradingPair</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">asset</span><span class="p">,</span> <span class="n">amount</span><span class="p">,</span> <span class="n">style</span><span class="p">,</span> <span class="n">order_id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;ordering {} {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">amount</span><span class="p">,</span> <span class="n">asset</span><span class="o">.</span><span class="n">symbol</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">amount</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;skipping 0 amount orders&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulate_orders</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">ExchangeBlotter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">order</span><span class="p">(</span>
+                <span class="n">asset</span><span class="p">,</span> <span class="n">amount</span><span class="p">,</span> <span class="n">style</span><span class="p">,</span> <span class="n">order_id</span>
+            <span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">retry</span><span class="p">(</span>
+                <span class="n">action</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">exchange_order</span><span class="p">,</span>
+                <span class="n">attempts</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">attempts</span><span class="p">[</span><span class="s1">&#39;order_attempts&#39;</span><span class="p">],</span>
+                <span class="n">sleeptime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">attempts</span><span class="p">[</span><span class="s1">&#39;retry_sleeptime&#39;</span><span class="p">],</span>
+                <span class="n">retry_exceptions</span><span class="o">=</span><span class="p">(</span><span class="n">ExchangeRequestError</span><span class="p">,),</span>
+                <span class="n">cleanup</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Ordering again.&#39;</span><span class="p">),</span>
+                <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">asset</span><span class="p">,</span> <span class="n">amount</span><span class="p">,</span> <span class="n">style</span><span class="p">),</span>
+            <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">open_orders</span><span class="p">[</span><span class="n">order</span><span class="o">.</span><span class="n">asset</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">orders</span><span class="p">[</span><span class="n">order</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">order</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">new_orders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">order</span><span class="o">.</span><span class="n">id</span>
+
+    <span class="k">def</span> <span class="nf">check_open_orders</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loop through the list of open orders in the Portfolio object.</span>
+<span class="sd">        For each executed order found, create a transaction and apply to the</span>
+<span class="sd">        Portfolio.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list[Transaction]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">asset</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">open_orders</span><span class="p">:</span>
+            <span class="n">exchange</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exchanges</span><span class="p">[</span><span class="n">asset</span><span class="o">.</span><span class="n">exchange</span><span class="p">]</span>
+
+            <span class="k">for</span> <span class="n">order</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">open_orders</span><span class="p">[</span><span class="n">asset</span><span class="p">]:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;found open order: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+
+                <span class="n">transactions</span> <span class="o">=</span> <span class="n">exchange</span><span class="o">.</span><span class="n">process_order</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+                <span class="c1"># This is a temporary measure, we should really update all</span>
+                <span class="c1"># trades, not just when the order gets filled. I just think</span>
+                <span class="c1"># that this is safer until we have a robust way to track</span>
+                <span class="c1"># the trades already processed by the algo. We can&#39;t loose</span>
+                <span class="c1"># them if the algo shuts down.</span>
+                <span class="k">if</span> <span class="n">transactions</span> <span class="ow">and</span> <span class="n">order</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">ORDER_STATUS</span><span class="o">.</span><span class="n">FILLED</span><span class="p">:</span>
+                    <span class="n">avg_price</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span>
+                        <span class="n">a</span><span class="o">=</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">price</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">transactions</span><span class="p">],</span>
+                        <span class="n">weights</span><span class="o">=</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">amount</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">transactions</span><span class="p">],</span>
+                    <span class="p">)</span>
+                    <span class="n">ostatus</span> <span class="o">=</span> <span class="s1">&#39;filled&#39;</span> <span class="k">if</span> <span class="n">order</span><span class="o">.</span><span class="n">open_amount</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;partial&#39;</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                        <span class="s1">&#39;{} order {} / {}: {}, avg price: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="n">ostatus</span><span class="p">,</span>
+                            <span class="n">order</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                            <span class="n">asset</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span>
+                            <span class="n">order</span><span class="o">.</span><span class="n">filled</span><span class="p">,</span>
+                            <span class="n">avg_price</span><span class="p">,</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">transaction</span> <span class="ow">in</span> <span class="n">transactions</span><span class="p">:</span>
+                        <span class="k">yield</span> <span class="n">order</span><span class="p">,</span> <span class="n">transaction</span>
+
+                <span class="k">elif</span> <span class="n">order</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">ORDER_STATUS</span><span class="o">.</span><span class="n">CANCELLED</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">order</span><span class="p">,</span> <span class="bp">None</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">delta</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span> <span class="o">-</span> <span class="n">order</span><span class="o">.</span><span class="n">dt</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                        <span class="s1">&#39;{exchange} order {order_id} for {symbol} still open &#39;</span>
+                        <span class="s1">&#39;after {delta}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="n">exchange</span><span class="o">=</span><span class="n">exchange</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                            <span class="n">order_id</span><span class="o">=</span><span class="n">order</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                            <span class="n">delta</span><span class="o">=</span><span class="n">delta</span><span class="p">,</span>
+                            <span class="n">symbol</span><span class="o">=</span><span class="n">order</span><span class="o">.</span><span class="n">asset</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_exchange_transactions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">closed_orders</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">transactions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">commissions</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">order</span><span class="p">,</span> <span class="n">txn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_open_orders</span><span class="p">():</span>
+            <span class="n">order</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">txn</span><span class="o">.</span><span class="n">dt</span>
+            <span class="n">transactions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">txn</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">order</span><span class="o">.</span><span class="n">open</span><span class="p">:</span>
+                <span class="n">closed_orders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">transactions</span><span class="p">,</span> <span class="n">commissions</span><span class="p">,</span> <span class="n">closed_orders</span>
+
+    <span class="k">def</span> <span class="nf">get_transactions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bar_data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulate_orders</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">ExchangeBlotter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_transactions</span><span class="p">(</span><span class="n">bar_data</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">retry</span><span class="p">(</span>
+                <span class="n">action</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_exchange_transactions</span><span class="p">,</span>
+                <span class="n">attempts</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">attempts</span><span class="p">[</span><span class="s1">&#39;get_transactions_attempts&#39;</span><span class="p">],</span>
+                <span class="n">sleeptime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">attempts</span><span class="p">[</span><span class="s1">&#39;retry_sleeptime&#39;</span><span class="p">],</span>
+                <span class="n">retry_exceptions</span><span class="o">=</span><span class="p">(</span><span class="n">ExchangeRequestError</span><span class="p">,),</span>
+                <span class="n">cleanup</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                    <span class="s1">&#39;Fetching exchange transactions again.&#39;</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Enigma MPC, Inc..
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.5.16',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
