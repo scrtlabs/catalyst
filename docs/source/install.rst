@@ -38,7 +38,7 @@ dependencies without requiring the use of a second tool to acquire Catalyst's
 non-Python dependencies.
 
   For Windows, you will first need to install the *Microsoft Visual C++ 
-  Compiler for Python 2.7*. Follow the instructions on the :ref:`Windows 
+  Compiler for Python*. Follow the instructions on the :ref:`Windows
   <windows>` section and come back here.
 
 For instructions on how to install ``conda``, see the `Conda Installation
