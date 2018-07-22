@@ -45,6 +45,40 @@ def convert_date(date):
         return date.__str__()
 
 
+def handle_response(response):
+    """
+    handles the response given by the server according to it's status code
+
+    :param response: the format returned from a request
+    :return: DataFrame/ str
+    """
+    if response.status_code == 500:
+        raise Exception("issues with cloud connections, "
+                        "unable to run catalyst on the cloud")
+    elif response.status_code == 502:
+        raise Exception("The server is down at the moment, please contact "
+                        "Catalyst support to fix this issue at "
+                        "https://github.com/enigmampc/catalyst/issues/")
+    elif response.status_code == 202 or response.status_code == 400:
+        return response.json()['error'] if response.json()['error'] else None
+
+    else:  # if the run was successful
+        return json_to_df(response.json())
+
+
+def json_to_df(json):
+    """
+    converts the data returned from the algorithm run from base64 to DF
+
+    :param json: the response in a json format
+    :return: data_perf: the data in a DataFrame format
+    """
+    data_perf_compressed = base64.b64decode(json["data"])
+    data_perf_pickled = zlib.decompress(data_perf_compressed)
+    data_perf = pickle.loads(data_perf_pickled)
+    return data_perf
+
+
 def run_server(
         initialize,
         handle_data,
@@ -76,7 +110,7 @@ def run_server(
         ):
 
     # address to send
-    url = 'http://34.202.72.107:5000/api/catalyst/serve'
+    url = 'https://34.202.72.107/api/catalyst/serve'
     # url = 'http://127.0.0.1:5000/api/catalyst/serve'
 
     # argument preparation - encode the file for transfer
@@ -126,19 +160,4 @@ def run_server(
     controller.stop()
     subscriber.close()
 
-    if response.status_code == 500:
-        raise Exception("issues with cloud connections, "
-                        "unable to run catalyst on the cloud")
-    elif response.status_code == 502:
-        raise Exception("The server is down at the moment, please contact "
-                        "Catalyst support to fix this issue at "
-                        "https://github.com/enigmampc/catalyst/issues/")
-    elif response.status_code == 202 or response.status_code == 400:
-        print(response.json()['error']) if response.json()['error'] else None
-
-    else:  # if the run was successful
-        received_data = response.json()
-        data_perf_compressed = base64.b64decode(received_data["data"])
-        data_perf_pickled = zlib.decompress(data_perf_compressed)
-        data_perf = pickle.loads(data_perf_pickled)
-        print(data_perf)
+    return handle_response(response)
