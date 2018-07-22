@@ -2,6 +2,15 @@
 Release Notes
 =============
 
+Version 0.5.18
+^^^^^^^^^^^^^^
+**Release Date**: 2018-07-22
+
+Build
+~~~~~
+- The parameter of the `set_slippage` API function was updated from spread to
+  slippage to better describe its purpose in the fixed slippage model.
+
 Version 0.5.17
 ^^^^^^^^^^^^^^
 **Release Date**: 2018-07-19

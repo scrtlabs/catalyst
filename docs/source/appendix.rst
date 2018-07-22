@@ -134,7 +134,7 @@ Commission Models
 Slippage Models
 '''''''''''''''
 
-.. .. autofunction:: catalyst.api.set_slippage
+.. autofunction:: catalyst.api.set_slippage
 
 .. autoclass:: catalyst.finance.slippage.SlippageModel
    :members:
