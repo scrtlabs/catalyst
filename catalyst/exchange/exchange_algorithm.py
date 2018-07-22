@@ -165,7 +165,6 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
         if slippage is not None:
             self.blotter.slippage_models[key].slippage = slippage
 
-
     def _calculate_order(self, asset, amount,
                          limit_price=None, stop_price=None, style=None):
         # Raises a ZiplineError if invalid parameters are detected.
