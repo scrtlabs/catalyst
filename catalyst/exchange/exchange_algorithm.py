@@ -153,17 +153,18 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
             self.blotter.commission_models[key].taker = taker
 
     @api_method
-    def set_slippage(self, spread=None):
-        """Set the spread of the slippage model for the simulation.
+    def set_slippage(self, slippage=None):
+        """Set the slippage of the fixed slippage model used by the simulation.
 
         Parameters
         ----------
-        spread : float
-            The spread to be set.
+        slippage : float
+            The slippage to be set.
         """
         key = list(self.blotter.slippage_models.keys())[0]
-        if spread is not None:
-            self.blotter.slippage_models[key].spread = spread
+        if slippage is not None:
+            self.blotter.slippage_models[key].slippage = slippage
+
 
     def _calculate_order(self, asset, amount,
                          limit_price=None, stop_price=None, style=None):
