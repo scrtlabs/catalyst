@@ -107,14 +107,14 @@ def run_server(
         simulate_orders,
         auth_aliases,
         stats_output,
-        ):
-
+):
     # address to send
     url = 'https://34.202.72.107/api/catalyst/serve'
     # url = 'http://127.0.0.1:5000/api/catalyst/serve'
 
-    # argument preparation - encode the file for transfer
-    algofile, algotext = prepare_args(algofile, algotext)
+    if algotext or algofile:
+        # argument preparation - encode the file for transfer
+        algofile, algotext = prepare_args(algofile, algotext)
 
     json_file = {'arguments': {
         'initialize': initialize,
