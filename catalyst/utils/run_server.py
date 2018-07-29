@@ -1,16 +1,16 @@
 #!flask/bin/python
 import base64
-
-import requests
-import pandas as pd
 import json
 import zlib
 import pickle
-from logbook.queues import ZeroMQSubscriber
+import requests
 
-subscriber = ZeroMQSubscriber(uri="tcp://34.202.72.107:5050")
-# subscriber = ZeroMQSubscriber(uri="tcp://127.0.0.1:5050")
-controller = subscriber.dispatch_in_background()
+import pandas as pd
+from hashlib import md5
+
+AUTH_SERVER = 'http://localhost:5000'
+key = '823fu8d4g'
+secret = 'iu4f9f4iou3hf3498hf'
 
 
 def prepare_args(file, text):
@@ -60,23 +60,23 @@ def handle_response(response):
                         "Catalyst support to fix this issue at "
                         "https://github.com/enigmampc/catalyst/issues/")
     elif response.status_code == 202 or response.status_code == 400:
+        lf = json_to_file(response.json()['logs'])
+        print(lf.decode('utf-8'))
         return response.json()['error'] if response.json()['error'] else None
 
     else:  # if the run was successful
-        return json_to_df(response.json())
+        return load_response(response.json())
 
 
-def json_to_df(json):
-    """
-    converts the data returned from the algorithm run from base64 to DF
+def load_response(json):
+    lf = json_to_file(json['logs'])
+    print(lf.decode('utf-8'))
+    data_df = pickle.loads(json_to_file(json['data']))
+    return data_df
 
-    :param json: the response in a json format
-    :return: data_perf: the data in a DataFrame format
-    """
-    data_perf_compressed = base64.b64decode(json["data"])
-    data_perf_pickled = zlib.decompress(data_perf_compressed)
-    data_perf = pickle.loads(data_perf_pickled)
-    return data_perf
+def json_to_file(encoded_data):
+    compressed_file = base64.b64decode(encoded_data)
+    return zlib.decompress(compressed_file)
 
 
 def run_server(
@@ -108,10 +108,6 @@ def run_server(
         auth_aliases,
         stats_output,
 ):
-    # address to send
-    url = 'https://34.202.72.107/api/catalyst/serve'
-    # url = 'http://127.0.0.1:5000/api/catalyst/serve'
-
     if algotext or algofile:
         # argument preparation - encode the file for transfer
         algofile, algotext = prepare_args(algofile, algotext)
@@ -146,18 +142,32 @@ def run_server(
         'auth_aliases': auth_aliases,
     }}
 
-    # call the server with the following arguments
-    # if any issues raised related to the format of the dates, convert them
-    response = requests.post(url,
-                             json=json.dumps(
-                                    json_file,
-                                    default=convert_date
-                                ),
-                             verify=False,
-                             )
+    session = requests.Session()
+    response = session.post('{}/backtest/run'.format(AUTH_SERVER), headers={
+        'Authorization': 'Digest username="{0}",password="{1}"'.
+                            format(key, secret)})
 
-    # close the handlers, which are not needed anymore
-    controller.stop()
-    subscriber.close()
+    header = response.headers.get('WWW-Authenticate')
+    auth_type, auth_info = header.split(None, 1)
+    d = requests.utils.parse_dict_header(auth_info)
+
+    a1 = key + ":" + d['realm'] + ":" + secret
+    ha1 = md5(a1.encode('utf-8')).hexdigest()
+    a2 = "POST:/backtest/run"
+    ha2 = md5(a2.encode('utf-8')).hexdigest()
+    a3 = ha1 + ":" + d['nonce'] + ":" + ha2
+    result = md5(a3.encode('utf-8')).hexdigest()
+
+    response = session.post('{}/backtest/run'.format(AUTH_SERVER),
+                            json=json.dumps(json_file, default=convert_date),
+                            verify=False,
+                            headers={
+                                'Authorization': 'Digest username="{0}",'
+                                                 'realm="{1}",nonce="{2}",'
+                                                 'uri="/backtest/run",'
+                                                 'response="{3}",'
+                                                 'opaque="{4}"'.
+                            format(key, d['realm'], d['nonce'],
+                                   result, d['opaque'])})
 
     return handle_response(response)
