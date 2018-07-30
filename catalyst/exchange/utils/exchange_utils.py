@@ -38,6 +38,29 @@ def get_sid(symbol):
     return sid
 
 
+def get_remote_folder(environ=None):
+    """
+    The root path of the remote folder.
+
+    Parameters
+    ----------
+    environ:
+
+    Returns
+    -------
+    str
+
+    """
+    if not environ:
+        environ = os.environ
+
+    root = data_root(environ)
+    remote_folder = os.path.join(root, 'remote')
+    ensure_directory(remote_folder)
+
+    return remote_folder
+
+
 def get_exchange_folder(exchange_name, environ=None):
     """
     The root path of an exchange folder.
@@ -215,6 +238,35 @@ def get_exchange_auth(exchange_name, alias=None, environ=None):
             return data
     else:
         data = dict(name=exchange_name, key='', secret='')
+        with open(filename, 'w') as f:
+            json.dump(data, f, sort_keys=False, indent=2,
+                      separators=(',', ':'))
+            return data
+
+
+def get_remote_auth(alias=None, environ=None):
+    """
+    The de-serialized content of the remote auth.json file.
+
+    Parameters
+    ----------
+    environ:
+
+    Returns
+    -------
+    Object
+
+    """
+    remote_folder = get_remote_folder(environ)
+    name = 'remote_auth' if alias is None else alias
+    filename = os.path.join(remote_folder, '{}.json'.format(name))
+
+    if os.path.isfile(filename):
+        with open(filename) as data_file:
+            data = json.load(data_file)
+            return data
+    else:
+        data = dict(key='', secret='')
         with open(filename, 'w') as f:
             json.dump(data, f, sort_keys=False, indent=2,
                       separators=(',', ':'))

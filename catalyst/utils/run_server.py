@@ -4,13 +4,16 @@ import json
 import zlib
 import pickle
 import requests
+import os
 
 import pandas as pd
 from hashlib import md5
 
+from catalyst.exchange.utils.exchange_utils import get_remote_auth,\
+    get_remote_folder
+from catalyst.exchange.exchange_errors import RemoteAuthEmpty
+
 AUTH_SERVER = 'http://localhost:5000'
-key = '823fu8d4g'
-secret = 'iu4f9f4iou3hf3498hf'
 
 
 def prepare_args(file, text):
@@ -73,6 +76,7 @@ def load_response(json):
     print(lf.decode('utf-8'))
     data_df = pickle.loads(json_to_file(json['data']))
     return data_df
+
 
 def json_to_file(encoded_data):
     compressed_file = base64.b64decode(encoded_data)
@@ -141,7 +145,7 @@ def run_server(
         'simulate_orders': simulate_orders,
         'auth_aliases': auth_aliases,
     }}
-
+    key, secret = retrieve_remote_auth()
     session = requests.Session()
     response = session.post('{}/backtest/run'.format(AUTH_SERVER), headers={
         'Authorization': 'Digest username="{0}",password="{1}"'.
@@ -171,3 +175,15 @@ def run_server(
                                    result, d['opaque'])})
 
     return handle_response(response)
+
+
+def retrieve_remote_auth():
+    remote_auth_dict = get_remote_auth()
+    has_auth = (remote_auth_dict['key'] != '' and
+                remote_auth_dict['secret'] != '')
+    if not has_auth:
+        raise RemoteAuthEmpty(
+            filename=os.path.join(get_remote_folder(), 'remote_auth.json')
+        )
+    else:
+        return remote_auth_dict['key'], remote_auth_dict['secret']
