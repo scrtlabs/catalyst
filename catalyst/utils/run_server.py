@@ -13,7 +13,10 @@ from catalyst.exchange.utils.exchange_utils import get_remote_auth,\
     get_remote_folder
 from catalyst.exchange.exchange_errors import RemoteAuthEmpty
 
-AUTH_SERVER = 'http://localhost:5000'
+# AUTH_SERVER = 'http://localhost:5000'
+AUTH_SERVER = "https://sandbox2.enigma.co"
+BACKTEST_PATH = '/backtest/run'
+METHOD = 'POST'
 
 
 def prepare_args(file, text):
@@ -71,10 +74,10 @@ def handle_response(response):
         return load_response(response.json())
 
 
-def load_response(json):
-    lf = json_to_file(json['logs'])
+def load_response(json_file):
+    lf = json_to_file(json_file['logs'])
     print(lf.decode('utf-8'))
-    data_df = pickle.loads(json_to_file(json['data']))
+    data_df = pickle.loads(json_to_file(json_file['data']))
     return data_df
 
 
@@ -147,9 +150,11 @@ def run_server(
     }}
     key, secret = retrieve_remote_auth()
     session = requests.Session()
-    response = session.post('{}/backtest/run'.format(AUTH_SERVER), headers={
-        'Authorization': 'Digest username="{0}",password="{1}"'.
-                            format(key, secret)})
+    response = session.post('{}{}'.format(AUTH_SERVER, BACKTEST_PATH),
+                            headers={'Authorization': 'Digest username="{0}",'
+                                                      'password="{1}"'.
+                            format(key, secret)
+                            })
 
     header = response.headers.get('WWW-Authenticate')
     auth_type, auth_info = header.split(None, 1)
@@ -157,21 +162,21 @@ def run_server(
 
     a1 = key + ":" + d['realm'] + ":" + secret
     ha1 = md5(a1.encode('utf-8')).hexdigest()
-    a2 = "POST:/backtest/run"
+    a2 = "{}:{}".format(METHOD, BACKTEST_PATH)
     ha2 = md5(a2.encode('utf-8')).hexdigest()
     a3 = ha1 + ":" + d['nonce'] + ":" + ha2
     result = md5(a3.encode('utf-8')).hexdigest()
 
-    response = session.post('{}/backtest/run'.format(AUTH_SERVER),
+    response = session.post('{}{}'.format(AUTH_SERVER, BACKTEST_PATH),
                             json=json.dumps(json_file, default=convert_date),
                             verify=False,
                             headers={
                                 'Authorization': 'Digest username="{0}",'
                                                  'realm="{1}",nonce="{2}",'
-                                                 'uri="/backtest/run",'
-                                                 'response="{3}",'
-                                                 'opaque="{4}"'.
-                            format(key, d['realm'], d['nonce'],
+                                                 'uri="{3}",'
+                                                 'response="{4}",'
+                                                 'opaque="{5}"'.
+                            format(key, d['realm'], d['nonce'], BACKTEST_PATH,
                                    result, d['opaque'])})
 
     return handle_response(response)
