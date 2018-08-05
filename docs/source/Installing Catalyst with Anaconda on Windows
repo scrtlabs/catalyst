@@ -1,0 +1,257 @@
+
+To get started with Catalyst, you will have to install it in your computer.
+Please follow the steps below. 
+
+Installing C++ compiler
+-----------------------
+You will need to have the Microsoft Visual C++ Compiler installed on your system.
+It contains the compiler and also the set of system headers necessary for 
+producing binary wheels for Python packages.
+If it's not already in your system (check the installed programms), download it
+and install it before proceeding to the next step.
+
+There are different versions depending on the version of Python that you plan to use:
+
+* Python 3.5, 3.6: `Visual C++ 2015 Build Tools 
+  <http://landinghub.visualstudio.com/visual-cpp-build-tools>`_, 
+  which installs Visual C++ version 14.0. **This is the recommended version**
+
+* Python 2.7: `Microsoft Visual C++ Compiler for Python 2.7 
+  <https://www.microsoft.com/en-us/download/details.aspx?id=44266>`_, which 
+  installs version Visual C++ version 9.0
+
+If you need additional help, or are looking for other versions of Visual C++ for 
+Windows (only advanced users), follow `this link <https://wiki.python.org/moin/WindowsCompilers>`_.
+
+Troubleshooting the C++ compiler installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Some problems we have encountered installing the **Visual C++ Compiler** 
+mentioned above are as follows:
+
+- **The system administrator has set policies to prevent this installation**.
+  
+  In some systems, there is a default *Windows Software Restriction* policy 
+  that prevents the installation of some software packages like this one. 
+  You'll have to change the Registry to circumvent this:
+
+  - Click ``Start``, and search for ``regedit`` and launch the 
+    ``Registry Editor``
+  - Navigate to the following folder:
+    ``HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Installer``
+  - If the last folder does not exist, create it by right-clicking on the 
+    parent folder and choosing -> ``New`` -> ``Key`` and typing ``Installer``
+  - If there is an entry for ``DisableMSI``, set the Value data to 0.
+  - If there is no such entry, click on the ``Edit`` menu -> ``New`` -> 
+    ``DWORD (32-bit) Value`` and enter ``DisableMSI`` as the Name (and by 
+    default you get 0 as the Value Data)
+
+- **The installer has encountered an unexpected error installing this package. 
+  This may indicate a problem with this package. The error code is 2503.**
+
+  We have observed this when trying to install a package without enough 
+  administrator permissions. Even when you are logged in as an Administrator, 
+  you have to explictily install this package with administrator privileges:
+
+  - Click ``Start`` and find ``CMD`` or ``Command Prompt``
+  - Right click on it and choose ``Run as administrator``
+  - ``cd`` into the folder where you downloaded ``VCForPython27.msi``
+  - Run ``msiexec /i VCForPython27.msi``
+  
+  
+Installing Conda
+----------------
+Like any other piece of software, Catalyst has a number of dependencies 
+(other software on which it depends to run) that you will need to install, as 
+well. The preferred method to install Catalyst is via the ``conda`` package manager, 
+which comes as part of Continuum Analytics' `Anaconda
+<http://continuum.io/downloads>`_ distribution.
+
+``Conda`` will manage all these dependencies for you, and set up the environment needed to get you up 
+and running as easily as possible. 
+
+What conda does is create a pre-configured environment, and inside that 
+environment install Catalyst using ``pip``, Python's package manager. 
+
+For instructions on how to install ``conda``, see the `Conda Installation
+Documentation <http://conda.pydata.org/docs/download.html>`_.
+
+
+Alternatively, you can install MiniConda
+----------------------------------------
+which is a smaller footprint (fewer packages and 
+smaller size) than its big brother Anaconda, but it still contains all the 
+main packages needed. To install MiniConda, you can follow these steps:
+
+1. Download `MiniConda <https://conda.io/miniconda.html>`_. Select either 
+   Python 3.6 (recommended) or Python 2.7 for your Operating System. The 
+   `Enigma Data Marketplace <https://enigmampc.github.io/marketplace/>`_ will 
+   require Python3, that's why we are recommending to opt for the newer version.
+2. Install MiniConda. See the `Installation Instructions 
+   <https://conda.io/docs/user-guide/install/index.html>`_ if you need help.
+3. Ensure the correct installation by running ``conda list`` in a Terminal 
+   window, which should print the list of packages installed with Conda.
+
+
+Running Conda
+-------------
+If you accepted the default installation options, you didn't 
+check an option to add Conda to the PATH, so trying to run ``conda`` from
+a regular ``Command Prompt`` will result in the following error: ``'conda' 
+is no recognized as an internal or external command, operatble program or 
+batch file``. That's to be expected. You will nee to launch an ``Anaconda 
+Prompt`` that was added at installation time to your list of programs 
+available from the Start menu. 
+
+
+Installing Catalyst:
+--------------------
+1. Download the file `python3.6-environment.yml 
+   <https://github.com/enigmampc/catalyst/blob/master/etc/python3.6-environment.yml>`_ 
+   (recommended) or `python2.7-environment.yml 
+   <https://github.com/enigmampc/catalyst/blob/master/etc/python2.7-environment.yml>`_ 
+   matching your Conda installation from step #1 above.
+
+     To download, simply click on the 'Raw' button and save the file locally 
+     to a folder you can remember. Make sure that the file gets saved with the
+     ``.yml`` extension, and nothing like a ``.txt`` file or anything else.
+
+2. Open a Terminal window and enter [``cd/<dir>``] to change into the directory (<dir>) where you 
+   saved the above ``.yml`` file.
+
+3. Install using this file. This step can take about 5-10 minutes to install.
+
+   .. code-block:: bash
+
+      conda env create -f python3.6-environment.yml
+
+  or
+
+   .. code-block:: bash
+
+      conda env create -f python2.7-environment.yml
+
+4. Activate the environment (which you need to do every time you start a new 
+   session to run Catalyst):
+
+   .. code-block:: bash
+
+      activate catalyst
+
+5. Verify that Catalyst is install correctly:
+
+   .. code-block:: bash
+
+     catalyst --version
+
+   which should display the current version.
+
+Congratulations! You now have Catalyst installed.
+
+
+Troubleshooting ``conda`` Installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If the command  ``conda env create -f python2.7-environment.yml`` retr. 
+``conda env create -f python3.6-environment.yml`` in step 3 
+above failed for any reason, you can try setting up the environment manually 
+with the following steps:
+
+1. If the above installation failed, and you have a partially set up catalyst
+   environment, remove it first. If you are starting from scratch, proceed to 
+   step #2:
+
+   .. code-block:: bash
+
+      conda env remove --name catalyst
+
+2. Create the environment:
+
+   for python 2.7:
+
+   .. code-block:: bash
+
+      conda create --name catalyst python=2.7 scipy zlib
+
+  or for python 3.6:
+
+   .. code-block:: bash
+
+      conda create --name catalyst python=3.6 scipy zlib
+
+3. Activate the environment:
+
+   .. code-block:: bash
+
+      activate catalyst
+
+4. Install the Catalyst inside the environment:
+
+   .. code-block:: bash
+
+      pip install enigma-catalyst matplotlib
+
+5. Verify that Catalyst is installed correctly:
+
+   .. code-block:: bash
+
+     catalyst --version
+
+   which should display the current version.
+
+Congratulations! You now have Catalyst properly installed.
+
+
+Updating Catalyst
+-----------------
+
+Catalyst is currently in alpha and in under very active development. We release
+new minor versions every few days in response to the thorough battle testing 
+that our user community puts Catalyst in. As a result, you should expect to 
+update Catalyst frequently. Once installed, Catalyst can easily be updated as a 
+``pip`` package regardless of the environemnt used for installation. Make sure 
+you activate your environment first as you did in your first install, and then 
+execute:
+
+.. code-block:: bash
+
+   $ pip uninstall enigma-catalyst
+   $ pip install enigma-catalyst
+
+Do NOT update Catalyst issuing the following command:
+
+   $ pip install -U enigma-catalyst
+
+as this command will also upgrade all the Catalyst dependencies to the latest 
+versions available, and may have unexpected side effects if a newer version of a 
+dependency inadvertently breaks some functionality that Catalyst relies on. 
+Thus, the first method is the recommended one.
+
+
+Getting Help
+------------
+
+If after following the instructions above, and going through the 
+*Troubleshooting* sections, you still experience problems installing Catalyst,
+you can seek additional help through the following channels:
+
+- Join our `Catalyst Forum <https://forum.catalystcrypto.io/>`_, and browse a variety
+  of topics and conversations around common issues that others face when using
+  Catalyst, and how to resolve them. And join the conversation!
+
+- Join our `Discord community <https://discord.gg/SJK32GY>`_, and head over 
+  the #catalyst_dev channel where many other users (as well as the project 
+  developers) hang out, and can assist you with your particular issue. The 
+  more descriptive and the more information you can provide, the easiest will 
+  be for others to help you out.
+
+- Report the problem you are experiencing on our 
+  `GitHub repository <https://github.com/enigmampc/catalyst/issues>`_ 
+  following the guidelines provided therein. Before you do so, take a moment 
+  to browse through all `previous reported issues
+  <https://github.com/enigmampc/catalyst/issues?utf8=%E2%9C%93&q=is%3Aissue>`_ 
+  in the likely case that someone else experienced that same issue before, 
+  and you get a hint on how to solve it.
+
+
+.. _`Hitchhiker's Guide to Python` : http://docs.python-guide.org/en/latest/
+.. _`Homebrew` : http://brew.sh
