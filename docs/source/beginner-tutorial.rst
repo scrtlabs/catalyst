@@ -151,6 +151,19 @@ following from the command line:
 .. code-block:: bash
 
   catalyst ingest-exchange --help
+  
+In case of any error executing the ``ingest-exchange`` command in catalyst you may cleanup the ingested data by running  the following command from the command line:
+
+.. code-block:: bash
+
+  catalyst clean-exchange -x <exchange>
+  
+In our example:
+ 
+ .. code-block:: bash
+
+  catalyst clean-exchange -x bitfinex
+  
 
 Running the algorithm
 ~~~~~~~~~~~~~~~~~~~~~
@@ -298,8 +311,8 @@ slippage model that ``catalyst`` uses).
 .. for more information).
 
 
-Let's take a quick look at the performance ``DataFrame``. For this, we write 
-different Python script--let's call it ``print_results.py``--and we make use of 
+Let's take a quick look at the performance ``DataFrame``. For this, we write a 
+different Python script -- let's call it ``print_results.py`` -- and we make use of 
 the fantastic ``pandas`` library to print the first ten rows. Note that 
 ``catalyst`` makes heavy usage of `pandas <http://pandas.pydata.org/>`_, 
 especially for data analysis and outputting so it's worth spending some time to 
@@ -678,17 +691,9 @@ installed Catalyst, go inside your catalyst environment and run:
 
     (catalyst)$ pip install jupyter
 
-Once you have Jupyter Notebook installed, every time you want to use it run:
 
-.. code-block:: bash
-
-    (catalyst)$ jupyter notebook
-
-A local server will launch, and will open a new window on your browser. That's
-the interface through which you will interact with Jupyter Notebook.
-
-Running Algorithms
-^^^^^^^^^^^^^^^^^^
+Preparations
+^^^^^^^^^^^^
 
 Before running your algorithms inside the Jupyter Notebook, remember to ingest
 the data from the command line interface (CLI). In the example below, you would
@@ -696,16 +701,27 @@ need to run first:
 
 .. code-block:: bash
 
-  catalyst ingest-exchange -x bitfinex -i btc_usd
+  (catalyst)$ catalyst ingest-exchange -x bitfinex -i btc_usd
+  
+Note that ingesting must be done before starting Jupyter.
 
-To use Catalyst inside a Jupyter Noebook, you have to write your algorithm in a 
-cell and let the Jupyter know that it is supposed to execute this algorithm with 
-Catalyst. This is done via the ``%%catalyst`` IPython magic command that is 
-available after you import ``catalyst`` from within the Notebook. This magic 
-takes the same arguments as the command line interface. Thus to run the
-algorithm just supply the same parameters as the CLI but without the -f
-and -o arguments. We just have to execute the following cell after
-importing ``catalyst`` to register the magic.
+
+Now run:
+
+.. code-block:: bash
+
+    (catalyst)$ jupyter notebook
+
+to start Jupyter.
+
+A local server will launch, and will open a new window on your browser. That's
+the interface through which you will interact with Jupyter Notebook.
+
+Open a new Jupyter notebook by clicking the "new" button and selecting "Python 3".
+
+Any code has to be written into one of the cells and run by clicking the run-button.
+
+Import Catalyst:
 
 .. code:: python
 
@@ -717,11 +733,22 @@ importing ``catalyst`` to register the magic.
     # Setup matplotlib to display graphs inline in this Notebook
     %matplotlib inline
 
+Running Algorithms
+^^^^^^^^^^^^^^^^^^
+
+To use Catalyst inside a Jupyter Noebook, you have to write your algorithm in a 
+cell and let the Jupyter know that it is supposed to execute this algorithm with 
+Catalyst. This is done via the ``%%catalyst`` IPython magic command. This magic 
+takes the same arguments as the command line interface. Thus to run the
+algorithm just supply the same parameters as the CLI but without the -f
+and -o arguments. We just have to execute the following cell after
+importing ``catalyst`` to register the magic.
+
 Note below that we do not have to specify an input file (-f) since the
 magic will use the contents of the cell and look for your algorithm
 functions.
 
-.. code:: python
+.. code:: pythonenigma
 
     %%catalyst --start 2015-3-2 --end 2017-6-28 --capital-base 100000 -x bitfinex -c usd
 
@@ -16461,6 +16488,7 @@ NaN
    Currently, the quote currency of all trading pairs ordered by the algorithm
    must match the value of the ``quote_currency``.
 
+
 PyCharm IDE
 ~~~~~~~~~~~
 
@@ -16504,6 +16532,7 @@ On MacOS:
    and select ‘add local’, and follow the steps from the second step above.
 
 You should now be able to run your project/scripts in PyCharm.
+
 
 Next steps
 ~~~~~~~~~~
