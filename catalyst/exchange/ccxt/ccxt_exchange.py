@@ -454,13 +454,21 @@ class CCXT(Exchange):
 
         candles = dict()
         for index, asset in enumerate(assets):
-            ohlcvs = self.api.fetch_ohlcv(
-                symbol=symbols[index],
-                timeframe=timeframe,
-                since=since,
-                limit=bar_count,
-                params={}
-            )
+            try:
+                ohlcvs = self.api.fetch_ohlcv(
+                    symbol=symbols[index],
+                    timeframe=timeframe,
+                    since=since,
+                    limit=bar_count,
+                    params={}
+                )
+            except (ExchangeError, NetworkError) as e:
+                log.warn(
+                    'unable to fetch {} ohlcv: {}'.format(
+                        asset, e
+                    )
+                )
+                raise ExchangeRequestError(error=e)
 
             candles[asset] = []
             for ohlcv in ohlcvs:
