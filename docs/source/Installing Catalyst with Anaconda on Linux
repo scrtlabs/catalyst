@@ -1,0 +1,247 @@
+To get started with Catalyst, you will have to install it in your computer.
+Please follow the steps below. 
+
+GNU/Linux Requirements
+----------------------
+
+On `Debian-derived`_ Linux distributions, you can acquire all the necessary
+binary dependencies from ``apt`` by running:
+
+.. code-block:: bash
+
+   $ sudo apt-get install libatlas-base-dev python-dev gfortran pkg-config libfreetype6-dev
+
+On recent `RHEL-derived`_ derived Linux distributions (e.g. Fedora), the
+following should be sufficient to acquire the necessary additional
+dependencies:
+
+.. code-block:: bash
+
+   $ sudo dnf install atlas-devel gcc-c++ gcc-gfortran libgfortran python-devel redhat-rep-config
+
+On `Arch Linux`_, you can acquire the additional dependencies via ``pacman``:
+
+.. code-block:: bash
+
+   $ pacman -S lapack gcc gcc-fortran pkg-config
+
+.. Commenting it out until Catalyst fully supports Python 3.X
+..
+.. There are also AUR packages available for installing `Python 3.4
+.. <https://aur.archlinux.org/packages/python34/>`_ (Arch's default python is now
+.. 3.5, but Catalyst only currently supports 3.4), and `ta-lib
+.. <https://aur.archlinux.org/packages/ta-lib/>`_, an optional Catalyst dependency.
+.. Python 2 is also installable via:
+
+.. 
+
+..   $ pacman -S python2
+
+Amazon Linux AMI Notes
+~~~~~~~~~~~~~~~~~~~~~~
+
+The packages ``pip`` and ``setuptools`` that come shipped by default are very 
+outdated. Thus, you first need to run:
+
+.. code-block:: bash
+
+   $ pip install --upgrade pip setuptools
+
+The default installation is also missing the C and C++ compilers, which you 
+install by:
+
+.. code-block:: bash
+
+   $ sudo yum install gcc gcc-c++
+
+Then you should follow the regular installation instructions outlined at the 
+beginning of this page.
+  
+  
+Installing Conda
+----------------
+Like any other piece of software, Catalyst has a number of dependencies 
+(other software on which it depends to run) that you will need to install, as 
+well. The preferred method to install Catalyst is via the ``conda`` package manager, 
+which comes as part of Continuum Analytics' `Anaconda
+<http://continuum.io/downloads>`_ distribution.
+
+``Conda`` will manage all these dependencies for you, and set up the environment needed to get you up 
+and running as easily as possible. 
+
+What conda does is create a pre-configured environment, and inside that 
+environment install Catalyst using ``pip``, Python's package manager. 
+
+For instructions on how to install ``conda``, see the `Conda Installation
+Documentation <http://conda.pydata.org/docs/download.html>`_.
+
+
+Alternatively, you can install MiniConda
+----------------------------------------
+which is a smaller footprint (fewer packages and 
+smaller size) than its big brother Anaconda, but it still contains all the 
+main packages needed. To install MiniConda, you can follow these steps:
+
+1. Download `MiniConda <https://conda.io/miniconda.html>`_. Select either 
+   Python 3.6 (recommended) or Python 2.7 for your Operating System. The 
+   `Enigma Data Marketplace <https://enigmampc.github.io/marketplace/>`_ will 
+   require Python3, that's why we are recommending to opt for the newer version.
+2. Install MiniConda. See the `Installation Instructions 
+   <https://conda.io/docs/user-guide/install/index.html>`_ if you need help.
+3. Ensure the correct installation by running ``conda list`` in a Terminal 
+   window, which should print the list of packages installed with Conda.
+
+
+Installing Catalyst:
+--------------------
+1. Download the file `python3.6-environment.yml 
+   <https://github.com/enigmampc/catalyst/blob/master/etc/python3.6-environment.yml>`_ 
+   (recommended) or `python2.7-environment.yml 
+   <https://github.com/enigmampc/catalyst/blob/master/etc/python2.7-environment.yml>`_ 
+   matching your Conda installation from step #1 above.
+
+     To download, simply click on the 'Raw' button and save the file locally 
+     to a folder you can remember. Make sure that the file gets saved with the
+     ``.yml`` extension, and nothing like a ``.txt`` file or anything else.
+
+2. Open a Terminal window and enter [``cd/<dir>``] to change into the directory (<dir>) where you 
+   saved the above ``.yml`` file.
+
+3. Install using this file. This step can take about 5-10 minutes to install.
+
+   .. code-block:: bash
+
+      conda env create -f python3.6-environment.yml
+
+  or
+
+   .. code-block:: bash
+
+      conda env create -f python2.7-environment.yml
+
+4. Activate the environment (which you need to do every time you start a new 
+   session to run Catalyst):
+
+   .. code-block:: bash
+
+      source activate catalyst
+
+5. Verify that Catalyst is install correctly:
+
+   .. code-block:: bash
+
+     catalyst --version
+
+   which should display the current version.
+
+Congratulations! You now have Catalyst installed.
+
+
+Troubleshooting ``conda`` Installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If the command  ``conda env create -f python2.7-environment.yml`` retr. 
+``conda env create -f python3.6-environment.yml`` in step 3 
+above failed for any reason, you can try setting up the environment manually 
+with the following steps:
+
+1. If the above installation failed, and you have a partially set up catalyst
+   environment, remove it first. If you are starting from scratch, proceed to 
+   step #2:
+
+   .. code-block:: bash
+
+      conda env remove --name catalyst
+
+2. Create the environment:
+
+   for python 2.7:
+
+   .. code-block:: bash
+
+      conda create --name catalyst python=2.7 scipy zlib
+
+  or for python 3.6:
+
+   .. code-block:: bash
+
+      conda create --name catalyst python=3.6 scipy zlib
+
+3. Activate the environment:
+
+   .. code-block:: bash
+
+      source activate catalyst
+
+4. Install the Catalyst inside the environment:
+
+   .. code-block:: bash
+
+      pip install enigma-catalyst matplotlib
+
+5. Verify that Catalyst is installed correctly:
+
+   .. code-block:: bash
+
+     catalyst --version
+
+   which should display the current version.
+
+Congratulations! You now have Catalyst properly installed.
+
+
+Updating Catalyst
+-----------------
+
+Catalyst is currently in alpha and in under very active development. We release
+new minor versions every few days in response to the thorough battle testing 
+that our user community puts Catalyst in. As a result, you should expect to 
+update Catalyst frequently. Once installed, Catalyst can easily be updated as a 
+``pip`` package regardless of the environemnt used for installation. Make sure 
+you activate your environment first as you did in your first install, and then 
+execute:
+
+.. code-block:: bash
+
+   $ pip uninstall enigma-catalyst
+   $ pip install enigma-catalyst
+
+Do NOT update Catalyst issuing the following command: $ pip install -U enigma-catalyst
+
+as this command will also upgrade all the Catalyst dependencies to the latest 
+versions available, and may have unexpected side effects if a newer version of a 
+dependency inadvertently breaks some functionality that Catalyst relies on. 
+Thus, the first method is the recommended one.
+
+
+Getting Help
+------------
+
+If after following the instructions above, and going through the 
+*Troubleshooting* sections, you still experience problems installing Catalyst,
+you can seek additional help through the following channels:
+
+- Join our `Catalyst Forum <https://forum.catalystcrypto.io/>`_, and browse a variety
+  of topics and conversations around common issues that others face when using
+  Catalyst, and how to resolve them. And join the conversation!
+
+- Join our `Discord community <https://discord.gg/SJK32GY>`_, and head over 
+  the #catalyst_dev channel where many other users (as well as the project 
+  developers) hang out, and can assist you with your particular issue. The 
+  more descriptive and the more information you can provide, the easiest will 
+  be for others to help you out.
+
+- Report the problem you are experiencing on our 
+  `GitHub repository <https://github.com/enigmampc/catalyst/issues>`_ 
+  following the guidelines provided therein. Before you do so, take a moment 
+  to browse through all `previous reported issues
+  <https://github.com/enigmampc/catalyst/issues?utf8=%E2%9C%93&q=is%3Aissue>`_ 
+  in the likely case that someone else experienced that same issue before, 
+  and you get a hint on how to solve it.
+
+
+.. _`Debian-derived`: https://www.debian.org/misc/children-distros
+.. _`RHEL-derived`: https://en.wikipedia.org/wiki/Red_Hat_Enterprise_Linux_derivatives
+.. _`Arch Linux` : https://www.archlinux.org/
+.. _`Hitchhiker's Guide to Python` : http://docs.python-guide.org/en/latest/
+.. _`Homebrew` : http://brew.sh
