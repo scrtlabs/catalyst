@@ -544,13 +544,11 @@ execute:
    $ pip uninstall enigma-catalyst
    $ pip install enigma-catalyst
 
-Alternatively, you could update Catalyst issuing the following command:
-
-.. code-block:: bash
+Do NOT update Catalyst issuing the following command:
 
    $ pip install -U enigma-catalyst
 
-but this command will also upgrade all the Catalyst dependencies to the latest 
+as this command will also upgrade all the Catalyst dependencies to the latest 
 versions available, and may have unexpected side effects if a newer version of a 
 dependency inadvertently breaks some functionality that Catalyst relies on. 
 Thus, the first method is the recommended one.
