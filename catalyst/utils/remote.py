@@ -8,13 +8,16 @@ import os
 
 import pandas as pd
 from hashlib import md5
+from logbook import Logger
 
 from catalyst.exchange.utils.exchange_utils import get_remote_auth,\
     get_remote_folder
 from catalyst.exchange.exchange_errors import RemoteAuthEmpty
 
-# AUTH_SERVER = 'http://localhost:5000'
-AUTH_SERVER = "https://sandbox2.enigma.co"
+log = Logger('remote')
+
+AUTH_SERVER = 'http://localhost:5000'
+# AUTH_SERVER = "https://sandbox2.enigma.co"
 BACKTEST_PATH = '/backtest/run'
 METHOD = 'POST'
 
@@ -71,7 +74,8 @@ def handle_response(response):
         return response.json()['error'] if response.json()['error'] else None
 
     else:  # if the run was successful
-        return load_response(response.json())
+        log.info('In order to follow your algo run use the following id: ' +
+                 response.json()['algo_id'])
 
 
 def load_response(json_file):
@@ -86,7 +90,7 @@ def json_to_file(encoded_data):
     return zlib.decompress(compressed_file)
 
 
-def run_server(
+def remote_backtest(
         initialize,
         handle_data,
         before_trading_start,
@@ -114,6 +118,7 @@ def run_server(
         simulate_orders,
         auth_aliases,
         stats_output,
+        mail,
 ):
     if algotext or algofile:
         # argument preparation - encode the file for transfer
@@ -147,6 +152,7 @@ def run_server(
         'live_graph': live_graph,
         'simulate_orders': simulate_orders,
         'auth_aliases': auth_aliases,
+        'mail': mail
     }}
     key, secret = retrieve_remote_auth()
     session = requests.Session()
@@ -154,7 +160,8 @@ def run_server(
                             headers={'Authorization': 'Digest username="{0}",'
                                                       'password="{1}"'.
                             format(key, secret)
-                            })
+                            },
+                            verify=False)
 
     header = response.headers.get('WWW-Authenticate')
     auth_type, auth_info = header.split(None, 1)
