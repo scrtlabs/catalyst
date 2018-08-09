@@ -16,7 +16,7 @@ Counter-intuitively for novice traders, stock trading uses right-bound intervals
 	9:31:00 am < t <= 9:32:00 am
 	9:32:00 am < t <= 9:33:00 am
 	...
-	3:59:01 pm - 4:00:00 pm Last minute of a trading day
+	3:59:00 pm < t <= 4:00:00 pm Last minute of a trading day
 
 And each interval is labeled with the ending time as follows::
 
