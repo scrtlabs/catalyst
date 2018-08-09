@@ -33,7 +33,9 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="Catalyst 0.5.15 documentation" href="index.html"/> 
+    <link rel="top" title="Catalyst 0.5.15 documentation" href="index.html"/>
+        <link rel="next" title="Features" href="features.html"/>
+        <link rel="prev" title="Live Trading" href="live-trading.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -72,7 +74,7 @@
         
           
           
-              <ul>
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="install.html">Install</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="install.html#installing-with-conda">Installing with <code class="docutils literal"><span class="pre">conda</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="install.html#troubleshooting-conda-install">Troubleshooting <code class="docutils literal"><span class="pre">conda</span></code> Install</a></li>
@@ -130,6 +132,11 @@
 <li class="toctree-l2"><a class="reference internal" href="live-trading.html#algorithm-state">Algorithm State</a></li>
 <li class="toctree-l2"><a class="reference internal" href="live-trading.html#commissions">Commissions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="live-trading.html#advanced-options">Advanced Options</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Pricing Data Intervals</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#stock-trading">Stock trading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#crypto-trading">Crypto trading</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="features.html">Features</a><ul>
@@ -413,42 +420,51 @@
 <p>For example, a day is defined to start at <code class="docutils literal"><span class="pre">00:00:00</span></code> and end at <code class="docutils literal"><span class="pre">23:59:59</span></code>. This is a left-closed and right-opened interval, which is typically referred to as left-bound or left-closed for short (which matches <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/generated/pandas.Interval.html">Pandas nomenclature of intervals</a>). This means that midnight of a given day is only included as the endpoint of the starting day, but not the preceding day (the previous day ended right before midnight).</p>
 <div class="section" id="stock-trading">
 <h2>Stock trading<a class="headerlink" href="#stock-trading" title="Permalink to this headline">¶</a></h2>
-<p>Counter-intuitively for novice traders, stock trading uses right-bound intervals. For example, at NYSE trading starts at 9:31am and ends at 4pm, and every minute is counted as follows:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="mi">9</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mo">01</span> <span class="n">am</span> <span class="o">-</span> <span class="mi">9</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span> <span class="n">First</span> <span class="n">minute</span> <span class="n">of</span> <span class="n">a</span> <span class="n">trading</span> <span class="n">day</span>
-<span class="mi">9</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mo">01</span> <span class="n">am</span> <span class="o">-</span> <span class="mi">9</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span>
-<span class="mi">9</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mo">01</span> <span class="n">am</span> <span class="o">-</span> <span class="mi">9</span><span class="p">:</span><span class="mi">33</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span>
+<p>Counter-intuitively for novice traders, stock trading uses right-bound intervals. For example, at NYSE trading starts right after 9:30 am and ends at 4pm, and every minute is counted as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="mi">9</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span> <span class="o">&lt;</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="mi">9</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span> <span class="n">First</span> <span class="n">minute</span> <span class="n">of</span> <span class="n">a</span> <span class="n">trading</span> <span class="n">day</span>
+<span class="mi">9</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span> <span class="o">&lt;</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="mi">9</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span>
+<span class="mi">9</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span> <span class="o">&lt;</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="mi">9</span><span class="p">:</span><span class="mi">33</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span>
 <span class="o">...</span>
 <span class="mi">3</span><span class="p">:</span><span class="mi">59</span><span class="p">:</span><span class="mo">01</span> <span class="n">pm</span> <span class="o">-</span> <span class="mi">4</span><span class="p">:</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span> <span class="n">pm</span> <span class="n">Last</span> <span class="n">minute</span> <span class="n">of</span> <span class="n">a</span> <span class="n">trading</span> <span class="n">day</span>
 </pre></div>
 </div>
 <p>And each interval is labeled with the ending time as follows:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="mi">9</span><span class="p">:</span><span class="mi">31</span> <span class="n">interval</span> <span class="n">starts</span> <span class="n">at</span> <span class="mi">9</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mo">01</span> <span class="n">am</span><span class="p">,</span> <span class="n">ends</span> <span class="n">at</span> <span class="mi">9</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span> <span class="ow">and</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">first</span> <span class="n">minute</span> <span class="n">of</span> <span class="n">a</span> <span class="n">trading</span> <span class="n">day</span>
-<span class="mi">9</span><span class="p">:</span><span class="mi">32</span> <span class="n">interval</span> <span class="n">starts</span> <span class="n">at</span> <span class="mi">9</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mo">01</span> <span class="n">am</span><span class="p">,</span> <span class="n">ends</span> <span class="n">at</span> <span class="mi">9</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span>
-<span class="mi">9</span><span class="p">:</span><span class="mi">33</span> <span class="n">interval</span> <span class="n">starts</span> <span class="n">at</span> <span class="mi">9</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mo">01</span> <span class="n">am</span><span class="p">,</span> <span class="n">ends</span> <span class="n">at</span> <span class="mi">9</span><span class="p">:</span><span class="mi">33</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="mi">9</span><span class="p">:</span><span class="mi">31</span> <span class="n">interval</span><span class="p">:</span> <span class="mi">9</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span> <span class="o">&lt;</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="mi">9</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span> <span class="ow">and</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">first</span> <span class="n">minute</span> <span class="n">of</span> <span class="n">a</span> <span class="n">trading</span> <span class="n">day</span>
+<span class="mi">9</span><span class="p">:</span><span class="mi">32</span> <span class="n">interval</span><span class="p">:</span> <span class="mi">9</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span> <span class="o">&lt;</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="mi">9</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span>
+<span class="mi">9</span><span class="p">:</span><span class="mi">33</span> <span class="n">interval</span><span class="p">:</span> <span class="mi">9</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span> <span class="o">&lt;</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="mi">9</span><span class="p">:</span><span class="mi">33</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span>
 <span class="o">...</span>
-<span class="mi">4</span><span class="p">:</span><span class="mo">00</span> <span class="n">interval</span> <span class="n">starts</span> <span class="n">at</span> <span class="mi">3</span><span class="p">:</span><span class="mi">59</span><span class="p">:</span><span class="mo">01</span> <span class="n">pm</span><span class="p">,</span> <span class="n">ends</span> <span class="n">at</span> <span class="mi">4</span><span class="p">:</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span> <span class="n">pm</span> <span class="ow">and</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">last</span> <span class="n">minute</span> <span class="n">of</span> <span class="n">a</span> <span class="n">trading</span> <span class="n">day</span>
+<span class="mi">4</span><span class="p">:</span><span class="mo">00</span> <span class="n">interval</span><span class="p">:</span> <span class="mi">3</span><span class="p">:</span><span class="mi">59</span><span class="p">:</span><span class="mo">00</span> <span class="n">pm</span> <span class="o">&lt;</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="mi">4</span><span class="p">:</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span> <span class="n">pm</span> <span class="ow">and</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">last</span> <span class="n">minute</span> <span class="n">of</span> <span class="n">a</span> <span class="n">trading</span> <span class="n">day</span>
 </pre></div>
 </div>
-<p>Essentially, the pricing data for a given minute interval is always from the previous minute. While this may seem counter-intuitive at first, it ensures that there is no <a class="reference external" href="https://www.investopedia.com/terms/l/lookaheadbias.asp">look-ahead bias</a>. This means that when we trade at any given minute, we only see information that would have been available at the time of the trade (anything prior up to that point).</p>
+<p>Essentially, the pricing data for a given minute interval is always from the previous minute. While this may seem counter-intuitive at first, it helps in preventing a <a class="reference external" href="https://www.investopedia.com/terms/l/lookaheadbias.asp">look-ahead bias</a>. This means that when we trade at any given minute, we only see information that would have been available at the time of the trade (anything prior up to that point).</p>
 <p>It is worth noting that in stock trading, day intervals are left-labeled and minute intervals are right-labeled, even though they both are defined right-bounded or right-closed. While this naming may seem inconsistent or problematic at first, it never poses a problem because stock trading is always limited to a set of hours within a day, and never involves 24/7 trading where it would cause confusion right at midnight.</p>
 <p>The naming convention defined above is the one that <a class="reference external" href="https://github.com/quantopian/zipline">zipline</a> implements.</p>
 </div>
 <div class="section" id="crypto-trading">
 <h2>Crypto trading<a class="headerlink" href="#crypto-trading" title="Permalink to this headline">¶</a></h2>
 <p>Conversely, cryptocurrency trading exchanges use left-bounded (aka left-closed and left-labeled) minute and daily intervals. For example, using the same times defined above, in crypto they would be defined as follows:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="mi">9</span><span class="p">:</span><span class="mi">31</span> <span class="n">interval</span> <span class="n">starts</span> <span class="n">at</span> <span class="mi">9</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span><span class="p">,</span> <span class="n">ends</span> <span class="n">at</span> <span class="mi">9</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mi">59</span> <span class="n">am</span>
-<span class="mi">9</span><span class="p">:</span><span class="mi">32</span> <span class="n">interval</span> <span class="n">starts</span> <span class="n">at</span> <span class="mi">9</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span><span class="p">,</span> <span class="n">ends</span> <span class="n">at</span> <span class="mi">9</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">59</span> <span class="n">am</span>
-<span class="mi">9</span><span class="p">:</span><span class="mi">33</span> <span class="n">interval</span> <span class="n">starts</span> <span class="n">at</span> <span class="mi">9</span><span class="p">:</span><span class="mi">33</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span><span class="p">,</span> <span class="n">ends</span> <span class="n">at</span> <span class="mi">9</span><span class="p">:</span><span class="mi">33</span><span class="p">:</span><span class="mi">59</span> <span class="n">am</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="mi">9</span><span class="p">:</span><span class="mi">31</span> <span class="n">interval</span><span class="p">:</span> <span class="mi">9</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span> <span class="o">&lt;=</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="mi">9</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span>
+<span class="mi">9</span><span class="p">:</span><span class="mi">32</span> <span class="n">interval</span><span class="p">:</span> <span class="mi">9</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span> <span class="o">&lt;=</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="mi">9</span><span class="p">:</span><span class="mi">33</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span>
+<span class="mi">9</span><span class="p">:</span><span class="mi">33</span> <span class="n">interval</span><span class="p">:</span> <span class="mi">9</span><span class="p">:</span><span class="mi">33</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span> <span class="o">&lt;=</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="mi">9</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span>
 <span class="o">...</span>
 </pre></div>
 </div>
-<p>All things being equal, Catalyst would introduce a look-ahead bias using the same codebase as zipline in minute mode when the clock ticks at the beginnig of every minute. Whereas zipline uses data from the previous minute (labeled as ending in the current minute), catalyst would use data from the full minute ahead of us that starts when the clock ticks. To address this bias and remain consistent with the way crypto exchanges provide pricing data, catalyst <a class="reference external" href="appendix.html#catalyst.protocol.BarData.current">data.current</a> returns the closing price from the previous minute and <a class="reference external" href="appendix.html#catalyst.protocol.BarData.history">data.history</a> last bar matches <a class="reference external" href="appendix.html#catalyst.protocol.BarData.current">data.current</a> providing the price up to the minute prior to the current one.</p>
+<p>For reference, in zipline when the clock ticks at the beginning of every minute, it uses data from the previous minute (labeled as ending in the current minute). To meet the different nature of the crypto data definition versus the stock market data, Catalyst code had to be altered as follows: when the minute clock ticks at the beginning of every minute <a class="reference external" href="appendix.html#catalyst.protocol.BarData.current">data.current</a> returns the closing price from the previous minute and <a class="reference external" href="appendix.html#catalyst.protocol.BarData.history">data.history</a> last bar matches <a class="reference external" href="appendix.html#catalyst.protocol.BarData.current">data.current</a> providing the price up to the minute prior to the current one.</p>
 </div>
 </div>
 
 
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="features.html" class="btn btn-neutral float-right" title="Features" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="live-trading.html" class="btn btn-neutral" title="Live Trading" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>
