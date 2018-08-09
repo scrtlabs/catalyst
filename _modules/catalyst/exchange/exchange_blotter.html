@@ -8,9 +8,11 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>catalyst.exchange.exchange_blotter &mdash; Catalyst 0.5.15 documentation</title>
+  <title>catalyst.exchange.exchange_blotter &mdash; Catalyst 0.5.18 documentation</title>
   
 
+  
+  
   
   
 
@@ -22,42 +24,44 @@
 
   
 
-  
-  
-    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
 
   
-
-  
-        <link rel="index" title="Index"
-              href="../../../genindex.html"/>
-        <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="Catalyst 0.5.15 documentation" href="../../../index.html"/>
-        <link rel="up" title="Module code" href="../../index.html"/> 
-
-  
-  <script src="_static/js/modernizr.min.js"></script>
+  <script src="../../../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
+   
   <div class="wy-grid-for-nav">
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-nav-search">
-        
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
 
-        
-          <a href="../../../index.html" class="icon icon-home"> Catalyst
-        
+          
+            <a href="../../../index.html" class="icon icon-home"> Catalyst
+          
 
-        
-        </a>
+          
+          </a>
 
-        
+          
+            
+            
+              <div class="version">
+                0.5.18+7.g44eac532
+              </div>
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -66,354 +70,92 @@
   </form>
 </div>
 
-        
-      </div>
+          
+        </div>
 
-      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
-          
+            
+            
+              
+            
+            
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Install</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../install.html#installing-with-conda">Installing with <code class="docutils literal"><span class="pre">conda</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../install.html#troubleshooting-conda-install">Troubleshooting <code class="docutils literal"><span class="pre">conda</span></code> Install</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../install.html#installing-with-pip">Installing with <code class="docutils literal"><span class="pre">pip</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../install.html#troubleshooting-pip-install">Troubleshooting <code class="docutils literal"><span class="pre">pip</span></code> Install</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../install.html#installing-with-pipenv">Installing with <code class="docutils literal"><span class="pre">pipenv</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../install.html#gnu-linux-requirements">GNU/Linux Requirements</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../install.html#amazon-linux-ami-notes">Amazon Linux AMI Notes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../install.html#macos-requirements">MacOS Requirements</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../install.html#macos-virtualenv-conda-matplotlib">MacOS + virtualenv/conda + matplotlib</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../install.html#windows-requirements">Windows Requirements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../install.html#updating-catalyst">Updating Catalyst</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../install.html#getting-help">Getting Help</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../../../beginner-tutorial.html">Catalyst Beginner Tutorial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../beginner-tutorial.html#basics">Basics</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../beginner-tutorial.html#my-first-algorithm">My first algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../beginner-tutorial.html#ingesting-data">Ingesting data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../beginner-tutorial.html#running-the-algorithm">Running the algorithm</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../beginner-tutorial.html#command-line-interface">Command line interface</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../beginner-tutorial.html#access-to-previous-prices-using-history">Access to previous prices using <code class="docutils literal"><span class="pre">history</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../beginner-tutorial.html#working-example-dual-moving-average-cross-over">Working example: Dual Moving Average Cross-Over</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../beginner-tutorial.html#jupyter-notebook">Jupyter Notebook</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../beginner-tutorial.html#install">Install</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../beginner-tutorial.html#running-algorithms">Running Algorithms</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../beginner-tutorial.html#pycharm-ide">PyCharm IDE</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../beginner-tutorial.html#id1">Install</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../beginner-tutorial.html#setup">Setup</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../beginner-tutorial.html#next-steps">Next steps</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../../../live-trading.html">Live Trading</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../live-trading.html#supported-exchanges">Supported Exchanges</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../live-trading.html#paper-trading-vs-live-trading-modes">Paper Trading vs Live Trading modes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../live-trading.html#authentication">Authentication</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../live-trading.html#currency-symbols">Currency Symbols</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../live-trading.html#trading-an-algorithm">Trading an Algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../live-trading.html#algorithm-state">Algorithm State</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../live-trading.html#commissions">Commissions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../live-trading.html#advanced-options">Advanced Options</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../../../intervals.html">Pricing Data Intervals</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../intervals.html#stock-trading">Stock trading</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../intervals.html#crypto-trading">Crypto trading</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../../../features.html">Features</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../features.html#current-functionality">Current Functionality</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../features.html#upcoming-features">Upcoming features</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../features.html#naming-convention">Naming Convention</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../../../example-algos.html">Example Algorithms</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../example-algos.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../example-algos.html#buy-btc-simple-algorithm">Buy BTC Simple Algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../example-algos.html#buy-and-hodl-algorithm">Buy and Hodl Algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../example-algos.html#dual-moving-average-crossover">Dual Moving Average Crossover</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../example-algos.html#mean-reversion-algorithm">Mean Reversion Algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../example-algos.html#simple-universe">Simple Universe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../example-algos.html#portfolio-optimization">Portfolio Optimization</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../../../utilities.html">Utilities</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../utilities.html#output-to-csv-file">Output to CSV file</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../utilities.html#extracting-market-data">Extracting market data</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../../../videos.html">Videos</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../videos.html#installation-macos">Installation: MacOS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../videos.html#installation-windows">Installation: Windows</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../videos.html#backtesting-a-strategy">Backtesting a Strategy</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../videos.html#live-trading-a-strategy">Live Trading a Strategy</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../../../resources.html">Resources</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../resources.html#related-3rd-party-apis">Related 3rd Party APIs</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../../../development-guidelines.html">Development Guidelines</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../development-guidelines.html#creating-a-development-environment">Creating a Development Environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../development-guidelines.html#development-with-docker">Development with Docker</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../development-guidelines.html#git-branching-structure">Git Branching Structure</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../development-guidelines.html#contributing-to-the-docs">Contributing to the Docs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../development-guidelines.html#commit-messages">Commit messages</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../development-guidelines.html#formatting-docstrings">Formatting Docstrings</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../../../releases.html">Release Notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-18">Version 0.5.18</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#build">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-17">Version 0.5.17</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#bug-fixes">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-16">Version 0.5.16</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id1">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id2">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-15">Version 0.5.15</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id3">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id4">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-14">Version 0.5.14</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id5">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id6">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-13">Version 0.5.13</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id7">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id8">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-12">Version 0.5.12</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id9">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id10">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-11">Version 0.5.11</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id11">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-10">Version 0.5.10</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id12">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id13">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-9">Version 0.5.9</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#documentation">Documentation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id14">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id15">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-8">Version 0.5.8</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id16">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-7">Version 0.5.7</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id17">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id18">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-6">Version 0.5.6</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id19">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id20">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-5">Version 0.5.5</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id21">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-4">Version 0.5.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id22">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id23">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id24">Documentation</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-3">Version 0.5.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id25">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-2">Version 0.5.2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id26">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-5-1">Version 0.5.1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id27">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id28">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-4-7">Version 0.4.7</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id29">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id30">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-4-6">Version 0.4.6</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id31">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id32">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-4-5">Version 0.4.5</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id33">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-4-4">Version 0.4.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id34">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-4-3">Version 0.4.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id35">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-4-2">Version 0.4.2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id36">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id37">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-4-0">Version 0.4.0</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id38">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id39">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#version-0-3-10">Version 0.3.10</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id40">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-3-9">Version 0.3.9</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id41">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id42">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-3-8">Version 0.3.8</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id43">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-3-7">Version 0.3.7</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id44">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id45">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-3-6">Version 0.3.6</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id46">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-3-5">Version 0.3.5</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id47">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-3-4">Version 0.3.4</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id48">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id49">Build</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id50">Documentation</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-3-3">Version 0.3.3</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id52">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id53">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-3-2">Version 0.3.2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id54">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id55">Build</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-3-1">Version 0.3.1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../releases.html#id56">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-3">Version 0.3</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-2-dev5">Version 0.2.dev5</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-2-dev4">Version 0.2.dev4</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-2-dev3">Version 0.2.dev3</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-2-dev2">Version 0.2.dev2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-2-dev1">Version 0.2.dev1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-1-dev9">Version 0.1.dev9</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-1-dev8">Version 0.1.dev8</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-1-dev7">Version 0.1.dev7</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../releases.html#version-0-1-dev6">Version 0.1.dev6</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../../../appendix.html">API Reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../appendix.html#running-a-strategy">Running a Strategy</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../appendix.html#algorithm-api">Algorithm API</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../appendix.html#data-object">Data Object</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../appendix.html#scheduling-functions">Scheduling Functions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../appendix.html#orders">Orders</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../../appendix.html#order-cancellation-policies">Order Cancellation Policies</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="../../../appendix.html#assets">Assets</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../appendix.html#simulation-parameters">Simulation Parameters</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../../appendix.html#commission-models">Commission Models</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../appendix.html#slippage-models">Slippage Models</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="../../../appendix.html#pipeline">Pipeline</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../appendix.html#miscellaneous">Miscellaneous</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../appendix.html#trading-calendar-api">Trading Calendar API</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../beginner-tutorial.html">Catalyst Beginner Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../live-trading.html">Live Trading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../example-algos.html">Example Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../utilities.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../videos.html">Videos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../resources.html">Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../development-guidelines.html">Development Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../releases.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../appendix.html">API Reference</a></li>
 </ul>
 
+            
           
-        
+        </div>
       </div>
-      &nbsp;
     </nav>
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="../../../index.html">Catalyst</a>
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Catalyst</a>
+        
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
-          <div role="navigation" aria-label="breadcrumbs navigation">
-  <ul class="wy-breadcrumbs">
-    <li><a href="../../../index.html">Docs</a> &raquo;</li>
-      
-          <li><a href="../../index.html">Module code</a> &raquo;</li>
-      
-    <li>catalyst.exchange.exchange_blotter</li>
-      <li class="wy-breadcrumbs-aside">
         
           
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>catalyst.exchange.exchange_blotter</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
-          <div role="main" class="document">
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
             
   <h1>Source code for catalyst.exchange.exchange_blotter</h1><div class="highlight"><pre>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
 <span class="kn">from</span> <span class="nn">logbook</span> <span class="kn">import</span> <span class="n">Logger</span>
 <span class="kn">from</span> <span class="nn">redo</span> <span class="kn">import</span> <span class="n">retry</span>
@@ -425,10 +167,10 @@
 <span class="kn">from</span> <span class="nn">catalyst.finance.commission</span> <span class="kn">import</span> <span class="n">CommissionModel</span>
 <span class="kn">from</span> <span class="nn">catalyst.finance.order</span> <span class="kn">import</span> <span class="n">ORDER_STATUS</span>
 <span class="kn">from</span> <span class="nn">catalyst.finance.slippage</span> <span class="kn">import</span> <span class="n">SlippageModel</span>
-<span class="kn">from</span> <span class="nn">catalyst.finance.transaction</span> <span class="kn">import</span> <span class="n">create_transaction</span><span class="p">,</span> <span class="n">Transaction</span>
+<span class="kn">from</span> <span class="nn">catalyst.finance.transaction</span> <span class="kn">import</span> <span class="n">create_transaction</span>
 <span class="kn">from</span> <span class="nn">catalyst.utils.input_validation</span> <span class="kn">import</span> <span class="n">expect_types</span>
 
-<span class="n">log</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(</span><span class="s">&#39;exchange_blotter&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">LOG_LEVEL</span><span class="p">)</span>
+<span class="n">log</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(</span><span class="s1">&#39;exchange_blotter&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">LOG_LEVEL</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">TradingPairFeeSchedule</span><span class="p">(</span><span class="n">CommissionModel</span><span class="p">):</span>
@@ -444,15 +186,15 @@
 <span class="sd">        The percentage taker fee.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">maker</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">taker</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">maker</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">taker</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">maker</span> <span class="o">=</span> <span class="n">maker</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">taker</span> <span class="o">=</span> <span class="n">taker</span>
 
-    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span>
-            <span class="s">&#39;{class_name}(maker={maker}, &#39;</span>
-            <span class="s">&#39;taker={taker})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">class_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+            <span class="s1">&#39;{class_name}(maker={maker}, &#39;</span>
+            <span class="s1">&#39;taker={taker})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">class_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
                 <span class="n">maker</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">maker</span><span class="p">,</span>
                 <span class="n">taker</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">taker</span><span class="p">,</span>
             <span class="p">)</span>
@@ -482,7 +224,8 @@
         <span class="k">if</span> <span class="n">order</span><span class="o">.</span><span class="n">limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">multiplier</span> <span class="o">=</span> <span class="n">maker</span> \
                 <span class="k">if</span> <span class="p">((</span><span class="n">order</span><span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">order</span><span class="o">.</span><span class="n">limit</span> <span class="o">&lt;</span> <span class="n">transaction</span><span class="o">.</span><span class="n">price</span><span class="p">)</span>
-                    <span class="ow">or</span> <span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">amount</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">order</span><span class="o">.</span><span class="n">limit</span> <span class="o">&gt;</span> <span class="n">transaction</span><span class="o">.</span><span class="n">price</span><span class="p">))</span> \
+                    <span class="ow">or</span> <span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">amount</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">and</span>
+                        <span class="n">order</span><span class="o">.</span><span class="n">limit</span> <span class="o">&gt;</span> <span class="n">transaction</span><span class="o">.</span><span class="n">price</span><span class="p">))</span> \
                 <span class="ow">and</span> <span class="n">order</span><span class="o">.</span><span class="n">limit_reached</span> <span class="k">else</span> <span class="n">taker</span>
 
         <span class="n">fee</span> <span class="o">=</span> <span class="n">cost</span> <span class="o">*</span> <span class="n">multiplier</span>
@@ -491,26 +234,26 @@
 
 <div class="viewcode-block" id="TradingPairFixedSlippage"><a class="viewcode-back" href="../../../appendix.html#catalyst.exchange.exchange_blotter.TradingPairFixedSlippage">[docs]</a><span class="k">class</span> <span class="nc">TradingPairFixedSlippage</span><span class="p">(</span><span class="n">SlippageModel</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Model slippage as a fixed spread.</span>
+<span class="sd">    Model slippage as a fixed value.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    spread : float, optional</span>
-<span class="sd">        spread / 2 will be added to buys and subtracted from sells.</span>
+<span class="sd">    slippage : float, optional</span>
+<span class="sd">        fixed slippage will be added to buys and subtracted from sells.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spread</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">TradingPairFixedSlippage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">spread</span> <span class="o">=</span> <span class="n">spread</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">slippage</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TradingPairFixedSlippage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slippage</span> <span class="o">=</span> <span class="n">slippage</span>
 
-    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s">&#39;{class_name}(spread={spread})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="n">class_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="n">spread</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">spread</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;{class_name}(slippage={slippage})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">class_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">slippage</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">slippage</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">asset</span><span class="p">,</span> <span class="n">orders_for_asset</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_volume_for_bar</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">price</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">asset</span><span class="p">,</span> <span class="s">&#39;close&#39;</span><span class="p">)</span>
+        <span class="n">price</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">asset</span><span class="p">,</span> <span class="s1">&#39;close&#39;</span><span class="p">)</span>
 
         <span class="n">dt</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">current_dt</span>
         <span class="k">for</span> <span class="n">order</span> <span class="ow">in</span> <span class="n">orders_for_asset</span><span class="p">:</span>
@@ -520,8 +263,8 @@
             <span class="n">order</span><span class="o">.</span><span class="n">check_triggers</span><span class="p">(</span><span class="n">price</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">order</span><span class="o">.</span><span class="n">triggered</span><span class="p">:</span>
                 <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                    <span class="s">&#39;order has not reached the trigger at current &#39;</span>
-                    <span class="s">&#39;price {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">price</span><span class="p">)</span>
+                    <span class="s1">&#39;order has not reached the trigger at current &#39;</span>
+                    <span class="s1">&#39;price {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">price</span><span class="p">)</span>
                 <span class="p">)</span>
                 <span class="k">continue</span>
 
@@ -535,36 +278,36 @@
                 <span class="k">yield</span> <span class="n">order</span><span class="p">,</span> <span class="n">transaction</span>
 
     <span class="k">def</span> <span class="nf">process_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span>
-        <span class="n">price</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s">&#39;close&#39;</span><span class="p">)</span>
+        <span class="n">price</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s1">&#39;close&#39;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">order</span><span class="o">.</span><span class="n">amount</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="c"># Buy order</span>
-            <span class="n">adj_price</span> <span class="o">=</span> <span class="n">price</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">spread</span><span class="p">)</span>
+            <span class="c1"># Buy order</span>
+            <span class="n">adj_price</span> <span class="o">=</span> <span class="n">price</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">slippage</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="c"># Sell order</span>
-            <span class="n">adj_price</span> <span class="o">=</span> <span class="n">price</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">spread</span><span class="p">)</span>
+            <span class="c1"># Sell order</span>
+            <span class="n">adj_price</span> <span class="o">=</span> <span class="n">price</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">slippage</span><span class="p">)</span>
 
-        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;added slippage to price: {} =&gt; {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">price</span><span class="p">,</span> <span class="n">adj_price</span><span class="p">))</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;added slippage to price: {} =&gt; {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">price</span><span class="p">,</span> <span class="n">adj_price</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">adj_price</span><span class="p">,</span> <span class="n">order</span><span class="o">.</span><span class="n">amount</span></div>
 
 
 <span class="k">class</span> <span class="nc">ExchangeBlotter</span><span class="p">(</span><span class="n">Blotter</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">simulate_orders</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;simulate_orders&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">attempts</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;attempts&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulate_orders</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;simulate_orders&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attempts</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;attempts&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">exchanges</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;exchanges&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exchanges</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;exchanges&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">exchanges</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s">&#39;ExchangeBlotter must have an `exchanges` attribute.&#39;</span>
+                <span class="s1">&#39;ExchangeBlotter must have an `exchanges` attribute.&#39;</span>
             <span class="p">)</span>
 
-        <span class="nb">super</span><span class="p">(</span><span class="n">ExchangeBlotter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ExchangeBlotter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="c"># Using the equity models for now</span>
-        <span class="c"># We may be able to define more sophisticated models based on the fee</span>
-        <span class="c"># structure of each exchange.</span>
+        <span class="c1"># Using the equity models for now</span>
+        <span class="c1"># We may be able to define more sophisticated models based on the fee</span>
+        <span class="c1"># structure of each exchange.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">slippage_models</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">TradingPair</span><span class="p">:</span> <span class="n">TradingPairFixedSlippage</span><span class="p">()</span>
         <span class="p">}</span>
@@ -580,9 +323,9 @@
 
     <span class="nd">@expect_types</span><span class="p">(</span><span class="n">asset</span><span class="o">=</span><span class="n">TradingPair</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">asset</span><span class="p">,</span> <span class="n">amount</span><span class="p">,</span> <span class="n">style</span><span class="p">,</span> <span class="n">order_id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;ordering {} {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">amount</span><span class="p">,</span> <span class="n">asset</span><span class="o">.</span><span class="n">symbol</span><span class="p">))</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;ordering {} {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">amount</span><span class="p">,</span> <span class="n">asset</span><span class="o">.</span><span class="n">symbol</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">amount</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;skipping 0 amount orders&#39;</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;skipping 0 amount orders&#39;</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">None</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulate_orders</span><span class="p">:</span>
@@ -593,10 +336,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">order</span> <span class="o">=</span> <span class="n">retry</span><span class="p">(</span>
                 <span class="n">action</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">exchange_order</span><span class="p">,</span>
-                <span class="n">attempts</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">attempts</span><span class="p">[</span><span class="s">&#39;order_attempts&#39;</span><span class="p">],</span>
-                <span class="n">sleeptime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">attempts</span><span class="p">[</span><span class="s">&#39;retry_sleeptime&#39;</span><span class="p">],</span>
+                <span class="n">attempts</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">attempts</span><span class="p">[</span><span class="s1">&#39;order_attempts&#39;</span><span class="p">],</span>
+                <span class="n">sleeptime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">attempts</span><span class="p">[</span><span class="s1">&#39;retry_sleeptime&#39;</span><span class="p">],</span>
                 <span class="n">retry_exceptions</span><span class="o">=</span><span class="p">(</span><span class="n">ExchangeRequestError</span><span class="p">,),</span>
-                <span class="n">cleanup</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;Ordering again.&#39;</span><span class="p">),</span>
+                <span class="n">cleanup</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Ordering again.&#39;</span><span class="p">),</span>
                 <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">asset</span><span class="p">,</span> <span class="n">amount</span><span class="p">,</span> <span class="n">style</span><span class="p">),</span>
             <span class="p">)</span>
 
@@ -621,22 +364,22 @@
             <span class="n">exchange</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exchanges</span><span class="p">[</span><span class="n">asset</span><span class="o">.</span><span class="n">exchange</span><span class="p">]</span>
 
             <span class="k">for</span> <span class="n">order</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">open_orders</span><span class="p">[</span><span class="n">asset</span><span class="p">]:</span>
-                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;found open order: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;found open order: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
 
                 <span class="n">transactions</span> <span class="o">=</span> <span class="n">exchange</span><span class="o">.</span><span class="n">process_order</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
-                <span class="c"># This is a temporary measure, we should really update all</span>
-                <span class="c"># trades, not just when the order gets filled. I just think</span>
-                <span class="c"># that this is safer until we have a robust way to track</span>
-                <span class="c"># the trades already processed by the algo. We can&#39;t loose</span>
-                <span class="c"># them if the algo shuts down.</span>
+                <span class="c1"># This is a temporary measure, we should really update all</span>
+                <span class="c1"># trades, not just when the order gets filled. I just think</span>
+                <span class="c1"># that this is safer until we have a robust way to track</span>
+                <span class="c1"># the trades already processed by the algo. We can&#39;t loose</span>
+                <span class="c1"># them if the algo shuts down.</span>
                 <span class="k">if</span> <span class="n">transactions</span> <span class="ow">and</span> <span class="n">order</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">ORDER_STATUS</span><span class="o">.</span><span class="n">FILLED</span><span class="p">:</span>
                     <span class="n">avg_price</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span>
                         <span class="n">a</span><span class="o">=</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">price</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">transactions</span><span class="p">],</span>
                         <span class="n">weights</span><span class="o">=</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">amount</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">transactions</span><span class="p">],</span>
                     <span class="p">)</span>
-                    <span class="n">ostatus</span> <span class="o">=</span> <span class="s">&#39;filled&#39;</span> <span class="k">if</span> <span class="n">order</span><span class="o">.</span><span class="n">open_amount</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="s">&#39;partial&#39;</span>
+                    <span class="n">ostatus</span> <span class="o">=</span> <span class="s1">&#39;filled&#39;</span> <span class="k">if</span> <span class="n">order</span><span class="o">.</span><span class="n">open_amount</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;partial&#39;</span>
                     <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                        <span class="s">&#39;{} order {} / {}: {}, avg price: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="s1">&#39;{} order {} / {}: {}, avg price: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                             <span class="n">ostatus</span><span class="p">,</span>
                             <span class="n">order</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
                             <span class="n">asset</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span>
@@ -653,8 +396,8 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">delta</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span> <span class="o">-</span> <span class="n">order</span><span class="o">.</span><span class="n">dt</span>
                     <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                        <span class="s">&#39;{exchange} order {order_id} for {symbol} still open &#39;</span>
-                        <span class="s">&#39;after {delta}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="s1">&#39;{exchange} order {order_id} for {symbol} still open &#39;</span>
+                        <span class="s1">&#39;after {delta}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                             <span class="n">exchange</span><span class="o">=</span><span class="n">exchange</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                             <span class="n">order_id</span><span class="o">=</span><span class="n">order</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
                             <span class="n">delta</span><span class="o">=</span><span class="n">delta</span><span class="p">,</span>
@@ -683,15 +426,17 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">retry</span><span class="p">(</span>
                 <span class="n">action</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_exchange_transactions</span><span class="p">,</span>
-                <span class="n">attempts</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">attempts</span><span class="p">[</span><span class="s">&#39;get_transactions_attempts&#39;</span><span class="p">],</span>
-                <span class="n">sleeptime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">attempts</span><span class="p">[</span><span class="s">&#39;retry_sleeptime&#39;</span><span class="p">],</span>
+                <span class="n">attempts</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">attempts</span><span class="p">[</span><span class="s1">&#39;get_transactions_attempts&#39;</span><span class="p">],</span>
+                <span class="n">sleeptime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">attempts</span><span class="p">[</span><span class="s1">&#39;retry_sleeptime&#39;</span><span class="p">],</span>
                 <span class="n">retry_exceptions</span><span class="o">=</span><span class="p">(</span><span class="n">ExchangeRequestError</span><span class="p">,),</span>
                 <span class="n">cleanup</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                    <span class="s">&#39;Fetching exchange transactions again.&#39;</span>
+                    <span class="s1">&#39;Fetching exchange transactions again.&#39;</span>
                 <span class="p">)</span>
             <span class="p">)</span>
 </pre></div>
 
+           </div>
+           
           </div>
           <footer>
   
@@ -701,9 +446,10 @@
   <div role="contentinfo">
     <p>
         &copy; Copyright 2018, Enigma MPC, Inc..
+
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -721,10 +467,12 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'0.5.15',
+            VERSION:'0.5.18',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="../../../_static/jquery.js"></script>
@@ -733,19 +481,13 @@
 
   
 
-  
-  
-    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>
