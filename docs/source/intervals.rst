@@ -10,23 +10,23 @@ For example, a day is defined to start at ``00:00:00`` and end at ``23:59:59``. 
 Stock trading
 ^^^^^^^^^^^^^
 
-Counter-intuitively for novice traders, stock trading uses right-bound intervals. For example, at NYSE trading starts at 9:31am and ends at 4pm, and every minute is counted as follows::
+Counter-intuitively for novice traders, stock trading uses right-bound intervals. For example, at NYSE trading starts right after 9:30 am and ends at 4pm, and every minute is counted as follows::
 
-	9:30:01 am - 9:31:00 am First minute of a trading day
-	9:31:01 am - 9:32:00 am
-	9:32:01 am - 9:33:00 am
+	9:30:00 am < t <= 9:31:00 am First minute of a trading day
+	9:31:00 am < t <= 9:32:00 am
+	9:32:00 am < t <= 9:33:00 am
 	...
 	3:59:01 pm - 4:00:00 pm Last minute of a trading day
 
 And each interval is labeled with the ending time as follows::
 
-	9:31 interval starts at 9:30:01 am, ends at 9:31:00 am and is the first minute of a trading day
-	9:32 interval starts at 9:31:01 am, ends at 9:31:00 am
-	9:33 interval starts at 9:32:01 am, ends at 9:33:00 am
+	9:31 interval: 9:30:00 am < t <= 9:31:00 am and is the first minute of a trading day
+	9:32 interval: 9:31:00 am < t <= 9:32:00 am
+	9:33 interval: 9:32:00 am < t <= 9:33:00 am
 	...
-	4:00 interval starts at 3:59:01 pm, ends at 4:00:00 pm and is the last minute of a trading day
+	4:00 interval: 3:59:00 pm < t <= 4:00:00 pm and is the last minute of a trading day
 
-Essentially, the pricing data for a given minute interval is always from the previous minute. While this may seem counter-intuitive at first, it ensures that there is no `look-ahead bias <https://www.investopedia.com/terms/l/lookaheadbias.asp>`_. This means that when we trade at any given minute, we only see information that would have been available at the time of the trade (anything prior up to that point).
+Essentially, the pricing data for a given minute interval is always from the previous minute. While this may seem counter-intuitive at first, it helps in preventing a `look-ahead bias <https://www.investopedia.com/terms/l/lookaheadbias.asp>`_. This means that when we trade at any given minute, we only see information that would have been available at the time of the trade (anything prior up to that point).
 
 It is worth noting that in stock trading, day intervals are left-labeled and minute intervals are right-labeled, even though they both are defined right-bounded or right-closed. While this naming may seem inconsistent or problematic at first, it never poses a problem because stock trading is always limited to a set of hours within a day, and never involves 24/7 trading where it would cause confusion right at midnight.
 
@@ -37,9 +37,9 @@ Crypto trading
 
 Conversely, cryptocurrency trading exchanges use left-bounded (aka left-closed and left-labeled) minute and daily intervals. For example, using the same times defined above, in crypto they would be defined as follows::
 
-	9:31 interval starts at 9:31:00 am, ends at 9:31:59 am
-	9:32 interval starts at 9:32:00 am, ends at 9:32:59 am
-	9:33 interval starts at 9:33:00 am, ends at 9:33:59 am
+	9:31 interval: 9:31:00 am <= t < 9:32:00 am
+	9:32 interval: 9:32:00 am <= t < 9:33:00 am
+	9:33 interval: 9:33:00 am <= t < 9:34:00 am
 	...
 
-All things being equal, Catalyst would introduce a look-ahead bias using the same codebase as zipline in minute mode when the clock ticks at the beginnig of every minute. Whereas zipline uses data from the previous minute (labeled as ending in the current minute), catalyst would use data from the full minute ahead of us that starts when the clock ticks. To address this bias and remain consistent with the way crypto exchanges provide pricing data, catalyst `data.current <appendix.html#catalyst.protocol.BarData.current>`_ returns the closing price from the previous minute and `data.history <appendix.html#catalyst.protocol.BarData.history>`_ last bar matches `data.current <appendix.html#catalyst.protocol.BarData.current>`_ providing the price up to the minute prior to the current one.
+For reference, in zipline when the clock ticks at the beginning of every minute, it uses data from the previous minute (labeled as ending in the current minute). To meet the different nature of the crypto data definition versus the stock market data, Catalyst code had to be altered as follows: when the minute clock ticks at the beginning of every minute `data.current <appendix.html#catalyst.protocol.BarData.current>`_ returns the closing price from the previous minute and `data.history <appendix.html#catalyst.protocol.BarData.history>`_ last bar matches `data.current <appendix.html#catalyst.protocol.BarData.current>`_ providing the price up to the minute prior to the current one. 
