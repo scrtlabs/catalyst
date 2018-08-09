@@ -85,6 +85,7 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
             get_spot_value_attempts=5,
             get_history_window_attempts=5,
             retry_sleeptime=5,
+            get_orderbook_attempts=5,
         )
 
         self.blotter = ExchangeBlotter(
@@ -1150,3 +1151,34 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             self.blotter.cancel(order_id)
         else:
             self.blotter.cancel(order_id)
+
+    def _get_orderbook(self, asset, order_type='all', limit=None):
+        exchange = self.exchanges[asset.exchange]
+        return exchange.get_orderbook(asset, order_type, limit)
+
+    @api_method
+    def get_orderbook(self, asset, order_type='all', limit=None):
+        """
+        Retrieve the orderbook for the given trading pair.
+
+        Parameters
+        ----------
+        asset: TradingPair
+
+        order_type: str
+            The type of orders: bid, ask or all
+
+        limit: int
+
+        Returns
+        -------
+        list[dict[str, float]
+        """
+        return retry(
+            action=self._get_orderbook,
+            attempts=self.attempts['get_orderbook_attempts'],
+            sleeptime=self.attempts['retry_sleeptime'],
+            retry_exceptions=(ExchangeRequestError,),
+            cleanup=lambda: log.warn('Requesting order book again'),
+            args=(asset, order_type, limit),
+        )

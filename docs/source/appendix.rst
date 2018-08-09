@@ -67,6 +67,9 @@ Orders
 
 .. autofunction:: catalyst.api.cancel_order
 
+.. autofunction:: catalyst.api.get_orderbook
+
+
 Order Cancellation Policies
 '''''''''''''''''''''''''''
 
