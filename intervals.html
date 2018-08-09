@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Development Guidelines &mdash; Catalyst 0.5.15 documentation</title>
+  <title>Pricing Data Intervals &mdash; Catalyst 0.5.15 documentation</title>
   
 
   
@@ -33,9 +33,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="Catalyst 0.5.15 documentation" href="index.html"/>
-        <link rel="next" title="Release Notes" href="releases.html"/>
-        <link rel="prev" title="Resources" href="resources.html"/> 
+    <link rel="top" title="Catalyst 0.5.15 documentation" href="index.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -74,7 +72,7 @@
         
           
           
-              <ul class="current">
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Install</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="install.html#installing-with-conda">Installing with <code class="docutils literal"><span class="pre">conda</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="install.html#troubleshooting-conda-install">Troubleshooting <code class="docutils literal"><span class="pre">conda</span></code> Install</a></li>
@@ -166,13 +164,13 @@
 <li class="toctree-l2"><a class="reference internal" href="resources.html#related-3rd-party-apis">Related 3rd Party APIs</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Development Guidelines</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#creating-a-development-environment">Creating a Development Environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#development-with-docker">Development with Docker</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#git-branching-structure">Git Branching Structure</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#contributing-to-the-docs">Contributing to the Docs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#commit-messages">Commit messages</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#formatting-docstrings">Formatting Docstrings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development-guidelines.html">Development Guidelines</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#creating-a-development-environment">Creating a Development Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#development-with-docker">Development with Docker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#git-branching-structure">Git Branching Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#contributing-to-the-docs">Contributing to the Docs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#commit-messages">Commit messages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#formatting-docstrings">Formatting Docstrings</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="releases.html">Release Notes</a><ul>
@@ -395,11 +393,11 @@
   <ul class="wy-breadcrumbs">
     <li><a href="index.html">Docs</a> &raquo;</li>
       
-    <li>Development Guidelines</li>
+    <li>Pricing Data Intervals</li>
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="_sources/development-guidelines.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/intervals.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -408,135 +406,49 @@
 </div>
           <div role="main" class="document">
             
-  <div class="section" id="development-guidelines">
-<h1>Development Guidelines<a class="headerlink" href="#development-guidelines" title="Permalink to this headline">¶</a></h1>
-<p>This page is intended for developers of Catalyst, people who want to contribute
-to the Catalyst codebase or documentation, or people who want to install from
-source and make local changes to their copy of Catalyst.</p>
-<p>All contributions, bug reports, bug fixes, documentation improvements,
-enhancements and ideas are welcome.
-We <a class="reference external" href="https://github.com/enigmampc/catalyst/issues">track issues</a> on
-<a class="reference external" href="https://github.com/enigmampc/catalyst">GitHub</a> and also have a
-<a class="reference external" href="https://discord.gg/SJK32GY">discord group</a> and a
-<a class="reference external" href="https://forum.catalystcrypto.io">forum</a> where you can share ideas and ask
-questions.</p>
-<div class="section" id="creating-a-development-environment">
-<h2>Creating a Development Environment<a class="headerlink" href="#creating-a-development-environment" title="Permalink to this headline">¶</a></h2>
-<p>First, you’ll need to clone Catalyst by running:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>git clone git@github.com:enigmampc/catalyst.git
+  <div class="section" id="pricing-data-intervals">
+<h1>Pricing Data Intervals<a class="headerlink" href="#pricing-data-intervals" title="Permalink to this headline">¶</a></h1>
+<p>Pricing data for any asset is aggregated and stored in predetermined units of time, which are referred to as intervals or bars in a chart. Each single bar or interval captures the price movement of an asset and contains the open, high, low and closing prices for the specified period of time. For example, if a trader is working with daily data, one interval captures the price movements for one day. Analogously, if a trader is working with minute data, each interval captures the price movements for one minute.</p>
+<p>It is important to understand the precise definition of these units of time as it affects your trading decisions. We are using the mathematical definition of <a class="reference external" href="https://en.wikipedia.org/wiki/Interval_(mathematics)">interval</a> to define a set of numbers (times) with the property that any number that lies between two numbers (start time and end time) in the set is also included in the set. The question arises in determining whether the endpoints are included in the interval or not, that is whether the intervals are open or closed.</p>
+<p>For example, a day is defined to start at <code class="docutils literal"><span class="pre">00:00:00</span></code> and end at <code class="docutils literal"><span class="pre">23:59:59</span></code>. This is a left-closed and right-opened interval, which is typically referred to as left-bound or left-closed for short (which matches <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/generated/pandas.Interval.html">Pandas nomenclature of intervals</a>). This means that midnight of a given day is only included as the endpoint of the starting day, but not the preceding day (the previous day ended right before midnight).</p>
+<div class="section" id="stock-trading">
+<h2>Stock trading<a class="headerlink" href="#stock-trading" title="Permalink to this headline">¶</a></h2>
+<p>Counter-intuitively for novice traders, stock trading uses right-bound intervals. For example, at NYSE trading starts at 9:31am and ends at 4pm, and every minute is counted as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="mi">9</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mo">01</span> <span class="n">am</span> <span class="o">-</span> <span class="mi">9</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span> <span class="n">First</span> <span class="n">minute</span> <span class="n">of</span> <span class="n">a</span> <span class="n">trading</span> <span class="n">day</span>
+<span class="mi">9</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mo">01</span> <span class="n">am</span> <span class="o">-</span> <span class="mi">9</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span>
+<span class="mi">9</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mo">01</span> <span class="n">am</span> <span class="o">-</span> <span class="mi">9</span><span class="p">:</span><span class="mi">33</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span>
+<span class="o">...</span>
+<span class="mi">3</span><span class="p">:</span><span class="mi">59</span><span class="p">:</span><span class="mo">01</span> <span class="n">pm</span> <span class="o">-</span> <span class="mi">4</span><span class="p">:</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span> <span class="n">pm</span> <span class="n">Last</span> <span class="n">minute</span> <span class="n">of</span> <span class="n">a</span> <span class="n">trading</span> <span class="n">day</span>
 </pre></div>
 </div>
-<p>Then check out to a new branch where you can make your changes:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>git checkout -b some-short-descriptive-name
+<p>And each interval is labeled with the ending time as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="mi">9</span><span class="p">:</span><span class="mi">31</span> <span class="n">interval</span> <span class="n">starts</span> <span class="n">at</span> <span class="mi">9</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mo">01</span> <span class="n">am</span><span class="p">,</span> <span class="n">ends</span> <span class="n">at</span> <span class="mi">9</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span> <span class="ow">and</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">first</span> <span class="n">minute</span> <span class="n">of</span> <span class="n">a</span> <span class="n">trading</span> <span class="n">day</span>
+<span class="mi">9</span><span class="p">:</span><span class="mi">32</span> <span class="n">interval</span> <span class="n">starts</span> <span class="n">at</span> <span class="mi">9</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mo">01</span> <span class="n">am</span><span class="p">,</span> <span class="n">ends</span> <span class="n">at</span> <span class="mi">9</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span>
+<span class="mi">9</span><span class="p">:</span><span class="mi">33</span> <span class="n">interval</span> <span class="n">starts</span> <span class="n">at</span> <span class="mi">9</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mo">01</span> <span class="n">am</span><span class="p">,</span> <span class="n">ends</span> <span class="n">at</span> <span class="mi">9</span><span class="p">:</span><span class="mi">33</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span>
+<span class="o">...</span>
+<span class="mi">4</span><span class="p">:</span><span class="mo">00</span> <span class="n">interval</span> <span class="n">starts</span> <span class="n">at</span> <span class="mi">3</span><span class="p">:</span><span class="mi">59</span><span class="p">:</span><span class="mo">01</span> <span class="n">pm</span><span class="p">,</span> <span class="n">ends</span> <span class="n">at</span> <span class="mi">4</span><span class="p">:</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span> <span class="n">pm</span> <span class="ow">and</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">last</span> <span class="n">minute</span> <span class="n">of</span> <span class="n">a</span> <span class="n">trading</span> <span class="n">day</span>
 </pre></div>
 </div>
-<p>If you don’t already have them, you’ll need some C library dependencies. You can follow the <a class="reference external" href="install.html">install guide</a> to get the appropriate dependencies.</p>
-<p>The following section assumes you already have virtualenvwrapper and pip installed on your system. Suggested installation of Python library dependencies used for development:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>mkvirtualenv catalyst
-<span class="nv">$ </span>./etc/ordered_pip.sh ./etc/requirements.txt
-<span class="nv">$ </span>pip install -r ./etc/requirements_dev.txt
-<span class="nv">$ </span>pip install -r ./etc/requirements_blaze.txt
+<p>Essentially, the pricing data for a given minute interval is always from the previous minute. While this may seem counter-intuitive at first, it ensures that there is no <a class="reference external" href="https://www.investopedia.com/terms/l/lookaheadbias.asp">look-ahead bias</a>. This means that when we trade at any given minute, we only see information that would have been available at the time of the trade (anything prior up to that point).</p>
+<p>It is worth noting that in stock trading, day intervals are left-labeled and minute intervals are right-labeled, even though they both are defined right-bounded or right-closed. While this naming may seem inconsistent or problematic at first, it never poses a problem because stock trading is always limited to a set of hours within a day, and never involves 24/7 trading where it would cause confusion right at midnight.</p>
+<p>The naming convention defined above is the one that <a class="reference external" href="https://github.com/quantopian/zipline">zipline</a> implements.</p>
+</div>
+<div class="section" id="crypto-trading">
+<h2>Crypto trading<a class="headerlink" href="#crypto-trading" title="Permalink to this headline">¶</a></h2>
+<p>Conversely, cryptocurrency trading exchanges use left-bounded (aka left-closed and left-labeled) minute and daily intervals. For example, using the same times defined above, in crypto they would be defined as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="mi">9</span><span class="p">:</span><span class="mi">31</span> <span class="n">interval</span> <span class="n">starts</span> <span class="n">at</span> <span class="mi">9</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span><span class="p">,</span> <span class="n">ends</span> <span class="n">at</span> <span class="mi">9</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mi">59</span> <span class="n">am</span>
+<span class="mi">9</span><span class="p">:</span><span class="mi">32</span> <span class="n">interval</span> <span class="n">starts</span> <span class="n">at</span> <span class="mi">9</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span><span class="p">,</span> <span class="n">ends</span> <span class="n">at</span> <span class="mi">9</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">59</span> <span class="n">am</span>
+<span class="mi">9</span><span class="p">:</span><span class="mi">33</span> <span class="n">interval</span> <span class="n">starts</span> <span class="n">at</span> <span class="mi">9</span><span class="p">:</span><span class="mi">33</span><span class="p">:</span><span class="mo">00</span> <span class="n">am</span><span class="p">,</span> <span class="n">ends</span> <span class="n">at</span> <span class="mi">9</span><span class="p">:</span><span class="mi">33</span><span class="p">:</span><span class="mi">59</span> <span class="n">am</span>
+<span class="o">...</span>
 </pre></div>
 </div>
-<p>Finally, you can build the C extensions by running:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>python setup.py build_ext --inplace
-</pre></div>
-</div>
-</div>
-<div class="section" id="development-with-docker">
-<h2>Development with Docker<a class="headerlink" href="#development-with-docker" title="Permalink to this headline">¶</a></h2>
-<p>If you want to work with zipline using a <a class="reference external" href="https://docs.docker.com/get-started/">Docker</a> container, you’ll need to
-build the <code class="docutils literal"><span class="pre">Dockerfile</span></code> in the Zipline root directory, and then build
-<code class="docutils literal"><span class="pre">Dockerfile-dev</span></code>. Instructions for building both containers can be found in
-<code class="docutils literal"><span class="pre">Dockerfile</span></code> and <code class="docutils literal"><span class="pre">Dockerfile-dev</span></code>, respectively.</p>
-</div>
-<div class="section" id="git-branching-structure">
-<h2>Git Branching Structure<a class="headerlink" href="#git-branching-structure" title="Permalink to this headline">¶</a></h2>
-<p>If you want to contribute to the codebase of Catalyst, familiarize yourself with our branching structure, a fairly standardized one for that matter, that follows what is documented in the following article: <a class="reference external" href="http://nvie.com/posts/a-successful-git-branching-model/">A successful Git branching model</a>. To contribute, create your local branch and submit a Pull Request (PR) to the <strong>develop</strong> branch.</p>
-<img alt="https://camo.githubusercontent.com/9bde6fb64a9542a572e0e2017cbb58d9d2c440ac/687474703a2f2f6e7669652e636f6d2f696d672f6769742d6d6f64656c4032782e706e67" src="https://camo.githubusercontent.com/9bde6fb64a9542a572e0e2017cbb58d9d2c440ac/687474703a2f2f6e7669652e636f6d2f696d672f6769742d6d6f64656c4032782e706e67" />
-</div>
-<div class="section" id="contributing-to-the-docs">
-<h2>Contributing to the Docs<a class="headerlink" href="#contributing-to-the-docs" title="Permalink to this headline">¶</a></h2>
-<p>If you’d like to contribute to the documentation on enigmampc.github.io, you can navigate to <code class="docutils literal"><span class="pre">docs/source/</span></code> where each <a class="reference external" href="https://en.wikipedia.org/wiki/ReStructuredText">reStructuredText</a> file is a separate section there. To add a section, create a new file called <code class="docutils literal"><span class="pre">some-descriptive-name.rst</span></code> and add <code class="docutils literal"><span class="pre">some-descriptive-name</span></code> to <code class="docutils literal"><span class="pre">index.rst</span></code>. To edit a section, simply open up one of the existing files, make your changes, and save them.</p>
-<p>We use <a class="reference external" href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> to generate documentation for Catalyst, which you will need to install by running:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pip install -r ./etc/requirements_docs.txt
-</pre></div>
-</div>
-<p>To build and view the docs locally, run:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="c"># assuming you&#39;re in the Catalyst root directory</span>
-<span class="nv">$ </span><span class="nb">cd </span>docs
-<span class="nv">$ </span>make html
-<span class="nv">$ </span><span class="o">{</span>BROWSER<span class="o">}</span> build/html/index.html
-</pre></div>
-</div>
-<p>There is a <a class="reference external" href="https://github.com/sphinx-doc/sphinx/issues/3212">documented issue</a>
-with <code class="docutils literal"><span class="pre">sphinx</span></code> and <code class="docutils literal"><span class="pre">docutils</span></code> that causes the error below when trying to build
-the docs.</p>
-<div class="highlight-text"><div class="highlight"><pre>Exception occurred:
-  File &quot;(...)/env-c/lib/python2.7/site-packages/docutils/writers/_html_base.py&quot;, line 671, in depart_document
-    assert not self.context, &#39;len(context) = %s&#39; % len(self.context)
-AssertionError: len(context) = 3
-</pre></div>
-</div>
-<p>If you get this error, you need to downgrade your version of <code class="docutils literal"><span class="pre">docutils</span></code> as
-follows, and build the docs again:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pip install <span class="nv">docutils</span><span class="o">==</span>0.12
-</pre></div>
-</div>
-</div>
-<div class="section" id="commit-messages">
-<h2>Commit messages<a class="headerlink" href="#commit-messages" title="Permalink to this headline">¶</a></h2>
-<p>Standard prefixes to start a commit message:</p>
-<div class="highlight-text"><div class="highlight"><pre>BLD: change related to building Catalyst
-BUG: bug fix
-DEP: deprecate something, or remove a deprecated object
-DEV: development tool or utility
-DOC: documentation
-ENH: enhancement
-MAINT: maintenance commit (refactoring, typos, etc)
-REV: revert an earlier commit
-STY: style fix (whitespace, PEP8, flake8, etc)
-TST: addition or modification of tests
-REL: related to releasing Catalyst
-PERF: performance enhancements
-</pre></div>
-</div>
-<p>Some commit style guidelines:</p>
-<p>Commit lines should be no longer than <a class="reference external" href="https://git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project">72 characters</a>. The first line of the commit should include one of the above prefixes. There should be an empty line between the commit subject and the body of the commit. In general, the message should be in the imperative tense. Best practice is to include not only what the change is, but why the change was made.</p>
-<p><strong>Example:</strong></p>
-<div class="highlight-text"><div class="highlight"><pre>MAINT: Remove unused calculations of max_leverage, et al.
-
-In the performance period the max_leverage, max_capital_used,
-cumulative_capital_used were calculated but not used.
-
-At least one of those calculations, max_leverage, was causing a
-divide by zero error.
-
-Instead of papering over that error, the entire calculation was
-a bit suspect so removing, with possibility of adding it back in
-later with handling the case (or raising appropriate errors) when
-the algorithm has little cash on hand.
-</pre></div>
-</div>
-</div>
-<div class="section" id="formatting-docstrings">
-<h2>Formatting Docstrings<a class="headerlink" href="#formatting-docstrings" title="Permalink to this headline">¶</a></h2>
-<p>When adding or editing docstrings for classes, functions, etc, we use <a class="reference external" href="https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt">numpy</a> as the canonical reference.</p>
+<p>All things being equal, Catalyst would introduce a look-ahead bias using the same codebase as zipline in minute mode when the clock ticks at the beginnig of every minute. Whereas zipline uses data from the previous minute (labeled as ending in the current minute), catalyst would use data from the full minute ahead of us that starts when the clock ticks. To address this bias and remain consistent with the way crypto exchanges provide pricing data, catalyst <a class="reference external" href="appendix.html#catalyst.protocol.BarData.current">data.current</a> returns the closing price from the previous minute and <a class="reference external" href="appendix.html#catalyst.protocol.BarData.history">data.history</a> last bar matches <a class="reference external" href="appendix.html#catalyst.protocol.BarData.current">data.current</a> providing the price up to the minute prior to the current one.</p>
 </div>
 </div>
 
 
           </div>
           <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="releases.html" class="btn btn-neutral float-right" title="Release Notes" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="resources.html" class="btn btn-neutral" title="Resources" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
-    </div>
   
 
   <hr/>

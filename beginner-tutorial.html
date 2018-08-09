@@ -8,11 +8,9 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Catalyst Beginner Tutorial &mdash; Catalyst 0.5.18 documentation</title>
+  <title>Catalyst Beginner Tutorial &mdash; Catalyst 0.5.15 documentation</title>
   
 
-  
-  
   
   
 
@@ -24,46 +22,43 @@
 
   
 
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Live Trading" href="live-trading.html" />
-    <link rel="prev" title="Install" href="install.html" /> 
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="Catalyst 0.5.15 documentation" href="index.html"/>
+        <link rel="next" title="Live Trading" href="live-trading.html"/>
+        <link rel="prev" title="Install" href="install.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav">
+<body class="wy-body-for-nav" role="document">
 
-   
   <div class="wy-grid-for-nav">
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
-          
+      <div class="wy-side-nav-search">
+        
 
-          
-            <a href="index.html" class="icon icon-home"> Catalyst
-          
+        
+          <a href="index.html" class="icon icon-home"> Catalyst
+        
 
-          
-          </a>
+        
+        </a>
 
-          
-            
-            
-              <div class="version">
-                0.5.18
-              </div>
-            
-          
-
-          
+        
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -72,18 +67,37 @@
   </form>
 </div>
 
-          
-        </div>
+        
+      </div>
 
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
           
-            
-            
-              
-            
-            
+          
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Install</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#installing-with-conda">Installing with <code class="docutils literal"><span class="pre">conda</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="install.html#troubleshooting-conda-install">Troubleshooting <code class="docutils literal"><span class="pre">conda</span></code> Install</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#installing-with-pip">Installing with <code class="docutils literal"><span class="pre">pip</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="install.html#troubleshooting-pip-install">Troubleshooting <code class="docutils literal"><span class="pre">pip</span></code> Install</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#installing-with-pipenv">Installing with <code class="docutils literal"><span class="pre">pipenv</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#gnu-linux-requirements">GNU/Linux Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="install.html#amazon-linux-ami-notes">Amazon Linux AMI Notes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#macos-requirements">MacOS Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="install.html#macos-virtualenv-conda-matplotlib">MacOS + virtualenv/conda + matplotlib</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#windows-requirements">Windows Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#updating-catalyst">Updating Catalyst</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#getting-help">Getting Help</a></li>
+</ul>
+</li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Catalyst Beginner Tutorial</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#basics">Basics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#my-first-algorithm">My first algorithm</a></li>
@@ -109,78 +123,290 @@
 <li class="toctree-l2"><a class="reference internal" href="#next-steps">Next steps</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="live-trading.html">Live Trading</a></li>
-<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
-<li class="toctree-l1"><a class="reference internal" href="example-algos.html">Example Algorithms</a></li>
-<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
-<li class="toctree-l1"><a class="reference internal" href="videos.html">Videos</a></li>
-<li class="toctree-l1"><a class="reference internal" href="resources.html">Resources</a></li>
-<li class="toctree-l1"><a class="reference internal" href="development-guidelines.html">Development Guidelines</a></li>
-<li class="toctree-l1"><a class="reference internal" href="releases.html">Release Notes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="appendix.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="live-trading.html">Live Trading</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="live-trading.html#supported-exchanges">Supported Exchanges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="live-trading.html#paper-trading-vs-live-trading-modes">Paper Trading vs Live Trading modes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="live-trading.html#authentication">Authentication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="live-trading.html#currency-symbols">Currency Symbols</a></li>
+<li class="toctree-l2"><a class="reference internal" href="live-trading.html#trading-an-algorithm">Trading an Algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="live-trading.html#algorithm-state">Algorithm State</a></li>
+<li class="toctree-l2"><a class="reference internal" href="live-trading.html#commissions">Commissions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="live-trading.html#advanced-options">Advanced Options</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="features.html#current-functionality">Current Functionality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="features.html#upcoming-features">Upcoming features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="features.html#naming-convention">Naming Convention</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="example-algos.html">Example Algorithms</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="example-algos.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-algos.html#buy-btc-simple-algorithm">Buy BTC Simple Algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-algos.html#buy-and-hodl-algorithm">Buy and Hodl Algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-algos.html#dual-moving-average-crossover">Dual Moving Average Crossover</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-algos.html#mean-reversion-algorithm">Mean Reversion Algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-algos.html#simple-universe">Simple Universe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-algos.html#portfolio-optimization">Portfolio Optimization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="utilities.html#output-to-csv-file">Output to CSV file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilities.html#extracting-market-data">Extracting market data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="videos.html">Videos</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="videos.html#installation-macos">Installation: MacOS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="videos.html#installation-windows">Installation: Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="videos.html#backtesting-a-strategy">Backtesting a Strategy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="videos.html#live-trading-a-strategy">Live Trading a Strategy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="resources.html">Resources</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="resources.html#related-3rd-party-apis">Related 3rd Party APIs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="development-guidelines.html">Development Guidelines</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#creating-a-development-environment">Creating a Development Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#development-with-docker">Development with Docker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#git-branching-structure">Git Branching Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#contributing-to-the-docs">Contributing to the Docs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#commit-messages">Commit messages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development-guidelines.html#formatting-docstrings">Formatting Docstrings</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="releases.html">Release Notes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-18">Version 0.5.18</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#build">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-17">Version 0.5.17</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#bug-fixes">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-16">Version 0.5.16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id1">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id2">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-15">Version 0.5.15</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id3">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id4">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-14">Version 0.5.14</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id5">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id6">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-13">Version 0.5.13</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id7">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id8">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-12">Version 0.5.12</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id9">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id10">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-11">Version 0.5.11</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id11">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-10">Version 0.5.10</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id12">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id13">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-9">Version 0.5.9</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#documentation">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id14">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id15">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-8">Version 0.5.8</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id16">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-7">Version 0.5.7</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id17">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id18">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-6">Version 0.5.6</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id19">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id20">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-5">Version 0.5.5</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id21">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-4">Version 0.5.4</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id22">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id23">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id24">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-3">Version 0.5.3</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id25">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-2">Version 0.5.2</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id26">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-5-1">Version 0.5.1</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id27">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id28">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-7">Version 0.4.7</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id29">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id30">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-6">Version 0.4.6</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id31">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id32">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-5">Version 0.4.5</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id33">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-4">Version 0.4.4</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id34">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-3">Version 0.4.3</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id35">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-2">Version 0.4.2</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id36">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id37">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-4-0">Version 0.4.0</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id38">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id39">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#version-0-3-10">Version 0.3.10</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id40">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-9">Version 0.3.9</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id41">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id42">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-8">Version 0.3.8</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id43">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-7">Version 0.3.7</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id44">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id45">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-6">Version 0.3.6</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id46">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-5">Version 0.3.5</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id47">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-4">Version 0.3.4</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id48">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id49">Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id50">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-3">Version 0.3.3</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id52">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id53">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-2">Version 0.3.2</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id54">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id55">Build</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3-1">Version 0.3.1</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="releases.html#id56">Bug Fixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-3">Version 0.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-2-dev5">Version 0.2.dev5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-2-dev4">Version 0.2.dev4</a></li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-2-dev3">Version 0.2.dev3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-2-dev2">Version 0.2.dev2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-2-dev1">Version 0.2.dev1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-1-dev9">Version 0.1.dev9</a></li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-1-dev8">Version 0.1.dev8</a></li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-1-dev7">Version 0.1.dev7</a></li>
+<li class="toctree-l2"><a class="reference internal" href="releases.html#version-0-1-dev6">Version 0.1.dev6</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="appendix.html">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="appendix.html#running-a-strategy">Running a Strategy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="appendix.html#algorithm-api">Algorithm API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="appendix.html#data-object">Data Object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="appendix.html#scheduling-functions">Scheduling Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="appendix.html#orders">Orders</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="appendix.html#order-cancellation-policies">Order Cancellation Policies</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="appendix.html#assets">Assets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="appendix.html#simulation-parameters">Simulation Parameters</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="appendix.html#commission-models">Commission Models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="appendix.html#slippage-models">Slippage Models</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="appendix.html#pipeline">Pipeline</a></li>
+<li class="toctree-l3"><a class="reference internal" href="appendix.html#miscellaneous">Miscellaneous</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="appendix.html#trading-calendar-api">Trading Calendar API</a></li>
+</ul>
+</li>
 </ul>
 
-            
           
-        </div>
+        
       </div>
+      &nbsp;
     </nav>
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">Catalyst</a>
-        
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Catalyst</a>
       </nav>
 
 
+      
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="index.html">Docs</a> &raquo;</li>
-        
-      <li>Catalyst Beginner Tutorial</li>
-    
-    
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Catalyst Beginner Tutorial</li>
       <li class="wy-breadcrumbs-aside">
         
-            
+          
             <a href="_sources/beginner-tutorial.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
+          <div role="main" class="document">
             
   <div class="section" id="catalyst-beginner-tutorial">
 <h1>Catalyst Beginner Tutorial<a class="headerlink" href="#catalyst-beginner-tutorial" title="Permalink to this headline">¶</a></h1>
@@ -228,16 +454,16 @@ crypto asset in your universe.</p>
 <h2>My first algorithm<a class="headerlink" href="#my-first-algorithm" title="Permalink to this headline">¶</a></h2>
 <p>Lets take a look at a very simple algorithm from the <code class="docutils literal"><span class="pre">examples</span></code> directory:
 <a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/buy_btc_simple.py">buy_btc_simple.py</a>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">catalyst.api</span> <span class="kn">import</span> <span class="n">order</span><span class="p">,</span> <span class="n">record</span><span class="p">,</span> <span class="n">symbol</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">catalyst.api</span> <span class="kn">import</span> <span class="n">order</span><span class="p">,</span> <span class="n">record</span><span class="p">,</span> <span class="n">symbol</span>
 
 
 <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
-    <span class="n">context</span><span class="o">.</span><span class="n">asset</span> <span class="o">=</span> <span class="n">symbol</span><span class="p">(</span><span class="s1">&#39;btc_usd&#39;</span><span class="p">)</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">asset</span> <span class="o">=</span> <span class="n">symbol</span><span class="p">(</span><span class="s">&#39;btc_usd&#39;</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">handle_data</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
     <span class="n">order</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">record</span><span class="p">(</span><span class="n">btc</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s1">&#39;price&#39;</span><span class="p">))</span>
+    <span class="n">record</span><span class="p">(</span><span class="n">btc</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s">&#39;price&#39;</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>As you can see, we first have to import some functions we would like to
@@ -262,7 +488,7 @@ pricing data that Catalyst needs to run your simulation through a process called
 form from the Enigma servers (which eventually will migrate to the Enigma Data
 Marketplace), and stores it locally to make it available at runtime.</p>
 <p>In order to ingest data, you need to run a command like the following:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>catalyst ingest-exchange -x bitfinex -i btc_usd
+<div class="highlight-bash"><div class="highlight"><pre>catalyst ingest-exchange -x bitfinex -i btc_usd
 </pre></div>
 </div>
 <p>This instructs Catalyst to download pricing data from the <code class="docutils literal"><span class="pre">Bitfinex</span></code> exchange
@@ -272,10 +498,10 @@ our algorithm using historical pricing data from the Bitfinex exchange. By
 default, Catalyst assumes that you want data with <code class="docutils literal"><span class="pre">daily</span></code> frequency (one candle
 bar per day). If you want instead <code class="docutils literal"><span class="pre">minute</span></code> frequency (one candle bar for every
 minute), you would need to specify it as follows:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>catalyst ingest-exchange -x bitfinex -i btc_usd -f minute
+<div class="highlight-bash"><div class="highlight"><pre>catalyst ingest-exchange -x bitfinex -i btc_usd -f minute
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">Ingesting</span> <span class="n">exchange</span> <span class="n">bundle</span> <span class="n">bitfinex</span><span class="o">...</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Ingesting</span> <span class="n">exchange</span> <span class="n">bundle</span> <span class="n">bitfinex</span><span class="o">...</span>
   <span class="p">[</span><span class="o">====================================</span><span class="p">]</span>  <span class="n">Ingesting</span> <span class="n">daily</span> <span class="n">price</span> <span class="n">data</span> <span class="n">on</span> <span class="n">bitfinex</span><span class="p">:</span>  <span class="mi">100</span><span class="o">%</span>
 </pre></div>
 </div>
@@ -302,7 +528,7 @@ to the exchange.</li>
 <p>The <code class="docutils literal"><span class="pre">ingest-exchange</span></code> command in catalyst offers additional parameters to
 further tweak the data ingestion process. You can learn more by running the
 following from the command line:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>catalyst ingest-exchange --help
+<div class="highlight-bash"><div class="highlight"><pre>catalyst ingest-exchange --help
 </pre></div>
 </div>
 </div>
@@ -327,11 +553,11 @@ have assimilated the contents of this tutorial.</p>
 <p>After you installed Catalyst, you should be able to execute the following
 from your command line (e.g. <code class="docutils literal"><span class="pre">cmd.exe</span></code> or the <code class="docutils literal"><span class="pre">Anaconda</span> <span class="pre">Prompt</span></code> on Windows,
 or the Terminal application on MacOS).</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>$ catalyst --help
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>catalyst --help
 </pre></div>
 </div>
 <p>This is the resulting output, simplified for educational purposes:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">Usage</span><span class="p">:</span> <span class="n">catalyst</span> <span class="p">[</span><span class="n">OPTIONS</span><span class="p">]</span> <span class="n">COMMAND</span> <span class="p">[</span><span class="n">ARGS</span><span class="p">]</span><span class="o">...</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Usage</span><span class="p">:</span> <span class="n">catalyst</span> <span class="p">[</span><span class="n">OPTIONS</span><span class="p">]</span> <span class="n">COMMAND</span> <span class="p">[</span><span class="n">ARGS</span><span class="p">]</span><span class="o">...</span>
 
   <span class="n">Top</span> <span class="n">level</span> <span class="n">catalyst</span> <span class="n">entry</span> <span class="n">point</span><span class="o">.</span>
 
@@ -352,10 +578,10 @@ given exchange, and the third mode <code class="docutils literal"><span class="p
 trading live with it.</p>
 <p>Let’s start with backtesting, so run this other command to learn more about
 the available options:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>$ catalyst run --help
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>catalyst run --help
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">Usage</span><span class="p">:</span> <span class="n">catalyst</span> <span class="n">run</span> <span class="p">[</span><span class="n">OPTIONS</span><span class="p">]</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Usage</span><span class="p">:</span> <span class="n">catalyst</span> <span class="n">run</span> <span class="p">[</span><span class="n">OPTIONS</span><span class="p">]</span>
 
   <span class="n">Run</span> <span class="n">a</span> <span class="n">backtest</span> <span class="k">for</span> <span class="n">the</span> <span class="n">given</span> <span class="n">algorithm</span><span class="o">.</span>
 
@@ -364,7 +590,7 @@ the available options:</p>
   <span class="o">-</span><span class="n">t</span><span class="p">,</span> <span class="o">--</span><span class="n">algotext</span> <span class="n">TEXT</span>             <span class="n">The</span> <span class="n">algorithm</span> <span class="n">script</span> <span class="n">to</span> <span class="n">run</span><span class="o">.</span>
   <span class="o">-</span><span class="n">D</span><span class="p">,</span> <span class="o">--</span><span class="n">define</span> <span class="n">TEXT</span>               <span class="n">Define</span> <span class="n">a</span> <span class="n">name</span> <span class="n">to</span> <span class="n">be</span> <span class="n">bound</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">namespace</span>
                                   <span class="n">before</span> <span class="n">executing</span> <span class="n">the</span> <span class="n">algotext</span><span class="o">.</span> <span class="n">For</span> <span class="n">example</span>
-                                  <span class="s1">&#39;-Dname=value&#39;</span><span class="o">.</span> <span class="n">The</span> <span class="n">value</span> <span class="n">may</span> <span class="n">be</span> <span class="nb">any</span> <span class="n">python</span>
+                                  <span class="s">&#39;-Dname=value&#39;</span><span class="o">.</span> <span class="n">The</span> <span class="n">value</span> <span class="n">may</span> <span class="n">be</span> <span class="nb">any</span> <span class="n">python</span>
                                   <span class="n">expression</span><span class="o">.</span> <span class="n">These</span> <span class="n">are</span> <span class="n">evaluated</span> <span class="ow">in</span> <span class="n">order</span> <span class="n">so</span>
                                   <span class="n">they</span> <span class="n">may</span> <span class="n">refer</span> <span class="n">to</span> <span class="n">previously</span> <span class="n">defined</span> <span class="n">names</span><span class="o">.</span>
   <span class="o">--</span><span class="n">data</span><span class="o">-</span><span class="n">frequency</span> <span class="p">[</span><span class="n">daily</span><span class="o">|</span><span class="n">minute</span><span class="p">]</span>
@@ -379,7 +605,7 @@ the available options:</p>
   <span class="o">-</span><span class="n">s</span><span class="p">,</span> <span class="o">--</span><span class="n">start</span> <span class="n">DATE</span>                <span class="n">The</span> <span class="n">start</span> <span class="n">date</span> <span class="n">of</span> <span class="n">the</span> <span class="n">simulation</span><span class="o">.</span>
   <span class="o">-</span><span class="n">e</span><span class="p">,</span> <span class="o">--</span><span class="n">end</span> <span class="n">DATE</span>                  <span class="n">The</span> <span class="n">end</span> <span class="n">date</span> <span class="n">of</span> <span class="n">the</span> <span class="n">simulation</span><span class="o">.</span>
   <span class="o">-</span><span class="n">o</span><span class="p">,</span> <span class="o">--</span><span class="n">output</span> <span class="n">FILENAME</span>           <span class="n">The</span> <span class="n">location</span> <span class="n">to</span> <span class="n">write</span> <span class="n">the</span> <span class="n">perf</span> <span class="n">data</span><span class="o">.</span> <span class="n">If</span> <span class="n">this</span>
-                                  <span class="ow">is</span> <span class="s1">&#39;-&#39;</span> <span class="n">the</span> <span class="n">perf</span> <span class="n">will</span> <span class="n">be</span> <span class="n">written</span> <span class="n">to</span> <span class="n">stdout</span><span class="o">.</span>
+                                  <span class="ow">is</span> <span class="s">&#39;-&#39;</span> <span class="n">the</span> <span class="n">perf</span> <span class="n">will</span> <span class="n">be</span> <span class="n">written</span> <span class="n">to</span> <span class="n">stdout</span><span class="o">.</span>
                                   <span class="p">[</span><span class="n">default</span><span class="p">:</span> <span class="o">-</span><span class="p">]</span>
   <span class="o">--</span><span class="k">print</span><span class="o">-</span><span class="n">algo</span> <span class="o">/</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="k">print</span><span class="o">-</span><span class="n">algo</span>  <span class="n">Print</span> <span class="n">the</span> <span class="n">algorithm</span> <span class="n">to</span> <span class="n">stdout</span><span class="o">.</span>
   <span class="o">-</span><span class="n">x</span><span class="p">,</span> <span class="o">--</span><span class="n">exchange</span><span class="o">-</span><span class="n">name</span> <span class="p">[</span><span class="n">poloniex</span><span class="o">|</span><span class="n">bitfinex</span><span class="o">|</span><span class="n">bittrex</span><span class="o">|</span><span class="n">binance</span><span class="p">]</span>
@@ -406,10 +632,10 @@ conveniently pass to the <code class="docutils literal"><span class="pre">-c</sp
 command line args all the time.</p>
 <p>Thus, to execute our algorithm from above and save the results to
 <code class="docutils literal"><span class="pre">buy_btc_simple_out.pickle</span></code> we would call <code class="docutils literal"><span class="pre">catalyst</span> <span class="pre">run</span></code> as follows:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>catalyst run -f buy_btc_simple.py -x bitfinex --start <span class="m">2016</span>-1-1 --end <span class="m">2017</span>-9-30 -c usd --capital-base <span class="m">100000</span> -o buy_btc_simple_out.pickle
+<div class="highlight-bash"><div class="highlight"><pre>catalyst run -f buy_btc_simple.py -x bitfinex --start 2016-1-1 --end 2017-9-30 -c usd --capital-base <span class="m">100000</span> -o buy_btc_simple_out.pickle
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">INFO</span><span class="p">:</span> <span class="n">run_algo</span><span class="p">:</span> <span class="n">running</span> <span class="n">algo</span> <span class="ow">in</span> <span class="n">backtest</span> <span class="n">mode</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">INFO</span><span class="p">:</span> <span class="n">run_algo</span><span class="p">:</span> <span class="n">running</span> <span class="n">algo</span> <span class="ow">in</span> <span class="n">backtest</span> <span class="n">mode</span>
 <span class="n">INFO</span><span class="p">:</span> <span class="n">exchange_algorithm</span><span class="p">:</span> <span class="n">initialized</span> <span class="n">trading</span> <span class="n">algorithm</span> <span class="ow">in</span> <span class="n">backtest</span> <span class="n">mode</span>
 <span class="n">INFO</span><span class="p">:</span> <span class="n">Performance</span><span class="p">:</span> <span class="n">Simulated</span> <span class="mi">639</span> <span class="n">trading</span> <span class="n">days</span> <span class="n">out</span> <span class="n">of</span> <span class="mf">639.</span>
 <span class="n">INFO</span><span class="p">:</span> <span class="n">Performance</span><span class="p">:</span> <span class="n">first</span> <span class="nb">open</span><span class="p">:</span> <span class="mi">2016</span><span class="o">-</span><span class="mo">01</span><span class="o">-</span><span class="mo">01</span> <span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="o">+</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span>
@@ -434,13 +660,13 @@ the fantastic <code class="docutils literal"><span class="pre">pandas</span></co
 <code class="docutils literal"><span class="pre">catalyst</span></code> makes heavy usage of <a class="reference external" href="http://pandas.pydata.org/">pandas</a>,
 especially for data analysis and outputting so it’s worth spending some time to
 learn it.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
-<span class="n">perf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="s1">&#39;buy_btc_simple_out.pickle&#39;</span><span class="p">)</span> <span class="c1"># read in perf DataFrame</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="n">perf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="s">&#39;buy_btc_simple_out.pickle&#39;</span><span class="p">)</span> <span class="c"># read in perf DataFrame</span>
 <span class="k">print</span><span class="p">(</span><span class="n">perf</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
 </pre></div>
 </div>
 <p>Which we execute by running:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>$ python print_results.py
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>python print_results.py
 </pre></div>
 </div>
 <div style="max-height:1000px;max-width:1500px;overflow:auto;">
@@ -613,23 +839,23 @@ which is the pandas dataframe containing the performance data for our algorithm
 that we reviewed above. Inside the <code class="docutils literal"><span class="pre">analyze()</span></code> function is where we can
 analyze and visualize the results of our strategy. Here’s the revised simple
 algorithm (note the addition of Line 1, and Lines 11-18)</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">catalyst.api</span> <span class="kn">import</span> <span class="n">order</span><span class="p">,</span> <span class="n">record</span><span class="p">,</span> <span class="n">symbol</span>
 
 <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
-    <span class="n">context</span><span class="o">.</span><span class="n">asset</span> <span class="o">=</span> <span class="n">symbol</span><span class="p">(</span><span class="s1">&#39;btc_usd&#39;</span><span class="p">)</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">asset</span> <span class="o">=</span> <span class="n">symbol</span><span class="p">(</span><span class="s">&#39;btc_usd&#39;</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">handle_data</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
     <span class="n">order</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">record</span><span class="p">(</span><span class="n">btc</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s1">&#39;price&#39;</span><span class="p">))</span>
+    <span class="n">record</span><span class="p">(</span><span class="n">btc</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s">&#39;price&#39;</span><span class="p">))</span>
 
 <span class="k">def</span> <span class="nf">analyze</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">perf</span><span class="p">):</span>
     <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">211</span><span class="p">)</span>
     <span class="n">perf</span><span class="o">.</span><span class="n">portfolio_value</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
-    <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;portfolio value&#39;</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;portfolio value&#39;</span><span class="p">)</span>
     <span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">212</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
     <span class="n">perf</span><span class="o">.</span><span class="n">btc</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">)</span>
-    <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;bitcoin price&#39;</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;bitcoin price&#39;</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -638,7 +864,7 @@ algorithm (note the addition of Line 1, and Lines 11-18)</p>
 alongside enigma-catalyst (with the exception of the <code class="docutils literal"><span class="pre">Conda</span></code> install, where it
 was included by default inside the conda environment we created). If for any
 reason you don’t have it installed, you can add it by running:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="o">(</span>catalyst<span class="o">)</span>$ pip install matplotlib
+<div class="highlight-bash"><div class="highlight"><pre><span class="o">(</span>catalyst<span class="o">)</span><span class="nv">$ </span>pip install matplotlib
 </pre></div>
 </div>
 <p>If everything works well, you’ll see the following chart:</p>
@@ -651,11 +877,11 @@ only bought bitcoin every chance it got.</p>
 results refer to <a class="reference external" href="install.html#macos-virtualenv-matplotlib">MacOS + Matplotlib</a>.
 Alternatively, some users have reported the following error when running an algo
 in a Linux environment:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="ne">ImportError</span><span class="p">:</span> <span class="n">No</span> <span class="n">module</span> <span class="n">named</span> <span class="n">_tkinter</span><span class="p">,</span> <span class="n">please</span> <span class="n">install</span> <span class="n">the</span> <span class="n">python</span><span class="o">-</span><span class="n">tk</span> <span class="n">package</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="ne">ImportError</span><span class="p">:</span> <span class="n">No</span> <span class="n">module</span> <span class="n">named</span> <span class="n">_tkinter</span><span class="p">,</span> <span class="n">please</span> <span class="n">install</span> <span class="n">the</span> <span class="n">python</span><span class="o">-</span><span class="n">tk</span> <span class="n">package</span>
 </pre></div>
 </div>
 <p>Which can easily solved by running (in Ubuntu/Debian-based systems):</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">tk</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">tk</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -687,7 +913,7 @@ follow. Most of the added some complexity has been added to beautify the output,
 which you can skim through for now. A copy of this algorithm is available in
 the <code class="docutils literal"><span class="pre">examples</span></code> directory:
 <a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/dual_moving_average.py">dual_moving_average.py</a>.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
 <span class="kn">from</span> <span class="nn">logbook</span> <span class="kn">import</span> <span class="n">Logger</span>
@@ -696,101 +922,101 @@ the <code class="docutils literal"><span class="pre">examples</span></code> dire
 <span class="kn">from</span> <span class="nn">catalyst.api</span> <span class="kn">import</span> <span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">order_target_percent</span><span class="p">,)</span>
 <span class="kn">from</span> <span class="nn">catalyst.exchange.utils.stats_utils</span> <span class="kn">import</span> <span class="n">extract_transactions</span>
 
-<span class="n">NAMESPACE</span> <span class="o">=</span> <span class="s1">&#39;dual_moving_average&#39;</span>
+<span class="n">NAMESPACE</span> <span class="o">=</span> <span class="s">&#39;dual_moving_average&#39;</span>
 <span class="n">log</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(</span><span class="n">NAMESPACE</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
     <span class="n">context</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">context</span><span class="o">.</span><span class="n">asset</span> <span class="o">=</span> <span class="n">symbol</span><span class="p">(</span><span class="s1">&#39;ltc_usd&#39;</span><span class="p">)</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">asset</span> <span class="o">=</span> <span class="n">symbol</span><span class="p">(</span><span class="s">&#39;ltc_usd&#39;</span><span class="p">)</span>
     <span class="n">context</span><span class="o">.</span><span class="n">base_price</span> <span class="o">=</span> <span class="bp">None</span>
 
 
 <span class="k">def</span> <span class="nf">handle_data</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-    <span class="c1"># define the windows for the moving averages</span>
+    <span class="c"># define the windows for the moving averages</span>
     <span class="n">short_window</span> <span class="o">=</span> <span class="mi">50</span>
     <span class="n">long_window</span> <span class="o">=</span> <span class="mi">200</span>
 
-    <span class="c1"># Skip as many bars as long_window to properly compute the average</span>
+    <span class="c"># Skip as many bars as long_window to properly compute the average</span>
     <span class="n">context</span><span class="o">.</span><span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="k">if</span> <span class="n">context</span><span class="o">.</span><span class="n">i</span> <span class="o">&lt;</span> <span class="n">long_window</span><span class="p">:</span>
         <span class="k">return</span>
 
-    <span class="c1"># Compute moving averages calling data.history() for each</span>
-    <span class="c1"># moving average with the appropriate parameters. We choose to use</span>
-    <span class="c1"># minute bars for this simulation -&gt; freq=&quot;1m&quot;</span>
-    <span class="c1"># Returns a pandas dataframe.</span>
+    <span class="c"># Compute moving averages calling data.history() for each</span>
+    <span class="c"># moving average with the appropriate parameters. We choose to use</span>
+    <span class="c"># minute bars for this simulation -&gt; freq=&quot;1m&quot;</span>
+    <span class="c"># Returns a pandas dataframe.</span>
     <span class="n">short_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">history</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span>
-                              <span class="s1">&#39;price&#39;</span><span class="p">,</span>
+                              <span class="s">&#39;price&#39;</span><span class="p">,</span>
                               <span class="n">bar_count</span><span class="o">=</span><span class="n">short_window</span><span class="p">,</span>
-                              <span class="n">frequency</span><span class="o">=</span><span class="s2">&quot;1T&quot;</span><span class="p">,</span>
+                              <span class="n">frequency</span><span class="o">=</span><span class="s">&quot;1T&quot;</span><span class="p">,</span>
                               <span class="p">)</span>
     <span class="n">short_mavg</span> <span class="o">=</span> <span class="n">short_data</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
     <span class="n">long_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">history</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span>
-                             <span class="s1">&#39;price&#39;</span><span class="p">,</span>
+                             <span class="s">&#39;price&#39;</span><span class="p">,</span>
                              <span class="n">bar_count</span><span class="o">=</span><span class="n">long_window</span><span class="p">,</span>
-                             <span class="n">frequency</span><span class="o">=</span><span class="s2">&quot;1T&quot;</span><span class="p">,</span>
+                             <span class="n">frequency</span><span class="o">=</span><span class="s">&quot;1T&quot;</span><span class="p">,</span>
                              <span class="p">)</span>
     <span class="n">long_mavg</span> <span class="o">=</span> <span class="n">long_data</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 
-    <span class="c1"># Let&#39;s keep the price of our asset in a more handy variable</span>
-    <span class="n">price</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s1">&#39;price&#39;</span><span class="p">)</span>
+    <span class="c"># Let&#39;s keep the price of our asset in a more handy variable</span>
+    <span class="n">price</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s">&#39;price&#39;</span><span class="p">)</span>
 
-    <span class="c1"># If base_price is not set, we use the current value. This is the</span>
-    <span class="c1"># price at the first bar which we reference to calculate price_change.</span>
+    <span class="c"># If base_price is not set, we use the current value. This is the</span>
+    <span class="c"># price at the first bar which we reference to calculate price_change.</span>
     <span class="k">if</span> <span class="n">context</span><span class="o">.</span><span class="n">base_price</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">context</span><span class="o">.</span><span class="n">base_price</span> <span class="o">=</span> <span class="n">price</span>
     <span class="n">price_change</span> <span class="o">=</span> <span class="p">(</span><span class="n">price</span> <span class="o">-</span> <span class="n">context</span><span class="o">.</span><span class="n">base_price</span><span class="p">)</span> <span class="o">/</span> <span class="n">context</span><span class="o">.</span><span class="n">base_price</span>
 
-    <span class="c1"># Save values for later inspection</span>
+    <span class="c"># Save values for later inspection</span>
     <span class="n">record</span><span class="p">(</span><span class="n">price</span><span class="o">=</span><span class="n">price</span><span class="p">,</span>
            <span class="n">cash</span><span class="o">=</span><span class="n">context</span><span class="o">.</span><span class="n">portfolio</span><span class="o">.</span><span class="n">cash</span><span class="p">,</span>
            <span class="n">price_change</span><span class="o">=</span><span class="n">price_change</span><span class="p">,</span>
            <span class="n">short_mavg</span><span class="o">=</span><span class="n">short_mavg</span><span class="p">,</span>
            <span class="n">long_mavg</span><span class="o">=</span><span class="n">long_mavg</span><span class="p">)</span>
 
-    <span class="c1"># Since we are using limit orders, some orders may not execute immediately</span>
-    <span class="c1"># we wait until all orders are executed before considering more trades.</span>
+    <span class="c"># Since we are using limit orders, some orders may not execute immediately</span>
+    <span class="c"># we wait until all orders are executed before considering more trades.</span>
     <span class="n">orders</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">blotter</span><span class="o">.</span><span class="n">open_orders</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">orders</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span>
 
-    <span class="c1"># Exit if we cannot trade</span>
+    <span class="c"># Exit if we cannot trade</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="o">.</span><span class="n">can_trade</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">):</span>
         <span class="k">return</span>
 
-    <span class="c1"># We check what&#39;s our position on our portfolio and trade accordingly</span>
+    <span class="c"># We check what&#39;s our position on our portfolio and trade accordingly</span>
     <span class="n">pos_amount</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">portfolio</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">]</span><span class="o">.</span><span class="n">amount</span>
 
-    <span class="c1"># Trading logic</span>
+    <span class="c"># Trading logic</span>
     <span class="k">if</span> <span class="n">short_mavg</span> <span class="o">&gt;</span> <span class="n">long_mavg</span> <span class="ow">and</span> <span class="n">pos_amount</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="c1"># we buy 100% of our portfolio for this asset</span>
+        <span class="c"># we buy 100% of our portfolio for this asset</span>
         <span class="n">order_target_percent</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">short_mavg</span> <span class="o">&lt;</span> <span class="n">long_mavg</span> <span class="ow">and</span> <span class="n">pos_amount</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="c1"># we sell all our positions for this asset</span>
+        <span class="c"># we sell all our positions for this asset</span>
         <span class="n">order_target_percent</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">analyze</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">perf</span><span class="p">):</span>
-    <span class="c1"># Get the quote_currency that was passed as a parameter to the simulation</span>
+    <span class="c"># Get the quote_currency that was passed as a parameter to the simulation</span>
     <span class="n">exchange</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">exchanges</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">quote_currency</span> <span class="o">=</span> <span class="n">exchange</span><span class="o">.</span><span class="n">quote_currency</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
 
-    <span class="c1"># First chart: Plot portfolio value using quote_currency</span>
+    <span class="c"># First chart: Plot portfolio value using quote_currency</span>
     <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">411</span><span class="p">)</span>
-    <span class="n">perf</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;portfolio_value&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
+    <span class="n">perf</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s">&#39;portfolio_value&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
     <span class="n">ax1</span><span class="o">.</span><span class="n">legend_</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
-    <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Portfolio Value</span><span class="se">\n</span><span class="s1">({})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">quote_currency</span><span class="p">))</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Portfolio Value</span><span class="se">\n</span><span class="s">({})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">quote_currency</span><span class="p">))</span>
     <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>
     <span class="n">ax1</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">/</span> <span class="mi">5</span><span class="p">))</span>
 
-    <span class="c1"># Second chart: Plot asset price, moving averages and buys/sells</span>
+    <span class="c"># Second chart: Plot asset price, moving averages and buys/sells</span>
     <span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">412</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
-    <span class="n">perf</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;price&#39;</span><span class="p">,</span> <span class="s1">&#39;short_mavg&#39;</span><span class="p">,</span> <span class="s1">&#39;long_mavg&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">perf</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s">&#39;price&#39;</span><span class="p">,</span> <span class="s">&#39;short_mavg&#39;</span><span class="p">,</span> <span class="s">&#39;long_mavg&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
         <span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">,</span>
-        <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Price&#39;</span><span class="p">)</span>
+        <span class="n">label</span><span class="o">=</span><span class="s">&#39;Price&#39;</span><span class="p">)</span>
     <span class="n">ax2</span><span class="o">.</span><span class="n">legend_</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
-    <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;{asset}</span><span class="se">\n</span><span class="s1">({quote})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;{asset}</span><span class="se">\n</span><span class="s">({quote})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
         <span class="n">asset</span><span class="o">=</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span>
         <span class="n">quote</span><span class="o">=</span><span class="n">quote_currency</span>
     <span class="p">))</span>
@@ -799,72 +1025,72 @@ the <code class="docutils literal"><span class="pre">examples</span></code> dire
 
     <span class="n">transaction_df</span> <span class="o">=</span> <span class="n">extract_transactions</span><span class="p">(</span><span class="n">perf</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">transaction_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
-        <span class="n">buy_df</span> <span class="o">=</span> <span class="n">transaction_df</span><span class="p">[</span><span class="n">transaction_df</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
-        <span class="n">sell_df</span> <span class="o">=</span> <span class="n">transaction_df</span><span class="p">[</span><span class="n">transaction_df</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">buy_df</span> <span class="o">=</span> <span class="n">transaction_df</span><span class="p">[</span><span class="n">transaction_df</span><span class="p">[</span><span class="s">&#39;amount&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">sell_df</span> <span class="o">=</span> <span class="n">transaction_df</span><span class="p">[</span><span class="n">transaction_df</span><span class="p">[</span><span class="s">&#39;amount&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span>
         <span class="n">ax2</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
             <span class="n">buy_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_pydatetime</span><span class="p">(),</span>
-            <span class="n">perf</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">buy_df</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;price&#39;</span><span class="p">],</span>
-            <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;^&#39;</span><span class="p">,</span>
+            <span class="n">perf</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">buy_df</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="s">&#39;price&#39;</span><span class="p">],</span>
+            <span class="n">marker</span><span class="o">=</span><span class="s">&#39;^&#39;</span><span class="p">,</span>
             <span class="n">s</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-            <span class="n">c</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">,</span>
-            <span class="n">label</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+            <span class="n">c</span><span class="o">=</span><span class="s">&#39;green&#39;</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="s">&#39;&#39;</span>
         <span class="p">)</span>
         <span class="n">ax2</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
             <span class="n">sell_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_pydatetime</span><span class="p">(),</span>
-            <span class="n">perf</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">sell_df</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;price&#39;</span><span class="p">],</span>
-            <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;v&#39;</span><span class="p">,</span>
+            <span class="n">perf</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">sell_df</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="s">&#39;price&#39;</span><span class="p">],</span>
+            <span class="n">marker</span><span class="o">=</span><span class="s">&#39;v&#39;</span><span class="p">,</span>
             <span class="n">s</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-            <span class="n">c</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span>
-            <span class="n">label</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+            <span class="n">c</span><span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="s">&#39;&#39;</span>
         <span class="p">)</span>
 
-    <span class="c1"># Third chart: Compare percentage change between our portfolio</span>
-    <span class="c1"># and the price of the asset</span>
+    <span class="c"># Third chart: Compare percentage change between our portfolio</span>
+    <span class="c"># and the price of the asset</span>
     <span class="n">ax3</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">413</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
-    <span class="n">perf</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;algorithm_period_return&#39;</span><span class="p">,</span> <span class="s1">&#39;price_change&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax3</span><span class="p">)</span>
+    <span class="n">perf</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s">&#39;algorithm_period_return&#39;</span><span class="p">,</span> <span class="s">&#39;price_change&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax3</span><span class="p">)</span>
     <span class="n">ax3</span><span class="o">.</span><span class="n">legend_</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
-    <span class="n">ax3</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Percent Change&#39;</span><span class="p">)</span>
+    <span class="n">ax3</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Percent Change&#39;</span><span class="p">)</span>
     <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">ax3</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>
     <span class="n">ax3</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">/</span> <span class="mi">5</span><span class="p">))</span>
 
-    <span class="c1"># Fourth chart: Plot our cash</span>
+    <span class="c"># Fourth chart: Plot our cash</span>
     <span class="n">ax4</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">414</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
     <span class="n">perf</span><span class="o">.</span><span class="n">cash</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax4</span><span class="p">)</span>
-    <span class="n">ax4</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Cash</span><span class="se">\n</span><span class="s1">({})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">quote_currency</span><span class="p">))</span>
+    <span class="n">ax4</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Cash</span><span class="se">\n</span><span class="s">({})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">quote_currency</span><span class="p">))</span>
     <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">ax4</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>
     <span class="n">ax4</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">end</span> <span class="o">/</span> <span class="mi">5</span><span class="p">))</span>
 
     <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
 
     <span class="n">run_algorithm</span><span class="p">(</span>
             <span class="n">capital_base</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
-            <span class="n">data_frequency</span><span class="o">=</span><span class="s1">&#39;minute&#39;</span><span class="p">,</span>
+            <span class="n">data_frequency</span><span class="o">=</span><span class="s">&#39;minute&#39;</span><span class="p">,</span>
             <span class="n">initialize</span><span class="o">=</span><span class="n">initialize</span><span class="p">,</span>
             <span class="n">handle_data</span><span class="o">=</span><span class="n">handle_data</span><span class="p">,</span>
             <span class="n">analyze</span><span class="o">=</span><span class="n">analyze</span><span class="p">,</span>
-            <span class="n">exchange_name</span><span class="o">=</span><span class="s1">&#39;bitfinex&#39;</span><span class="p">,</span>
+            <span class="n">exchange_name</span><span class="o">=</span><span class="s">&#39;bitfinex&#39;</span><span class="p">,</span>
             <span class="n">algo_namespace</span><span class="o">=</span><span class="n">NAMESPACE</span><span class="p">,</span>
-            <span class="n">quote_currency</span><span class="o">=</span><span class="s1">&#39;usd&#39;</span><span class="p">,</span>
-            <span class="n">start</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="s1">&#39;2017-9-22&#39;</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
-            <span class="n">end</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="s1">&#39;2017-9-23&#39;</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">quote_currency</span><span class="o">=</span><span class="s">&#39;usd&#39;</span><span class="p">,</span>
+            <span class="n">start</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="s">&#39;2017-9-22&#39;</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">end</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="s">&#39;2017-9-23&#39;</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
         <span class="p">)</span>
 </pre></div>
 </div>
 <p>In order to run the code above, you have to ingest the needed data first:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>catalyst ingest-exchange -x bitfinex -f minute -i ltc_usd
+<div class="highlight-bash"><div class="highlight"><pre>catalyst ingest-exchange -x bitfinex -f minute -i ltc_usd
 </pre></div>
 </div>
 <p>And then run the code above with the following command:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>catalyst run -f dual_moving_average.py -x bitfinex -s <span class="m">2017</span>-9-22 -e <span class="m">2017</span>-9-23 --capital-base <span class="m">1000</span> --quote-currency usd --data-frequency minute -o out.pickle
+<div class="highlight-bash"><div class="highlight"><pre>catalyst run -f dual_moving_average.py -x bitfinex -s 2017-9-22 -e 2017-9-23 --capital-base <span class="m">1000</span> --quote-currency usd --data-frequency minute -o out.pickle
 </pre></div>
 </div>
 <p>Alternatively, we can make use of the <code class="docutils literal"><span class="pre">run_algorithm()</span></code> function included at
 the end of the file, where we can specify all the simulation parameters, and
 execute this file as a Python script:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>python dual_moving_average.py
+<div class="highlight-bash"><div class="highlight"><pre>python dual_moving_average.py
 </pre></div>
 </div>
 <p>Either way, we obtain the following charts:</p>
@@ -925,11 +1151,11 @@ running algorithms through the command line.</p>
 <p>In order to use Jupyter Notebook, you first have to install it inside your
 environment. It’s available as <code class="docutils literal"><span class="pre">pip</span></code> package, so regardless of how you
 installed Catalyst, go inside your catalyst environment and run:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="o">(</span>catalyst<span class="o">)</span>$ pip install jupyter
+<div class="highlight-bash"><div class="highlight"><pre><span class="o">(</span>catalyst<span class="o">)</span><span class="nv">$ </span>pip install jupyter
 </pre></div>
 </div>
 <p>Once you have Jupyter Notebook installed, every time you want to use it run:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="o">(</span>catalyst<span class="o">)</span>$ jupyter notebook
+<div class="highlight-bash"><div class="highlight"><pre><span class="o">(</span>catalyst<span class="o">)</span><span class="nv">$ </span>jupyter notebook
 </pre></div>
 </div>
 <p>A local server will launch, and will open a new window on your browser. That’s
@@ -940,7 +1166,7 @@ the interface through which you will interact with Jupyter Notebook.</p>
 <p>Before running your algorithms inside the Jupyter Notebook, remember to ingest
 the data from the command line interface (CLI). In the example below, you would
 need to run first:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>catalyst ingest-exchange -x bitfinex -i btc_usd
+<div class="highlight-bash"><div class="highlight"><pre>catalyst ingest-exchange -x bitfinex -i btc_usd
 </pre></div>
 </div>
 <p>To use Catalyst inside a Jupyter Noebook, you have to write your algorithm in a
@@ -951,18 +1177,18 @@ takes the same arguments as the command line interface. Thus to run the
 algorithm just supply the same parameters as the CLI but without the -f
 and -o arguments. We just have to execute the following cell after
 importing <code class="docutils literal"><span class="pre">catalyst</span></code> to register the magic.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Register the catalyst magic</span>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Register the catalyst magic</span>
 <span class="o">%</span><span class="n">load_ext</span> <span class="n">catalyst</span>
 </pre></div>
 </div>
-<div class="code python highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Setup matplotlib to display graphs inline in this Notebook</span>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># Setup matplotlib to display graphs inline in this Notebook</span>
 <span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
 </pre></div>
 </div>
 <p>Note below that we do not have to specify an input file (-f) since the
 magic will use the contents of the cell and look for your algorithm
 functions.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">catalyst</span> <span class="o">--</span><span class="n">start</span> <span class="mi">2015</span><span class="o">-</span><span class="mi">3</span><span class="o">-</span><span class="mi">2</span> <span class="o">--</span><span class="n">end</span> <span class="mi">2017</span><span class="o">-</span><span class="mi">6</span><span class="o">-</span><span class="mi">28</span> <span class="o">--</span><span class="n">capital</span><span class="o">-</span><span class="n">base</span> <span class="mi">100000</span> <span class="o">-</span><span class="n">x</span> <span class="n">bitfinex</span> <span class="o">-</span><span class="n">c</span> <span class="n">usd</span>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="o">%%</span><span class="n">catalyst</span> <span class="o">--</span><span class="n">start</span> <span class="mi">2015</span><span class="o">-</span><span class="mi">3</span><span class="o">-</span><span class="mi">2</span> <span class="o">--</span><span class="n">end</span> <span class="mi">2017</span><span class="o">-</span><span class="mi">6</span><span class="o">-</span><span class="mi">28</span> <span class="o">--</span><span class="n">capital</span><span class="o">-</span><span class="n">base</span> <span class="mi">100000</span> <span class="o">-</span><span class="n">x</span> <span class="n">bitfinex</span> <span class="o">-</span><span class="n">c</span> <span class="n">usd</span>
 
 <span class="kn">from</span> <span class="nn">catalyst.finance.slippage</span> <span class="kn">import</span> <span class="n">VolumeShareSlippage</span>
 
@@ -975,13 +1201,13 @@ functions.</p>
 <span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
-    <span class="n">context</span><span class="o">.</span><span class="n">ASSET_NAME</span> <span class="o">=</span> <span class="s1">&#39;btc_usd&#39;</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">ASSET_NAME</span> <span class="o">=</span> <span class="s">&#39;btc_usd&#39;</span>
     <span class="n">context</span><span class="o">.</span><span class="n">TARGET_HODL_RATIO</span> <span class="o">=</span> <span class="mf">0.8</span>
     <span class="n">context</span><span class="o">.</span><span class="n">RESERVE_RATIO</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">context</span><span class="o">.</span><span class="n">TARGET_HODL_RATIO</span>
 
-    <span class="c1"># For all trading pairs in the poloniex bundle, the default denomination</span>
-    <span class="c1"># currently supported by Catalyst is 1/1000th of a full coin. Use this</span>
-    <span class="c1"># constant to scale the price of up to that of a full coin if desired.</span>
+    <span class="c"># For all trading pairs in the poloniex bundle, the default denomination</span>
+    <span class="c"># currently supported by Catalyst is 1/1000th of a full coin. Use this</span>
+    <span class="c"># constant to scale the price of up to that of a full coin if desired.</span>
     <span class="n">context</span><span class="o">.</span><span class="n">TICK_SIZE</span> <span class="o">=</span> <span class="mf">1000.0</span>
 
     <span class="n">context</span><span class="o">.</span><span class="n">is_buying</span> <span class="o">=</span> <span class="bp">True</span>
@@ -996,22 +1222,22 @@ functions.</p>
     <span class="n">target_hodl_value</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">TARGET_HODL_RATIO</span> <span class="o">*</span> <span class="n">starting_cash</span>
     <span class="n">reserve_value</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">RESERVE_RATIO</span> <span class="o">*</span> <span class="n">starting_cash</span>
 
-    <span class="c1"># Cancel any outstanding orders</span>
+    <span class="c"># Cancel any outstanding orders</span>
     <span class="n">orders</span> <span class="o">=</span> <span class="n">get_open_orders</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">order</span> <span class="ow">in</span> <span class="n">orders</span><span class="p">:</span>
         <span class="n">cancel_order</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
 
-    <span class="c1"># Stop buying after passing the reserve threshold</span>
+    <span class="c"># Stop buying after passing the reserve threshold</span>
     <span class="n">cash</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">portfolio</span><span class="o">.</span><span class="n">cash</span>
     <span class="k">if</span> <span class="n">cash</span> <span class="o">&lt;=</span> <span class="n">reserve_value</span><span class="p">:</span>
         <span class="n">context</span><span class="o">.</span><span class="n">is_buying</span> <span class="o">=</span> <span class="bp">False</span>
 
-    <span class="c1"># Retrieve current asset price from pricing data</span>
-    <span class="n">price</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s1">&#39;price&#39;</span><span class="p">)</span>
+    <span class="c"># Retrieve current asset price from pricing data</span>
+    <span class="n">price</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s">&#39;price&#39;</span><span class="p">)</span>
 
-    <span class="c1"># Check if still buying and could (approximately) afford another purchase</span>
+    <span class="c"># Check if still buying and could (approximately) afford another purchase</span>
     <span class="k">if</span> <span class="n">context</span><span class="o">.</span><span class="n">is_buying</span> <span class="ow">and</span> <span class="n">cash</span> <span class="o">&gt;</span> <span class="n">price</span><span class="p">:</span>
-        <span class="c1"># Place order to make position in asset equal to target_hodl_value</span>
+        <span class="c"># Place order to make position in asset equal to target_hodl_value</span>
         <span class="n">order_target_value</span><span class="p">(</span>
             <span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span>
             <span class="n">target_hodl_value</span><span class="p">,</span>
@@ -1020,7 +1246,7 @@ functions.</p>
 
     <span class="n">record</span><span class="p">(</span>
         <span class="n">price</span><span class="o">=</span><span class="n">price</span><span class="p">,</span>
-        <span class="n">volume</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">),</span>
+        <span class="n">volume</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s">&#39;volume&#39;</span><span class="p">),</span>
         <span class="n">cash</span><span class="o">=</span><span class="n">cash</span><span class="p">,</span>
         <span class="n">starting_cash</span><span class="o">=</span><span class="n">context</span><span class="o">.</span><span class="n">portfolio</span><span class="o">.</span><span class="n">starting_cash</span><span class="p">,</span>
         <span class="n">leverage</span><span class="o">=</span><span class="n">context</span><span class="o">.</span><span class="n">account</span><span class="o">.</span><span class="n">leverage</span><span class="p">,</span>
@@ -1029,70 +1255,70 @@ functions.</p>
 <span class="k">def</span> <span class="nf">analyze</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">results</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 
-    <span class="c1"># Plot the portfolio and asset data.</span>
+    <span class="c"># Plot the portfolio and asset data.</span>
     <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">611</span><span class="p">)</span>
-    <span class="n">results</span><span class="p">[[</span><span class="s1">&#39;portfolio_value&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
-    <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Portfolio Value (USD)&#39;</span><span class="p">)</span>
+    <span class="n">results</span><span class="p">[[</span><span class="s">&#39;portfolio_value&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Portfolio Value (USD)&#39;</span><span class="p">)</span>
 
     <span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">612</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
-    <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;{asset} (USD)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">asset</span><span class="o">=</span><span class="n">context</span><span class="o">.</span><span class="n">ASSET_NAME</span><span class="p">))</span>
-    <span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">TICK_SIZE</span> <span class="o">*</span> <span class="n">results</span><span class="p">[[</span><span class="s1">&#39;price&#39;</span><span class="p">]])</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;{asset} (USD)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">asset</span><span class="o">=</span><span class="n">context</span><span class="o">.</span><span class="n">ASSET_NAME</span><span class="p">))</span>
+    <span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">TICK_SIZE</span> <span class="o">*</span> <span class="n">results</span><span class="p">[[</span><span class="s">&#39;price&#39;</span><span class="p">]])</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">)</span>
 
     <span class="n">trans</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">ix</span><span class="p">[[</span><span class="n">t</span> <span class="o">!=</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">transactions</span><span class="p">]]</span>
     <span class="n">buys</span> <span class="o">=</span> <span class="n">trans</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span>
-        <span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">trans</span><span class="o">.</span><span class="n">transactions</span><span class="p">]</span>
+        <span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;amount&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">trans</span><span class="o">.</span><span class="n">transactions</span><span class="p">]</span>
     <span class="p">]</span>
     <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
         <span class="n">buys</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
         <span class="n">context</span><span class="o">.</span><span class="n">TICK_SIZE</span> <span class="o">*</span> <span class="n">results</span><span class="o">.</span><span class="n">price</span><span class="p">[</span><span class="n">buys</span><span class="o">.</span><span class="n">index</span><span class="p">],</span>
-        <span class="s1">&#39;^&#39;</span><span class="p">,</span>
+        <span class="s">&#39;^&#39;</span><span class="p">,</span>
         <span class="n">markersize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-        <span class="n">color</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="s">&#39;g&#39;</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">ax3</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">613</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
-    <span class="n">results</span><span class="p">[[</span><span class="s1">&#39;leverage&#39;</span><span class="p">,</span> <span class="s1">&#39;alpha&#39;</span><span class="p">,</span> <span class="s1">&#39;beta&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax3</span><span class="p">)</span>
-    <span class="n">ax3</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Leverage &#39;</span><span class="p">)</span>
+    <span class="n">results</span><span class="p">[[</span><span class="s">&#39;leverage&#39;</span><span class="p">,</span> <span class="s">&#39;alpha&#39;</span><span class="p">,</span> <span class="s">&#39;beta&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax3</span><span class="p">)</span>
+    <span class="n">ax3</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Leverage &#39;</span><span class="p">)</span>
 
     <span class="n">ax4</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">614</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
-    <span class="n">results</span><span class="p">[[</span><span class="s1">&#39;starting_cash&#39;</span><span class="p">,</span> <span class="s1">&#39;cash&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax4</span><span class="p">)</span>
-    <span class="n">ax4</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Cash (USD)&#39;</span><span class="p">)</span>
+    <span class="n">results</span><span class="p">[[</span><span class="s">&#39;starting_cash&#39;</span><span class="p">,</span> <span class="s">&#39;cash&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax4</span><span class="p">)</span>
+    <span class="n">ax4</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Cash (USD)&#39;</span><span class="p">)</span>
 
     <span class="n">results</span><span class="p">[[</span>
-        <span class="s1">&#39;treasury&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;algorithm&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;benchmark&#39;</span><span class="p">,</span>
+        <span class="s">&#39;treasury&#39;</span><span class="p">,</span>
+        <span class="s">&#39;algorithm&#39;</span><span class="p">,</span>
+        <span class="s">&#39;benchmark&#39;</span><span class="p">,</span>
     <span class="p">]]</span> <span class="o">=</span> <span class="n">results</span><span class="p">[[</span>
-        <span class="s1">&#39;treasury_period_return&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;algorithm_period_return&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;benchmark_period_return&#39;</span><span class="p">,</span>
+        <span class="s">&#39;treasury_period_return&#39;</span><span class="p">,</span>
+        <span class="s">&#39;algorithm_period_return&#39;</span><span class="p">,</span>
+        <span class="s">&#39;benchmark_period_return&#39;</span><span class="p">,</span>
     <span class="p">]]</span>
 
     <span class="n">ax5</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">615</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
     <span class="n">results</span><span class="p">[[</span>
-        <span class="s1">&#39;treasury&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;algorithm&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;benchmark&#39;</span><span class="p">,</span>
+        <span class="s">&#39;treasury&#39;</span><span class="p">,</span>
+        <span class="s">&#39;algorithm&#39;</span><span class="p">,</span>
+        <span class="s">&#39;benchmark&#39;</span><span class="p">,</span>
     <span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax5</span><span class="p">)</span>
-    <span class="n">ax5</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Percent Change&#39;</span><span class="p">)</span>
+    <span class="n">ax5</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Percent Change&#39;</span><span class="p">)</span>
 
     <span class="n">ax6</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">616</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
-    <span class="n">results</span><span class="p">[[</span><span class="s1">&#39;volume&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax6</span><span class="p">)</span>
-    <span class="n">ax6</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Volume (mCoins/5min)&#39;</span><span class="p">)</span>
+    <span class="n">results</span><span class="p">[[</span><span class="s">&#39;volume&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax6</span><span class="p">)</span>
+    <span class="n">ax6</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Volume (mCoins/5min)&#39;</span><span class="p">)</span>
 
     <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 
-    <span class="c1"># Show the plot.</span>
+    <span class="c"># Show the plot.</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">[</span><span class="mi">2017</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">11</span> <span class="mo">07</span><span class="p">:</span><span class="mi">19</span><span class="p">:</span><span class="mf">46.411748</span><span class="p">]</span> <span class="n">INFO</span><span class="p">:</span> <span class="n">Loader</span><span class="p">:</span> <span class="n">Loading</span> <span class="n">benchmark</span> <span class="n">data</span> <span class="k">for</span> <span class="s1">&#39;USDT_BTC&#39;</span> <span class="kn">from</span> <span class="mi">1989</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span> <span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="o">+</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span> <span class="n">to</span> <span class="mi">2017</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">09</span> <span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="o">+</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="mi">2017</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">11</span> <span class="mo">07</span><span class="p">:</span><span class="mi">19</span><span class="p">:</span><span class="mf">46.411748</span><span class="p">]</span> <span class="n">INFO</span><span class="p">:</span> <span class="n">Loader</span><span class="p">:</span> <span class="n">Loading</span> <span class="n">benchmark</span> <span class="n">data</span> <span class="k">for</span> <span class="s">&#39;USDT_BTC&#39;</span> <span class="kn">from</span> <span class="mi">1989</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span> <span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="o">+</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span> <span class="n">to</span> <span class="mi">2017</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">09</span> <span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="o">+</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span>
 <span class="p">[</span><span class="mi">2017</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">11</span> <span class="mo">07</span><span class="p">:</span><span class="mi">19</span><span class="p">:</span><span class="mf">46.418983</span><span class="p">]</span> <span class="n">INFO</span><span class="p">:</span> <span class="n">Loader</span><span class="p">:</span> <span class="n">Loading</span> <span class="n">data</span> <span class="k">for</span> <span class="o">/</span><span class="n">Users</span><span class="o">/&lt;</span><span class="n">snipped</span><span class="o">&gt;/.</span><span class="n">catalyst</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">USDT_BTC_benchmark</span><span class="o">.</span><span class="n">csv</span> <span class="n">failed</span> <span class="k">with</span> <span class="n">error</span> <span class="p">[</span><span class="n">Unknown</span> <span class="n">string</span> <span class="n">format</span><span class="p">]</span><span class="o">.</span>
 <span class="p">[</span><span class="mi">2017</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">11</span> <span class="mo">07</span><span class="p">:</span><span class="mi">19</span><span class="p">:</span><span class="mf">46.419740</span><span class="p">]</span> <span class="n">INFO</span><span class="p">:</span> <span class="n">Loader</span><span class="p">:</span> <span class="n">Cache</span> <span class="n">at</span> <span class="o">/</span><span class="n">Users</span><span class="o">/&lt;</span><span class="n">snipped</span><span class="o">&gt;/.</span><span class="n">catalyst</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">USDT_BTC_benchmark</span><span class="o">.</span><span class="n">csv</span> <span class="n">does</span> <span class="ow">not</span> <span class="n">have</span> <span class="n">data</span> <span class="kn">from</span> <span class="mi">1990</span><span class="o">-</span><span class="mo">01</span><span class="o">-</span><span class="mo">01</span> <span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="o">+</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span> <span class="n">to</span> <span class="mi">2017</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">09</span> <span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="o">+</span><span class="mo">00</span><span class="p">:</span><span class="mf">00.</span>
 
-<span class="p">[</span><span class="mi">2017</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">11</span> <span class="mo">07</span><span class="p">:</span><span class="mi">19</span><span class="p">:</span><span class="mf">46.420770</span><span class="p">]</span> <span class="n">INFO</span><span class="p">:</span> <span class="n">Loader</span><span class="p">:</span> <span class="n">Downloading</span> <span class="n">benchmark</span> <span class="n">data</span> <span class="k">for</span> <span class="s1">&#39;USDT_BTC&#39;</span> <span class="kn">from</span> <span class="mi">1989</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span> <span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="o">+</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span> <span class="n">to</span> <span class="mi">2017</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">09</span> <span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="o">+</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span>
-<span class="p">[</span><span class="mi">2017</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">11</span> <span class="mo">07</span><span class="p">:</span><span class="mi">19</span><span class="p">:</span><span class="mf">50.060244</span><span class="p">]</span> <span class="n">WARNING</span><span class="p">:</span> <span class="n">Loader</span><span class="p">:</span> <span class="n">Still</span> <span class="n">don</span><span class="s1">&#39;t have expected data after redownload!</span>
+<span class="p">[</span><span class="mi">2017</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">11</span> <span class="mo">07</span><span class="p">:</span><span class="mi">19</span><span class="p">:</span><span class="mf">46.420770</span><span class="p">]</span> <span class="n">INFO</span><span class="p">:</span> <span class="n">Loader</span><span class="p">:</span> <span class="n">Downloading</span> <span class="n">benchmark</span> <span class="n">data</span> <span class="k">for</span> <span class="s">&#39;USDT_BTC&#39;</span> <span class="kn">from</span> <span class="mi">1989</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span> <span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="o">+</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span> <span class="n">to</span> <span class="mi">2017</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">09</span> <span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="o">+</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span>
+<span class="p">[</span><span class="mi">2017</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">11</span> <span class="mo">07</span><span class="p">:</span><span class="mi">19</span><span class="p">:</span><span class="mf">50.060244</span><span class="p">]</span> <span class="n">WARNING</span><span class="p">:</span> <span class="n">Loader</span><span class="p">:</span> <span class="n">Still</span> <span class="n">don</span><span class="s">&#39;t have expected data after redownload!</span>
 <span class="p">[</span><span class="mi">2017</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">11</span> <span class="mo">07</span><span class="p">:</span><span class="mi">19</span><span class="p">:</span><span class="mf">50.097334</span><span class="p">]</span> <span class="n">WARNING</span><span class="p">:</span> <span class="n">Loader</span><span class="p">:</span> <span class="n">Refusing</span> <span class="n">to</span> <span class="n">download</span> <span class="n">new</span> <span class="n">treasury</span> <span class="n">data</span> <span class="n">because</span> <span class="n">a</span> <span class="n">download</span> <span class="n">succeeded</span> <span class="n">at</span> <span class="mi">2017</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">11</span> <span class="mo">06</span><span class="p">:</span><span class="mi">56</span><span class="p">:</span><span class="mi">49</span><span class="o">+</span><span class="mo">00</span><span class="p">:</span><span class="mf">00.</span>
 <span class="p">[</span><span class="mi">2017</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">11</span> <span class="mo">07</span><span class="p">:</span><span class="mi">19</span><span class="p">:</span><span class="mf">54.618399</span><span class="p">]</span> <span class="n">INFO</span><span class="p">:</span> <span class="n">Performance</span><span class="p">:</span> <span class="n">Simulated</span> <span class="mi">851</span> <span class="n">trading</span> <span class="n">days</span> <span class="n">out</span> <span class="n">of</span> <span class="mf">851.</span>
 <span class="p">[</span><span class="mi">2017</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">11</span> <span class="mo">07</span><span class="p">:</span><span class="mi">19</span><span class="p">:</span><span class="mf">54.619301</span><span class="p">]</span> <span class="n">INFO</span><span class="p">:</span> <span class="n">Performance</span><span class="p">:</span> <span class="n">first</span> <span class="nb">open</span><span class="p">:</span> <span class="mi">2015</span><span class="o">-</span><span class="mo">03</span><span class="o">-</span><span class="mo">01</span> <span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span><span class="o">+</span><span class="mo">00</span><span class="p">:</span><span class="mo">00</span>
@@ -2469,7 +2695,7 @@ functions.</p>
 </p></div><p>Also, instead of defining an output file we are accessing it via the “_”
 variable that will be created in the name space and contain the
 performance DataFrame.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span></span><span class="n">_</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">_</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 <div><table border="1" class="dataframe"><thead><tr style="text-align: right;"><th></th><th><p>algo_volatility</p>
@@ -2665,17 +2891,15 @@ problems on our <a class="reference external" href="https://github.com/enigmampc
 </div>
 
 
-           </div>
-           
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="live-trading.html" class="btn btn-neutral float-right" title="Live Trading" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="live-trading.html" class="btn btn-neutral float-right" title="Live Trading" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="install.html" class="btn btn-neutral" title="Install" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="install.html" class="btn btn-neutral" title="Install" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -2685,10 +2909,9 @@ problems on our <a class="reference external" href="https://github.com/enigmampc
   <div role="contentinfo">
     <p>
         &copy; Copyright 2018, Enigma MPC, Inc..
-
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
 
 </footer>
 
@@ -2706,12 +2929,10 @@ problems on our <a class="reference external" href="https://github.com/enigmampc
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.5.18',
-            LANGUAGE:'None',
+            VERSION:'0.5.15',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
+            HAS_SOURCE:  true
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>
@@ -2720,13 +2941,19 @@ problems on our <a class="reference external" href="https://github.com/enigmampc
 
   
 
-  <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
 
+  
+  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
+          SphinxRtdTheme.StickyNav.enable();
       });
-  </script> 
+  </script>
+   
 
 </body>
 </html>
