@@ -41,6 +41,7 @@ SUPPORTED_EXCHANGES = dict(
     poloniex=ccxt.poloniex,
     bitmex=ccxt.bitmex,
     gdax=ccxt.gdax,
+    huobipro=ccxt.huobipro,
 )
 
 
@@ -905,7 +906,6 @@ class CCXT(Exchange):
                         amount
                     )
                 )
-
         adj_amount = round(abs(amount), asset.decimals)
         prec_amount = self.api.amount_to_precision(symbol, adj_amount)
         before_order_dt = pd.Timestamp.utcnow()
