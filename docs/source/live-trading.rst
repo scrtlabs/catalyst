@@ -21,6 +21,7 @@ Additionally, we have successfully tested in live mode the following exchanges:
 
 - GDAX, id = ``gdax``
 - Huobi Pro, id = ``huobipro``
+- OKEX, id = ``okex``
 
 As Catalyst is currently in Alpha and is under active development, you are
 encouraged to thoroughly test any exchange in *paper trading* mode before trading

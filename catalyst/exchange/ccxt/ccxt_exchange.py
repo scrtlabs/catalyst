@@ -42,6 +42,7 @@ SUPPORTED_EXCHANGES = dict(
     bitmex=ccxt.bitmex,
     gdax=ccxt.gdax,
     huobipro=ccxt.huobipro,
+    okex=ccxt.okex,
 )
 
 
