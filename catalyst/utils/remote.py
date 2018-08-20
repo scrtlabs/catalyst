@@ -1,15 +1,13 @@
 #!flask/bin/python
-import base64
 import json
-import zlib
-import pickle
 import requests
 import os
 
-import pandas as pd
 from hashlib import md5
 from logbook import Logger
 
+from catalyst.utils.remote_utils import BACKTEST_PATH, STATUS_PATH, POST, \
+    GET, EXCEPTION_LOG, convert_date, prepare_args, handle_status
 from catalyst.exchange.utils.exchange_utils import get_remote_auth,\
     get_remote_folder
 from catalyst.exchange.exchange_errors import RemoteAuthEmpty
@@ -18,43 +16,12 @@ log = Logger('remote')
 
 AUTH_SERVER = 'http://localhost:5000'
 # AUTH_SERVER = "https://sandbox2.enigma.co"
-BACKTEST_PATH = '/backtest/run'
-METHOD = 'POST'
+
+BACKTEST = 'backtest'
+STATUS = 'status'
 
 
-def prepare_args(file, text):
-    """
-    send the algo as a base64 decoded text object
-
-    :param file: File
-    :param text: str
-    :return: None, text: str
-    """
-
-    if text:
-        text = base64.b64encode(text)
-    else:
-        text = base64.b64encode(bytes(file.read(), 'utf-8')).decode('utf-8')
-        file = None
-    return file, text
-
-
-def convert_date(date):
-    """
-    when transferring dates by json,
-    converts it to str
-    # any instances which need a conversion,
-    # must be done here
-
-    :param date:
-    :return: str(date)
-    """
-
-    if isinstance(date, pd.Timestamp):
-        return date.__str__()
-
-
-def handle_response(response):
+def handle_response(response, mode):
     """
     handles the response given by the server according to it's status code
 
@@ -62,32 +29,23 @@ def handle_response(response):
     :return: DataFrame/ str
     """
     if response.status_code == 500:
-        raise Exception("issues with cloud connections, "
-                        "unable to run catalyst on the cloud")
+        raise Exception("issues with cloud connections,\n"
+                        "unable to run catalyst on the cloud,\n"
+                        "try running again and if you get the same response,\n"
+                        + EXCEPTION_LOG
+                        )
     elif response.status_code == 502:
-        raise Exception("The server is down at the moment, please contact "
-                        "Catalyst support to fix this issue at "
-                        "https://github.com/enigmampc/catalyst/issues/")
-    elif response.status_code == 202 or response.status_code == 400:
-        lf = json_to_file(response.json()['logs'])
-        print(lf.decode('utf-8'))
-        return response.json()['error'] if response.json()['error'] else None
-
+        raise Exception("The server is down at the moment,\n" + EXCEPTION_LOG)
+    elif response.status_code == 400:
+        raise Exception("There is a connection but it was aborted due "
+                        "to wrong arguments given to the server.\n" +
+                        EXCEPTION_LOG)
     else:  # if the run was successful
-        log.info('In order to follow your algo run use the following id: ' +
-                 response.json()['algo_id'])
-
-
-def load_response(json_file):
-    lf = json_to_file(json_file['logs'])
-    print(lf.decode('utf-8'))
-    data_df = pickle.loads(json_to_file(json_file['data']))
-    return data_df
-
-
-def json_to_file(encoded_data):
-    compressed_file = base64.b64decode(encoded_data)
-    return zlib.decompress(compressed_file)
+        if mode == BACKTEST:
+            log.info('In order to follow your algo run use the following id: '
+                     + response.json()['algo_id'])
+        elif mode == STATUS:
+            return handle_status(response.json())
 
 
 def remote_backtest(
@@ -154,14 +112,41 @@ def remote_backtest(
         'auth_aliases': auth_aliases,
         'mail': mail
     }}
+    response = send_digest_request(
+        json_file=json_file, path=BACKTEST_PATH, method=POST
+    )
+    return handle_response(response, BACKTEST)
+
+
+def get_remote_status(algo_id):
+    json_file = {'algo_id': algo_id}
+    log.info("retrieving the status of {} algorithm".format(algo_id))
+    response = send_digest_request(
+        json_file=json_file, path=STATUS_PATH, method=GET
+    )
+    return handle_response(response, STATUS)
+
+
+def send_digest_request(json_file, path, method):
     key, secret = retrieve_remote_auth()
+    json_file['key'] = key
     session = requests.Session()
-    response = session.post('{}{}'.format(AUTH_SERVER, BACKTEST_PATH),
-                            headers={'Authorization': 'Digest username="{0}",'
-                                                      'password="{1}"'.
-                            format(key, secret)
-                            },
-                            verify=False)
+    if method == POST:
+        response = session.post('{}{}'.format(AUTH_SERVER, path),
+                                headers={
+                                    'Authorization':
+                                        'Digest username="{0}",'
+                                        'password="{1}"'.format(key, secret)
+                                },
+                                verify=False)
+    else: # method == GET:
+        response = session.get('{}{}'.format(AUTH_SERVER, path),
+                                headers={
+                                    'Authorization':
+                                        'Digest username="{0}",'
+                                        'password="{1}"'.format(key, secret)
+                                },
+                                verify=False)
 
     header = response.headers.get('WWW-Authenticate')
     auth_type, auth_info = header.split(None, 1)
@@ -169,12 +154,13 @@ def remote_backtest(
 
     a1 = key + ":" + d['realm'] + ":" + secret
     ha1 = md5(a1.encode('utf-8')).hexdigest()
-    a2 = "{}:{}".format(METHOD, BACKTEST_PATH)
+    a2 = "{}:{}".format(method, path)
     ha2 = md5(a2.encode('utf-8')).hexdigest()
     a3 = ha1 + ":" + d['nonce'] + ":" + ha2
     result = md5(a3.encode('utf-8')).hexdigest()
 
-    response = session.post('{}{}'.format(AUTH_SERVER, BACKTEST_PATH),
+    if method == POST:
+        return session.post('{}{}'.format(AUTH_SERVER, path),
                             json=json.dumps(json_file, default=convert_date),
                             verify=False,
                             headers={
@@ -183,11 +169,20 @@ def remote_backtest(
                                                  'uri="{3}",'
                                                  'response="{4}",'
                                                  'opaque="{5}"'.
-                            format(key, d['realm'], d['nonce'], BACKTEST_PATH,
+                            format(key, d['realm'], d['nonce'], path,
                                    result, d['opaque'])})
-
-    return handle_response(response)
-
+    else: # method == GET
+        return session.get('{}{}'.format(AUTH_SERVER, path),
+                            json=json.dumps(json_file, default=convert_date),
+                            verify=False,
+                            headers={
+                                'Authorization': 'Digest username="{0}",'
+                                                 'realm="{1}",nonce="{2}",'
+                                                 'uri="{3}",'
+                                                 'response="{4}",'
+                                                 'opaque="{5}"'.
+                            format(key, d['realm'], d['nonce'], path,
+                                   result, d['opaque'])})
 
 def retrieve_remote_auth():
     remote_auth_dict = get_remote_auth()

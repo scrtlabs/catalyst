@@ -16,7 +16,7 @@ from catalyst.exchange.utils.exchange_utils import delete_algo_folder
 from catalyst.utils.cli import Date, Timestamp
 from catalyst.utils.run_algo import _run, load_extensions
 from catalyst.exchange.utils.bundle_utils import EXCHANGE_NAMES
-from catalyst.utils.remote import remote_backtest
+from catalyst.utils.remote import remote_backtest, get_remote_status
 
 try:
     __IPYTHON__
@@ -714,6 +714,60 @@ def remote_run(ctx,
         click.echo(str(perf), sys.stdout)
     elif output != os.devnull:  # make the catalyst magic not write any data
         perf.to_pickle(output)
+
+    return perf
+
+
+@main.command(name='remote-status')
+@click.option(
+    '-i',
+    '--algo-id',
+    show_default=True,
+    help='The algo id of your running algorithm on the cloud',
+)
+@click.option(
+    '-d',
+    '--data-output',
+    default='-',
+    metavar='FILENAME',
+    show_default=True,
+    help="The location to write the perf data, if it exists. If this is '-' "
+         "the perf will be written to stdout.",
+)
+@click.option(
+    '-l',
+    '--log-output',
+    default='-',
+    metavar='FILENAME',
+    show_default=True,
+    help="The location to write the current logging. "
+         "If this is '-' the log will be written to stdout.",
+)
+@click.pass_context
+def remote_status(ctx, algo_id, data_output, log_output):
+    """
+    Get the status of the running algorithm on the cloud
+    """
+    if algo_id is None:
+        ctx.fail("must specify an id of your running algorithm with '--id'")
+
+    click.echo('Running in backtesting mode.', sys.stdout)
+
+    perf, log = get_remote_status(
+        algo_id=algo_id
+    )
+
+    if log_output == '-':
+        click.echo(str(log), sys.stdout)
+    elif log_output != os.devnull:
+        with open(log_output, 'w') as file:
+            file.write(log)
+
+    if data_output == '-' or perf is None:
+        click.echo('the performance data is:\n' + str(perf), sys.stdout)
+    elif data_output != os.devnull:
+        # make the catalyst magic not write any data
+        perf.to_pickle(data_output)
 
     return perf
 
