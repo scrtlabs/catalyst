@@ -744,25 +744,27 @@ def remote_status(ctx, algo_id, data_output, log_output):
     if algo_id is None:
         ctx.fail("must specify an id of your running algorithm with '--id'")
 
-    click.echo('Running in backtesting mode.', sys.stdout)
-
-    perf, log = get_remote_status(
+    status_response = get_remote_status(
         algo_id=algo_id
     )
+    if isinstance(status_response, tuple):
+        status, perf, log= status_response
+        if log_output == '-':
+            click.echo(str(log), sys.stderr)
+        elif log_output != os.devnull:
+            with open(log_output, 'w') as file:
+                file.write(log)
 
-    if log_output == '-':
-        click.echo(str(log), sys.stdout)
-    elif log_output != os.devnull:
-        with open(log_output, 'w') as file:
-            file.write(log)
-
-    if data_output == '-' or perf is None:
-        click.echo('the performance data is:\n' + str(perf), sys.stdout)
-    elif data_output != os.devnull:
-        # make the catalyst magic not write any data
-        perf.to_pickle(data_output)
-
-    return perf
+        if data_output == '-' or perf is None:
+            click.echo('the performance data is:\n' + str(perf), sys.stdout)
+        elif data_output != os.devnull:
+            # make the catalyst magic not write any data
+            perf.to_pickle(data_output)
+        print(status)
+        return status, perf
+    else:
+        print(status_response)
+        return status_response
 
 
 # @main.command(name='serve-live')

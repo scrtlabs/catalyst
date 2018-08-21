@@ -13,6 +13,7 @@ STATUS_PATH = '/status'
 
 POST = 'POST'
 GET = 'GET'
+NONEXISTENT = 'nonexistent'
 
 EXCEPTION_LOG = "please contact Catalyst support to fix this issue at\n" \
                 "https://github.com/enigmampc/catalyst/issues/"
@@ -63,6 +64,12 @@ def decompress_data(encoded_data):
 
 
 def handle_status(received_content):
+    status = received_content['status']
+    if status == NONEXISTENT:
+        log.error(received_content['message'])
+        return status
+
     log.info("The status of the algorithm is: '{}'".
-             format(received_content['status']))
-    return load_response(received_content)
+             format(status))
+    perf, log_file = load_response(received_content)
+    return status, perf, log_file
