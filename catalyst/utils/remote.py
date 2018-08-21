@@ -42,8 +42,10 @@ def handle_response(response, mode):
                         EXCEPTION_LOG)
     else:  # if the run was successful
         if mode == BACKTEST:
+            algo_id = response.json()['algo_id']
             log.info('In order to follow your algo run use the following id: '
-                     + response.json()['algo_id'])
+                     + algo_id)
+            return algo_id
         elif mode == STATUS:
             return handle_status(response.json())
 
@@ -171,7 +173,7 @@ def send_digest_request(json_file, path, method):
                                                  'opaque="{5}"'.
                             format(key, d['realm'], d['nonce'], path,
                                    result, d['opaque'])})
-    else: # method == GET
+    else:  # method == GET
         return session.get('{}{}'.format(AUTH_SERVER, path),
                             json=json.dumps(json_file, default=convert_date),
                             verify=False,

@@ -677,9 +677,7 @@ def remote_run(ctx,
     if mail is None or not re.match(r"[^@]+@[^@]+\.[^@]+", mail):
         ctx.fail("must specify a valid email with '--mail'")
 
-    click.echo('Running in backtesting mode.', sys.stdout)
-
-    perf = remote_backtest(
+    algo_id = remote_backtest(
         initialize=None,
         handle_data=None,
         before_trading_start=None,
@@ -709,13 +707,8 @@ def remote_run(ctx,
         stats_output=None,
         mail=mail,
     )
-
-    if output == '-':
-        click.echo(str(perf), sys.stdout)
-    elif output != os.devnull:  # make the catalyst magic not write any data
-        perf.to_pickle(output)
-
-    return perf
+    print(algo_id)
+    return algo_id
 
 
 @main.command(name='remote-status')
