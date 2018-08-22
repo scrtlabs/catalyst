@@ -16465,7 +16465,7 @@ PyCharm IDE
 ~~~~~~~~~~~
 
 PyCharm is an Integrated Development Environment (IDE) used in computer 
-programming, specifically for the Python language. It streamlines the continuos
+programming, specifically for the Python language. It streamlines the continuous
 development of Python code, and among other things includes a debugger that 
 comes in handy to see the inner workings of Catalyst, and your trading 
 algorithms.
