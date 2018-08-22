@@ -7,7 +7,8 @@ from hashlib import md5
 from logbook import Logger
 
 from catalyst.utils.remote_utils import BACKTEST_PATH, STATUS_PATH, POST, \
-    GET, EXCEPTION_LOG, convert_date, prepare_args, handle_status
+    GET, EXCEPTION_LOG, convert_date, prepare_args, handle_status, \
+    is_valid_uuid
 from catalyst.exchange.utils.exchange_utils import get_remote_auth,\
     get_remote_folder
 from catalyst.exchange.exchange_errors import RemoteAuthEmpty
@@ -121,6 +122,9 @@ def remote_backtest(
 
 
 def get_remote_status(algo_id):
+    if not is_valid_uuid(algo_id):
+        raise Exception("the id you entered is invalid! "
+                        "please enter a valid id.")
     json_file = {'algo_id': algo_id}
     log.info("retrieving the status of {} algorithm".format(algo_id))
     response = send_digest_request(
