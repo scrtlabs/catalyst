@@ -641,7 +641,7 @@ A few comments on the code above:
   you will see that in most cases, the performance is either worse than the 
   price of the asset, or you are overfitting to one specific case. As we said 
   at the beginning of this section, this strategy is probably not used by any 
-  serious trader anymore, but its educational purpose.
+  serious trader anymore, but it has an educational purpose.
 
 Although it might not be directly apparent, the power of ``history()``
 (pun intended) can not be under-estimated as most algorithms make use of
