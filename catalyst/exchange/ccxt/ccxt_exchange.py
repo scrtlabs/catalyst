@@ -43,6 +43,7 @@ SUPPORTED_EXCHANGES = dict(
     gdax=ccxt.gdax,
     huobipro=ccxt.huobipro,
     okex=ccxt.okex,
+    hitbtc=ccxt.hitbtc2,
 )
 
 
