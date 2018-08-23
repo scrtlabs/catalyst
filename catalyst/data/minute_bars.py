@@ -1114,6 +1114,11 @@ class BcolzMinuteBarReader(MinuteBarReader):
             self._last_get_value_dt_value = dt.value
             self._last_get_value_dt_position = minute_pos
 
+        # a patch for requesting non existing time frames
+        # due to the different candles labeling + wrong start dates
+        if minute_pos < 0:
+            return np.nan
+
         try:
             value = self._open_minute_file(field, sid)[minute_pos]
         except IndexError:
