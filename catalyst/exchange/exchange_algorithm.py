@@ -1099,6 +1099,8 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             The asset or the tradingPair symbol of the order.
         return_price: bool
             get the trading price in addition to the order
+        params: dict, optional
+            Extra parameters to pass to the exchange
 
         Returns
         -------

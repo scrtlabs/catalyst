@@ -246,7 +246,8 @@ def get_environment(field='platform'):
     """
 
 
-def get_order(order_id, asset_or_symbol=None, return_price=False, params={}):
+def get_order(order_id, asset_or_symbol=None,
+              return_price=False, params={}):
     """Lookup an order based on the order id returned from one of the
     order functions.
 
@@ -258,6 +259,10 @@ def get_order(order_id, asset_or_symbol=None, return_price=False, params={}):
             The asset or the tradingPair symbol of the order.
         return_price: bool
             get the trading price in addition to the order
+    return_price: bool
+        get the trading price in addition to the order
+    params: dict, optional
+        Extra parameters to pass to the exchange
 
     Returns
     -------

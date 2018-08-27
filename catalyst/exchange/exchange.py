@@ -915,7 +915,8 @@ class Exchange:
         pass
 
     @abstractmethod
-    def get_order(self, order_id, symbol_or_asset=None, return_price=False, params={}):
+    def get_order(self, order_id, symbol_or_asset=None,
+                  return_price=False, params={}):
         """Lookup an order based on the order id returned from one of the
         order functions.
 
@@ -925,6 +926,10 @@ class Exchange:
             The unique identifier for the order.
         symbol_or_asset: str|TradingPair
             The catalyst symbol, some exchanges need this
+        return_price: bool
+            get the trading price in addition to the order
+        params: dict, optional
+            Extra parameters to pass to the exchange
 
         Returns
         -------
