@@ -27,6 +27,7 @@ def handle_response(response, mode):
     handles the response given by the server according to it's status code
 
     :param response: the format returned from a request
+    :param mode: Backtest/ status
     :return: DataFrame/ str
     """
     if response.status_code == 500:
@@ -145,14 +146,13 @@ def send_digest_request(json_file, path, method):
                                         'password="{1}"'.format(key, secret)
                                 },
                                 verify=False)
-    else: # method == GET:
+    else:  # method == GET:
         response = session.get('{}{}'.format(AUTH_SERVER, path),
-                                headers={
-                                    'Authorization':
-                                        'Digest username="{0}",'
-                                        'password="{1}"'.format(key, secret)
-                                },
-                                verify=False)
+                               headers={'Authorization':
+                                        'Digest username="{0}", '
+                                        'password="{1}"'.
+                                        format(key, secret)},
+                               verify=False)
 
     header = response.headers.get('WWW-Authenticate')
     auth_type, auth_info = header.split(None, 1)
@@ -179,16 +179,15 @@ def send_digest_request(json_file, path, method):
                                    result, d['opaque'])})
     else:  # method == GET
         return session.get('{}{}'.format(AUTH_SERVER, path),
-                            json=json.dumps(json_file, default=convert_date),
-                            verify=False,
-                            headers={
-                                'Authorization': 'Digest username="{0}",'
-                                                 'realm="{1}",nonce="{2}",'
-                                                 'uri="{3}",'
-                                                 'response="{4}",'
-                                                 'opaque="{5}"'.
-                            format(key, d['realm'], d['nonce'], path,
-                                   result, d['opaque'])})
+                           json=json.dumps(json_file, default=convert_date),
+                           verify=False,
+                           headers={'Authorization':
+                                    'Digest username="{0}", realm="{1}",'
+                                    'nonce="{2}",uri="{3}", '
+                                    'response="{4}",opaque="{5}"'.
+                                    format(key, d['realm'], d['nonce'],
+                                           path, result, d['opaque'])})
+
 
 def retrieve_remote_auth():
     remote_auth_dict = get_remote_auth()
