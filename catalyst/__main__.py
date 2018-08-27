@@ -640,7 +640,7 @@ def remote_run(ctx,
         exchange_name,
         algo_namespace,
         quote_currency):
-    """Run a backtest for the given algorithm on the server.
+    """Run a backtest for the given algorithm on the cloud.
     """
 
     if (algotext is not None) == (algofile is not None):
@@ -739,7 +739,7 @@ def remote_run(ctx,
 @click.pass_context
 def remote_status(ctx, algo_id, data_output, log_output):
     """
-    Get the status of the running algorithm on the cloud
+    Get the status of a running algorithm on the cloud
     """
     if algo_id is None:
         ctx.fail("must specify an id of your running algorithm with '--id'")
