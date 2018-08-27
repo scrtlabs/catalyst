@@ -1086,7 +1086,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         )
 
     @api_method
-    def get_order(self, order_id, asset_or_symbol=None, return_price=False):
+    def get_order(self, order_id, asset_or_symbol=None, return_price=False, params={}):
         """Lookup an order based on the order id returned from one of the
         order functions.
 
@@ -1114,7 +1114,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             sleeptime=self.attempts['retry_sleeptime'],
             retry_exceptions=(ExchangeRequestError,),
             cleanup=lambda: log.warn('Fetching orders again.'),
-            args=(order_id, asset_or_symbol, return_price)
+            args=(order_id, asset_or_symbol, return_price, params)
         )
 
     @api_method
