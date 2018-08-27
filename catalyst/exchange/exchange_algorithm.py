@@ -1086,7 +1086,8 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         )
 
     @api_method
-    def get_order(self, order_id, asset_or_symbol=None, return_price=False, params={}):
+    def get_order(self, order_id, asset_or_symbol=None,
+                  return_price=False, params={}):
         """Lookup an order based on the order id returned from one of the
         order functions.
 
