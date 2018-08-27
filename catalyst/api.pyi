@@ -257,8 +257,6 @@ def get_order(order_id, asset_or_symbol=None,
         The unique identifier for the order.
     asset_or_symbol: Asset or str
             The asset or the tradingPair symbol of the order.
-        return_price: bool
-            get the trading price in addition to the order
     return_price: bool
         get the trading price in addition to the order
     params: dict, optional
