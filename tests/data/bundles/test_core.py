@@ -1,3 +1,4 @@
+'''
 import os
 
 from nose_parameterized import parameterized
@@ -22,7 +23,7 @@ from catalyst.testing import (
     subtest,
     str_to_seconds,
 )
-from catalyst.testing.fixtures import WithInstanceTmpDir, ZiplineTestCase, \
+from catalyst.testing.fixtures import WithInstanceTmpDir, CatalystTestCase, \
     WithDefaultDateBounds
 from catalyst.testing.predicates import (
     assert_equal,
@@ -45,7 +46,7 @@ _1_ns = pd.Timedelta(1, unit='ns')
 
 class BundleCoreTestCase(WithInstanceTmpDir,
                          WithDefaultDateBounds,
-                         ZiplineTestCase):
+                         CatalystTestCase):
 
     START_DATE = pd.Timestamp('2014-01-06', tz='utc')
     END_DATE = pd.Timestamp('2014-01-10', tz='utc')
@@ -555,3 +556,4 @@ class BundleCoreTestCase(WithInstanceTmpDir,
             {fourth, fifth},
             msg='did not strip first and last directories',
         )
+'''

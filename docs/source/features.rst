@@ -10,10 +10,10 @@ Current Functionality
 * Backtesting and live-trading modes to run your trading algorithms, with a 
   seamless transition between the two.
 * Paper trading simulates order in live-trading mode.
-* Support for 3 exchanges: Bitfinex, Bittrex and Poloniex in both modes 
+* Support for four exchanges: Binance, Bitfinex, Bittrex and Poloniex in both modes
   (backtesting and live-trading). Historical data for backtesting is provided 
-  with daily resolution for all three exchanges, and minute resolution for 
-  Bitfinex and Poloniex. No minute-resolution data is currently available for 
+  with daily resolution for all four exchanges, and minute resolution for
+  Binance, Bitfinex and Poloniex. No minute-resolution data is currently available for
   Bittrex. Refer to 
   `Catalyst Market Coverage <https://www.enigma.co/catalyst/status>`_ for 
   details.
@@ -25,8 +25,6 @@ Current Functionality
   :ref:`naming`.
 * Output of performance statistics based on Pandas DataFrames to integrate 
   nicely into the existing PyData ecosystem.
-* Support for accessing multiple exchanges per algorithm, which opens the door
-  to cross-exchange arbitrage opportunities.
 * Support for running multiple algorithms on the same exchange independently of
   one another. Catalyst performance tracker stores just enough data to allow 
   algorithms to run independently while still sharing critical data through 
@@ -37,6 +35,8 @@ Current Functionality
   `issue #86 <https://github.com/enigmampc/catalyst/issues/86>`_). 
 * Support for MacOS, Linux and Windows installations.
 * Support for Python2 and Python3.
+.. Support for accessing multiple exchanges per algorithm, which opens the door
+.. to cross-exchange arbitrage opportunities.
 
 For additional details on the functionality added on recent releases, see the
 :doc:`Release Notes<releases>`.

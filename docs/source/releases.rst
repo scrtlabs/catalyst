@@ -2,6 +2,74 @@
 Release Notes
 =============
 
+Version 0.5.18
+^^^^^^^^^^^^^^
+**Release Date**: 2018-07-22
+
+Build
+~~~~~
+- The parameter of the `set_slippage` API function was updated from spread to
+  slippage to better describe its purpose in the fixed slippage model.
+
+Version 0.5.17
+^^^^^^^^^^^^^^
+**Release Date**: 2018-07-19
+
+Bug Fixes
+~~~~~~~~~
+- Reverted the start date of the trading clock to `2015-03-01`. This should be
+  addressed after the entire data is acquired :issue:`408`
+
+Version 0.5.16
+^^^^^^^^^^^^^^
+**Release Date**: 2018-07-19
+
+Build
+~~~~~
+- Enabled the `get_orderbook` function in live and paper trading.
+- Utilized unit tests and added travis CI integration.
+- Updated the trading calender start date to `2013-04-01`.
+- Terms and conditions were added to the marketplace.
+
+Bug Fixes
+~~~~~~~~~
+- Fixed a bug in the filled order amount calculation at live mode :issue:`384`
+- Fixed an issue with the order creation procedure for exchanges that do not
+  support `fetchMyTrades` method :issue:`404`
+
+Version 0.5.15
+^^^^^^^^^^^^^^
+**Release Date**: 2018-07-02
+
+Build
+~~~~~
+- Add support for Binance historical data.
+
+Bug Fixes
+~~~~~~~~~
+- Fixed a bug preventing ingestion from a csv if specifying an unsupported
+  exchange.
+- Fixed issues with installing catalyst using pip.
+
+Version 0.5.14
+^^^^^^^^^^^^^^
+**Release Date**: 2018-06-21
+
+Build
+~~~~~
+- Utilized `cancel_order` in paper mode and fixed minor issues in live mode
+  :issue:`95`, :issue:`346`
+
+Bug Fixes
+~~~~~~~~~
+- Added a retry mechanism to the handling of an order request timeout
+  :issue:`350`, :issue:`356`
+- Docker image file was utilized :issue:`366`
+- Fixed the `ordered_pip` script used for the development environment
+  installation :issue:`351`
+- Fixed bugs in the `get_order` function :issue:`367` :issue:`372`
+- Updated the observed portfolio balance :issue:`373`
+
 Version 0.5.13
 ^^^^^^^^^^^^^^
 **Release Date**: 2018-06-07

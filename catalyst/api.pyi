@@ -50,13 +50,50 @@ def batch_market_order(share_counts):
     """
 
 
-def cancel_order(order_param):
+def cancel_order(order_param, symbol=None, params={}):
     """Cancel an open order.
 
     Parameters
     ----------
     order_param : str or Order
         The order_id or order object to cancel.
+    symbol: str
+        The tradingPair symbol
+    params: dict, optional
+        Extra parameters to pass to the exchange
+    """
+
+
+def get_orderbook(asset, order_type='all', limit=None):
+    """Get the order book of asset.exchange.
+
+    Parameters
+    ----------
+    asset : Asset
+        The asset .
+
+    order_type : str, optional
+
+    limit : int, optional
+    """
+
+
+def get_open_orders(asset=None):
+    """Retrieve all of the current open orders.
+
+    Parameters
+    ----------
+    asset : Asset
+        If passed and not None, return only the open orders for the given
+        asset instead of all open orders.
+
+    Returns
+    -------
+    open_orders : dict[list[Order]] or list[Order]
+        If no asset is passed this will return a dict mapping Assets
+        to a list containing all the open orders for the asset.
+        If an asset is passed then this will return a list of the open
+        orders for this asset.
     """
 
 
@@ -209,7 +246,8 @@ def get_environment(field='platform'):
     """
 
 
-def get_order(order_id):
+def get_order(order_id, asset_or_symbol=None,
+              return_price=False, params={}):
     """Lookup an order based on the order id returned from one of the
     order functions.
 
@@ -217,6 +255,12 @@ def get_order(order_id):
     ----------
     order_id : str
         The unique identifier for the order.
+    asset_or_symbol: Asset or str
+            The asset or the tradingPair symbol of the order.
+    return_price: bool
+        get the trading price in addition to the order
+    params: dict, optional
+        Extra parameters to pass to the exchange
 
     Returns
     -------
@@ -238,9 +282,9 @@ def order(asset, amount, limit_price=None, stop_price=None, style=None):
     asset : Asset
         The asset that this order is for.
     amount : int
-        The amount of shares to order. If ``amount`` is positive, this is
-        the number of shares to buy or cover. If ``amount`` is negative,
-        this is the number of shares to sell or short.
+        The amount of assets to order. If ``amount`` is positive, this is
+        the number of assets to buy or cover. If ``amount`` is negative,
+        this is the number of assets to sell.
     limit_price : float, optional
         The limit price for the order.
     stop_price : float, optional

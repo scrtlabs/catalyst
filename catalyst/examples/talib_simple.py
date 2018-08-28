@@ -15,7 +15,7 @@ import pandas as pd
 import talib as ta
 from logbook import Logger
 from matplotlib.dates import date2num
-from matplotlib.finance import candlestick_ohlc
+from mpl_finance import candlestick_ohlc
 
 from catalyst import run_algorithm
 from catalyst.api import (
@@ -38,7 +38,6 @@ def initialize(context):
     context.ORDER_SIZE = 10
     context.SLIPPAGE_ALLOWED = 0.05
 
-    context.swallow_errors = True
     context.errors = []
 
     # Bars to look at per iteration should be bigger than SMA_SLOW

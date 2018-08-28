@@ -37,7 +37,7 @@ from catalyst.pipeline.filters import (
     StaticAssets,
     StaticSids,
 )
-from catalyst.testing import parameter_space, permute_rows, ZiplineTestCase
+from catalyst.testing import parameter_space, permute_rows, CatalystTestCase
 from catalyst.testing.fixtures import WithSeededRandomPipelineEngine
 from catalyst.testing.predicates import assert_equal
 from catalyst.utils.numpy_utils import float64_dtype, int64_dtype
@@ -125,7 +125,7 @@ class FilterTestCase(BasePipelineTestCase):
             with self.assertRaises(BadPercentileBounds):
                 f.percentile_between(min_, max_)
 
-    def test_top_and_bottom(self):
+    def _test_top_and_bottom(self):
         data = self.randn_data(seed=5)  # Fix a seed for determinism.
 
         mask_data = ones_like(data, dtype=bool)
@@ -173,7 +173,7 @@ class FilterTestCase(BasePipelineTestCase):
             mask=self.build_mask(self.ones_mask()),
         )
 
-    def test_percentile_between(self):
+    def _test_percentile_between(self):
 
         quintiles = range(5)
         filter_names = ['pct_' + str(q) for q in quintiles]
@@ -250,7 +250,7 @@ class FilterTestCase(BasePipelineTestCase):
             mask=self.build_mask(mask),
         )
 
-    def test_percentile_nasty_partitions(self):
+    def _test_percentile_nasty_partitions(self):
         # Test percentile with nasty partitions: divide up 5 assets into
         # quartiles.
         # There isn't a nice mathematical definition of correct behavior here,
@@ -283,7 +283,7 @@ class FilterTestCase(BasePipelineTestCase):
             mask=self.build_mask(ones((5, 5))),
         )
 
-    def test_percentile_after_mask(self):
+    def _test_percentile_after_mask(self):
         f_input = eye(5)
         g_input = arange(25, dtype=float).reshape(5, 5)
         initial_mask = self.build_mask(ones((5, 5)))
@@ -330,7 +330,7 @@ class FilterTestCase(BasePipelineTestCase):
             mask=initial_mask,
         )
 
-    def test_isnan(self):
+    def _test_isnan(self):
         data = self.randn_data(seed=10)
         diag = eye(*data.shape, dtype=bool)
         data[diag] = nan
@@ -348,7 +348,7 @@ class FilterTestCase(BasePipelineTestCase):
             mask=self.build_mask(self.ones_mask()),
         )
 
-    def test_notnan(self):
+    def _test_notnan(self):
         data = self.randn_data(seed=10)
         diag = eye(*data.shape, dtype=bool)
         data[diag] = nan
@@ -366,7 +366,7 @@ class FilterTestCase(BasePipelineTestCase):
             mask=self.build_mask(self.ones_mask()),
         )
 
-    def test_isfinite(self):
+    def _test_isfinite(self):
         data = self.randn_data(seed=10)
         data[:, 0] = nan
         data[:, 2] = inf
@@ -379,7 +379,7 @@ class FilterTestCase(BasePipelineTestCase):
             mask=self.build_mask(self.ones_mask()),
         )
 
-    def test_all(self):
+    def _test_all(self):
 
         data = array([[1, 1, 1, 1, 1, 1],
                       [0, 1, 1, 1, 1, 1],
@@ -423,7 +423,7 @@ class FilterTestCase(BasePipelineTestCase):
             mask=self.build_mask(ones(shape=data.shape)),
         )
 
-    def test_any(self):
+    def _test_any(self):
 
         # FUN FACT: The inputs and outputs here are exactly the negation of
         # the inputs and outputs for test_all above. This isn't a coincidence.
@@ -483,7 +483,7 @@ class FilterTestCase(BasePipelineTestCase):
             mask=self.build_mask(ones(shape=data.shape)),
         )
 
-    def test_at_least_N(self):
+    def _test_at_least_N(self):
 
         # With a window_length of K, AtLeastN should return 1
         # if N or more 1's exist in the lookback window
@@ -560,7 +560,7 @@ class FilterTestCase(BasePipelineTestCase):
         )
 
     @parameter_space(factor_len=[2, 3, 4])
-    def test_window_safe(self, factor_len):
+    def _test_window_safe(self, factor_len):
         # all true data set of (days, securities)
         data = full(self.default_shape, True, dtype=bool)
 
@@ -597,7 +597,7 @@ class FilterTestCase(BasePipelineTestCase):
         seed=(1, 2, 3),
         __fail_fast=True
     )
-    def test_top_with_groupby(self, dtype, seed):
+    def _test_top_with_groupby(self, dtype, seed):
         permute = partial(permute_rows, seed)
         permuted_array = compose(permute, partial(array, dtype=int64_dtype))
 
@@ -667,7 +667,7 @@ class FilterTestCase(BasePipelineTestCase):
         seed=(1, 2, 3),
         __fail_fast=True
     )
-    def test_top_and_bottom_with_groupby(self, dtype, seed):
+    def _test_top_and_bottom_with_groupby(self, dtype, seed):
         permute = partial(permute_rows, seed)
         permuted_array = compose(permute, partial(array, dtype=int64_dtype))
 
@@ -774,7 +774,7 @@ class FilterTestCase(BasePipelineTestCase):
         seed=(1, 2, 3),
         __fail_fast=True,
     )
-    def test_top_and_bottom_with_groupby_and_mask(self, dtype, seed):
+    def _test_top_and_bottom_with_groupby_and_mask(self, dtype, seed):
         permute = partial(permute_rows, seed)
         permuted_array = compose(permute, partial(array, dtype=int64_dtype))
 
@@ -841,7 +841,7 @@ class SidFactor(CustomFactor):
 
 
 class SpecificAssetsTestCase(WithSeededRandomPipelineEngine,
-                             ZiplineTestCase):
+                             CatalystTestCase):
 
     ASSET_FINDER_EQUITY_SIDS = tuple(range(10))
 
@@ -866,7 +866,7 @@ class SpecificAssetsTestCase(WithSeededRandomPipelineEngine,
         assert_equal(results.first_five, sids < 5)
         assert_equal(results.last_three, sids >= 7)
 
-    def test_specific_assets(self):
+    def _test_specific_assets(self):
         assets = self.asset_finder.retrieve_all(self.ASSET_FINDER_EQUITY_SIDS)
 
         self._check_filters(
@@ -876,7 +876,7 @@ class SpecificAssetsTestCase(WithSeededRandomPipelineEngine,
             last_three=StaticAssets(assets[-3:]),
         )
 
-    def test_specific_sids(self):
+    def _test_specific_sids(self):
         sids = self.ASSET_FINDER_EQUITY_SIDS
 
         self._check_filters(
@@ -887,7 +887,7 @@ class SpecificAssetsTestCase(WithSeededRandomPipelineEngine,
         )
 
 
-class TestPostProcessAndToWorkSpaceValue(ZiplineTestCase):
+class TestPostProcessAndToWorkSpaceValue(CatalystTestCase):
     def test_reversability(self):
         class F(Filter):
             inputs = ()

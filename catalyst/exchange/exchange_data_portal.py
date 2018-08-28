@@ -360,6 +360,10 @@ class DataPortalExchangeBacktest(DataPortalExchangeBase):
             dt = dt.floor('1D')
         else:
             dt = dt.floor('1 min')
+            # In order to align with the crypto left
+            # bounded candles, we request the candle of the previous timestamp
+            # (do not include the current minute)
+            dt = dt - datetime.timedelta(minutes=1)
 
         if AUTO_INGEST:
             try:

@@ -76,6 +76,7 @@ from catalyst.finance.execution import (
     StopLimitOrder,
     StopOrder,
 )
+from catalyst.finance.order import Order
 from catalyst.finance.performance import PerformanceTracker
 from catalyst.finance.asset_restrictions import Restrictions
 from catalyst.finance.cancel_policy import NeverCancel, CancelPolicy
@@ -1268,6 +1269,7 @@ class TradingAlgorithm(object):
     @api_method
     def symbols(self, *args):
         """Lookup multiple TradingPairs as a list.
+        for example: symbols('eth_usd','btc_usd')
 
         Parameters
         ----------
@@ -1294,22 +1296,25 @@ class TradingAlgorithm(object):
 
     @api_method
     def sid(self, sid):
-        """Lookup an Asset by its unique asset identifier.
+        """Lookup a Trading Pair by its unique identifier.
 
         Parameters
         ----------
         sid : int
-            The unique integer that identifies an asset.
+            The unique integer that identifies an Trading Pair.
+            for example: The unique sid for the 'btc_usdt' Trading Pair on
+            poloniex is 374465. Therefore, running sid(374465)
+            will give you the symbol of the Trading Pair
 
         Returns
         -------
-        asset : Asset
-            The asset with the given ``sid``.
+        TradingPair : TradingPair
+            The TradingPair with the given ``sid``.
 
         Raises
         ------
         SidsNotFound
-            When a requested ``sid`` does not map to any asset.
+            When a requested ``sid`` does not map to any TradingPair.
         """
         return self.asset_finder.retrieve_asset(sid)
 
@@ -1421,8 +1426,9 @@ class TradingAlgorithm(object):
             The asset/TradingPair that this order is for.
         amount : int
             The amount of currency to order. If ``amount`` is positive, this is
-            the number of ``base_currency`` (the first asset in the pair) to buy. If ``amount`` is negative,
-            this is the number of ``base_currency`` to sell (buy ``quote_currency``).
+            the number of ``base_currency`` (the first asset in the pair) to
+            buy. If ``amount`` is negative, this is the number of
+            ``base_currency`` to sell (buy ``quote_currency``).
         limit_price : float, optional
             The limit price for the order.
         stop_price : float, optional
@@ -2104,7 +2110,8 @@ class TradingAlgorithm(object):
             The order_id or order object to cancel.
         """
         order_id = order_param
-        if isinstance(order_param, catalyst.protocol.Order):
+        if isinstance(order_param, catalyst.protocol.Order) or \
+                isinstance(order_param, Order):
             order_id = order_param.id
 
         self.blotter.cancel(order_id)

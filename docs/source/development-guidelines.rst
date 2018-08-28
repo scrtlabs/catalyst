@@ -1,8 +1,16 @@
 Development Guidelines
 ======================
-This page is intended for developers of Catalyst, people who want to contribute to the Catalyst codebase or documentation, or people who want to install from source and make local changes to their copy of Catalyst.
+This page is intended for developers of Catalyst, people who want to contribute
+to the Catalyst codebase or documentation, or people who want to install from
+source and make local changes to their copy of Catalyst.
 
-All contributions, bug reports, bug fixes, documentation improvements, enhancements and ideas are welcome. We `track issues <https://github.com/enigmampc/catalyst/issues>`_ on `GitHub <https://github.com/enigmampc/catalyst>`_ and also have a `discord group <https://discord.gg/SJK32GY>`_ where you can ask questions.
+All contributions, bug reports, bug fixes, documentation improvements,
+enhancements and ideas are welcome.
+We `track issues <https://github.com/enigmampc/catalyst/issues>`_ on
+`GitHub <https://github.com/enigmampc/catalyst>`_ and also have a
+`discord group <https://discord.gg/SJK32GY>`_ and a
+`forum <https://forum.catalystcrypto.io>`_ where you can share ideas and ask
+questions.
 
 Creating a Development Environment
 ----------------------------------
@@ -52,6 +60,53 @@ Git Branching Structure
 If you want to contribute to the codebase of Catalyst, familiarize yourself with our branching structure, a fairly standardized one for that matter, that follows what is documented in the following article: `A successful Git branching model <http://nvie.com/posts/a-successful-git-branching-model/>`_. To contribute, create your local branch and submit a Pull Request (PR) to the **develop** branch.
 
 .. image:: https://camo.githubusercontent.com/9bde6fb64a9542a572e0e2017cbb58d9d2c440ac/687474703a2f2f6e7669652e636f6d2f696d672f6769742d6d6f64656c4032782e706e67
+
+Style Guide & Running Tests
+---------------------------
+
+We use `flake8`__ for checking style requirements and `nosetests`__ to run Catalyst tests. Our `continuous integration`__ tool will run these commands.
+
+__ http://flake8.pycqa.org/en/latest/
+__ http://nose.readthedocs.io/en/latest/
+__ https://en.wikipedia.org/wiki/Continuous_integration
+
+Before submitting patches or pull requests, please ensure that your changes pass when running:
+
+.. code-block:: bash
+
+   $ flake8 catalyst tests
+
+In order to run tests locally, you'll need to install several libraries
+(one of them is TA-lib, so make sure you have it installed following `these instructions`__ before continuing).
+
+__ https://mrjbq7.github.io/ta-lib/install.html
+
+.. code-block:: bash
+
+   $ pip install -r ./etc/requirements.txt
+   $ pip install -r ./etc/requirements_dev.txt
+   $ pip install -r ./etc/requirements_blaze.txt
+   $ pip install -r ./etc/requirements_talib.txt
+   $ pip install -e .
+
+You should now be free to run tests:
+
+.. code-block:: bash
+
+   $ cd tests && nosetests
+
+
+Continuous Integration
+----------------------
+
+We use `Travis CI`__ for Linux-64 bit builds.
+
+.. note::
+
+   We do not currently have CI for OSX-64 bit builds or Windows-64 bit builds.
+
+__ https://travis-ci.com/enigmampc/catalyst
+
 
 Contributing to the Docs
 ------------------------

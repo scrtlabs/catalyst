@@ -3,24 +3,18 @@
 
 import sys
 import os
-import pandas as pd
-import signal
-# import talib
 
+import signal
+import pandas as pd
 from logbook import Logger
 
 from catalyst import run_algorithm
 from catalyst.api import (
     symbol,
     record,
-    order,
-    order_target,
-    order_target_percent,
-    get_open_orders
+    order
 )
 from catalyst.finance import commission
-
-
 # from base.telegrambot import TelegramBot
 
 
@@ -63,11 +57,14 @@ class SimulationParameters:
     ALGO_NAMESPACE = os.path.basename(__file__).split('.')[0]
     ALGO_NAMESPACE_IMAGE = '{}/{}/{}.png'.format(DATA_DIR, 'images',
                                                  ALGO_NAMESPACE)
-    ALGO_NAMESPACE_RESULTS_TABLE = '{}/{}/{}.csv'.format(DATA_DIR, 'tables',
-                                                         ALGO_NAMESPACE + '_results')
-    ALGO_NAMESPACE_TRANSACTIONS_TABLE = '{}/{}/{}.csv'.format(DATA_DIR,
-                                                              'tables',
-                                                              ALGO_NAMESPACE + '_transactions')
+    ALGO_NAMESPACE_RESULTS_TABLE = '{}/{}/{}.csv'.format(
+        DATA_DIR,
+        'tables',
+        ALGO_NAMESPACE + '_results')
+    ALGO_NAMESPACE_TRANSACTIONS_TABLE = '{}/{}/{}.csv'.format(
+        DATA_DIR,
+        'tables',
+        ALGO_NAMESPACE + '_transactions')
     QUOTE_CURRENCY = 'usd'
     # QUOTE_CURRENCY = 'usdt'
 
@@ -91,8 +88,8 @@ class SimulationParameters:
     """
 
     # http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
-    # 30 minute interval ohlcv data (the standard data required for candlestick or
-    # indicators/signals)
+    # 30 minute interval ohlcv data (the standard data required for
+    # candlestick or indicators/signals)
     # 30T means 30 minutes re-sampling of one minute data.
     # CANDLES_FREQUENCY = '60T'
     # CANDLES_FREQUENCY = '30T'
@@ -255,7 +252,7 @@ def default_handle_data(context, data):
     cash = context.portfolio.cash
     amount = context.portfolio.positions[context.coin_pair].amount
     price = data.current(context.coin_pair, 'price')
-    order_id = None
+    # order_id = None
     context.last_base_price = context.base_prices[-2]
     context.curr_base_price = context.base_prices[-1]
 
@@ -265,25 +262,29 @@ def default_handle_data(context, data):
     # Sanity checks
     # assert cash >= 0
     if cash < 0:
-        import ipdb;
+        import ipdb
         ipdb.set_trace()  # BREAKPOINT
 
     print_facts(context)
     print_facts_telegram(context)
 
     # Order management
-    net_shares = 0
+    # net_shares = 0
     if context.counter == 2:
+        pass
         brute_shares = (cash / price) * context.parameters.BUY_PERCENTAGE
         share_commission_fee = brute_shares * context.parameters.COMMISSION_FEE
         net_shares = brute_shares - share_commission_fee
         buy_order_id = order(context.coin_pair, net_shares)
+        print(buy_order_id)
 
     if context.counter == 3:
+        pass
         brute_shares = amount * context.parameters.SELL_PERCENTAGE
         share_commission_fee = brute_shares * context.parameters.COMMISSION_FEE
         net_shares = -(brute_shares - share_commission_fee)
         sell_order_id = order(context.coin_pair, net_shares)
+        print(sell_order_id)
 
     # Record
     record(
@@ -341,11 +342,13 @@ if __name__ == '__main__':
         returns_daily = results
         results.to_csv('{}'.format(parameters.ALGO_NAMESPACE_RESULTS_TABLE))
 
-        # returns_daily = returns_minutely.add(1).groupby(pd.TimeGrouper('24H')).prod().add(-1)
+        # returns_daily = returns_minutely.add(1).groupby(
+        #   pd.TimeGrouper('24H')).prod().add(-1)
 
         # FIXME: pyfolio integration
         # pf_data = pyfolio.utils.extract_rets_pos_txn_from_zipline(results)
-        # pf_data = pyfolio.utils.extract_rets_pos_txn_from_zipline(results[:'2017-01-01'])
+        # pf_data = pyfolio.utils.extract_rets_pos_txn_from_zipline(
+        #   results[:'2017-01-01'])
         # pyfolio.create_full_tear_sheet(*pf_data)
 
     elif parameters.MODE == 'paper':

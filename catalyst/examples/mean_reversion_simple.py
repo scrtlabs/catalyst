@@ -11,7 +11,7 @@ import talib
 from logbook import Logger
 
 from catalyst import run_algorithm
-from catalyst.api import symbol, record, order_target_percent, get_open_orders
+from catalyst.api import symbol, record, order_target_percent
 from catalyst.exchange.utils.stats_utils import extract_transactions
 # We give a name to the algorithm which Catalyst will use to persist its state.
 # In this example, Catalyst will create the `.catalyst/data/live_algos`
@@ -44,7 +44,7 @@ def initialize(context):
     context.start_time = time.time()
 
     context.set_commission(maker=0.001, taker=0.002)
-    context.set_slippage(spread=0.001)
+    context.set_slippage(slippage=0.001)
 
 
 def handle_data(context, data):

@@ -12,7 +12,6 @@ Table of Contents
    install
    beginner-tutorial
    live-trading
-   features
    example-algos
    utilities
    videos

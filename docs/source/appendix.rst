@@ -67,6 +67,9 @@ Orders
 
 .. autofunction:: catalyst.api.cancel_order
 
+.. autofunction:: catalyst.api.get_orderbook
+
+
 Order Cancellation Policies
 '''''''''''''''''''''''''''
 
@@ -87,29 +90,29 @@ Assets
 
 .. autofunction:: catalyst.api.symbols
 
-.. autofunction:: catalyst.api.set_symbol_lookup_date
+.. .. autofunction:: catalyst.api.set_symbol_lookup_date
 
 .. autofunction:: catalyst.api.sid
 
 
-Trading Controls
-````````````````
+.. Trading Controls
+.. ````````````````
 
-catalyst provides trading controls to help ensure that the algorithm is
-performing as expected. The functions help protect the algorithm from certain
-bugs that could cause undesirable behavior when trading with real money.
+.. catalyst provides trading controls to help ensure that the algorithm is
+.. performing as expected. The functions help protect the algorithm from certain
+.. bugs that could cause undesirable behavior when trading with real money.
 
-.. autofunction:: catalyst.api.set_do_not_order_list
+.. .. autofunction:: catalyst.api.set_do_not_order_list
 
-.. autofunction:: catalyst.api.set_long_only
+.. .. autofunction:: catalyst.api.set_long_only
 
-.. autofunction:: catalyst.api.set_max_leverage
+.. .. autofunction:: catalyst.api.set_max_leverage
 
-.. autofunction:: catalyst.api.set_max_order_count
+.. .. autofunction:: catalyst.api.set_max_order_count
 
-.. autofunction:: catalyst.api.set_max_order_size
+.. .. autofunction:: catalyst.api.set_max_order_size
 
-.. autofunction:: catalyst.api.set_max_position_size
+.. .. autofunction:: catalyst.api.set_max_position_size
 
 
 Simulation Parameters
@@ -125,11 +128,11 @@ Commission Models
 .. autoclass:: catalyst.finance.commission.CommissionModel
    :members:
 
-.. autoclass:: catalyst.finance.commission.PerShare
+.. .. autoclass:: catalyst.finance.commission.PerShare
 
-.. autoclass:: catalyst.finance.commission.PerTrade
+.. .. autoclass:: catalyst.finance.commission.PerTrade
 
-.. autoclass:: catalyst.finance.commission.PerDollar
+.. .. autoclass:: catalyst.finance.commission.PerDollar
 
 Slippage Models
 '''''''''''''''
@@ -139,9 +142,11 @@ Slippage Models
 .. autoclass:: catalyst.finance.slippage.SlippageModel
    :members:
 
-.. autoclass:: catalyst.finance.slippage.FixedSlippage
+.. .. autoclass:: catalyst.finance.slippage.FixedSlippage
 
-.. autoclass:: catalyst.finance.slippage.VolumeShareSlippage
+.. autoclass:: catalyst.exchange.exchange_blotter.TradingPairFixedSlippage
+
+.. .. autoclass:: catalyst.finance.slippage.VolumeShareSlippage
 
 Pipeline
 ````````
@@ -162,7 +167,7 @@ Miscellaneous
 
 .. autofunction:: catalyst.api.get_environment
 
-.. autofunction:: catalyst.api.fetch_csv
+.. .. autofunction:: catalyst.api.fetch_csv
 
 
 .. _pipeline-api:

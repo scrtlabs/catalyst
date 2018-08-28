@@ -58,7 +58,7 @@ class LatestTestCase(TestCase):
             columns=self.assets,
         )
 
-    def test_latest(self):
+    def _test_latest(self):
         columns = TDS.columns
         pipe = Pipeline(
             columns={c.name: c.latest for c in columns},

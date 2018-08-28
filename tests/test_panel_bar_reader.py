@@ -22,7 +22,7 @@ from catalyst.data.us_equity_pricing import PanelBarReader
 from catalyst.testing import ExplodingObject
 from catalyst.testing.fixtures import (
     WithAssetFinder,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 from catalyst.utils.calendars import get_calendar
 
@@ -99,7 +99,7 @@ class WithPanelBarReader(WithAssetFinder):
 
 
 class TestPanelDailyBarReader(WithPanelBarReader,
-                              ZiplineTestCase):
+                              CatalystTestCase):
 
     FREQUENCY = 'daily'
 
@@ -110,7 +110,7 @@ class TestPanelDailyBarReader(WithPanelBarReader,
 
 
 class TestPanelMinuteBarReader(WithPanelBarReader,
-                               ZiplineTestCase):
+                               CatalystTestCase):
 
     FREQUENCY = 'minute'
 

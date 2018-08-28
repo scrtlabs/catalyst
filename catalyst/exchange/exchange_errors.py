@@ -279,7 +279,7 @@ class NoValueForField(ZiplineError):
 
 class OrderTypeNotSupported(ZiplineError):
     msg = (
-        'Order type `{order_type}` not currency supported by Catalyst. '
+        'Order type `{order_type}` currently not supported by Catalyst. '
         'Please use `limit` or `market` orders only.'
     ).strip()
 
@@ -296,9 +296,9 @@ class NotEnoughCapitalError(ZiplineError):
 class NotEnoughCashError(ZiplineError):
     msg = (
         'Total {currency} amount on {exchange} is lower than the cash '
-        'reserved for this algo: {free} < {cash}. While trades can be made on '
-        'the exchange accounts outside of the algo, exchange must have enough '
-        'free {currency} to cover the algo cash.'
+        'reserved for this algo: {total} < {cash}. While trades can be made '
+        'on the exchange accounts outside of the algo, exchange must have '
+        'enough free {currency} to cover the algo cash.'
     ).strip()
 
 
@@ -333,6 +333,6 @@ class BalanceTooLowError(ZiplineError):
 
 class NoCandlesReceivedFromExchange(ZiplineError):
     msg = (
-        'Although requesting {bar_count} candles until {end_dt} of asset {asset}, '
-        'an empty list of candles was received for {exchange}.'
+        'Although requesting {bar_count} candles until {end_dt} of '
+        'asset {asset}, an empty list of candles was received for {exchange}.'
     ).strip()

@@ -142,7 +142,7 @@ def analyze(context, stats):
 
 
 if __name__ == '__main__':
-    live = True
+    live = False
     if live:
         run_algorithm(
             capital_base=1000,

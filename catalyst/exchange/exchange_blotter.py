@@ -10,7 +10,7 @@ from catalyst.finance.blotter import Blotter
 from catalyst.finance.commission import CommissionModel
 from catalyst.finance.order import ORDER_STATUS
 from catalyst.finance.slippage import SlippageModel
-from catalyst.finance.transaction import create_transaction, Transaction
+from catalyst.finance.transaction import create_transaction
 from catalyst.utils.input_validation import expect_types
 
 log = Logger('exchange_blotter', level=LOG_LEVEL)
@@ -67,7 +67,8 @@ class TradingPairFeeSchedule(CommissionModel):
         if order.limit is not None:
             multiplier = maker \
                 if ((order.amount > 0 and order.limit < transaction.price)
-                    or (order.amount < 0 and order.limit > transaction.price)) \
+                    or (order.amount < 0 and
+                        order.limit > transaction.price)) \
                 and order.limit_reached else taker
 
         fee = cost * multiplier
@@ -76,21 +77,21 @@ class TradingPairFeeSchedule(CommissionModel):
 
 class TradingPairFixedSlippage(SlippageModel):
     """
-    Model slippage as a fixed spread.
+    Model slippage as a fixed value.
 
     Parameters
     ----------
-    spread : float, optional
-        spread / 2 will be added to buys and subtracted from sells.
+    slippage : float, optional
+        fixed slippage will be added to buys and subtracted from sells.
     """
 
-    def __init__(self, spread=0.0001):
+    def __init__(self, slippage=0.0001):
         super(TradingPairFixedSlippage, self).__init__()
-        self.spread = spread
+        self.slippage = slippage
 
     def __repr__(self):
-        return '{class_name}(spread={spread})'.format(
-            class_name=self.__class__.__name__, spread=self.spread,
+        return '{class_name}(slippage={slippage})'.format(
+            class_name=self.__class__.__name__, slippage=self.slippage,
         )
 
     def simulate(self, data, asset, orders_for_asset):
@@ -124,10 +125,10 @@ class TradingPairFixedSlippage(SlippageModel):
 
         if order.amount > 0:
             # Buy order
-            adj_price = price * (1 + self.spread)
+            adj_price = price * (1 + self.slippage)
         else:
             # Sell order
-            adj_price = price * (1 - self.spread)
+            adj_price = price * (1 - self.slippage)
 
         log.debug('added slippage to price: {} => {}'.format(price, adj_price))
 

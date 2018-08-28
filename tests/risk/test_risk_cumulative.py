@@ -18,7 +18,7 @@ import pandas as pd
 import catalyst.finance.risk as risk
 from catalyst.utils import factory
 
-from catalyst.testing.fixtures import WithTradingEnvironment, ZiplineTestCase
+from catalyst.testing.fixtures import WithTradingEnvironment, CatalystTestCase
 
 from catalyst.finance.trading import SimulationParameters
 
@@ -30,7 +30,7 @@ BENCHMARK = [BENCHMARK_BASE] * 251
 DECIMAL_PLACES = 8
 
 
-class TestRisk(WithTradingEnvironment, ZiplineTestCase):
+class TestRisk(WithTradingEnvironment, CatalystTestCase):
 
     def init_instance_fixtures(self):
         super(TestRisk, self).init_instance_fixtures()

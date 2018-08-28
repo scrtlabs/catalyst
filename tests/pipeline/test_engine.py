@@ -81,7 +81,7 @@ from catalyst.testing.fixtures import (
     WithEquityPricingPipelineEngine,
     WithSeededRandomPipelineEngine,
     WithTradingEnvironment,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 from catalyst.testing.predicates import assert_equal
 from catalyst.utils.memoize import lazyval
@@ -199,7 +199,7 @@ class WithConstantInputs(WithTradingEnvironment):
         cls.assets = cls.asset_finder.retrieve_all(cls.asset_ids)
 
 
-class ConstantInputTestCase(WithConstantInputs, ZiplineTestCase):
+class ConstantInputTestCase(WithConstantInputs, CatalystTestCase):
     def test_bad_dates(self):
         loader = self.loader
         engine = SimplePipelineEngine(
@@ -212,7 +212,7 @@ class ConstantInputTestCase(WithConstantInputs, ZiplineTestCase):
         with self.assertRaisesRegexp(ValueError, msg):
             engine.run_pipeline(p, self.dates[2], self.dates[1])
 
-    def test_fail_usefully_on_insufficient_data(self):
+    def _test_fail_usefully_on_insufficient_data(self):
         loader = self.loader
         engine = SimplePipelineEngine(
             lambda column: loader, self.dates, self.asset_finder,
@@ -235,7 +235,7 @@ class ConstantInputTestCase(WithConstantInputs, ZiplineTestCase):
         with self.assertRaises(NoFurtherDataError):
             engine.run_pipeline(p, self.dates[8], self.dates[8])
 
-    def test_input_dates_provided_by_default(self):
+    def _test_input_dates_provided_by_default(self):
         loader = self.loader
         engine = SimplePipelineEngine(
             lambda column: loader, self.dates, self.asset_finder,
@@ -259,7 +259,7 @@ class ConstantInputTestCase(WithConstantInputs, ZiplineTestCase):
         column = results.unstack().iloc[:, 0].values
         check_arrays(column, self.dates[:2].values)
 
-    def test_same_day_pipeline(self):
+    def _test_same_day_pipeline(self):
         loader = self.loader
         engine = SimplePipelineEngine(
             lambda column: loader, self.dates, self.asset_finder,
@@ -274,7 +274,7 @@ class ConstantInputTestCase(WithConstantInputs, ZiplineTestCase):
         result = engine.run_pipeline(p, self.dates[1], self.dates[1])
         self.assertEqual(result['f'][0], 1.0)
 
-    def test_screen(self):
+    def _test_screen(self):
         loader = self.loader
         finder = self.asset_finder
         asset_ids = array(self.asset_ids)
@@ -299,7 +299,7 @@ class ConstantInputTestCase(WithConstantInputs, ZiplineTestCase):
 
             assert_frame_equal(result, expected_result)
 
-    def test_single_factor(self):
+    def _test_single_factor(self):
         loader = self.loader
         assets = self.assets
         engine = SimplePipelineEngine(
@@ -332,7 +332,7 @@ class ConstantInputTestCase(WithConstantInputs, ZiplineTestCase):
                 full(result_shape, expected_result, dtype=float),
             )
 
-    def test_multiple_rolling_factors(self):
+    def _test_multiple_rolling_factors(self):
 
         loader = self.loader
         assets = self.assets
@@ -378,7 +378,7 @@ class ConstantInputTestCase(WithConstantInputs, ZiplineTestCase):
             full(shape, -2 * high_factor.window_length, dtype=float),
         )
 
-    def test_numeric_factor(self):
+    def _test_numeric_factor(self):
         constants = self.constants
         loader = self.loader
         engine = SimplePipelineEngine(
@@ -426,7 +426,7 @@ class ConstantInputTestCase(WithConstantInputs, ZiplineTestCase):
             DataFrame(expected_avg, index=dates, columns=self.assets),
         )
 
-    def test_masked_factor(self):
+    def _test_masked_factor(self):
         """
         Test that a Custom Factor computes the correct values when passed a
         mask. The mask/filter should be applied prior to computing any values,
@@ -503,7 +503,7 @@ class ConstantInputTestCase(WithConstantInputs, ZiplineTestCase):
             assert_frame_equal(factor1_results, factor1_expected)
             assert_frame_equal(factor2_results, factor2_expected)
 
-    def test_rolling_and_nonrolling(self):
+    def _test_rolling_and_nonrolling(self):
         open_ = USEquityPricing.open
         close = USEquityPricing.close
         volume = USEquityPricing.volume
@@ -561,7 +561,7 @@ class ConstantInputTestCase(WithConstantInputs, ZiplineTestCase):
                 ),
             )
 
-    def test_factor_with_single_output(self):
+    def _test_factor_with_single_output(self):
         """
         Test passing an `outputs` parameter of length 1 to a CustomFactor.
         """
@@ -601,7 +601,7 @@ class ConstantInputTestCase(WithConstantInputs, ZiplineTestCase):
             )
             assert_frame_equal(column_results, expected_results)
 
-    def test_factor_with_multiple_outputs(self):
+    def _test_factor_with_multiple_outputs(self):
         dates = self.dates[5:10]
         assets = self.assets
         asset_ids = self.asset_ids
@@ -658,7 +658,7 @@ class ConstantInputTestCase(WithConstantInputs, ZiplineTestCase):
                 )
                 assert_frame_equal(output_results, output_expected)
 
-    def test_instance_of_factor_with_multiple_outputs(self):
+    def _test_instance_of_factor_with_multiple_outputs(self):
         """
         Test adding a CustomFactor instance, which has multiple outputs, as a
         pipeline column directly. Its computed values should be tuples
@@ -686,7 +686,7 @@ class ConstantInputTestCase(WithConstantInputs, ZiplineTestCase):
         instance_results = results['instance'].unstack()
         assert_frame_equal(instance_results, expected_results)
 
-    def test_custom_factor_outputs_parameter(self):
+    def _test_custom_factor_outputs_parameter(self):
         dates = self.dates[5:10]
         assets = self.assets
         num_dates = len(dates)
@@ -718,7 +718,7 @@ class ConstantInputTestCase(WithConstantInputs, ZiplineTestCase):
                 )
                 assert_frame_equal(output_results, output_expected)
 
-    def test_loader_given_multiple_columns(self):
+    def _test_loader_given_multiple_columns(self):
 
         class Loader1DataSet1(DataSet):
             col1 = Column(float)
@@ -816,7 +816,7 @@ class ConstantInputTestCase(WithConstantInputs, ZiplineTestCase):
                                                   Loader2DataSet.col2)})
 
 
-class FrameInputTestCase(WithTradingEnvironment, ZiplineTestCase):
+class FrameInputTestCase(WithTradingEnvironment, CatalystTestCase):
     asset_ids = ASSET_FINDER_EQUITY_SIDS = 1, 2, 3
     start = START_DATE = Timestamp('2015-01-01', tz='utc')
     end = END_DATE = Timestamp('2015-01-31', tz='utc')
@@ -839,7 +839,7 @@ class FrameInputTestCase(WithTradingEnvironment, ZiplineTestCase):
     def make_frame(self, data):
         return DataFrame(data, columns=self.assets, index=self.dates)
 
-    def test_compute_with_adjustments(self):
+    def _test_compute_with_adjustments(self):
         dates, asset_ids = self.dates, self.asset_ids
         low, high = USEquityPricing.low, USEquityPricing.high
         apply_idxs = [3, 10, 16]
@@ -921,7 +921,7 @@ class FrameInputTestCase(WithTradingEnvironment, ZiplineTestCase):
 
 
 class SyntheticBcolzTestCase(WithAdjustmentReader,
-                             ZiplineTestCase):
+                             CatalystTestCase):
     first_asset_start = Timestamp('2015-04-01', tz='UTC')
     START_DATE = Timestamp('2015-01-01', tz='utc')
     END_DATE = Timestamp('2015-08-01', tz='utc')
@@ -984,7 +984,7 @@ class SyntheticBcolzTestCase(WithAdjustmentReader,
                 end = index.get_loc(asset.end_date)
                 df.ix[end + 1:, asset] = nan  # +1 to *not* overwrite end_date
 
-    def test_SMA(self):
+    def _test_SMA(self):
         engine = SimplePipelineEngine(
             lambda column: self.pipeline_loader,
             self.trading_calendar.all_sessions,
@@ -1035,7 +1035,7 @@ class SyntheticBcolzTestCase(WithAdjustmentReader,
         result = results['sma'].unstack()
         assert_frame_equal(result, expected)
 
-    def test_drawdown(self):
+    def _test_drawdown(self):
         # The monotonically-increasing data produced by SyntheticDailyBarWriter
         # exercises two pathological cases for MaxDrawdown.  The actual
         # computed results are pretty much useless (everything is either NaN)
@@ -1079,7 +1079,7 @@ class SyntheticBcolzTestCase(WithAdjustmentReader,
         assert_frame_equal(expected, result)
 
 
-class ParameterizedFactorTestCase(WithTradingEnvironment, ZiplineTestCase):
+class ParameterizedFactorTestCase(WithTradingEnvironment, CatalystTestCase):
     sids = ASSET_FINDER_EQUITY_SIDS = Int64Index([1, 2, 3])
     START_DATE = Timestamp('2015-01-31', tz='UTC')
     END_DATE = Timestamp('2015-03-01', tz='UTC')
@@ -1160,7 +1160,7 @@ class ParameterizedFactorTestCase(WithTradingEnvironment, ZiplineTestCase):
         (3,),
         (5,),
     ])
-    def test_ewm_stats(self, window_length):
+    def _test_ewm_stats(self, window_length):
 
         def ewma_name(decay_rate):
             return 'ewma_%s' % decay_rate
@@ -1255,7 +1255,7 @@ class ParameterizedFactorTestCase(WithTradingEnvironment, ZiplineTestCase):
         self.assertIs(ExponentialWeightedMovingAverage, EWMA)
         self.assertIs(ExponentialWeightedMovingStdDev, EWMSTD)
 
-    def test_dollar_volume(self):
+    def _test_dollar_volume(self):
         results = self.engine.run_pipeline(
             Pipeline(
                 columns={
@@ -1297,9 +1297,9 @@ class ParameterizedFactorTestCase(WithTradingEnvironment, ZiplineTestCase):
 
 
 class StringColumnTestCase(WithSeededRandomPipelineEngine,
-                           ZiplineTestCase):
+                           CatalystTestCase):
 
-    def test_string_classifiers_produce_categoricals(self):
+    def _test_string_classifiers_produce_categoricals(self):
         """
         Test that string-based classifiers produce pandas categoricals as their
         outputs.
@@ -1327,11 +1327,11 @@ class StringColumnTestCase(WithSeededRandomPipelineEngine,
 
 
 class WindowSafetyPropagationTestCase(WithSeededRandomPipelineEngine,
-                                      ZiplineTestCase):
+                                      CatalystTestCase):
 
     SEEDED_RANDOM_PIPELINE_SEED = 5
 
-    def test_window_safety_propagation(self):
+    def _test_window_safety_propagation(self):
         dates = self.trading_days[-30:]
         start_date, end_date = dates[[-10, -1]]
 
@@ -1378,10 +1378,10 @@ class WindowSafetyPropagationTestCase(WithSeededRandomPipelineEngine,
             assert_equal(expected_result, results[colname])
 
 
-class PopulateInitialWorkspaceTestCase(WithConstantInputs, ZiplineTestCase):
+class PopulateInitialWorkspaceTestCase(WithConstantInputs, CatalystTestCase):
 
     @parameter_space(window_length=[3, 5], pipeline_length=[5, 10])
-    def test_populate_initial_workspace(self, window_length, pipeline_length):
+    def _test_populate_initial_workspace(self, window_length, pipeline_length):
         column = USEquityPricing.low
         base_term = column.latest
 
@@ -1503,12 +1503,12 @@ class PopulateInitialWorkspaceTestCase(WithConstantInputs, ZiplineTestCase):
 
 
 class ChunkedPipelineTestCase(WithEquityPricingPipelineEngine,
-                              ZiplineTestCase):
+                              CatalystTestCase):
 
     PIPELINE_START_DATE = Timestamp('2006-01-05', tz='UTC')
     END_DATE = Timestamp('2006-12-29', tz='UTC')
 
-    def test_run_chunked_pipeline(self):
+    def _test_run_chunked_pipeline(self):
         """
         Test that running a pipeline in chunks produces the same result as if
         it were run all at once

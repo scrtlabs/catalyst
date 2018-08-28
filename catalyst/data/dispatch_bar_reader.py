@@ -88,7 +88,8 @@ class AssetDispatchBarReader(with_metaclass(ABCMeta)):
         if self._last_available_dt is not None:
             return self._last_available_dt
         else:
-            return min(r.last_available_dt for r in list(self._readers.values()))
+            return min(r.last_available_dt for r in list(
+                self._readers.values()))
 
     @lazyval
     def first_trading_day(self):

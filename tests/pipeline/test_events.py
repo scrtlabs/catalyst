@@ -24,7 +24,7 @@ from catalyst.pipeline.loaders.utils import (
     normalize_timestamp_to_query_time,
     previous_event_indexer,
 )
-from catalyst.testing import check_arrays, ZiplineTestCase
+from catalyst.testing import check_arrays, CatalystTestCase
 from catalyst.testing.fixtures import (
     WithAssetFinder,
     WithTradingSessions,
@@ -148,7 +148,7 @@ def make_events(add_nulls):
     return pd.concat(event_frames, ignore_index=True)
 
 
-class EventIndexerTestCase(ZiplineTestCase):
+class EventIndexerTestCase(CatalystTestCase):
 
     @classmethod
     def init_class_fixtures(cls):
@@ -269,7 +269,7 @@ class EventIndexerTestCase(ZiplineTestCase):
 
 class EventsLoaderEmptyTestCase(WithAssetFinder,
                                 WithTradingSessions,
-                                ZiplineTestCase):
+                                CatalystTestCase):
     START_DATE = pd.Timestamp('2014-01-01')
     END_DATE = pd.Timestamp('2014-01-30')
 
@@ -292,7 +292,7 @@ class EventsLoaderEmptyTestCase(WithAssetFinder,
                 frame[c.name] = frame[c.name].astype('category')
         return frame
 
-    def test_load_empty(self):
+    def _test_load_empty(self):
         """
         For the case where raw data is empty, make sure we have a result for
         all sids, that the dimensions are correct, and that we have the
@@ -351,7 +351,7 @@ class EventsLoaderEmptyTestCase(WithAssetFinder,
 
 class EventsLoaderTestCase(WithAssetFinder,
                            WithTradingSessions,
-                           ZiplineTestCase):
+                           CatalystTestCase):
 
     START_DATE = pd.Timestamp('2014-01-01')
     END_DATE = pd.Timestamp('2014-01-30')
@@ -397,7 +397,7 @@ class EventsLoaderTestCase(WithAssetFinder,
         # This method exists to be overridden by BlazeEventsLoaderTestCase
         return EventsLoader(events, next_value_columns, previous_value_columns)
 
-    def test_load_with_trading_calendar(self):
+    def _test_load_with_trading_calendar(self):
         engine = SimplePipelineEngine(
             lambda x: self.loader,
             self.trading_days,
@@ -426,7 +426,7 @@ class EventsLoaderTestCase(WithAssetFinder,
             else:
                 raise AssertionError("Unexpected column %s." % c)
 
-    def test_load_properly_forward_fills(self):
+    def _test_load_properly_forward_fills(self):
         engine = SimplePipelineEngine(
             lambda x: self.loader,
             self.trading_days,
@@ -586,7 +586,7 @@ class BlazeEventsLoaderTestCase(EventsLoaderTestCase):
         )
 
 
-class EventLoaderUtilsTestCase(ZiplineTestCase):
+class EventLoaderUtilsTestCase(CatalystTestCase):
     # These cases test the following:
     # 1. Shuffling timestamps in DST/EST produces the correct normalized
     # timestamps

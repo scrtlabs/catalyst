@@ -30,6 +30,7 @@ from catalyst.exchange.utils.datetime_utils import from_ms_timestamp, \
     get_periods_range
 from catalyst.finance.order import Order, ORDER_STATUS
 from catalyst.finance.transaction import Transaction
+from redo import retry
 
 log = Logger('CCXT', level=LOG_LEVEL)
 
@@ -40,6 +41,10 @@ SUPPORTED_EXCHANGES = dict(
     poloniex=ccxt.poloniex,
     bitmex=ccxt.bitmex,
     gdax=ccxt.gdax,
+    huobipro=ccxt.huobipro,
+    okex=ccxt.okex,
+    hitbtc=ccxt.hitbtc2,
+    kucoin=ccxt.kucoin,
 )
 
 
@@ -81,6 +86,12 @@ class CCXT(Exchange):
         self.low_balance_threshold = 0.1
         self.request_cpt = dict()
         self._common_symbols = dict()
+
+        # Operations with retry features
+        self.attempts = dict(
+            missing_order_attempts=5,
+            retry_sleeptime=5,
+        )
 
         self.bundle = ExchangeBundle(self.name)
         self.markets = None
@@ -199,7 +210,7 @@ class CCXT(Exchange):
 
                 frequencies.append(freq)
 
-        except Exception as e:
+        except Exception:
             log.warn(
                 'candle frequencies not available for exchange {}'.format(
                     self.name
@@ -447,13 +458,21 @@ class CCXT(Exchange):
 
         candles = dict()
         for index, asset in enumerate(assets):
-            ohlcvs = self.api.fetch_ohlcv(
-                symbol=symbols[index],
-                timeframe=timeframe,
-                since=since,
-                limit=bar_count,
-                params={}
-            )
+            try:
+                ohlcvs = self.api.fetch_ohlcv(
+                    symbol=symbols[index],
+                    timeframe=timeframe,
+                    since=since,
+                    limit=bar_count,
+                    params={}
+                )
+            except (ExchangeError, NetworkError) as e:
+                log.warn(
+                    'unable to fetch {} ohlcv: {}'.format(
+                        asset, e
+                    )
+                )
+                raise ExchangeRequestError(error=e)
 
             candles[asset] = []
             for ohlcv in ohlcvs:
@@ -722,7 +741,12 @@ class CCXT(Exchange):
 
         limit_price = price if order_type == 'limit' else None
 
-        executed_price = order_status['cost'] / order_status['amount']
+        if 'price' in order_status:
+            executed_price = order_status['price']
+        elif 'cost' in order_status and "amount" in order_status:
+            executed_price = order_status['cost'] / order_status['amount']
+        else:
+            executed_price = None
         commission = order_status['fee']
         date = from_ms_timestamp(order_status['timestamp'])
 
@@ -822,7 +846,7 @@ class CCXT(Exchange):
         return None, missing_order
 
     def _handle_request_timeout(self, dt_before, asset, amount, is_buy, style,
-                                adj_amount):
+                                prec_amount):
         """
         Check if an order was received during the timeout, if it appeared
         on the orders dict return it to the user.
@@ -834,14 +858,15 @@ class CCXT(Exchange):
         :param amount: float
         :param is_buy: Bool
         :param style:
-        :param adj_amount: int
+        :param prec_amount: int
         :return: missing_order: Order/ None
         """
+        symbol = asset.asset_name.replace(' ', '')
         missing_order_id, missing_order = self._fetch_missing_order(
-            dt_before=dt_before, symbol=asset.asset_name)
+            dt_before=dt_before, symbol=symbol)
 
         if missing_order_id:
-            final_amount = adj_amount if amount > 0 else -adj_amount
+            final_amount = prec_amount if amount > 0 else -prec_amount
             missing_order = Order(
                 dt=dt_before,
                 asset=asset,
@@ -876,7 +901,6 @@ class CCXT(Exchange):
                 self.api.load_markets()
 
             # https://github.com/ccxt/ccxt/issues/1483
-            adj_amount = round(abs(amount), asset.decimals)
             market = self.api.markets[symbol]
             if 'lots' in market and market['lots'] > amount:
                 raise CreateOrderError(
@@ -885,17 +909,15 @@ class CCXT(Exchange):
                         amount
                     )
                 )
-
-        else:
-            adj_amount = round(abs(amount), asset.decimals)
-
+        adj_amount = round(abs(amount), asset.decimals)
+        prec_amount = self.api.amount_to_precision(symbol, adj_amount)
         before_order_dt = pd.Timestamp.utcnow()
         try:
             result = self.api.create_order(
                 symbol=symbol,
                 type=order_type,
                 side=side,
-                amount=adj_amount,
+                amount=prec_amount,
                 price=price
             )
         except InvalidOrder as e:
@@ -908,9 +930,15 @@ class CCXT(Exchange):
                 'an order on {} / {}\n Checking if an order was filled '
                 'during the timeout'.format(self.name, symbol)
             )
-
-            missing_order = self._handle_request_timeout(
-                before_order_dt, asset, amount, is_buy, style, adj_amount
+            missing_order = retry(
+                action=self._handle_request_timeout,
+                attempts=self.attempts['missing_order_attempts'],
+                sleeptime=self.attempts['retry_sleeptime'],
+                retry_exceptions=(RequestTimeout, ExchangeError),
+                cleanup=lambda: log.warn('Checking missing order again..'),
+                args=(
+                    before_order_dt, asset, amount, is_buy, style, prec_amount
+                )
             )
             if missing_order is None:
                 # no order was found
@@ -920,6 +948,7 @@ class CCXT(Exchange):
                     'We encourage you to report any issue on GitHub: '
                     'https://github.com/enigmampc/catalyst/issues'
                 )
+                # In order to try ordering again
                 raise ExchangeRequestError(error=e)
             else:
                 return missing_order
@@ -933,7 +962,7 @@ class CCXT(Exchange):
             raise ExchangeRequestError(error=e)
 
         exchange_amount = None
-        if 'amount' in result and result['amount'] != adj_amount:
+        if 'amount' in result and result['amount'] != prec_amount:
             exchange_amount = result['amount']
 
         elif 'info' in result:
@@ -943,15 +972,15 @@ class CCXT(Exchange):
         if exchange_amount:
             log.info(
                 'order amount adjusted by {} from {} to {}'.format(
-                    self.name, adj_amount, exchange_amount
+                    self.name, prec_amount, exchange_amount
                 )
             )
-            adj_amount = exchange_amount
+            prec_amount = exchange_amount
 
         if 'info' not in result:
             raise ValueError('cannot use order without info attribute')
 
-        final_amount = adj_amount if side == 'buy' else -adj_amount
+        final_amount = prec_amount if side == 'buy' else -prec_amount
         order_id = result['id']
         order = Order(
             dt=pd.Timestamp.utcnow(),
@@ -999,11 +1028,6 @@ class CCXT(Exchange):
         return super(CCXT, self)._check_low_balance(updated_currency, balances,
                                                     amount)
 
-    def _check_position_balance(self, currency, balances, amount):
-        updated_currency = self._check_common_symbols(currency)
-        return super(CCXT, self)._check_position_balance(updated_currency,
-                                                         balances, amount)
-
     def _process_order_fallback(self, order):
         """
         Fallback method for exchanges which do not play nice with
@@ -1025,7 +1049,7 @@ class CCXT(Exchange):
         )
         order.status = exc_order.status
         order.commission = exc_order.commission
-        order.filled = exc_order.amount
+        order.filled = exc_order.filled
 
         transactions = []
         if exc_order.status == ORDER_STATUS.FILLED:
@@ -1127,7 +1151,29 @@ class CCXT(Exchange):
         order.broker_order_id = ', '.join([t['id'] for t in trades])
         return transactions
 
-    def get_order(self, order_id, asset_or_symbol=None, return_price=False):
+    def get_order(self, order_id, asset_or_symbol=None,
+                  return_price=False, params={}):
+        """Lookup an order based on the order id returned from one of the
+        order functions.
+
+        Parameters
+        ----------
+        order_id : str
+            The unique identifier for the order.
+        asset_or_symbol: Asset or str
+            The asset or the tradingPair symbol of the order.
+        return_price: bool
+            get the trading price in addition to the order
+        params: dict, optional
+            Extra parameters to pass to the exchange
+
+        Returns
+        -------
+        order : Order
+            The order object.
+        execution_price: float
+            The execution price per unit of the order if return_price is True
+        """
         if asset_or_symbol is None:
             log.debug(
                 'order not found in memory, the request might fail '
@@ -1136,7 +1182,9 @@ class CCXT(Exchange):
         try:
             symbol = self.get_symbol(asset_or_symbol) \
                 if asset_or_symbol is not None else None
-            order_status = self.api.fetch_order(id=order_id, symbol=symbol)
+            order_status = self.api.fetch_order(id=order_id,
+                                                symbol=symbol,
+                                                params=params)
             order, executed_price = self._create_order(order_status)
 
             if return_price:
@@ -1264,11 +1312,7 @@ class CCXT(Exchange):
     def get_orderbook(self, asset, order_type='all', limit=None):
         ccxt_symbol = self.get_symbol(asset)
 
-        params = dict()
-        if limit is not None:
-            params['depth'] = limit
-
-        order_book = self.api.fetch_order_book(ccxt_symbol, params)
+        order_book = self.api.fetch_order_book(ccxt_symbol, limit=limit)
 
         order_types = ['bids', 'asks'] if order_type == 'all' else [order_type]
         result = dict(last_traded=from_ms_timestamp(order_book['timestamp']))

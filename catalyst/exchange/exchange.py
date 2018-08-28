@@ -253,14 +253,10 @@ class Exchange:
                 applies = (a.data_source == data_source)
 
             elif data_frequency is not None:
-                applies = (
-                        (
-                                data_frequency == 'minute' and
-                                a.end_minute is not None)
-                        or (
-                                data_frequency == 'daily' and a.end_daily is not None)
-                )
-
+                applies = ((data_frequency == 'minute' and
+                            a.end_minute is not None)
+                           or (data_frequency == 'daily' and
+                               a.end_daily is not None))
             else:
                 applies = True
 
@@ -637,7 +633,7 @@ class Exchange:
                 start_dt = get_start_dt(end_dt, adj_bar_count, data_frequency)
                 trailing_dt = \
                     series[asset].index[-1] + get_delta(1, data_frequency) \
-                        if asset in series else start_dt
+                    if asset in series else start_dt
 
                 # The get_history method supports multiple asset
                 # Use the original frequency to let each api optimize
@@ -682,24 +678,6 @@ class Exchange:
         """
         In order to avoid spending money that the user doesn't own,
         we are comparing to the balance on the account.
-        :param currency: str
-        :param balances: dict
-        :param amount: float
-        :return: free: float,
-                       bool
-        """
-        free = balances[currency]['free'] if currency in balances else 0.0
-
-        if free < amount:
-            return free, True
-
-        else:
-            return free, False
-
-    def _check_position_balance(self, currency, balances, amount):
-        """
-        In order to avoid spending money that the user doesn't own,
-        we are comparing to the balance on the account.
         For positions, we want to avoid double updates, since, exchanges
         update positions when the order is opened as used, catalyst wants
         to take them into consideration, therefore running comparison on total.
@@ -732,17 +710,17 @@ class Exchange:
             Check balances amounts against the exchange.
 
         """
-        free_cash = 0.0
+        total_cash = 0.0
         if check_balances:
             log.debug('fetching {} balances'.format(self.name))
             balances = self.get_balances()
             log.debug(
-                'got free balances for {} currencies'.format(
+                'got balances for {} currencies'.format(
                     len(balances)
                 )
             )
             if cash is not None:
-                free_cash, is_lower = self._check_low_balance(
+                total_cash, is_lower = self._check_low_balance(
                     currency=self.quote_currency,
                     balances=balances,
                     amount=cash,
@@ -751,7 +729,7 @@ class Exchange:
                     raise NotEnoughCashError(
                         currency=self.quote_currency,
                         exchange=self.name,
-                        free=free_cash,
+                        total=total_cash,
                         cash=cash,
                     )
 
@@ -782,7 +760,7 @@ class Exchange:
                 position.last_sale_date = ticker['last_traded']
 
                 if check_balances:
-                    total, is_lower = self._check_position_balance(
+                    total, is_lower = self._check_low_balance(
                         currency=asset.base_currency,
                         balances=balances,
                         amount=position.amount,
@@ -800,7 +778,7 @@ class Exchange:
                 positions_value += \
                     position.amount * position.last_sale_price
 
-        return free_cash, positions_value
+        return total_cash, positions_value
 
     def order(self, asset, amount, style):
         """Place an order.
@@ -811,9 +789,9 @@ class Exchange:
             The asset that this order is for.
 
         amount : int
-            The amount of shares to order. If ``amount`` is positive, this is
-            the number of shares to buy or cover. If ``amount`` is negative,
-            this is the number of shares to sell or short.
+            The amount of assets to order. If ``amount`` is positive, this is
+            the number of assets to buy or cover. If ``amount`` is negative,
+            this is the number of assets to sell.
 
         limit_price : float, optional
             The limit price for the order.
@@ -937,7 +915,8 @@ class Exchange:
         pass
 
     @abstractmethod
-    def get_order(self, order_id, symbol_or_asset=None):
+    def get_order(self, order_id, symbol_or_asset=None,
+                  return_price=False, params={}):
         """Lookup an order based on the order id returned from one of the
         order functions.
 
@@ -947,6 +926,10 @@ class Exchange:
             The unique identifier for the order.
         symbol_or_asset: str|TradingPair
             The catalyst symbol, some exchanges need this
+        return_price: bool
+            get the trading price in addition to the order
+        params: dict, optional
+            Extra parameters to pass to the exchange
 
         Returns
         -------

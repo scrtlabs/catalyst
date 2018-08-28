@@ -22,7 +22,7 @@ import pandas as pd
 from catalyst import examples
 from catalyst.data.bundles import register, unregister
 from catalyst.testing import test_resource_path
-from catalyst.testing.fixtures import WithTmpDir, ZiplineTestCase
+from catalyst.testing.fixtures import WithTmpDir, CatalystTestCase
 from catalyst.testing.predicates import assert_equal
 from catalyst.utils.cache import dataframe_cache
 from catalyst.utils.paths import update_modified_time
@@ -34,7 +34,7 @@ _multiprocess_can_split_ = False
 matplotlib.use('Agg')
 
 
-class ExamplesTests(WithTmpDir, ZiplineTestCase):
+class ExamplesTests(WithTmpDir, CatalystTestCase):
     # some columns contain values with unique ids that will not be the same
 
     @classmethod
@@ -64,7 +64,7 @@ class ExamplesTests(WithTmpDir, ZiplineTestCase):
             )
 
     @parameterized.expand(sorted(examples.EXAMPLE_MODULES))
-    def test_example(self, example_name):
+    def _test_example(self, example_name):
         actual_perf = examples.run_example(
             example_name,
             # This should match the invocation in

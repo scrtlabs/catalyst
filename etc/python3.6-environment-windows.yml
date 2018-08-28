@@ -6,8 +6,6 @@ dependencies:
 - ca-certificates=2017.08.26
 - certifi=2018.1.18
 - intel-openmp=2018.0.0
-- ipython=6.4.0
-- jupyter=1.0.0
 - mkl=2018.0.1
 - numpy=1.14.0
 - openssl=1.0.2n
@@ -55,7 +53,6 @@ dependencies:
   - idna-ssl==1.0.0
   - intervaltree==2.1.0
   - jmespath==0.9.3
-  - jupyter_nbextensions_configurator==0.4.0
   - logbook==1.2.1
   - lru-dict==1.1.6
   - lxml==4.1.1

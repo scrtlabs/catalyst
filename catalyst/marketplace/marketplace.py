@@ -19,10 +19,11 @@ from requests_toolbelt.multipart.decoder import \
 
 from catalyst.constants import (
     LOG_LEVEL, AUTH_SERVER, ETH_REMOTE_NODE, MARKETPLACE_CONTRACT,
-    MARKETPLACE_CONTRACT_ABI, ENIGMA_CONTRACT, ENIGMA_CONTRACT_ABI)
+    MARKETPLACE_CONTRACT_ABI, ENIGMA_CONTRACT, ENIGMA_CONTRACT_ABI,
+    TERMS_AND_CONDITIONS)
 from catalyst.exchange.utils.stats_utils import set_print_settings
 from catalyst.marketplace.marketplace_errors import (
-    MarketplacePubAddressEmpty, MarketplaceDatasetNotFound,
+    MarketplaceDatasetNotFound,
     MarketplaceNoAddressMatch, MarketplaceHTTPRequest,
     MarketplaceNoCSVFiles, MarketplaceRequiresPython3)
 from catalyst.marketplace.utils.auth_utils import get_key_secret, \
@@ -31,7 +32,8 @@ from catalyst.marketplace.utils.eth_utils import bin_hex, from_grains, \
     to_grains
 from catalyst.marketplace.utils.path_utils import get_bundle_folder, \
     get_data_source_folder, get_marketplace_folder, \
-    get_user_pubaddr, get_temp_bundles_folder, extract_bundle
+    get_user_pubaddr, get_temp_bundles_folder, extract_bundle, \
+    save_user_pubaddr
 from catalyst.utils.paths import ensure_directory
 
 if sys.version_info.major < 3:
@@ -51,12 +53,49 @@ class Marketplace:
             raise MarketplaceRequiresPython3()
 
         self.addresses = get_user_pubaddr()
+        if not self.addresses[0]['accepted_terms']:
+            terms_and_conditions_url = urllib.urlopen(TERMS_AND_CONDITIONS)
+            terms_and_conditions = terms_and_conditions_url.read()\
+                .decode(terms_and_conditions_url.info().get_content_charset())
+            print(terms_and_conditions)
+            while True:
+                accepted_terms = input('Do you accept these terms and '
+                                       'conditions? [y, n] ').lower().strip()
+                if accepted_terms == 'y':
+                    for address in self.addresses:
+                        address['accepted_terms'] = True
+                    save_user_pubaddr(self.addresses)
+                    print()
+                    break
 
         if self.addresses[0]['pubAddr'] == '':
-            raise MarketplacePubAddressEmpty(
-                filename=os.path.join(
-                    get_marketplace_folder(), 'addresses.json')
-            )
+            print('We need to populate a file located at {} to be used for '
+                  'future marketplace requests. \n'
+                  'You shouldn\'t need to interact with this file from here '
+                  'on out, but if you need to, you can go '
+                  'ahead and edit this file directly.'
+                  .format(os.path.join(get_marketplace_folder(),
+                                       'addresses.json')))
+            while True:
+                pub_addr = input('What is your Ethereum public address? ')\
+                    .strip()
+                if pub_addr:
+                    break
+            desc = input('What is a description for this address (optional, '
+                         'but helpful to distinguish between '
+                         'multiple accounts you may be using)? ')
+            while True:
+                wallet = input('What wallet type are you using (strongly '
+                               'recommend metamask)? [metamask, ledger, '
+                               'bitbox, keystore, key] ')
+                if wallet in ['metamask', 'ledger', 'bitbox', 'keystore',
+                              'key']:
+                    break
+            self.addresses[0].update({'pubAddr': pub_addr,
+                                      'desc': desc, 'wallet': wallet})
+            save_user_pubaddr(self.addresses)
+            print()
+
         self.default_account = self.addresses[0]['pubAddr']
 
         self.web3 = Web3(HTTPProvider(ETH_REMOTE_NODE))
@@ -69,7 +108,7 @@ class Marketplace:
 
         abi_url = urllib.urlopen(MARKETPLACE_CONTRACT_ABI)
         abi_url = abi_url.read().decode(
-                abi_url.info().get_content_charset())
+            abi_url.info().get_content_charset())
 
         abi = json.loads(abi_url)
 
@@ -86,7 +125,7 @@ class Marketplace:
 
         abi_url = urllib.urlopen(ENIGMA_CONTRACT_ABI)
         abi_url = abi_url.read().decode(
-                abi_url.info().get_content_charset())
+            abi_url.info().get_content_charset())
 
         abi = json.loads(abi_url)
 
@@ -161,13 +200,13 @@ class Marketplace:
               'Gas Price:\t\t[Accept the default value]\n'
               'Nonce:\t\t\t{nonce}\n'
               'Data:\t\t\t{data}\n'.format(
-                url=url,
-                _from=tx['from'],
-                to=tx['to'],
-                value=tx['value'],
-                gas=tx['gas'],
-                nonce=tx['nonce'],
-                data=tx['data'], )
+                  url=url,
+                  _from=tx['from'],
+                  to=tx['to'],
+                  value=tx['value'],
+                  gas=tx['gas'],
+                  nonce=tx['nonce'],
+                  data=tx['data'], )
               )
 
         webbrowser.open_new(url)
@@ -194,8 +233,9 @@ class Marketplace:
               '{}\n\n'.format(etherscan))
 
     def _list(self):
-        num_data_sources = self.mkt_contract.functions.getProviderNamesSize().call()
-        data_sources = [self.mkt_contract.functions.getNameAt(x).call() for x in range(num_data_sources)]
+        n_d_sources = self.mkt_contract.functions.getProviderNamesSize().call()
+        data_sources = [self.mkt_contract.functions.getNameAt(x).call()
+                        for x in range(n_d_sources)]
 
         data = []
         for index, data_source in enumerate(data_sources):
@@ -306,14 +346,14 @@ class Marketplace:
                   'buy: {} ENG. Get enough ENG to cover the costs of the '
                   'monthly\nsubscription for what you are trying to buy, '
                   'and try again.'.format(
-                    address, from_grains(balance), price))
+                      address, from_grains(balance), price))
             return
 
         while True:
             agree_pay = input('Please confirm that you agree to pay {} ENG '
                               'for a monthly subscription to the dataset "{}" '
                               'starting today. [default: Y] '.format(
-                                price, dataset)) or 'y'
+                                  price, dataset)) or 'y'
             if agree_pay.lower() not in ('y', 'n'):
                 print("Please answer Y or N.")
             else:
@@ -412,7 +452,7 @@ class Marketplace:
               'You can now ingest this dataset anytime during the '
               'next month by running the following command:\n'
               'catalyst marketplace ingest --dataset={}'.format(
-                dataset, address, dataset))
+                  dataset, address, dataset))
 
     def process_temp_bundle(self, ds_name, path):
         """
@@ -495,9 +535,9 @@ class Marketplace:
             print('Your subscription to dataset "{}" expired on {} UTC.'
                   'Please renew your subscription by running:\n'
                   'catalyst marketplace subscribe --dataset={}'.format(
-                    ds_name,
-                    pd.to_datetime(check_sub[4], unit='s', utc=True),
-                    ds_name)
+                      ds_name,
+                      pd.to_datetime(check_sub[4], unit='s', utc=True),
+                      ds_name)
                   )
 
         if 'key' in self.addresses[address_i]:
@@ -566,12 +606,15 @@ class Marketplace:
         z = bcolz.ctable(rootdir=bundle_folder, mode='r')
 
         if start is not None and end is not None:
-            z = z.fetchwhere('(date>=start_date) & (date<end_date)', user_dict={'start_date': start.encode(),
-                                                                                 'end_date': end.encode()})
+            z = z.fetchwhere('(date>=start_date) & (date<end_date)',
+                             user_dict={'start_date': start.encode(),
+                                        'end_date': end.encode()})
         elif start is not None:
-            z = z.fetchwhere('(date>=start_date)', user_dict={'start_date': start.encode()})
+            z = z.fetchwhere('(date>=start_date)',
+                             user_dict={'start_date': start.encode()})
         elif end is not None:
-            z = z.fetchwhere('(date<end_date)', user_dict={'end_date': end.encode()})
+            z = z.fetchwhere('(date<end_date)',
+                             user_dict={'end_date': end.encode()})
         df = z.todataframe()  # type: pd.DataFrame
         df.set_index(['date', 'symbol'], drop=True, inplace=True)
 
@@ -800,7 +843,7 @@ class Marketplace:
         files = []
         for idx, file in enumerate(filenames):
             log.info('Uploading file {} of {}: {}'.format(
-                idx+1, len(filenames), file))
+                idx + 1, len(filenames), file))
             files.append(('file', (os.path.basename(file), read_file(file))))
 
         headers = get_signed_headers(dataset, key, secret)
@@ -834,8 +877,8 @@ class Marketplace:
             while True:
                 print(df_sets)
                 dataset_num = input('Choose the dataset you want to '
-                                    'get withdraw amount for to [0..{}]: '.format(
-                                        df_sets.size - 1))
+                                    'get the withdraw amount for '
+                                    '[0..{}]: '.format(df_sets.size - 1))
                 try:
                     dataset_num = int(dataset_num)
                 except ValueError:
@@ -851,7 +894,7 @@ class Marketplace:
 
         dataset = dataset.lower()
 
-        address = self.choose_pubaddr()[0]
+        # address = self.choose_pubaddr()[0]
         provider_info = self.mkt_contract.functions.getDataProviderInfo(
             Web3.toHex(dataset.encode())
         ).call()
@@ -861,8 +904,10 @@ class Marketplace:
                   'the Data Marketplace.'.format(dataset))
             return
 
-        withdraw_amount = self.mkt_contract.functions.getWithdrawAmount(Web3.toHex(dataset.encode())).call()
-        print(withdraw_amount)
+        withdraw_amount = from_grains(
+            self.mkt_contract.functions.getWithdrawAmount(
+                Web3.toHex(dataset.encode())).call())
+        print('{} ENG'.format(withdraw_amount))
 
     def withdraw(self, dataset=None):
         if dataset is None:
@@ -875,8 +920,8 @@ class Marketplace:
             while True:
                 print(df_sets)
                 dataset_num = input('Choose the dataset you want to '
-                                    'get withdraw amount for to [0..{}]: '.format(
-                    df_sets.size - 1))
+                                    'withdraw from [0..{}]: '.format(
+                                        df_sets.size - 1))
                 try:
                     dataset_num = int(dataset_num)
                 except ValueError:

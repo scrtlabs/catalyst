@@ -39,7 +39,7 @@ class ExchangeAssetFinder(object):
                 break
 
             exchange = self.exchanges[exchange_name]
-            assets = [asset for asset in exchange.assets if asset.sid == sid]
+            assets = [a for a in exchange.assets if a.sid == sid]
             if assets:
                 asset = assets[0]
 
@@ -173,7 +173,7 @@ class ExchangeAssetFinder(object):
 
             data.append(exists)
 
-        sids = [asset.sid for asset in exchange.assets]
+        # sids = [asset.sid for asset in exchange.assets]
         df = pd.DataFrame(data, index=dates, columns=exchange.assets)
 
         return df

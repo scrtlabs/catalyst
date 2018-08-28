@@ -11,6 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+
+'''
+#   ZIPLINE legacy test: Catalyst does not use DispatchBarReader, and thus
+#   this test suite is irrelevant, and is commented out in its entirety
+
 from numpy import array, nan
 from numpy.testing import assert_almost_equal
 from pandas import DataFrame, Timestamp
@@ -31,7 +37,7 @@ from catalyst.testing.fixtures import (
     WithBcolzEquityDailyBarReader,
     WithBcolzFutureMinuteBarReader,
     WithTradingSessions,
-    ZiplineTestCase,
+    CatalystTestCase,
 )
 
 OHLC = ['open', 'high', 'low', 'close']
@@ -40,7 +46,7 @@ OHLC = ['open', 'high', 'low', 'close']
 class AssetDispatchSessionBarTestCase(WithBcolzEquityDailyBarReader,
                                       WithBcolzFutureMinuteBarReader,
                                       WithTradingSessions,
-                                      ZiplineTestCase):
+                                      CatalystTestCase):
 
     TRADING_CALENDAR_STRS = ('us_futures', 'NYSE')
     TRADING_CALENDAR_PRIMARY_CAL = 'us_futures'
@@ -169,7 +175,7 @@ class AssetDispatchSessionBarTestCase(WithBcolzEquityDailyBarReader,
 
 class AssetDispatchMinuteBarTestCase(WithBcolzEquityMinuteBarReader,
                                      WithBcolzFutureMinuteBarReader,
-                                     ZiplineTestCase):
+                                     CatalystTestCase):
 
     TRADING_CALENDAR_STRS = ('us_futures', 'NYSE')
     TRADING_CALENDAR_PRIMARY_CAL = 'us_futures'
@@ -330,3 +336,4 @@ class AssetDispatchMinuteBarTestCase(WithBcolzEquityMinuteBarReader,
         for i, (sid, expected, msg) in enumerate(expected_per_sid):
             for j, result in enumerate(results):
                 assert_almost_equal(result[:, i], expected[j], err_msg=msg)
+'''

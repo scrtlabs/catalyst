@@ -1012,7 +1012,7 @@ def ingest_exchange(ctx, exchange_name, data_frequency, start, end,
 
     if exchange_name is None:
         ctx.fail("must specify an exchange name '-x'")
-    if exchange_name not in EXCHANGE_NAMES:
+    if not csv and exchange_name not in EXCHANGE_NAMES:
         ctx.fail(
             "ingest-exchange does not support {}, "
             "please choose exchange from: {}".format(
@@ -1240,7 +1240,7 @@ def subscribe(ctx, dataset):
     marketplace.subscribe(dataset)
 
 
-@marketplace.command()
+@marketplace.command()  # noqa: F811
 @click.option(
     '--dataset',
     default=None,
@@ -1276,7 +1276,7 @@ def ingest(ctx, dataset, data_frequency, start, end):
     marketplace.ingest(dataset, data_frequency, start, end)
 
 
-@marketplace.command()
+@marketplace.command()  # noqa: F811
 @click.option(
     '--dataset',
     default=None,
@@ -1298,6 +1298,7 @@ def register(ctx):
     marketplace = Marketplace()
     marketplace.register()
 
+
 @marketplace.command()
 @click.option(
     '--dataset',
@@ -1310,6 +1311,7 @@ def get_withdraw_amount(ctx, dataset):
     """
     marketplace = Marketplace()
     marketplace.get_withdraw_amount(dataset)
+
 
 @marketplace.command()
 @click.option(

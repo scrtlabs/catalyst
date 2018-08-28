@@ -44,6 +44,7 @@ from catalyst.exchange.utils.stats_utils import \
 from catalyst.finance.execution import MarketOrder
 from catalyst.finance.performance import PerformanceTracker
 from catalyst.finance.performance.period import calc_period_stats
+from catalyst.finance.order import Order
 from catalyst.gens.tradesimulation import AlgorithmSimulator
 from catalyst.marketplace.marketplace import Marketplace
 from catalyst.utils.api_support import api_method
@@ -84,6 +85,7 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
             get_spot_value_attempts=5,
             get_history_window_attempts=5,
             retry_sleeptime=5,
+            get_orderbook_attempts=5,
         )
 
         self.blotter = ExchangeBlotter(
@@ -152,17 +154,17 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
             self.blotter.commission_models[key].taker = taker
 
     @api_method
-    def set_slippage(self, spread=None):
-        """Set the spread of the slippage model for the simulation.
+    def set_slippage(self, slippage=None):
+        """Set the slippage of the fixed slippage model used by the simulation.
 
         Parameters
         ----------
-        spread : float
-            The spread to be set.
+        slippage : float
+            The slippage to be set.
         """
         key = list(self.blotter.slippage_models.keys())[0]
-        if spread is not None:
-            self.blotter.slippage_models[key].spread = spread
+        if slippage is not None:
+            self.blotter.slippage_models[key].slippage = slippage
 
     def _calculate_order(self, asset, amount,
                          limit_price=None, stop_price=None, style=None):
@@ -220,17 +222,17 @@ class ExchangeTradingAlgorithmBase(TradingAlgorithm):
     @api_method
     @preprocess(symbol_str=ensure_upper_case)
     def symbol(self, symbol_str, exchange_name=None):
-        """Lookup a TradingPair by its ticker symbol.
+        """Lookup a Trading pair by its ticker symbol.
         Catalyst defines its own set of "universal" symbols to reference
         trading pairs across exchanges. This is required because exchanges
         are not adhering to a universal symbolism. For example, Bitfinex
         uses the BTC symbol for Bitcon while Kraken uses XBT. In addition,
         pairs are sometimes presented differently. For example, Bitfinex
         puts the market currency before the base currency without a
-        separator, Bittrex puts the base currency first and uses a dash
+        separator, Bittrex puts the quote currency first and uses a dash
         seperator.
 
-        Here is the Catalyst convention: [Market Currency]_[Base Currency]
+        Here is the Catalyst convention: [Base Currency]_[Quote Currency]
         For example: btc_usd, eth_btc, neo_eth, ltc_eur.
 
         The symbol for each currency (e.g. btc, eth, ltc) is generally
@@ -1084,7 +1086,8 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         )
 
     @api_method
-    def get_order(self, order_id, exchange_name):
+    def get_order(self, order_id, asset_or_symbol=None,
+                  return_price=False, params={}):
         """Lookup an order based on the order id returned from one of the
         order functions.
 
@@ -1092,14 +1095,21 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         ----------
         order_id : str
             The unique identifier for the order.
+        asset_or_symbol: Asset or str
+            The asset or the tradingPair symbol of the order.
+        return_price: bool
+            get the trading price in addition to the order
+        params: dict, optional
+            Extra parameters to pass to the exchange
 
         Returns
         -------
         order : Order
             The order object.
         execution_price: float
-            The execution price per unit of the order
+            The execution price per unit of the order if return_price is True
         """
+        exchange_name = self.blotter.orders[order_id].asset.exchange
         exchange = self.exchanges[exchange_name]
         return retry(
             action=exchange.get_order,
@@ -1107,35 +1117,71 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
             sleeptime=self.attempts['retry_sleeptime'],
             retry_exceptions=(ExchangeRequestError,),
             cleanup=lambda: log.warn('Fetching orders again.'),
-            args=(order_id,))
+            args=(order_id, asset_or_symbol, return_price, params)
+        )
 
     @api_method
-    def cancel_order(self, order_param, exchange_name,
-                     symbol=None, params={}):
+    def cancel_order(self, order_param, symbol=None, params={}):
         """Cancel an open order.
 
         Parameters
         ----------
         order_param : str or Order
             The order_id or order object to cancel.
-
-        exchange_name: str
-            The name of exchange to cancel the order in
         symbol: str
             The tradingPair symbol
         params: dict, optional
             Extra parameters to pass to the exchange
         """
-        exchange = self.exchanges[exchange_name]
-
+        log.info("canceling an order")
         order_id = order_param
-        if isinstance(order_param, zp.Order):
+        if isinstance(order_param, zp.Order) or \
+                isinstance(order_param, Order):
             order_id = order_param.id
 
-        retry(
-            action=exchange.cancel_order,
-            attempts=self.attempts['cancel_order_attempts'],
+        if not self.simulate_orders:
+            exchange_name = self.blotter.orders[order_id].asset.exchange
+            exchange = self.exchanges[exchange_name]
+            retry(
+                action=exchange.cancel_order,
+                attempts=self.attempts['cancel_order_attempts'],
+                sleeptime=self.attempts['retry_sleeptime'],
+                retry_exceptions=(ExchangeRequestError,),
+                cleanup=lambda:
+                log.warn('attempting to cancel the order again'),
+                args=(order_id, symbol, params)
+            )
+            self.blotter.cancel(order_id)
+        else:
+            self.blotter.cancel(order_id)
+
+    def _get_orderbook(self, asset, order_type='all', limit=None):
+        exchange = self.exchanges[asset.exchange]
+        return exchange.get_orderbook(asset, order_type, limit)
+
+    @api_method
+    def get_orderbook(self, asset, order_type='all', limit=None):
+        """
+        Retrieve the orderbook for the given trading pair.
+
+        Parameters
+        ----------
+        asset: TradingPair
+
+        order_type: str
+            The type of orders: bid, ask or all
+
+        limit: int
+
+        Returns
+        -------
+        list[dict[str, float]
+        """
+        return retry(
+            action=self._get_orderbook,
+            attempts=self.attempts['get_orderbook_attempts'],
             sleeptime=self.attempts['retry_sleeptime'],
             retry_exceptions=(ExchangeRequestError,),
-            cleanup=lambda: log.warn('cancelling order again.'),
-            args=(order_id, symbol, params))
+            cleanup=lambda: log.warn('Requesting order book again'),
+            args=(asset, order_type, limit),
+        )

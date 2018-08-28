@@ -109,7 +109,7 @@ def extract_bundle(tar_filename):
 
 def get_user_pubaddr(environ=None):
     """
-    The de-serialized contend of the user's addresses.json file.
+    The de-serialized content of the user's addresses.json file.
 
     Parameters
     ----------
@@ -154,7 +154,7 @@ def get_user_pubaddr(environ=None):
 
     else:
         data = []
-        data.append(dict(pubAddr='', desc='', wallet=''))
+        data.append(dict(pubAddr='', desc='', wallet='', accepted_terms=False))
         with open(filename, 'w') as f:
             json.dump(data, f, sort_keys=False, indent=2,
                       separators=(',', ':'))
@@ -174,15 +174,14 @@ def _choose_wallet(pubAddr, missing):
         for idx, wallet in enumerate(SUPPORTED_WALLETS):
             print('{}\t{}'.format(idx, wallet))
 
-        lw = len(SUPPORTED_WALLETS)-1
-        w = input('Choose a number between 0 and {}: '.format(
-                    lw))
+        lw = len(SUPPORTED_WALLETS) - 1
+        w = input('Choose a number between 0 and {}: '.format(lw))
         try:
             w = int(w)
         except ValueError:
             print('Enter a number between 0 and {}'.format(lw))
         else:
-            if w not in range(0, lw+1):
+            if w not in range(0, lw + 1):
                 print('Enter a number between 0 and '
                       '{}'.format(lw))
             else:

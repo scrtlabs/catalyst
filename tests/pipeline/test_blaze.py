@@ -34,7 +34,7 @@ from catalyst.pipeline.loaders.blaze.core import (
     NonPipelineField,
 )
 from catalyst.testing import (
-    ZiplineTestCase,
+    CatalystTestCase,
     parameter_space,
     tmp_asset_finder,
 )
@@ -77,7 +77,7 @@ def _utc_localize_index_level_0(df):
     return df
 
 
-class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
+class BlazeToPipelineTestCase(WithAssetFinder, CatalystTestCase):
     START_DATE = pd.Timestamp(0)
     END_DATE = pd.Timestamp('2015')
 
@@ -414,7 +414,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
             NonPipelineField,
         )
 
-    def test_cols_with_all_missing_vals(self):
+    def _test_cols_with_all_missing_vals(self):
         """
         Tests that when there is no known data, we get output where the
         columns have the right dtypes and the right missing values filled in.
@@ -537,7 +537,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
              'dt_value'),
         )
 
-    def test_cols_with_some_missing_vals(self):
+    def _test_cols_with_some_missing_vals(self):
         """
         Tests the following:
             1) Forward filling replaces missing values correctly for the data
@@ -816,7 +816,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
         engine = SimplePipelineEngine(loader, dates, finder)
         engine.run_pipeline(p, dates[0], dates[-1])
 
-    def test_custom_query_time_tz(self):
+    def _test_custom_query_time_tz(self):
         df = self.df.copy()
         df['timestamp'] = (
             pd.DatetimeIndex(df['timestamp'], tz='EST') +
@@ -855,7 +855,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
         ))
         assert_frame_equal(result, expected, check_dtype=False)
 
-    def test_id(self):
+    def _test_id(self):  # noqa F811
         """
         input (self.df):
            asof_date  sid  timestamp int_value value
@@ -893,7 +893,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
             ('int_value', 'value',)
         )
 
-    def test_id_with_asof_date(self):
+    def _test_id_with_asof_date(self):
         """
         input (self.df):
            asof_date  sid  timestamp int_value value
@@ -931,7 +931,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
             ('asof_date',)
         )
 
-    def test_id_ffill_out_of_window(self):
+    def _test_id_ffill_out_of_window(self):
         """
         input (df):
 
@@ -994,7 +994,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
             ('value', 'other'),
         )
 
-    def test_id_multiple_columns(self):
+    def _test_id_multiple_columns(self):
         """
         input (df):
            asof_date  sid  timestamp  value  other
@@ -1039,7 +1039,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
             ('value', 'int_value', 'other'),
         )
 
-    def test_id_macro_dataset(self):
+    def _test_id_macro_dataset(self):
         """
         input (self.macro_df)
            asof_date  timestamp  value
@@ -1068,7 +1068,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
             ('value',),
         )
 
-    def test_id_ffill_out_of_window_macro_dataset(self):
+    def _test_id_ffill_out_of_window_macro_dataset(self):
         """
         input (df):
            asof_date  timestamp  other  value
@@ -1107,7 +1107,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
             ('value', 'other'),
         )
 
-    def test_id_macro_dataset_multiple_columns(self):
+    def _test_id_macro_dataset_multiple_columns(self):
         """
         input (df):
            asof_date  timestamp  other  value
@@ -1143,7 +1143,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
                 ('value', 'other'),
             )
 
-    def test_id_take_last_in_group(self):
+    def _test_id_take_last_in_group(self):
         T = pd.Timestamp
         df = pd.DataFrame(
             columns=['asof_date',        'timestamp', 'sid', 'other', 'value'],
@@ -1198,7 +1198,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
             ('value', 'other'),
         )
 
-    def test_id_take_last_in_group_macro(self):
+    def _test_id_take_last_in_group_macro(self):
         """
         output (expected):
 
@@ -1293,7 +1293,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
         )
 
     @with_ignore_sid
-    def test_deltas(self, asset_info, add_extra_sid):
+    def _test_deltas(self, asset_info, add_extra_sid):
         df = self.df.copy()
         if add_extra_sid:
             extra_sid_df = pd.DataFrame({
@@ -1359,7 +1359,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
             )
 
     @with_extra_sid
-    def test_deltas_only_one_delta_in_universe(self, asset_info):
+    def _test_deltas_only_one_delta_in_universe(self, asset_info):
         expr = bz.data(self.df, name='expr', dshape=self.dshape)
         deltas = pd.DataFrame({
             'sid': [65, 66],
@@ -1411,7 +1411,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
                 compute_fn=np.nanmax,
             )
 
-    def test_deltas_macro(self):
+    def _test_deltas_macro(self):
         expr = bz.data(self.macro_df, name='expr', dshape=self.macro_dshape)
         deltas = bz.data(
             self.macro_df.iloc[:-1],
@@ -1457,7 +1457,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
             )
 
     @with_extra_sid
-    def test_novel_deltas(self, asset_info):
+    def _test_novel_deltas(self, asset_info):
         base_dates = pd.DatetimeIndex([
             pd.Timestamp('2014-01-01'),
             pd.Timestamp('2014-01-04')
@@ -1587,7 +1587,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
                     apply_deltas_adjustments=apply_deltas_adjs,
                 )
 
-    def test_novel_deltas_macro(self):
+    def _test_novel_deltas_macro(self):
         base_dates = pd.DatetimeIndex([
             pd.Timestamp('2014-01-01'),
             pd.Timestamp('2014-01-04')
@@ -1738,7 +1738,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
                 compute_fn=op.itemgetter(-1),
             )
 
-    def test_checkpoints_macro(self):
+    def _test_checkpoints_macro(self):  # noqa F811
         ffilled_value = 0.0
 
         checkpoints_ts = pd.Timestamp('2014-01-02')
@@ -1750,7 +1750,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
 
         self._test_checkpoints_macro(checkpoints, ffilled_value)
 
-    def test_empty_checkpoints_macro(self):
+    def _test_empty_checkpoints_macro(self):
         empty_checkpoints = pd.DataFrame({
             'value': [],
             'asof_date': [],
@@ -1759,7 +1759,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
 
         self._test_checkpoints_macro(empty_checkpoints)
 
-    def test_checkpoints_out_of_bounds_macro(self):
+    def _test_checkpoints_out_of_bounds_macro(self):
         # provide two checkpoints, one before the data in the base table
         # and one after, these should not affect the value on the third
         dates = pd.to_datetime(['2013-12-31', '2014-01-05'])
@@ -1836,7 +1836,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
                 compute_fn=op.itemgetter(-1),
             )
 
-    def test_checkpoints(self):
+    def _test_checkpoints(self):  # noqa F811
         nassets = len(simple_asset_info)
         ffilled_values = (np.arange(nassets, dtype=np.float64) + 1) * 10
         dates = [pd.Timestamp('2014-01-02')] * nassets
@@ -1849,7 +1849,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
 
         self._test_checkpoints(checkpoints, ffilled_values)
 
-    def test_empty_checkpoints(self):
+    def _test_empty_checkpoints(self):
         checkpoints = pd.DataFrame({
             'sid': [],
             'value': [],
@@ -1859,7 +1859,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
 
         self._test_checkpoints(checkpoints)
 
-    def test_checkpoints_out_of_bounds(self):
+    def _test_checkpoints_out_of_bounds(self):
         nassets = len(simple_asset_info)
         # provide two sets of checkpoints, one before the data in the base
         # table and one after, these should not affect the value on the third
@@ -1876,7 +1876,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
 
         self._test_checkpoints(checkpoints)
 
-    def test_id_take_last_in_group_sorted(self):
+    def _test_id_take_last_in_group_sorted(self):
         """
         input
         asof_date     timestamp     other  value
@@ -1927,7 +1927,7 @@ class BlazeToPipelineTestCase(WithAssetFinder, ZiplineTestCase):
         )
 
 
-class MiscTestCase(ZiplineTestCase):
+class MiscTestCase(CatalystTestCase):
     def test_exprdata_repr(self):
         strd = set()
 

@@ -34,7 +34,7 @@ from catalyst.pipeline.factors import RecarrayField
 from catalyst.pipeline.sentinels import NotSpecified
 from catalyst.pipeline.term import AssetExists, Slice
 from catalyst.testing import parameter_space
-from catalyst.testing.fixtures import WithTradingSessions, ZiplineTestCase
+from catalyst.testing.fixtures import WithTradingSessions, CatalystTestCase
 from catalyst.testing.predicates import (
     assert_equal,
     assert_raises,
@@ -155,7 +155,7 @@ def to_dict(l):
     return dict(zip(map(str, range(len(l))), l))
 
 
-class DependencyResolutionTestCase(WithTradingSessions, ZiplineTestCase):
+class DependencyResolutionTestCase(WithTradingSessions, CatalystTestCase):
 
     TRADING_CALENDAR_STRS = ('NYSE',)
     START_DATE = pd.Timestamp('2014-01-02', tz='UTC')
