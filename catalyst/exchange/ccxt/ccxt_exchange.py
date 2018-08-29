@@ -1317,10 +1317,11 @@ class CCXT(Exchange):
         order_types = ['bids', 'asks'] if order_type == 'all' else [order_type]
         result = dict(last_traded=from_ms_timestamp(order_book['timestamp']))
         for index, order_type in enumerate(order_types):
-            if limit is not None and index > limit - 1:
-                break
-
             result[order_type] = []
+
+            if limit is not None and len(order_book[order_type]) > limit:
+                order_book[order_type] = order_book[order_type][:limit]
+
             for entry in order_book[order_type]:
                 result[order_type].append(dict(
                     rate=float(entry[0]),
