@@ -63,6 +63,7 @@ def cancel_order(order_param, symbol=None, params={}):
         Extra parameters to pass to the exchange
     """
 
+
 def get_orderbook(asset, order_type='all', limit=None):
     """Get the order book of asset.exchange.
 
@@ -75,6 +76,7 @@ def get_orderbook(asset, order_type='all', limit=None):
 
     limit : int, optional
     """
+
 
 def get_open_orders(asset=None):
     """Retrieve all of the current open orders.
@@ -244,7 +246,8 @@ def get_environment(field='platform'):
     """
 
 
-def get_order(order_id, asset_or_symbol=None, return_price=False):
+def get_order(order_id, asset_or_symbol=None,
+              return_price=False, params={}):
     """Lookup an order based on the order id returned from one of the
     order functions.
 
@@ -254,8 +257,10 @@ def get_order(order_id, asset_or_symbol=None, return_price=False):
         The unique identifier for the order.
     asset_or_symbol: Asset or str
             The asset or the tradingPair symbol of the order.
-        return_price: bool
-            get the trading price in addition to the order
+    return_price: bool
+        get the trading price in addition to the order
+    params: dict, optional
+        Extra parameters to pass to the exchange
 
     Returns
     -------
