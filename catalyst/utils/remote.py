@@ -1,8 +1,8 @@
 #!flask/bin/python
 import json
-import requests
 import os
 
+import requests
 from hashlib import md5
 from logbook import Logger
 
@@ -145,14 +145,14 @@ def send_digest_request(json_file, path, method):
                                         'Digest username="{0}",'
                                         'password="{1}"'.format(key, secret)
                                 },
-                                verify=False)
+                                )
     else:  # method == GET:
         response = session.get('{}{}'.format(AUTH_SERVER, path),
                                headers={'Authorization':
                                         'Digest username="{0}", '
                                         'password="{1}"'.
                                         format(key, secret)},
-                               verify=False)
+                               )
 
     header = response.headers.get('WWW-Authenticate')
     auth_type, auth_info = header.split(None, 1)
@@ -168,7 +168,6 @@ def send_digest_request(json_file, path, method):
     if method == POST:
         return session.post('{}{}'.format(AUTH_SERVER, path),
                             json=json.dumps(json_file, default=convert_date),
-                            verify=False,
                             headers={
                                 'Authorization': 'Digest username="{0}",'
                                                  'realm="{1}",nonce="{2}",'
@@ -180,7 +179,6 @@ def send_digest_request(json_file, path, method):
     else:  # method == GET
         return session.get('{}{}'.format(AUTH_SERVER, path),
                            json=json.dumps(json_file, default=convert_date),
-                           verify=False,
                            headers={'Authorization':
                                     'Digest username="{0}", realm="{1}",'
                                     'nonce="{2}",uri="{3}", '
