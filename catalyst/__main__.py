@@ -624,22 +624,22 @@ def live(ctx,
 )
 @click.pass_context
 def remote_run(ctx,
-        algofile,
-        algotext,
-        define,
-        data_frequency,
-        capital_base,
-        bundle,
-        bundle_timestamp,
-        start,
-        end,
-        mail,
-        output,
-        print_algo,
-        local_namespace,
-        exchange_name,
-        algo_namespace,
-        quote_currency):
+               algofile,
+               algotext,
+               define,
+               data_frequency,
+               capital_base,
+               bundle,
+               bundle_timestamp,
+               start,
+               end,
+               mail,
+               output,
+               print_algo,
+               local_namespace,
+               exchange_name,
+               algo_namespace,
+               quote_currency):
     """Run a backtest for the given algorithm on the cloud.
     """
 
@@ -748,7 +748,7 @@ def remote_status(ctx, algo_id, data_output, log_output):
         algo_id=algo_id
     )
     if isinstance(status_response, tuple):
-        status, perf, log= status_response
+        status, perf, log = status_response
         if log_output == '-':
             click.echo(str(log), sys.stderr)
         elif log_output != os.devnull:
@@ -765,179 +765,6 @@ def remote_status(ctx, algo_id, data_output, log_output):
     else:
         print(status_response)
         return status_response
-
-
-# @main.command(name='serve-live')
-# @click.option(
-#     '-f',
-#     '--algofile',
-#     default=None,
-#     type=click.File('r'),
-#     help='The file that contains the algorithm to run.',
-# )
-# @click.option(
-#     '--capital-base',
-#     type=float,
-#     show_default=True,
-#     help='The amount of capital (in quote_currency) allocated to trading.',
-# )
-# @click.option(
-#     '-t',
-#     '--algotext',
-#     help='The algorithm script to run.',
-# )
-# @click.option(
-#     '-D',
-#     '--define',
-#     multiple=True,
-#     help="Define a name to be bound in the namespace before executing"
-#          " the algotext. For example '-Dname=value'. The value may be"
-#          " any python expression. These are evaluated in order so they"
-#          " may refer to previously defined names.",
-# )
-# @click.option(
-#     '-o',
-#     '--output',
-#     default='-',
-#     metavar='FILENAME',
-#     show_default=True,
-#     help="The location to write the perf data. If this is '-' the perf will"
-#          " be written to stdout.",
-# )
-# @click.option(
-#     '--print-algo/--no-print-algo',
-#     is_flag=True,
-#     default=False,
-#     help='Print the algorithm to stdout.',
-# )
-# @ipython_only(click.option(
-#     '--local-namespace/--no-local-namespace',
-#     is_flag=True,
-#     default=None,
-#     help='Should the algorithm methods be resolved in the local namespace.'
-# ))
-# @click.option(
-#     '-x',
-#     '--exchange-name',
-#     help='The name of the targeted exchange.',
-# )
-# @click.option(
-#     '-n',
-#     '--algo-namespace',
-#     help='A label assigned to the algorithm for data storage purposes.'
-# )
-# @click.option(
-#     '-c',
-#     '--quote-currency',
-#     help='The quote currency used to calculate statistics '
-#          '(e.g. usd, btc, eth).',
-# )
-# @click.option(
-#     '-e',
-#     '--end',
-#     type=Date(tz='utc', as_timestamp=False),
-#     help='An optional end date at which to stop the execution.',
-# )
-# @click.option(
-#     '--live-graph/--no-live-graph',
-#     is_flag=True,
-#     default=False,
-#     help='Display live graph.',
-# )
-# @click.option(
-#     '--simulate-orders/--no-simulate-orders',
-#     is_flag=True,
-#     default=True,
-#     help='Simulating orders enable the paper trading mode. No orders will be '
-#          'sent to the exchange unless set to false.',
-# )
-# @click.option(
-#     '--auth-aliases',
-#     default=None,
-#     help='Authentication file aliases for the specified exchanges. By default,'
-#          'each exchange uses the "auth.json" file in the exchange folder. '
-#          'Specifying an "auth2" alias would use "auth2.json". It should be '
-#          'specified like this: "[exchange_name],[alias],..." For example, '
-#          '"binance,auth2" or "binance,auth2,bittrex,auth2".',
-# )
-# @click.pass_context
-# def serve_live(ctx,
-#                algofile,
-#                capital_base,
-#                algotext,
-#                define,
-#                output,
-#                print_algo,
-#                local_namespace,
-#                exchange_name,
-#                algo_namespace,
-#                quote_currency,
-#                end,
-#                live_graph,
-#                auth_aliases,
-#                simulate_orders):
-#     """Trade live with the given algorithm on the server.
-#     """
-#     if (algotext is not None) == (algofile is not None):
-#         ctx.fail(
-#             "must specify exactly one of '-f' / '--algofile' or"
-#             " '-t' / '--algotext'",
-#         )
-#
-#     if exchange_name is None:
-#         ctx.fail("must specify an exchange name '-x'")
-#
-#     if algo_namespace is None:
-#         ctx.fail("must specify an algorithm name '-n' in live execution mode")
-#
-#     if quote_currency is None:
-#         ctx.fail("must specify a quote currency '-c' in live execution mode")
-#
-#     if capital_base is None:
-#         ctx.fail("must specify a capital base with '--capital-base'")
-#
-#     if simulate_orders:
-#         click.echo('Running in paper trading mode.', sys.stdout)
-#
-#     else:
-#         click.echo('Running in live trading mode.', sys.stdout)
-#
-#     perf = remote_backtest(
-#         initialize=None,
-#         handle_data=None,
-#         before_trading_start=None,
-#         analyze=None,
-#             algofile=algofile,
-#         algotext=algotext,
-#         defines=define,
-#         data_frequency=None,
-#         capital_base=capital_base,
-#         data=None,
-#         bundle=None,
-#         bundle_timestamp=None,
-#         start=None,
-#         end=end,
-#         output=output,
-#         print_algo=print_algo,
-#         local_namespace=local_namespace,
-#         environ=os.environ,
-#         live=True,
-#         exchange=exchange_name,
-#         algo_namespace=algo_namespace,
-#         quote_currency=quote_currency,
-#         live_graph=live_graph,
-#         analyze_live=None,
-#         simulate_orders=simulate_orders,
-#         auth_aliases=auth_aliases,
-#         stats_output=None,
-#     )
-#
-#     if output == '-':
-#         click.echo(str(perf), sys.stdout)
-#     elif output != os.devnull:  # make the catalyst magic not write any data
-#         perf.to_pickle(output)
-#
-#     return perf
 
 
 @main.command(name='ingest-exchange')
