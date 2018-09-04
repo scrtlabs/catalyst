@@ -641,7 +641,7 @@ A few comments on the code above:
   you will see that in most cases, the performance is either worse than the 
   price of the asset, or you are overfitting to one specific case. As we said 
   at the beginning of this section, this strategy is probably not used by any 
-  serious trader anymore, but its educational purpose.
+  serious trader anymore, but it has an educational purpose.
 
 Although it might not be directly apparent, the power of ``history()``
 (pun intended) can not be under-estimated as most algorithms make use of
@@ -16465,7 +16465,7 @@ PyCharm IDE
 ~~~~~~~~~~~
 
 PyCharm is an Integrated Development Environment (IDE) used in computer 
-programming, specifically for the Python language. It streamlines the continuos
+programming, specifically for the Python language. It streamlines the continuous
 development of Python code, and among other things includes a debugger that 
 comes in handy to see the inner workings of Catalyst, and your trading 
 algorithms.
@@ -16478,12 +16478,12 @@ There is a free and open-source **Community** version.
 Setup
 ^^^^^
 
-1. When creating a new project in PyCharm, right under you specify the Location,
+1. When creating a new project in PyCharm, right under where you specify the Location,
    click on **Project Interpreter** to display a drop down menu
 
 2. Select **Existing interpreter**, click the gear box right next to it and 
    select 'add local'. Depending on your installation, select either 
-   "*Virtual Environemnt*" or "*Conda Environment" and click the '...' button to
+   "*Virtual Environment*" or "*Conda Environment" and click the '...' button to
    navigate to your catalyst env and select the Python binary file: 
    ``bin/python`` for Linux/MacOS installations or 'python.exe' for Windows 
    installs (for example: 'C:\\Users\\user\\Anaconda2\\envs\\catalyst\\python.exe'). 
@@ -16509,7 +16509,7 @@ Next steps
 ~~~~~~~~~~
 
 We hope that this tutorial gave you a little insight into the
-architecture, API, and features of Catalyst. For next steps, check
+architecture, API, and features of Catalyst. For your next step, check
 out some of the other :doc:`example algorithms<example-algos>`.
 
 Feel free to ask questions on the ``#catalyst_dev`` channel of our 

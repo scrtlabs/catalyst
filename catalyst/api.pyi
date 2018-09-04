@@ -64,6 +64,39 @@ def cancel_order(order_param, symbol=None, params={}):
     """
 
 
+def get_orderbook(asset, order_type='all', limit=None):
+    """Get the order book of asset.exchange.
+
+    Parameters
+    ----------
+    asset : Asset
+        The asset .
+
+    order_type : str, optional
+
+    limit : int, optional
+    """
+
+
+def get_open_orders(asset=None):
+    """Retrieve all of the current open orders.
+
+    Parameters
+    ----------
+    asset : Asset
+        If passed and not None, return only the open orders for the given
+        asset instead of all open orders.
+
+    Returns
+    -------
+    open_orders : dict[list[Order]] or list[Order]
+        If no asset is passed this will return a dict mapping Assets
+        to a list containing all the open orders for the asset.
+        If an asset is passed then this will return a list of the open
+        orders for this asset.
+    """
+
+
 def continuous_future(root_symbol_str, offset=0, roll='volume',
                       adjustment='mul'):
     """Create a specifier for a continuous contract.
@@ -213,7 +246,8 @@ def get_environment(field='platform'):
     """
 
 
-def get_order(order_id, asset_or_symbol=None, return_price=False):
+def get_order(order_id, asset_or_symbol=None,
+              return_price=False, params={}):
     """Lookup an order based on the order id returned from one of the
     order functions.
 
@@ -223,8 +257,10 @@ def get_order(order_id, asset_or_symbol=None, return_price=False):
         The unique identifier for the order.
     asset_or_symbol: Asset or str
             The asset or the tradingPair symbol of the order.
-        return_price: bool
-            get the trading price in addition to the order
+    return_price: bool
+        get the trading price in addition to the order
+    params: dict, optional
+        Extra parameters to pass to the exchange
 
     Returns
     -------

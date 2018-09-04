@@ -20,8 +20,12 @@ The exchanges available for backtesting are fully supported in live mode:
 Additionally, we have successfully tested in live mode the following exchanges:
 
 - GDAX, id = ``gdax``
+- Huobi Pro, id = ``huobipro``
+- OKEX, id = ``okex``
+- HitBTC, id = ``hitbtc``
+- KuCoin, id = ``kucoin``
 
-As Catalyst is currently in Alpha and in under active development, you are 
+As Catalyst is currently in Alpha and is under active development, you are
 encouraged to thoroughly test any exchange in *paper trading* mode before trading
 *live* with it.
 
@@ -233,3 +237,19 @@ these modes in the future with live mode).
 
     In live mode, as in backtest, at the end of the algorithm run (by reaching a predefined end date
     or by receiving a CTRL+C interrupt) the ``analyze`` function is being called.
+
+
+Advanced Options
+^^^^^^^^^^^^^^^^
+
+In live and paper mode, in addition to the OHLCV data, the order book information is accessible as well.
+By running the following code, a dictionary representing the order book in depth of 10 for `etc_btc` in Bitfinex will
+be returned:
+
+.. code-block:: bash
+
+    context.exchanges['bitfinex'].get_orderbook(symbol('etc_btc'), order_type='all', limit=10)
+
+
+It is possible to retrieve only the bids or the asks from the order book by passing 'bids' of 'asks' in the order_type
+(by default this parameter recieve the 'all' value).

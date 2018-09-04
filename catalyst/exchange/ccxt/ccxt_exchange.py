@@ -41,6 +41,10 @@ SUPPORTED_EXCHANGES = dict(
     poloniex=ccxt.poloniex,
     bitmex=ccxt.bitmex,
     gdax=ccxt.gdax,
+    huobipro=ccxt.huobipro,
+    okex=ccxt.okex,
+    hitbtc=ccxt.hitbtc2,
+    kucoin=ccxt.kucoin,
 )
 
 
@@ -454,13 +458,21 @@ class CCXT(Exchange):
 
         candles = dict()
         for index, asset in enumerate(assets):
-            ohlcvs = self.api.fetch_ohlcv(
-                symbol=symbols[index],
-                timeframe=timeframe,
-                since=since,
-                limit=bar_count,
-                params={}
-            )
+            try:
+                ohlcvs = self.api.fetch_ohlcv(
+                    symbol=symbols[index],
+                    timeframe=timeframe,
+                    since=since,
+                    limit=bar_count,
+                    params={}
+                )
+            except (ExchangeError, NetworkError) as e:
+                log.warn(
+                    'unable to fetch {} ohlcv: {}'.format(
+                        asset, e
+                    )
+                )
+                raise ExchangeRequestError(error=e)
 
             candles[asset] = []
             for ohlcv in ohlcvs:
@@ -897,7 +909,6 @@ class CCXT(Exchange):
                         amount
                     )
                 )
-
         adj_amount = round(abs(amount), asset.decimals)
         prec_amount = self.api.amount_to_precision(symbol, adj_amount)
         before_order_dt = pd.Timestamp.utcnow()
@@ -1140,7 +1151,8 @@ class CCXT(Exchange):
         order.broker_order_id = ', '.join([t['id'] for t in trades])
         return transactions
 
-    def get_order(self, order_id, asset_or_symbol=None, return_price=False):
+    def get_order(self, order_id, asset_or_symbol=None,
+                  return_price=False, params={}):
         """Lookup an order based on the order id returned from one of the
         order functions.
 
@@ -1152,6 +1164,8 @@ class CCXT(Exchange):
             The asset or the tradingPair symbol of the order.
         return_price: bool
             get the trading price in addition to the order
+        params: dict, optional
+            Extra parameters to pass to the exchange
 
         Returns
         -------
@@ -1168,7 +1182,9 @@ class CCXT(Exchange):
         try:
             symbol = self.get_symbol(asset_or_symbol) \
                 if asset_or_symbol is not None else None
-            order_status = self.api.fetch_order(id=order_id, symbol=symbol)
+            order_status = self.api.fetch_order(id=order_id,
+                                                symbol=symbol,
+                                                params=params)
             order, executed_price = self._create_order(order_status)
 
             if return_price:
@@ -1301,10 +1317,11 @@ class CCXT(Exchange):
         order_types = ['bids', 'asks'] if order_type == 'all' else [order_type]
         result = dict(last_traded=from_ms_timestamp(order_book['timestamp']))
         for index, order_type in enumerate(order_types):
-            if limit is not None and index > limit - 1:
-                break
-
             result[order_type] = []
+
+            if limit is not None and len(order_book[order_type]) > limit:
+                order_book[order_type] = order_book[order_type][:limit]
+
             for entry in order_book[order_type]:
                 result[order_type].append(dict(
                     rate=float(entry[0]),

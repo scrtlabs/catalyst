@@ -61,6 +61,53 @@ If you want to contribute to the codebase of Catalyst, familiarize yourself with
 
 .. image:: https://camo.githubusercontent.com/9bde6fb64a9542a572e0e2017cbb58d9d2c440ac/687474703a2f2f6e7669652e636f6d2f696d672f6769742d6d6f64656c4032782e706e67
 
+Style Guide & Running Tests
+---------------------------
+
+We use `flake8`__ for checking style requirements and `nosetests`__ to run Catalyst tests. Our `continuous integration`__ tool will run these commands.
+
+__ http://flake8.pycqa.org/en/latest/
+__ http://nose.readthedocs.io/en/latest/
+__ https://en.wikipedia.org/wiki/Continuous_integration
+
+Before submitting patches or pull requests, please ensure that your changes pass when running:
+
+.. code-block:: bash
+
+   $ flake8 catalyst tests
+
+In order to run tests locally, you'll need to install several libraries
+(one of them is TA-lib, so make sure you have it installed following `these instructions`__ before continuing).
+
+__ https://mrjbq7.github.io/ta-lib/install.html
+
+.. code-block:: bash
+
+   $ pip install -r ./etc/requirements.txt
+   $ pip install -r ./etc/requirements_dev.txt
+   $ pip install -r ./etc/requirements_blaze.txt
+   $ pip install -r ./etc/requirements_talib.txt
+   $ pip install -e .
+
+You should now be free to run tests:
+
+.. code-block:: bash
+
+   $ cd tests && nosetests
+
+
+Continuous Integration
+----------------------
+
+We use `Travis CI`__ for Linux-64 bit builds.
+
+.. note::
+
+   We do not currently have CI for OSX-64 bit builds or Windows-64 bit builds.
+
+__ https://travis-ci.com/enigmampc/catalyst
+
+
 Contributing to the Docs
 ------------------------
 
