@@ -66,26 +66,50 @@ main packages needed. To install MiniConda, you can follow these steps:
 
 Once either Conda or MiniConda has been set up you can install Catalyst:
 
-1. Download the file `python3.6-environment.yml 
-   <https://github.com/enigmampc/catalyst/blob/master/etc/python3.6-environment.yml>`_ 
-   (recommended) or `python2.7-environment.yml 
-   <https://github.com/enigmampc/catalyst/blob/master/etc/python2.7-environment.yml>`_ 
-   matching your Conda installation from step #1 above.
+1. Download the proper .yml file matching your Conda installation from
+   step #1 above.
+   To download, simply click on the 'Raw' button and save the file locally
+   to a folder you can remember. Make sure that the file gets saved with the
+   ``.yml`` extension, and nothing like a ``.txt`` file or anything else.
 
-     To download, simply click on the 'Raw' button and save the file locally 
-     to a folder you can remember. Make sure that the file gets saved with the
-     ``.yml`` extension, and nothing like a ``.txt`` file or anything else.
+   **Linux or MacOS:**
+   Download the file `python3.6-environment.yml
+   <https://github.com/enigmampc/catalyst/blob/master/etc/python3.6-environment.yml>`_
+   (recommended) or `python2.7-environment.yml
+   <https://github.com/enigmampc/catalyst/blob/master/etc/python2.7-environment.yml>`_
+
+   **Windows:**
+   Download the file `python3.6-environment-windows.yml
+   <https://github.com/enigmampc/catalyst/blob/master/etc/python3.6-environment-windows.yml>`_
+   (recommended) or `python2.7-environment.yml
+   <https://github.com/enigmampc/catalyst/blob/master/etc/python2.7-environment.yml>`_
 
 2. Open a Terminal window and enter [``cd/dir``] into the directory where you 
    saved the above ``.yml`` file.
 
+
 3. Install using this file. This step can take about 5-10 minutes to install.
+
+   **Linux or MacOS Python 3.6:**
 
    .. code-block:: bash
 
       conda env create -f python3.6-environment.yml
 
-  or
+   **Linux or MacOS Python 2.7:**
+
+   .. code-block:: bash
+
+      conda env create -f python2.7-environment.yml
+
+
+   **Windows Python 3.6:**
+
+   .. code-block:: bash
+
+      conda env create -f python3.6-environment-windows.yml
+
+   **Windows Python 2.7:**
 
    .. code-block:: bash
 
