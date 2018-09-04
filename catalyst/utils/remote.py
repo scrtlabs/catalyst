@@ -1,6 +1,7 @@
 #!flask/bin/python
 import json
 import os
+import sys
 
 import requests
 from hashlib import md5
@@ -38,10 +39,10 @@ def handle_response(response, mode):
                         )
     elif response.status_code == 502:
         raise Exception("The server is down at the moment,\n" + EXCEPTION_LOG)
-    elif response.status_code == 400:
+    elif response.status_code == 400 or response.status_code == 401:
         raise Exception("There is a connection but it was aborted due "
                         "to wrong arguments given to the server.\n" +
-                        EXCEPTION_LOG)
+                        response.content + EXCEPTION_LOG)
     else:  # if the run was successful
         if mode == BACKTEST:
             algo_id = response.json()['algo_id']
@@ -114,7 +115,9 @@ def remote_backtest(
         'live_graph': live_graph,
         'simulate_orders': simulate_orders,
         'auth_aliases': auth_aliases,
-        'mail': mail
+        'mail': mail,
+        'py_version': sys.version_info[0],  # the python version running on
+                                            # the client's side. 2 or 3
     }}
     response = send_digest_request(
         json_file=json_file, path=BACKTEST_PATH, method=POST
