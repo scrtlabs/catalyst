@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>catalyst.exchange.exchange_algorithm &mdash; Catalyst 0.5.18 documentation</title>
+  <title>catalyst.exchange.exchange_algorithm &mdash; Catalyst 0.5.19 documentation</title>
   
 
   
@@ -56,7 +56,7 @@
             
             
               <div class="version">
-                0.5.18+7.g44eac532
+                0.5.19
               </div>
             
           
@@ -84,7 +84,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../install.html">Install</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../beginner-tutorial.html">Catalyst Beginner Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../live-trading.html">Live Trading</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../intervals.html">Pricing Data Intervals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../example-algos.html">Example Algorithms</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../utilities.html">Utilities</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../videos.html">Videos</a></li>
@@ -1243,7 +1243,8 @@
         <span class="p">)</span>
 
     <span class="nd">@api_method</span>
-    <span class="k">def</span> <span class="nf">get_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order_id</span><span class="p">,</span> <span class="n">asset_or_symbol</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">return_price</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order_id</span><span class="p">,</span> <span class="n">asset_or_symbol</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                  <span class="n">return_price</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{}):</span>
         <span class="sd">&quot;&quot;&quot;Lookup an order based on the order id returned from one of the</span>
 <span class="sd">        order functions.</span>
 
@@ -1255,6 +1256,8 @@
 <span class="sd">            The asset or the tradingPair symbol of the order.</span>
 <span class="sd">        return_price: bool</span>
 <span class="sd">            get the trading price in addition to the order</span>
+<span class="sd">        params: dict, optional</span>
+<span class="sd">            Extra parameters to pass to the exchange</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1271,7 +1274,7 @@
             <span class="n">sleeptime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">attempts</span><span class="p">[</span><span class="s1">&#39;retry_sleeptime&#39;</span><span class="p">],</span>
             <span class="n">retry_exceptions</span><span class="o">=</span><span class="p">(</span><span class="n">ExchangeRequestError</span><span class="p">,),</span>
             <span class="n">cleanup</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Fetching orders again.&#39;</span><span class="p">),</span>
-            <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">order_id</span><span class="p">,</span> <span class="n">asset_or_symbol</span><span class="p">,</span> <span class="n">return_price</span><span class="p">)</span>
+            <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">order_id</span><span class="p">,</span> <span class="n">asset_or_symbol</span><span class="p">,</span> <span class="n">return_price</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
         <span class="p">)</span>
 
     <span class="nd">@api_method</span>
@@ -1373,7 +1376,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'0.5.18',
+            VERSION:'0.5.19',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

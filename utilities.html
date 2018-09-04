@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Utilities &mdash; Catalyst 0.5.18 documentation</title>
+  <title>Utilities &mdash; Catalyst 0.5.19 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.5.18+7.g44eac532
+                0.5.19
               </div>
             
           
@@ -86,7 +86,7 @@
 <li class="toctree-l1"><a class="reference internal" href="install.html">Install</a></li>
 <li class="toctree-l1"><a class="reference internal" href="beginner-tutorial.html">Catalyst Beginner Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="live-trading.html">Live Trading</a></li>
-<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intervals.html">Pricing Data Intervals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-algos.html">Example Algorithms</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Utilities</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#output-to-csv-file">Output to CSV file</a></li>
@@ -229,7 +229,6 @@ provided as an example for daily- and minute-resolution data respectively:</p>
     <span class="n">record</span><span class="p">(</span><span class="n">price</span><span class="o">=</span><span class="n">price</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="n">volume</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">analyze</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">results</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-
     <span class="c1"># Generate DataFrame with Price and Volume only</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">results</span><span class="p">[[</span><span class="s1">&#39;price&#39;</span><span class="p">,</span><span class="s1">&#39;volume&#39;</span><span class="p">]]</span>
 
@@ -267,38 +266,37 @@ provided as an example for daily- and minute-resolution data respectively:</p>
     <span class="c1"># Portfolio assets list</span>
     <span class="n">context</span><span class="o">.</span><span class="n">asset</span> <span class="o">=</span> <span class="n">symbol</span><span class="p">(</span><span class="s1">&#39;btc_usdt&#39;</span><span class="p">)</span> <span class="c1"># Bitcoin on Poloniex</span>
 
-    <span class="c1"># Creates a .CSV file with the same name as this script to store results</span>
-    <span class="n">context</span><span class="o">.</span><span class="n">csvfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span>
-                                      <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;w+&#39;</span><span class="p">)</span>
-    <span class="n">context</span><span class="o">.</span><span class="n">csvwriter</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">csvfile</span><span class="p">)</span>
+    <span class="c1"># Create an empty DataFrame to store results</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">pricing_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
 
 <span class="k">def</span> <span class="nf">handle_data</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
     <span class="c1"># Variables to record for a given asset: price and volume</span>
     <span class="c1"># Other options include &#39;open&#39;, &#39;high&#39;, &#39;open&#39;, &#39;close&#39;</span>
     <span class="c1"># Please note that &#39;price&#39; equals &#39;close&#39;</span>
-    <span class="n">date</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">blotter</span><span class="o">.</span><span class="n">current_dt</span>      <span class="c1"># current time in each iteration</span>
-    <span class="n">price</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s1">&#39;price&#39;</span><span class="p">)</span>
-    <span class="n">volume</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">current</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">)</span>
+    <span class="n">current</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">history</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">asset</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;price&#39;</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;1T&#39;</span><span class="p">)</span>
 
-    <span class="c1"># Writes one line to CSV on each iteration with the chosen variables</span>
-    <span class="n">context</span><span class="o">.</span><span class="n">csvwriter</span><span class="o">.</span><span class="n">writerow</span><span class="p">([</span><span class="n">date</span><span class="p">,</span><span class="n">price</span><span class="p">,</span><span class="n">volume</span><span class="p">])</span>
+    <span class="c1"># Append the current information to the pricing_data DataFrame</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">pricing_data</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">pricing_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">analyze</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">results</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="c1"># Close open file properly at the end</span>
-    <span class="n">context</span><span class="o">.</span><span class="n">csvfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="c1"># Save pricing data to a CSV file</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">pricing_data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">filename</span> <span class="o">+</span> <span class="s1">&#39;.csv&#39;</span><span class="p">)</span>
 
-    <span class="c1"># Bitcoin data is available from 2015-3-2. Dates vary for other tokens.</span>
-    <span class="n">start</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2017</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">pytz</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
-    <span class="n">end</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2017</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">pytz</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
-    <span class="n">results</span> <span class="o">=</span> <span class="n">run_algorithm</span><span class="p">(</span><span class="n">initialize</span><span class="o">=</span><span class="n">initialize</span><span class="p">,</span>
-                            <span class="n">handle_data</span><span class="o">=</span><span class="n">handle_data</span><span class="p">,</span>
-                            <span class="n">analyze</span><span class="o">=</span><span class="n">analyze</span><span class="p">,</span>
-                            <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
-                            <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
-                            <span class="n">exchange_name</span><span class="o">=</span><span class="s1">&#39;poloniex&#39;</span><span class="p">,</span>
-                            <span class="n">data_frequency</span><span class="o">=</span><span class="s1">&#39;minute&#39;</span><span class="p">,</span>
-                            <span class="n">quote_currency</span> <span class="o">=</span><span class="s1">&#39;usdt&#39;</span><span class="p">,</span>
-                            <span class="n">capital_base</span><span class="o">=</span><span class="mi">10000</span> <span class="p">)</span>
+<span class="sd">&#39;&#39;&#39; Bitcoin data is available on Poloniex since 2015-3-1.</span>
+<span class="sd">     Dates vary for other tokens.</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2017</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">pytz</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
+<span class="n">end</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2017</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">pytz</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">run_algorithm</span><span class="p">(</span><span class="n">initialize</span><span class="o">=</span><span class="n">initialize</span><span class="p">,</span>
+                        <span class="n">handle_data</span><span class="o">=</span><span class="n">handle_data</span><span class="p">,</span>
+                        <span class="n">analyze</span><span class="o">=</span><span class="n">analyze</span><span class="p">,</span>
+                        <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
+                        <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
+                        <span class="n">exchange_name</span><span class="o">=</span><span class="s1">&#39;poloniex&#39;</span><span class="p">,</span>
+                        <span class="n">data_frequency</span><span class="o">=</span><span class="s1">&#39;minute&#39;</span><span class="p">,</span>
+                        <span class="n">quote_currency</span> <span class="o">=</span><span class="s1">&#39;usdt&#39;</span><span class="p">,</span>
+                        <span class="n">capital_base</span><span class="o">=</span><span class="mi">10000</span> <span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -346,7 +344,7 @@ provided as an example for daily- and minute-resolution data respectively:</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.5.18',
+            VERSION:'0.5.19',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

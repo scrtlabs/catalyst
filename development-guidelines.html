@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Development Guidelines &mdash; Catalyst 0.5.18 documentation</title>
+  <title>Development Guidelines &mdash; Catalyst 0.5.19 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.5.18+7.g44eac532
+                0.5.19
               </div>
             
           
@@ -86,7 +86,7 @@
 <li class="toctree-l1"><a class="reference internal" href="install.html">Install</a></li>
 <li class="toctree-l1"><a class="reference internal" href="beginner-tutorial.html">Catalyst Beginner Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="live-trading.html">Live Trading</a></li>
-<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intervals.html">Pricing Data Intervals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-algos.html">Example Algorithms</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
 <li class="toctree-l1"><a class="reference internal" href="videos.html">Videos</a></li>
@@ -95,6 +95,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#creating-a-development-environment">Creating a Development Environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#development-with-docker">Development with Docker</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#git-branching-structure">Git Branching Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#style-guide-running-tests">Style Guide &amp; Running Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#continuous-integration">Continuous Integration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#contributing-to-the-docs">Contributing to the Docs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#commit-messages">Commit messages</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#formatting-docstrings">Formatting Docstrings</a></li>
@@ -213,6 +215,35 @@ build the <code class="docutils literal"><span class="pre">Dockerfile</span></co
 <p>If you want to contribute to the codebase of Catalyst, familiarize yourself with our branching structure, a fairly standardized one for that matter, that follows what is documented in the following article: <a class="reference external" href="http://nvie.com/posts/a-successful-git-branching-model/">A successful Git branching model</a>. To contribute, create your local branch and submit a Pull Request (PR) to the <strong>develop</strong> branch.</p>
 <img alt="https://camo.githubusercontent.com/9bde6fb64a9542a572e0e2017cbb58d9d2c440ac/687474703a2f2f6e7669652e636f6d2f696d672f6769742d6d6f64656c4032782e706e67" src="https://camo.githubusercontent.com/9bde6fb64a9542a572e0e2017cbb58d9d2c440ac/687474703a2f2f6e7669652e636f6d2f696d672f6769742d6d6f64656c4032782e706e67" />
 </div>
+<div class="section" id="style-guide-running-tests">
+<h2>Style Guide &amp; Running Tests<a class="headerlink" href="#style-guide-running-tests" title="Permalink to this headline">¶</a></h2>
+<p>We use <a class="reference external" href="http://flake8.pycqa.org/en/latest/">flake8</a> for checking style requirements and <a class="reference external" href="http://nose.readthedocs.io/en/latest/">nosetests</a> to run Catalyst tests. Our <a class="reference external" href="https://en.wikipedia.org/wiki/Continuous_integration">continuous integration</a> tool will run these commands.</p>
+<p>Before submitting patches or pull requests, please ensure that your changes pass when running:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ flake8 catalyst tests
+</pre></div>
+</div>
+<p>In order to run tests locally, you’ll need to install several libraries
+(one of them is TA-lib, so make sure you have it installed following <a class="reference external" href="https://mrjbq7.github.io/ta-lib/install.html">these instructions</a> before continuing).</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ pip install -r ./etc/requirements.txt
+$ pip install -r ./etc/requirements_dev.txt
+$ pip install -r ./etc/requirements_blaze.txt
+$ pip install -r ./etc/requirements_talib.txt
+$ pip install -e .
+</pre></div>
+</div>
+<p>You should now be free to run tests:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> tests <span class="o">&amp;&amp;</span> nosetests
+</pre></div>
+</div>
+</div>
+<div class="section" id="continuous-integration">
+<h2>Continuous Integration<a class="headerlink" href="#continuous-integration" title="Permalink to this headline">¶</a></h2>
+<p>We use <a class="reference external" href="https://travis-ci.com/enigmampc/catalyst">Travis CI</a> for Linux-64 bit builds.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">We do not currently have CI for OSX-64 bit builds or Windows-64 bit builds.</p>
+</div>
+</div>
 <div class="section" id="contributing-to-the-docs">
 <h2>Contributing to the Docs<a class="headerlink" href="#contributing-to-the-docs" title="Permalink to this headline">¶</a></h2>
 <p>If you’d like to contribute to the documentation on enigmampc.github.io, you can navigate to <code class="docutils literal"><span class="pre">docs/source/</span></code> where each <a class="reference external" href="https://en.wikipedia.org/wiki/ReStructuredText">reStructuredText</a> file is a separate section there. To add a section, create a new file called <code class="docutils literal"><span class="pre">some-descriptive-name.rst</span></code> and add <code class="docutils literal"><span class="pre">some-descriptive-name</span></code> to <code class="docutils literal"><span class="pre">index.rst</span></code>. To edit a section, simply open up one of the existing files, make your changes, and save them.</p>
@@ -325,7 +356,7 @@ the algorithm has little cash on hand.
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.5.18',
+            VERSION:'0.5.19',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

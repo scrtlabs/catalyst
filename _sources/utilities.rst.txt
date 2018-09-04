@@ -74,7 +74,6 @@ Simpler case for daily data
         record(price=price, volume=volume)
 
     def analyze(context=None, results=None):
-
         # Generate DataFrame with Price and Volume only
         data = results[['price','volume']]
 
@@ -114,35 +113,34 @@ More versatile case for minute data
         # Portfolio assets list
         context.asset = symbol('btc_usdt') # Bitcoin on Poloniex
 
-        # Creates a .CSV file with the same name as this script to store results
-        context.csvfile = open(os.path.splitext(
-                                          os.path.basename(__file__))[0]+'.csv', 'w+')
-        context.csvwriter = csv.writer(context.csvfile)
+        # Create an empty DataFrame to store results
+        context.pricing_data = pd.DataFrame()
 
     def handle_data(context, data):
         # Variables to record for a given asset: price and volume
         # Other options include 'open', 'high', 'open', 'close'
         # Please note that 'price' equals 'close'
-        date = context.blotter.current_dt      # current time in each iteration
-        price = data.current(context.asset, 'price')
-        volume = data.current(context.asset, 'volume')
+        current = data.history(context.asset, ['price', 'volume'], 1, '1T')
 
-        # Writes one line to CSV on each iteration with the chosen variables
-        context.csvwriter.writerow([date,price,volume])
+        # Append the current information to the pricing_data DataFrame
+        context.pricing_data = context.pricing_data.append(current)
 
     def analyze(context=None, results=None):
-        # Close open file properly at the end
-        context.csvfile.close()
+        # Save pricing data to a CSV file
+        filename = os.path.splitext(os.path.basename(__file__))[0]
+        context.pricing_data.to_csv(filename + '.csv')
 
-        # Bitcoin data is available from 2015-3-2. Dates vary for other tokens.
-        start = datetime(2017, 7, 30, 0, 0, 0, 0, pytz.utc)
-        end = datetime(2017, 7, 31, 0, 0, 0, 0, pytz.utc)
-        results = run_algorithm(initialize=initialize,
-                                handle_data=handle_data,
-                                analyze=analyze,
-                                start=start,
-                                end=end,
-                                exchange_name='poloniex',
-                                data_frequency='minute',
-                                quote_currency ='usdt',
-                                capital_base=10000 )
+    ''' Bitcoin data is available on Poloniex since 2015-3-1.
+         Dates vary for other tokens.
+    '''
+    start = datetime(2017, 7, 30, 0, 0, 0, 0, pytz.utc)
+    end = datetime(2017, 7, 31, 0, 0, 0, 0, pytz.utc)
+    results = run_algorithm(initialize=initialize,
+                            handle_data=handle_data,
+                            analyze=analyze,
+                            start=start,
+                            end=end,
+                            exchange_name='poloniex',
+                            data_frequency='minute',
+                            quote_currency ='usdt',
+                            capital_base=10000 )

@@ -12,7 +12,7 @@ Table of Contents
    install
    beginner-tutorial
    live-trading
-   features
+   intervals
    example-algos
    utilities
    videos

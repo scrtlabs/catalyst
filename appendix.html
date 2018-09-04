@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>API Reference &mdash; Catalyst 0.5.18 documentation</title>
+  <title>API Reference &mdash; Catalyst 0.5.19 documentation</title>
   
 
   
@@ -57,7 +57,7 @@
             
             
               <div class="version">
-                0.5.18+7.g44eac532
+                0.5.19
               </div>
             
           
@@ -85,7 +85,7 @@
 <li class="toctree-l1"><a class="reference internal" href="install.html">Install</a></li>
 <li class="toctree-l1"><a class="reference internal" href="beginner-tutorial.html">Catalyst Beginner Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="live-trading.html">Live Trading</a></li>
-<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intervals.html">Pricing Data Intervals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-algos.html">Example Algorithms</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
 <li class="toctree-l1"><a class="reference internal" href="videos.html">Videos</a></li>
@@ -968,7 +968,7 @@ limit price once the market reaches a specified stop price.</p>
 
 <dl class="function">
 <dt id="catalyst.api.get_order">
-<code class="descclassname">catalyst.api.</code><code class="descname">get_order</code><span class="sig-paren">(</span><em>self</em>, <em>order_id</em>, <em>asset_or_symbol=None</em>, <em>return_price=False</em><span class="sig-paren">)</span><a class="headerlink" href="#catalyst.api.get_order" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">catalyst.api.</code><code class="descname">get_order</code><span class="sig-paren">(</span><em>self</em>, <em>order_id</em>, <em>asset_or_symbol=None</em>, <em>return_price=False</em>, <em>params={}</em><span class="sig-paren">)</span><a class="headerlink" href="#catalyst.api.get_order" title="Permalink to this definition">¶</a></dt>
 <dd><p>Lookup an order based on the order id returned from one of the
 order functions.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -984,6 +984,9 @@ order functions.</p>
 </dd>
 <dt><strong>return_price: bool</strong></dt>
 <dd><p class="first last">get the trading price in addition to the order</p>
+</dd>
+<dt><strong>params: dict, optional</strong></dt>
+<dd><p class="first last">Extra parameters to pass to the exchange</p>
 </dd>
 </dl>
 </td>
@@ -1609,7 +1612,7 @@ know if they are running on the Quantopian platform instead.</p>
 
 <dl class="class">
 <dt id="catalyst.utils.calendars.TradingCalendar">
-<em class="property">class </em><code class="descclassname">catalyst.utils.calendars.</code><code class="descname">TradingCalendar</code><span class="sig-paren">(</span><em>start=Timestamp('1990-01-01 00:00:00+0000'</em>, <em>tz='UTC')</em>, <em>end=Timestamp('2019-08-09 16:01:43.321480+0000'</em>, <em>tz='UTC')</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">catalyst.utils.calendars.</code><code class="descname">TradingCalendar</code><span class="sig-paren">(</span><em>start=Timestamp('1990-01-01 00:00:00+0000'</em>, <em>tz='UTC')</em>, <em>end=Timestamp('2019-09-04 11:26:31.736881+0000'</em>, <em>tz='UTC')</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar" title="Permalink to this definition">¶</a></dt>
 <dd><p>A TradingCalendar represents the timing information of a single market
 exchange.</p>
 <p>The timing information is made up of two parts: sessions, and opens/closes.</p>
@@ -1758,7 +1761,7 @@ Default is False.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.5.18',
+            VERSION:'0.5.19',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

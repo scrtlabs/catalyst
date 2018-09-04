@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Install &mdash; Catalyst 0.5.18 documentation</title>
+  <title>Install &mdash; Catalyst 0.5.19 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.5.18+7.g44eac532
+                0.5.19
               </div>
             
           
@@ -108,7 +108,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="beginner-tutorial.html">Catalyst Beginner Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="live-trading.html">Live Trading</a></li>
-<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intervals.html">Pricing Data Intervals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-algos.html">Example Algorithms</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
 <li class="toctree-l1"><a class="reference internal" href="videos.html">Videos</a></li>
@@ -235,33 +235,39 @@ a regular <code class="docutils literal"><span class="pre">Command</span> <span 
 available from the Start menu.</div></blockquote>
 <p>Once either Conda or MiniConda has been set up you can install Catalyst:</p>
 <ol class="arabic">
-<li><p class="first">Download the file <a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/etc/python3.6-environment.yml">python3.6-environment.yml</a>
-(recommended) or <a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/etc/python2.7-environment.yml">python2.7-environment.yml</a>
-matching your Conda installation from step #1 above.</p>
-<blockquote>
-<div><p>To download, simply click on the ‘Raw’ button and save the file locally
+<li><p class="first">Download the proper .yml file matching your Conda installation from
+step #1 above.
+To download, simply click on the ‘Raw’ button and save the file locally
 to a folder you can remember. Make sure that the file gets saved with the
 <code class="docutils literal"><span class="pre">.yml</span></code> extension, and nothing like a <code class="docutils literal"><span class="pre">.txt</span></code> file or anything else.</p>
-</div></blockquote>
+<p><strong>Linux or MacOS:</strong>
+Download the file <a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/etc/python3.6-environment.yml">python3.6-environment.yml</a>
+(recommended) or <a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/etc/python2.7-environment.yml">python2.7-environment.yml</a></p>
+<p><strong>Windows:</strong>
+Download the file <a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/etc/python3.6-environment-windows.yml">python3.6-environment-windows.yml</a>
+(recommended) or <a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/etc/python2.7-environment.yml">python2.7-environment.yml</a></p>
 </li>
 <li><p class="first">Open a Terminal window and enter [<code class="docutils literal"><span class="pre">cd/dir</span></code>] into the directory where you
 saved the above <code class="docutils literal"><span class="pre">.yml</span></code> file.</p>
 </li>
 <li><p class="first">Install using this file. This step can take about 5-10 minutes to install.</p>
+<p><strong>Linux or MacOS Python 3.6:</strong></p>
 <div class="highlight-bash"><div class="highlight"><pre><span></span>conda env create -f python3.6-environment.yml
 </pre></div>
 </div>
-</li>
-</ol>
-<blockquote>
-<div><p>or</p>
-<blockquote>
-<div><div class="highlight-bash"><div class="highlight"><pre><span></span>conda env create -f python2.7-environment.yml
+<p><strong>Linux or MacOS Python 2.7:</strong></p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>conda env create -f python2.7-environment.yml
 </pre></div>
 </div>
-</div></blockquote>
-</div></blockquote>
-<ol class="arabic" start="4">
+<p><strong>Windows Python 3.6:</strong></p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>conda env create -f python3.6-environment-windows.yml
+</pre></div>
+</div>
+<p><strong>Windows Python 2.7:</strong></p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>conda env create -f python2.7-environment.yml
+</pre></div>
+</div>
+</li>
 <li><p class="first">Activate the environment (which you need to do every time you start a new
 session to run Catalyst):</p>
 <p><strong>Linux or MacOS:</strong></p>
@@ -703,7 +709,7 @@ and you get a hint on how to solve it.</li>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.5.18',
+            VERSION:'0.5.19',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
