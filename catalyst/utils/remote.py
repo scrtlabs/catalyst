@@ -16,8 +16,8 @@ from catalyst.exchange.exchange_errors import RemoteAuthEmpty
 
 log = Logger('remote')
 
-AUTH_SERVER = 'http://localhost:5000'
-# AUTH_SERVER = "https://sandbox2.enigma.co"
+# AUTH_SERVER = 'http://localhost:5000'
+AUTH_SERVER = "https://sandbox2.enigma.co"
 
 BACKTEST = 'backtest'
 STATUS = 'status'
@@ -42,7 +42,8 @@ def handle_response(response, mode):
     elif response.status_code == 400 or response.status_code == 401:
         raise Exception("There is a connection but it was aborted due "
                         "to wrong arguments given to the server.\n" +
-                        response.content + EXCEPTION_LOG)
+                        response.content.decode('utf-8') + '\n' +
+                        EXCEPTION_LOG)
     else:  # if the run was successful
         if mode == BACKTEST:
             algo_id = response.json()['algo_id']
