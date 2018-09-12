@@ -661,6 +661,9 @@ def mixin_market_params(exchange_name, params, market):
             if 'lot' not in params:
                 params['lot'] = params['min_trade_size']
 
+    if 'active' in market:
+        params['trading_state'] = market['active']
+
 
 def group_assets_by_exchange(assets):
     exchange_assets = dict()
