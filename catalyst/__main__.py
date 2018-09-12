@@ -749,17 +749,20 @@ def remote_status(ctx, algo_id, data_output, log_output):
     )
     if isinstance(status_response, tuple):
         status, perf, log = status_response
+
         if log_output == '-':
             click.echo(str(log), sys.stderr)
         elif log_output != os.devnull:
             with open(log_output, 'w') as file:
                 file.write(log)
 
-        if data_output == '-' or perf is None:
-            click.echo('the performance data is:\n' + str(perf), sys.stdout)
-        elif data_output != os.devnull:
-            # make the catalyst magic not write any data
-            perf.to_pickle(data_output)
+        if perf is not None:
+            if data_output == '-':
+                click.echo('the performance data is:\n' +
+                           str(perf), sys.stdout)
+            elif data_output != os.devnull:
+                # make the catalyst magic not write any data
+                perf.to_pickle(data_output)
         print(status)
         return status, perf
     else:
