@@ -294,7 +294,9 @@ def run(ctx,
         stats_output=None,
     )
 
-    if output == '-':
+    if output == '--':
+        pass
+    elif output == '-':
         click.echo(str(perf), sys.stdout)
     elif output != os.devnull:  # make the catalyst magic not write any data
         perf.to_pickle(output)
@@ -692,7 +694,7 @@ def remote_run(ctx,
         bundle_timestamp=bundle_timestamp,
         start=start,
         end=end,
-        output='-',
+        output='--',
         print_algo=print_algo,
         local_namespace=local_namespace,
         environ=os.environ,
