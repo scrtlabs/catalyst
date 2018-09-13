@@ -1,6 +1,17 @@
 =============
 Release Notes
 =============
+Version 0.5.20
+^^^^^^^^^^^^^^
+**Release Date**: 2018-09-13
+
+Build
+~~~~~
+- Utilize the `trading_state` attribute of the `TradingPair` object - in live
+and paper trading ONLY :issue:`460`
+- Introduced a first WIP version for running backtest strategies on a
+remote server
+
 Version 0.5.19
 ^^^^^^^^^^^^^^
 **Release Date**: 2018-09-04
