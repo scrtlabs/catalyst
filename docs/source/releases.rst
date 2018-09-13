@@ -1,6 +1,21 @@
 =============
 Release Notes
 =============
+Version 0.5.19
+^^^^^^^^^^^^^^
+**Release Date**: 2018-09-04
+
+Build
+~~~~~
+- Upgraded `CCXT` version to 1.17.94
+- Added the `get_orderbook` function to the API.
+- Aligned the `data.current` to crypto OHLCV left labeling.
+- Added the support for live trading in Huobi Pro, OKEx, HitBTC and KuCoin.
+
+Bug Fixes
+~~~~~~~~~
+- Fixed the timeout handling in `get_candles` function :issue:`420`
+- Fixed the catalyst conda yml installation on windows :issue:`407`
 
 Version 0.5.18
 ^^^^^^^^^^^^^^
