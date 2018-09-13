@@ -44,6 +44,9 @@ def handle_response(response, mode):
                         "to wrong arguments given to the server.\n" +
                         response.content.decode('utf-8') + '\n' +
                         EXCEPTION_LOG)
+    elif response.status_code == 202:
+        raise Exception("The server is under maintenance. "
+                        "please try again in a few minutes")
     else:  # if the run was successful
         if mode == BACKTEST:
             algo_id = response.json()['algo_id']
