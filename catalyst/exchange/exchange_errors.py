@@ -73,6 +73,13 @@ class ExchangeAuthEmpty(ZiplineError):
     ).strip()
 
 
+class RemoteAuthEmpty(ZiplineError):
+    msg = (
+        'Please enter your API token key and secret for the remote server '
+        'in the following file: {filename}'
+    ).strip()
+
+
 class ExchangeSymbolsNotFound(ZiplineError):
     msg = (
         'Unable to download or find a local copy of symbols.json for exchange '

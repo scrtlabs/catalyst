@@ -1,6 +1,7 @@
 import errno
 import os
 from functools import wraps
+import re
 
 import click
 import sys
@@ -15,6 +16,7 @@ from catalyst.exchange.utils.exchange_utils import delete_algo_folder
 from catalyst.utils.cli import Date, Timestamp
 from catalyst.utils.run_algo import _run, load_extensions
 from catalyst.exchange.utils.bundle_utils import EXCHANGE_NAMES
+from catalyst.utils.remote import remote_backtest, get_remote_status
 
 try:
     __IPYTHON__
@@ -292,7 +294,9 @@ def run(ctx,
         stats_output=None,
     )
 
-    if output == '-':
+    if output == '--':
+        pass
+    elif output == '-':
         click.echo(str(perf), sys.stdout)
     elif output != os.devnull:  # make the catalyst magic not write any data
         perf.to_pickle(output)
@@ -512,6 +516,260 @@ def live(ctx,
         perf.to_pickle(output)
 
     return perf
+
+
+@main.command(name='remote-run')
+@click.option(
+    '-f',
+    '--algofile',
+    default=None,
+    type=click.File('r'),
+    help='The file that contains the algorithm to run.',
+)
+@click.option(
+    '-t',
+    '--algotext',
+    help='The algorithm script to run.',
+)
+@click.option(
+    '-D',
+    '--define',
+    multiple=True,
+    help="Define a name to be bound in the namespace before executing"
+         " the algotext. For example '-Dname=value'. The value may be"
+         " any python expression. These are evaluated in order so they"
+         " may refer to previously defined names.",
+)
+@click.option(
+    '--data-frequency',
+    type=click.Choice({'daily', 'minute'}),
+    default='daily',
+    show_default=True,
+    help='The data frequency of the simulation.',
+)
+@click.option(
+    '--capital-base',
+    type=float,
+    show_default=True,
+    help='The starting capital for the simulation.',
+)
+@click.option(
+    '-b',
+    '--bundle',
+    default='poloniex',
+    metavar='BUNDLE-NAME',
+    show_default=True,
+    help='The data bundle to use for the simulation.',
+)
+@click.option(
+    '--bundle-timestamp',
+    type=Timestamp(),
+    default=pd.Timestamp.utcnow(),
+    show_default=False,
+    help='The date to lookup data on or before.\n'
+         '[default: <current-time>]'
+)
+@click.option(
+    '-s',
+    '--start',
+    type=Date(tz='utc', as_timestamp=True),
+    help='The start date of the simulation.',
+)
+@click.option(
+    '-e',
+    '--end',
+    type=Date(tz='utc', as_timestamp=True),
+    help='The end date of the simulation.',
+)
+@click.option(
+    '-m',
+    '--mail',
+    show_default=True,
+    help='an E-mail address to send the results to',
+)
+@click.option(
+    '-o',
+    '--output',
+    default='-',
+    metavar='FILENAME',
+    show_default=True,
+    help="The location to write the perf data. If this is '-' the perf"
+         " will be written to stdout.",
+)
+@click.option(
+    '--print-algo/--no-print-algo',
+    is_flag=True,
+    default=False,
+    help='Print the algorithm to stdout.',
+)
+@ipython_only(click.option(
+    '--local-namespace/--no-local-namespace',
+    is_flag=True,
+    default=None,
+    help='Should the algorithm methods be resolved in the local namespace.'
+))
+@click.option(
+    '-x',
+    '--exchange-name',
+    help='The name of the targeted exchange.',
+)
+@click.option(
+    '-n',
+    '--algo-namespace',
+    help='A label assigned to the algorithm for data storage purposes.'
+)
+@click.option(
+    '-c',
+    '--quote-currency',
+    help='The quote currency used to calculate statistics '
+         '(e.g. usd, btc, eth).',
+)
+@click.pass_context
+def remote_run(ctx,
+               algofile,
+               algotext,
+               define,
+               data_frequency,
+               capital_base,
+               bundle,
+               bundle_timestamp,
+               start,
+               end,
+               mail,
+               output,
+               print_algo,
+               local_namespace,
+               exchange_name,
+               algo_namespace,
+               quote_currency):
+    """Run a backtest for the given algorithm on the cloud.
+    """
+
+    if (algotext is not None) == (algofile is not None):
+        ctx.fail(
+            "must specify exactly one of '-f' / '--algofile' or"
+            " '-t' / '--algotext'",
+        )
+
+    # check that the start and end dates are passed correctly
+    if start is None and end is None:
+        # check both at the same time to avoid the case where a user
+        # does not pass either of these and then passes the first only
+        # to be told they need to pass the second argument also
+        ctx.fail(
+            "must specify dates with '-s' / '--start' and '-e' / '--end'"
+            " in backtest mode",
+        )
+    if start is None:
+        ctx.fail("must specify a start date with '-s' / '--start'"
+                 " in backtest mode")
+    if end is None:
+        ctx.fail("must specify an end date with '-e' / '--end'"
+                 " in backtest mode")
+
+    if exchange_name is None:
+        ctx.fail("must specify an exchange name '-x'")
+
+    if quote_currency is None:
+        ctx.fail("must specify a quote currency with '-c' in backtest mode")
+
+    if capital_base is None:
+        ctx.fail("must specify a capital base with '--capital-base'")
+
+    if mail is None or not re.match(r"[^@]+@[^@]+\.[^@]+", mail):
+        ctx.fail("must specify a valid email with '--mail'")
+
+    algo_id = remote_backtest(
+        initialize=None,
+        handle_data=None,
+        before_trading_start=None,
+        analyze=None,
+        algofile=algofile,
+        algotext=algotext,
+        defines=define,
+        data_frequency=data_frequency,
+        capital_base=capital_base,
+        data=None,
+        bundle=bundle,
+        bundle_timestamp=bundle_timestamp,
+        start=start,
+        end=end,
+        output='--',
+        print_algo=print_algo,
+        local_namespace=local_namespace,
+        environ=os.environ,
+        live=False,
+        exchange=exchange_name,
+        algo_namespace=algo_namespace,
+        quote_currency=quote_currency,
+        analyze_live=None,
+        live_graph=False,
+        simulate_orders=True,
+        auth_aliases=None,
+        stats_output=None,
+        mail=mail,
+    )
+    print(algo_id)
+    return algo_id
+
+
+@main.command(name='remote-status')
+@click.option(
+    '-i',
+    '--algo-id',
+    show_default=True,
+    help='The algo id of your running algorithm on the cloud',
+)
+@click.option(
+    '-d',
+    '--data-output',
+    default='-',
+    metavar='FILENAME',
+    show_default=True,
+    help="The location to write the perf data, if it exists. If this is '-' "
+         "the perf will be written to stdout.",
+)
+@click.option(
+    '-l',
+    '--log-output',
+    default='-',
+    metavar='FILENAME',
+    show_default=True,
+    help="The location to write the current logging. "
+         "If this is '-' the log will be written to stdout.",
+)
+@click.pass_context
+def remote_status(ctx, algo_id, data_output, log_output):
+    """
+    Get the status of a running algorithm on the cloud
+    """
+    if algo_id is None:
+        ctx.fail("must specify an id of your running algorithm with '--id'")
+
+    status_response = get_remote_status(
+        algo_id=algo_id
+    )
+    if isinstance(status_response, tuple):
+        status, perf, log = status_response
+
+        if log_output == '-':
+            click.echo(str(log), sys.stderr)
+        elif log_output != os.devnull:
+            with open(log_output, 'w') as file:
+                file.write(log)
+
+        if perf is not None:
+            if data_output == '-':
+                click.echo('the performance data is:\n' +
+                           str(perf), sys.stdout)
+            elif data_output != os.devnull:
+                # make the catalyst magic not write any data
+                perf.to_pickle(data_output)
+        print(status)
+        return status, perf
+    else:
+        print(status_response)
+        return status_response
 
 
 @main.command(name='ingest-exchange')
