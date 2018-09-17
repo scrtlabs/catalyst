@@ -1,25 +1,35 @@
-import json, time, csv
+import os
+import csv
+import json
+import time
+import shutil
 from datetime import datetime
+
+import logbook
+import requests
 import pandas as pd
-import os, time, shutil, requests, logbook
+
 from catalyst.exchange.exchange_utils import get_exchange_symbols_filename
 
 
-DT_START        = int(time.mktime(datetime(2010, 1, 1, 0, 0).timetuple()))
-DT_END          = pd.to_datetime('today').value // 10 ** 9
-CSV_OUT_FOLDER  = os.environ.get('CSV_OUT_FOLDER', '/efs/exchanges/poloniex/')
-CONN_RETRIES    = 2
+DT_START = int(time.mktime(datetime(2010, 1, 1, 0, 0).timetuple()))
+DT_END = pd.to_datetime('today').value // 10 ** 9
+CSV_OUT_FOLDER = os.environ.get('CSV_OUT_FOLDER', '/efs/exchanges/poloniex/')
+CSV_OUT_FOLDER_BASE = os.environ.get(
+    'CSV_OUT_FOLDER', '/efs/exchanges/poloniex_base/')
+CONN_RETRIES = 2
 
 logbook.StderrHandler().push_application()
 log = logbook.Logger(__name__)
+
 
 class PoloniexCurator(object):
     '''
     OHLCV data feed generator for crypto data. Based on Poloniex market data
     '''
 
-    _api_path       = 'https://poloniex.com/public?'
-    currency_pairs  = []
+    _api_path = 'https://poloniex.com/public?'
+    currency_pairs = []
 
     def __init__(self):
         if not os.path.exists(CSV_OUT_FOLDER):
@@ -30,10 +40,9 @@ class PoloniexCurator(object):
                             CSV_OUT_FOLDER))
                 log.exception(e)
 
-
     def get_currency_pairs(self):
         '''
-        Retrieves and returns all currency pairs from the exchange 
+        Retrieves and returns all currency pairs from the exchange
         '''
         url = self._api_path + 'command=returnTicker'
 
@@ -45,7 +54,7 @@ class PoloniexCurator(object):
             return None
 
         data = response.json()
-        self.currency_pairs  = []
+        self.currency_pairs = []
         for ticker in data:
             self.currency_pairs.append(ticker)
         self.currency_pairs.sort()
@@ -54,54 +63,51 @@ class PoloniexCurator(object):
                     len(self.currency_pairs)
                     ))
 
-
-
     def _retrieve_tradeID_date(self, row):
         '''
         Helper function that reads tradeID and date fields from CSV readline
         '''
         tId = int(row.split(',')[0])
-        d   = pd.to_datetime(row.split(',')[1], 
-                             infer_datetime_format=True).value // 10 ** 9
+        d = pd.to_datetime(
+            row.split(',')[1], infer_datetime_format=True).value // 10 ** 9
         return tId, d
 
-
-    def retrieve_trade_history(self, currencyPair, start=DT_START, 
+    def retrieve_trade_history(self, currencyPair, start=DT_START,
                                end=DT_END, temp=None):
         '''
-        Retrieves TradeHistory from exchange for a given currencyPair 
-        between start and end dates. If no start date is provided, uses 
+        Retrieves TradeHistory from exchange for a given currencyPair
+        between start and end dates. If no start date is provided, uses
         a system-wide one (beginning of time for cryptotrading).
         If no end date is provided, 'now' is used.
 
         Stores results in CSV file on disk.
-        
-        This function is called recursively to work around the 
+
+        This function is called recursively to work around the
         limitations imposed by the provider API.
         '''
         csv_fn = CSV_OUT_FOLDER + 'crypto_trades-' + currencyPair + '.csv'
 
         '''
-        Check what data we already have on disk, reading first and last 
+        Check what data we already have on disk, reading first and last
         lines from file. Data is stored on file from NEWEST to OLDEST.
         '''
         try:
-            with open(csv_fn, 'ab+') as f: 
+            with open(csv_fn, 'ab+') as f:
                 f.seek(0, os.SEEK_END)
                 if(f.tell() > 2):                   # Check file size is not 0
-                    f.seek(0)                       # Go to start to read 
+                    f.seek(0)                       # Go to start to read
                     last_tradeID, end_file = self._retrieve_tradeID_date(f.readline())
                     f.seek(-2, os.SEEK_END)         # Jump to the 2nd last byte
                     while f.read(1) != b"\n":       # Until EOL is found...
                         f.seek(-2, os.SEEK_CUR)     # ...jump back the read byte plus one more.
                     first_tradeID, start_file = self._retrieve_tradeID_date(f.readline())
 
-                    if( end_file + 3600 * 6 > DT_END and ( first_tradeID == 1
-                        or (currencyPair == 'BTC_HUC' and first_tradeID ==     2) 
-                        or (currencyPair == 'BTC_RIC' and first_tradeID ==     2) 
-                        or (currencyPair == 'BTC_XCP' and first_tradeID ==     2)
-                        or (currencyPair == 'BTC_NAV' and first_tradeID ==  4569)
-                        or (currencyPair == 'BTC_POT' and first_tradeID == 23511) ) ):
+                    if(end_file + 3600 * 6 > DT_END and (first_tradeID == 1
+                        or (currencyPair == 'BTC_HUC' and first_tradeID == 2)
+                        or (currencyPair == 'BTC_RIC' and first_tradeID == 2)
+                        or (currencyPair == 'BTC_XCP' and first_tradeID == 2)
+                        or (currencyPair == 'BTC_NAV' and first_tradeID == 4569)
+                        or (currencyPair == 'BTC_POT' and first_tradeID == 23511))):
                         return
 
         except Exception as e:
@@ -109,11 +115,11 @@ class PoloniexCurator(object):
             log.exception(e)
 
         '''
-        Poloniex API limits querying TradeHistory to intervals smaller 
+        Poloniex API limits querying TradeHistory to intervals smaller
         than 1 month, so we make sure that start date is never more than
         1 month apart from end date
         '''
-        if( end - start > 2419200 ): # 60s/min * 60min/hr * 24hr/day * 28days     
+        if( end - start > 2419200 ): # 60s/min * 60min/hr * 24hr/day * 28days 
             newstart = end - 2419200
         else:
             newstart = start
@@ -161,9 +167,8 @@ class PoloniexCurator(object):
         if not success:
             return None
 
-
         '''
-        If we get to transactionId == 1, and we already have that on 
+        If we get to transactionId == 1, and we already have that on
         disk, we got to the end of TradeHistory for this coin.
         '''
         if('first_tradeID' in locals() 
@@ -172,13 +177,13 @@ class PoloniexCurator(object):
 
         '''
             There are primarily two scenarios:
-                a) There is newer data available that we need to add at 
-                   the beginning of the file. We'll retrieve all what we 
-                   need until we get to what we already have, writing it 
-                   to a temporary file; and we will write that at the 
+                a) There is newer data available that we need to add at
+                   the beginning of the file. We'll retrieve all what we
+                   need until we get to what we already have, writing it
+                   to a temporary file; and we will write that at the
                    beginning of our existing file.
-                b) We are going back in time, appending at the end of 
-                   our existing TradeHistory until the first transaction 
+                b) We are going back in time, appending at the end of
+                   our existing TradeHistory until the first transaction
                    for this currencyPair
         '''
         try:
@@ -236,35 +241,47 @@ class PoloniexCurator(object):
             log.exception(e)
 
         '''
-            If we got here, we aren't done yet. Call recursively with 
+            If we got here, we aren't done yet. Call recursively with
             'end' times that go sequentially back in time.
         '''
         self.retrieve_trade_history(currencyPair, start, end)
 
-
-
     def generate_ohlcv(self, df):
         '''
         Generates OHLCV dataframe from a dataframe containing all TradeHistory
-        by resampling with 1-minute period
+        by resampling with 1-minute period. Volume is quoted in quote_currency
         '''
         df.set_index('date', inplace=True)               # Index by date
         vol = df['total'].to_frame('volume')             # set Vol aside
         df.drop('total', axis=1, inplace=True)           # Drop volume data 
         ohlc = df.resample('T').ohlc()                   # Resample OHLC 1min
-        ohlc.columns = ohlc.columns.map(lambda t: t[1])  # Raname columns by dropping 'rate'
+        ohlc.columns = ohlc.columns.map(lambda t: t[1])  # Raname cols by dropping 'rate'
         closes = ohlc['close'].fillna(method='pad')      # Pad fwd missing 'close'
         ohlc = ohlc.apply(lambda x: x.fillna(closes))    # Fill N/A with last close
         vol = vol.resample('T').sum().fillna(0)          # Add volumes by bin
-        ohlcv = pd.concat([ohlc,vol], axis=1)            # Concatenate OHLC + Vol
+        ohlcv = pd.concat([ohlc,vol], axis=1)            # Concatenate OHLC+Vol
         return ohlcv
 
+    def generate_ohlcv_base(self, df):
+        '''
+        Generates OHLCV dataframe from a dataframe containing all TradeHistory
+        by resampling with 1-minute period. Volume is quoted in base_currency
+        '''
+        df.set_index('date', inplace=True)               # Index by date
+        vol = df['amount'].to_frame('volume')            # set Vol aside
+        df.drop('amount', axis=1, inplace=True)          # Drop volume data
+        ohlc = df.resample('T').ohlc()                   # Resample OHLC 1min
+        ohlc.columns = ohlc.columns.map(lambda t: t[1])  # Raname cols by dropping 'rate'
+        closes = ohlc['close'].fillna(method='pad')      # Pad fwd missing 'close'
+        ohlc = ohlc.apply(lambda x: x.fillna(closes))    # Fill N/A with last close
+        vol = vol.resample('T').sum().fillna(0)          # Add volumes by bin
+        ohlcv = pd.concat([ohlc,vol], axis=1)            # Concatenate OHLC+Vol
+        return ohlcv
 
-
-    def write_ohlcv_file(self, currencyPair): 
+    def write_ohlcv_file(self, currencyPair):
         '''
         Generates OHLCV data file with 1minute bars from TradeHistory on disk
-        '''       
+        '''
         csv_trades = CSV_OUT_FOLDER + 'crypto_trades-' + currencyPair + '.csv'
         csv_1min   = CSV_OUT_FOLDER + 'crypto_1min-' + currencyPair + '.csv'
         try:
@@ -275,27 +292,27 @@ class PoloniexCurator(object):
             log.debug(currencyPair+': 1min data file already up to date. '
                       'Delete the file if you want to rebuild it.')
         else:
-            df = pd.read_csv(csv_trades, 
+            df = pd.read_csv(csv_trades,
                                 names=['tradeID',
                                        'date',
                                        'type',
                                        'rate',
                                        'amount',
                                        'total',
-                                       'globalTradeID'], 
-                                dtype = {'tradeID': int, 
-                                         'date': str, 
-                                         'type': str, 
-                                         'rate': float, 
-                                         'amount': float, 
-                                         'total': float, 
-                                         'globalTradeID': int } 
+                                       'globalTradeID'],
+                                dtype = {'tradeID': int,
+                                         'date': str,
+                                         'type': str,
+                                         'rate': float,
+                                         'amount': float,
+                                         'total': float,
+                                         'globalTradeID': int}
                                 )
             df.drop(['tradeID','type','amount','globalTradeID'], 
                     axis=1, inplace=True)
-            df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True) 
+            df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
             ohlcv = self.generate_ohlcv(df)
-            try: 
+            try:
                 with open(csv_1min, 'w') as csvfile:
                     csvwriter = csv.writer(csvfile)
                     for item in ohlcv.itertuples():
@@ -314,28 +331,78 @@ class PoloniexCurator(object):
                 log.exception(e)
             log.debug('{}: Generated 1min OHLCV data.'.format(currencyPair))
 
-
+    def write_ohlcv_file_base(self, currencyPair):
+        '''
+        Generates OHLCV data file with 1minute bars from TradeHistory on disk
+        '''
+        csv_trades = CSV_OUT_FOLDER + 'crypto_trades-' + currencyPair + '.csv'
+        csv_1min = CSV_OUT_FOLDER_BASE + 'crypto_1min-' + currencyPair + '.csv'
+        try:
+            last_time = os.path.getmtime(csv_1min)
+        except OSError:
+            last_time = 0
+        if( last_time > time.time() - 7200 ):
+            log.debug(currencyPair+': 1min data file already up to date. '
+                      'Delete the file if you want to rebuild it.')
+        else:
+            df = pd.read_csv(csv_trades,
+                                names=['tradeID',
+                                       'date',
+                                       'type',
+                                       'rate',
+                                       'amount',
+                                       'total',
+                                       'globalTradeID'],
+                                dtype = {'tradeID': int,
+                                         'date': str,
+                                         'type': str,
+                                         'rate': float,
+                                         'amount': float,
+                                         'total': float,
+                                         'globalTradeID': int}
+                                )
+            df.drop(['tradeID','type', 'total', 'globalTradeID'],
+                    axis=1, inplace=True)
+            df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
+            ohlcv = self.generate_ohlcv_base(df)
+            try:
+                with open(csv_1min, 'w') as csvfile:
+                    csvwriter = csv.writer(csvfile)
+                    for item in ohlcv.itertuples():
+                        if item.Index == 0:
+                            continue
+                        csvwriter.writerow([
+                            item.Index.value // 10 ** 9,
+                            item.open,
+                            item.high,
+                            item.low,
+                            item.close,
+                            item.volume,
+                        ])
+            except Exception as e:
+                log.error('Error opening {}'.format(csv_fn))
+                log.exception(e)
+            log.debug('{}: Generated 1min OHLCV data.'.format(currencyPair))
 
     def onemin_to_dataframe(self, currencyPair, start, end):
         '''
         Returns a data frame for a given currencyPair from data on disk
         '''
         csv_fn     = CSV_OUT_FOLDER + 'crypto_1min-' + currencyPair + '.csv'
-        df         = pd.read_csv(csv_fn, names=['date', 
-                                                'open', 
-                                                'high', 
-                                                'low', 
-                                                'close', 
+        df         = pd.read_csv(csv_fn, names=['date',
+                                                'open',
+                                                'high',
+                                                'low',
+                                                'close',
                                                 'volume']
                                 )
         df['date'] = pd.to_datetime(df['date'],unit='s')
         df.set_index('date', inplace=True)
         return df[start : end]
 
-
     def generate_symbols_json(self, filename=None):
         '''
-        Generates a symbols.json file with corresponding start_date 
+        Generates a symbols.json file with corresponding start_date
         for each currencyPair
         '''
         symbol_map = {}
@@ -360,10 +427,10 @@ class PoloniexCurator(object):
                 if(start is None):
                     start = time.gmtime()
                 base, market = currencyPair.lower().split('_')
-                symbol = '{market}_{base}'.format( market=market, base=base )
+                symbol = '{market}_{base}'.format(market=market, base=base)
                 symbol_map[currencyPair] = dict(
-                    symbol = symbol,
-                    start_date = start.strftime("%Y-%m-%d")
+                    symbol=symbol,
+                    start_date=start.strftime("%Y-%m-%d")
                 )
             json.dump(symbol_map, symbols, sort_keys=True, indent=2, 
                         separators=(',',':'))    
@@ -372,10 +439,10 @@ class PoloniexCurator(object):
 if __name__ == '__main__':
     pc = PoloniexCurator()
     pc.get_currency_pairs()
-    #pc.generate_symbols_json()
-    
+    # pc.generate_symbols_json()
+
     for currencyPair in pc.currency_pairs:
         pc.retrieve_trade_history(currencyPair)
         log.debug('{} up to date.'.format(currencyPair))
         pc.write_ohlcv_file(currencyPair)
-
+        pc.write_ohlcv_file_base(currencyPair)
