@@ -286,7 +286,7 @@ setup(
     url='https://enigma.co',
     version=versioneer.get_version(),
     cmdclass=LazyBuildExtCommandClass(versioneer.get_cmdclass()),
-    description='A algorithmic trading backtester for crypto-assets.',
+    description='An algorithmic trading backtester for crypto-assets.',
     entry_points={
         'console_scripts': [
             'catalyst = catalyst.__main__:main',
