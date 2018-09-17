@@ -588,15 +588,6 @@ def live(ctx,
     help='an E-mail address to send the results to',
 )
 @click.option(
-    '-o',
-    '--output',
-    default='-',
-    metavar='FILENAME',
-    show_default=True,
-    help="The location to write the perf data. If this is '-' the perf"
-         " will be written to stdout.",
-)
-@click.option(
     '--print-algo/--no-print-algo',
     is_flag=True,
     default=False,
@@ -636,7 +627,6 @@ def remote_run(ctx,
                start,
                end,
                mail,
-               output,
                print_algo,
                local_namespace,
                exchange_name,
