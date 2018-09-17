@@ -70,8 +70,6 @@ def handle_status(received_content):
         log.error(received_content['message'])
         return status
 
-    log.info("The status of the algorithm is: '{}'".
-             format(status))
     perf, log_file = load_response(received_content)
     return status, perf, log_file
 

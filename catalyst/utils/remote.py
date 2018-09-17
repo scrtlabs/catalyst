@@ -134,7 +134,6 @@ def get_remote_status(algo_id):
         raise Exception("the id you entered is invalid! "
                         "please enter a valid id.")
     json_file = {'algo_id': algo_id}
-    log.info("retrieving the status of {} algorithm".format(algo_id))
     response = send_digest_request(
         json_file=json_file, path=STATUS_PATH, method=GET
     )
