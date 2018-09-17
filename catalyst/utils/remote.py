@@ -16,8 +16,8 @@ from catalyst.exchange.exchange_errors import RemoteAuthEmpty
 
 log = Logger('remote')
 
-AUTH_SERVER = 'http://localhost:5000'
-# AUTH_SERVER = "https://sandbox2.enigma.co"
+# AUTH_SERVER = 'http://localhost:5000'
+AUTH_SERVER = "https://sandbox2.enigma.co"
 
 BACKTEST = 'backtest'
 STATUS = 'status'
