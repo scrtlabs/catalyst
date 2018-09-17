@@ -267,7 +267,11 @@ class PoloniexCurator(object):
         '''       
         csv_trades = CSV_OUT_FOLDER + 'crypto_trades-' + currencyPair + '.csv'
         csv_1min   = CSV_OUT_FOLDER + 'crypto_1min-' + currencyPair + '.csv'
-        if( os.path.getmtime(csv_1min) > time.time() - 7200 ):
+        try:
+            last_time = os.path.getmtime(csv_1min)
+        except OSError:
+            last_time = 0
+        if( last_time > time.time() - 7200 ):
             log.debug(currencyPair+': 1min data file already up to date. '
                       'Delete the file if you want to rebuild it.')
         else:
