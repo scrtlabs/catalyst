@@ -172,7 +172,8 @@ class PoloniexCurator(object):
         disk, we got to the end of TradeHistory for this coin.
         '''
         if('first_tradeID' in locals() 
-                and response.json()[-1]['tradeID'] == first_tradeID): 
+                and response.json()[-1]['tradeID'] == first_tradeID
+                and temp == None):
             return
 
         '''
