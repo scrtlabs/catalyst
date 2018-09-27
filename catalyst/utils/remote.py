@@ -2,14 +2,16 @@
 import json
 import os
 import sys
+import base64
 
 import requests
 from hashlib import md5
 from logbook import Logger
+import dill
 
 from catalyst.utils.remote_utils import BACKTEST_PATH, STATUS_PATH, POST, \
     GET, EXCEPTION_LOG, convert_date, prepare_args, handle_status, \
-    is_valid_uuid
+    is_valid_uuid, prepare_funcs
 from catalyst.exchange.utils.exchange_utils import get_remote_auth,\
     get_remote_folder
 from catalyst.exchange.exchange_errors import RemoteAuthEmpty
@@ -91,11 +93,13 @@ def remote_backtest(
         # argument preparation - encode the file for transfer
         algofile, algotext = prepare_args(algofile, algotext)
 
+    funcs = {'initialize': initialize,
+             'handle_data': handle_data,
+             'before_trading_start': before_trading_start,
+             'analyze': None
+             }
+
     json_file = {'arguments': {
-        'initialize': initialize,
-        'handle_data': handle_data,
-        'before_trading_start': before_trading_start,
-        'analyze': analyze,
         'algotext': algotext,
         'defines': defines,
         'data_frequency': data_frequency,
@@ -122,7 +126,9 @@ def remote_backtest(
         'mail': mail,
         'py_version': sys.version_info[0],  # the python version running on
                                             # the client's side. 2 or 3
+        # 'globs': base64.b64encode(dill.dumps(globals())).decode('utf-8')
     }}
+    json_file['arguments'].update(prepare_funcs(funcs))
     response = send_digest_request(
         json_file=json_file, path=BACKTEST_PATH, method=POST
     )

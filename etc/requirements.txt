@@ -51,6 +51,7 @@ networkx==2.1
 numexpr==2.6.4
 
 # On disk storage format for pipeline data.
+
 bcolz==1.2.1
 
 # Command line interface helper
@@ -82,9 +83,12 @@ tables==3.4.2
 
 certifi==2018.1.18
 
-#Catalyst dependencies
+# Catalyst dependencies
 ccxt==1.17.94
 boto3==1.5.27
 redo==1.6
 web3==4.4.1; python_version > '3.4'
 requests-toolbelt==0.8.0
+
+# Remote dependencies
+dill==0.2.8.2

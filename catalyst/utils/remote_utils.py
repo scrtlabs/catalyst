@@ -5,7 +5,7 @@ from uuid import UUID
 
 import pandas as pd
 from logbook import Logger
-
+import dill
 
 log = Logger('remote')
 
@@ -35,6 +35,17 @@ def prepare_args(file, text):
         text = base64.b64encode(bytes(file.read(), 'utf-8')).decode('utf-8')
         file = None
     return file, text
+
+
+def prepare_funcs(funcs):
+    pickled_funcs = {}
+    for name, func in funcs.items():
+        if func is None:
+            pickled_funcs[name] = func
+        else:
+            # todo pickle the func using dill
+            pass
+    return pickled_funcs
 
 
 def convert_date(date):
