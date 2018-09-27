@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.5.20+1.g90d9e4e2
+                0.5.20+11.gb6eafc15
               </div>
             
           
@@ -174,7 +174,7 @@
 <div class="section" id="supported-exchanges">
 <h2>Supported Exchanges<a class="headerlink" href="#supported-exchanges" title="Permalink to this headline">¶</a></h2>
 <p>Since version 0.4, Catalyst integrated with <a class="reference external" href="https://github.com/ccxt/ccxt">CCXT</a>,
-a cryptocurrency trading library with support for more than 90 exchanges. The
+a cryptocurrency trading library with support for more than 130 exchanges. The
 range of CCXT and Catalyst support for each of those exchanges varies greatly.
 The most supported exchanges are as follows:</p>
 <p>The exchanges available for backtesting are fully supported in live mode:</p>
@@ -187,10 +187,10 @@ The most supported exchanges are as follows:</p>
 <p>Additionally, we have successfully tested in live mode the following exchanges:</p>
 <ul class="simple">
 <li>GDAX, id = <code class="docutils literal"><span class="pre">gdax</span></code></li>
-<li>Huobi Pro, id = <code class="docutils literal"><span class="pre">huobipro</span></code></li>
-<li>OKEX, id = <code class="docutils literal"><span class="pre">okex</span></code></li>
 <li>HitBTC, id = <code class="docutils literal"><span class="pre">hitbtc</span></code></li>
+<li>Huobi Pro, id = <code class="docutils literal"><span class="pre">huobipro</span></code></li>
 <li>KuCoin, id = <code class="docutils literal"><span class="pre">kucoin</span></code></li>
+<li>OKEX, id = <code class="docutils literal"><span class="pre">okex</span></code></li>
 </ul>
 <p>As Catalyst is currently in Alpha and is under active development, you are
 encouraged to thoroughly test any exchange in <em>paper trading</em> mode before trading
@@ -266,7 +266,10 @@ a similar process.</p>
 exchange as defined in the “Supported Exchanges” section above.
 Attempting to run an algorithm where the targeted exchange is missing
 its <code class="docutils literal"><span class="pre">auth.json</span></code> file will create the directory structure and create an empty
-auth.json file, but will result in an error.</p>
+<code class="docutils literal"><span class="pre">auth.json</span></code> file, but will result in an error.</p>
+<p>It is also possible to specify a different authentication file name using
+<code class="docutils literal"><span class="pre">auth_aliases</span></code> argument provided to the catalyst client or to the
+<a class="reference external" href="https://enigma.co/catalyst/appendix.html#catalyst.run_algorithm">run_algorithm()</a> interface.</p>
 </div>
 <div class="section" id="currency-symbols">
 <h2>Currency Symbols<a class="headerlink" href="#currency-symbols" title="Permalink to this headline">¶</a></h2>
@@ -279,7 +282,7 @@ returns the correct asset regardless of the targeted exchange.</p>
 Trading pairs are also inconsistent. For example, Bitfinex
 puts the base currency before the quote currency without a
 separator, Bittrex puts the quote currency first and uses a dash
-seperator.</p>
+separator.</p>
 <p>Here is the Catalyst convention:</p>
 <p><em>[Base Currency]_[Quote Currency]</em> all lowercase.</p>
 <p>Currency symbols (e.g. btc, eth, ltc) follow the Bittrex convention.</p>
@@ -305,7 +308,7 @@ of the supported exchanges, see
 <p>There is no special convention to follow when writing an
 algorithm for live trading. The same algorithm should work in
 backtest and live execution mode without modification.</p>
-<p>What differs are the arguments provided to the catalyst client or
+<p>What differs are the arguments provided to the catalyst client or the
 <code class="docutils literal"><span class="pre">run_algorithm()</span></code> interface. Here is the same example in both interfaces:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span></span>catalyst live -f my_algo_code -x bitfinex -c btc -n my_algo_name
 </pre></div>
@@ -349,6 +352,11 @@ essentially sleep and when the predefined time comes, it would start executing.<
 <p>In live trading the <code class="docutils literal"><span class="pre">handle_data()</span></code> function is called once every minute.</p>
 <p>Here is a complete algorithm for reference:
 <a class="reference external" href="https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/buy_low_sell_high.py">Buy Low and Sell High</a></p>
+<p>The <code class="docutils literal"><span class="pre">catalyst</span> <span class="pre">live</span></code> command offers additional parameters.
+You can learn more by running the following from the command line:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>catalyst live --help
+</pre></div>
+</div>
 </div>
 <div class="section" id="algorithm-state">
 <h2>Algorithm State<a class="headerlink" href="#algorithm-state" title="Permalink to this headline">¶</a></h2>
@@ -357,11 +365,6 @@ Any information added to the <code class="docutils literal"><span class="pre">co
 During algorithm restart, the state is restored (if exists) in the initialization function.</p>
 <p>Cleaning the state can be achieved by running:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span></span>catalyst clean-algo -n my-algo-namespace
-</pre></div>
-</div>
-<p>The <cite>catalyst live</cite> command offers additional parameters.
-You can learn more by running the following from the command line:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>catalyst live --help
 </pre></div>
 </div>
 </div>
@@ -393,8 +396,9 @@ be returned:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span></span>context.exchanges<span class="o">[</span><span class="s1">&#39;bitfinex&#39;</span><span class="o">]</span>.get_orderbook<span class="o">(</span>symbol<span class="o">(</span><span class="s1">&#39;etc_btc&#39;</span><span class="o">)</span>, <span class="nv">order_type</span><span class="o">=</span><span class="s1">&#39;all&#39;</span>, <span class="nv">limit</span><span class="o">=</span><span class="m">10</span><span class="o">)</span>
 </pre></div>
 </div>
-<p>It is possible to retrieve only the bids or the asks from the order book by passing ‘bids’ of ‘asks’ in the order_type
-(by default this parameter recieve the ‘all’ value).</p>
+<p>It is possible to retrieve only the bids or the asks from the order book by
+passing <code class="docutils literal"><span class="pre">'bids'</span></code> or <code class="docutils literal"><span class="pre">'asks'</span></code> in the <code class="docutils literal"><span class="pre">order_type</span></code> argument
+(by default this parameter receives the <code class="docutils literal"><span class="pre">'all'</span></code> value).</p>
 </div>
 </div>
 

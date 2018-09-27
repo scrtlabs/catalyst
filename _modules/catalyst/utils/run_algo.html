@@ -56,7 +56,7 @@
             
             
               <div class="version">
-                0.5.20+1.g90d9e4e2
+                0.5.20+11.gb6eafc15
               </div>
             
           
@@ -191,6 +191,7 @@
 <span class="kn">from</span> <span class="nn">catalyst.utils.factory</span> <span class="kn">import</span> <span class="n">create_simulation_parameters</span>
 <span class="kn">from</span> <span class="nn">catalyst.data.loader</span> <span class="kn">import</span> <span class="n">load_crypto_market_data</span>
 <span class="kn">import</span> <span class="nn">catalyst.utils.paths</span> <span class="kn">as</span> <span class="nn">pth</span>
+<span class="kn">from</span> <span class="nn">catalyst.utils.remote</span> <span class="kn">import</span> <span class="n">remote_backtest</span>
 
 <span class="kn">from</span> <span class="nn">catalyst.exchange.exchange_algorithm</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ExchangeTradingAlgorithmLive</span><span class="p">,</span>
@@ -592,6 +593,8 @@
                   <span class="n">strict_extensions</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
                   <span class="n">environ</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">,</span>
                   <span class="n">live</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                  <span class="n">remote</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                  <span class="n">mail</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                   <span class="n">exchange_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                   <span class="n">quote_currency</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                   <span class="n">algo_namespace</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
@@ -659,6 +662,12 @@
 <span class="sd">        This defaults to ``os.environ``.</span>
 <span class="sd">    live : bool, optional</span>
 <span class="sd">        Should the algorithm be executed in live trading mode.</span>
+<span class="sd">    remote : bool, optional</span>
+<span class="sd">        Should the algorithm run on a remote server.</span>
+<span class="sd">        currently, available only on backtest mode.</span>
+<span class="sd">    mail : str, optional- if running with remote=True then, mandatory.</span>
+<span class="sd">        to which email address shall the server send the results to.</span>
+
 <span class="sd">    exchange_name: str</span>
 <span class="sd">        The name of the exchange to be used in the backtest/live run.</span>
 <span class="sd">    quote_currency: str</span>
@@ -723,6 +732,42 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s1">&#39;cannot specify `bundle_timestamp` without passing `bundle`&#39;</span><span class="p">,</span>
             <span class="p">)</span>
+    <span class="k">if</span> <span class="n">remote</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">mail</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[^@]+@[^@]+\.[^@]+&quot;</span><span class="p">,</span> <span class="n">mail</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please specify a &#39;mail&#39; parameter which &quot;</span>
+                             <span class="s2">&quot;is a valid email address, in order to &quot;</span>
+                             <span class="s2">&quot;send you back the results&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">remote_backtest</span><span class="p">(</span>
+            <span class="n">handle_data</span><span class="o">=</span><span class="n">handle_data</span><span class="p">,</span>
+            <span class="n">initialize</span><span class="o">=</span><span class="n">initialize</span><span class="p">,</span>
+            <span class="n">before_trading_start</span><span class="o">=</span><span class="n">before_trading_start</span><span class="p">,</span>
+            <span class="n">analyze</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+            <span class="n">algofile</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+            <span class="n">algotext</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+            <span class="n">defines</span><span class="o">=</span><span class="p">(),</span>
+            <span class="n">data_frequency</span><span class="o">=</span><span class="n">data_frequency</span><span class="p">,</span>
+            <span class="n">capital_base</span><span class="o">=</span><span class="n">capital_base</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+            <span class="n">bundle</span><span class="o">=</span><span class="n">bundle</span><span class="p">,</span>
+            <span class="n">bundle_timestamp</span><span class="o">=</span><span class="n">bundle_timestamp</span><span class="p">,</span>
+            <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
+            <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
+            <span class="n">output</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span>
+            <span class="n">print_algo</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+            <span class="n">local_namespace</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+            <span class="n">environ</span><span class="o">=</span><span class="n">environ</span><span class="p">,</span>
+            <span class="n">live</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+            <span class="n">exchange</span><span class="o">=</span><span class="n">exchange_name</span><span class="p">,</span>
+            <span class="n">algo_namespace</span><span class="o">=</span><span class="n">algo_namespace</span><span class="p">,</span>
+            <span class="n">quote_currency</span><span class="o">=</span><span class="n">quote_currency</span><span class="p">,</span>
+            <span class="n">live_graph</span><span class="o">=</span><span class="n">live_graph</span><span class="p">,</span>
+            <span class="n">analyze_live</span><span class="o">=</span><span class="n">analyze_live</span><span class="p">,</span>
+            <span class="n">simulate_orders</span><span class="o">=</span><span class="n">simulate_orders</span><span class="p">,</span>
+            <span class="n">auth_aliases</span><span class="o">=</span><span class="n">auth_aliases</span><span class="p">,</span>
+            <span class="n">stats_output</span><span class="o">=</span><span class="n">stats_output</span><span class="p">,</span>
+            <span class="n">mail</span><span class="o">=</span><span class="n">mail</span>
+        <span class="p">)</span>
+
     <span class="k">return</span> <span class="n">_run</span><span class="p">(</span>
         <span class="n">handle_data</span><span class="o">=</span><span class="n">handle_data</span><span class="p">,</span>
         <span class="n">initialize</span><span class="o">=</span><span class="n">initialize</span><span class="p">,</span>
