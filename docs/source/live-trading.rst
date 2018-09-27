@@ -97,7 +97,7 @@ its ``auth.json`` file will create the directory structure and create an empty
 ``auth.json`` file, but will result in an error.
 
 It is also possible to specify a different authentication file name using
-``auth_aliases`` argument provided to the catalyst client or
+``auth_aliases`` argument provided to the catalyst client or to the
 `run_algorithm() <https://enigma.co/catalyst/appendix.html#catalyst.run_algorithm>`_ interface.
 
 Currency Symbols
