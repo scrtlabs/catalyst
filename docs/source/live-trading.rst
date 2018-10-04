@@ -243,15 +243,16 @@ these modes in the future with live mode).
 Advanced Options
 ^^^^^^^^^^^^^^^^
 
-In live and paper mode, in addition to the OHLCV data, the order book information is accessible as well.
-By running the following code, a dictionary representing the order book in depth of 10 for `etc_btc` in Bitfinex will
-be returned:
+In live and paper mode, in addition to the OHLCV data, the order book information is accessible as well,
+by running
+`get_orderbook API function <https://enigma.co/catalyst/appendix.html#catalyst.api.get_orderbook>`_.
+For example:
 
 .. code-block:: bash
 
-    context.exchanges['bitfinex'].get_orderbook(symbol('etc_btc'), order_type='all', limit=10)
+    get_orderbook(symbol('etc_btc'), order_type='all', limit=10)
 
-
+The following example returns a dictionary representing the order book in depth of 10 for `etc_btc` in Bitfinex.
 It is possible to retrieve only the bids or the asks from the order book by
 passing ``'bids'`` or ``'asks'`` in the ``order_type`` argument
 (by default this parameter receives the ``'all'`` value).
