@@ -57,7 +57,7 @@
             
             
               <div class="version">
-                0.5.20+11.gb6eafc15
+                0.5.20+13.g30bdc33b
               </div>
             
           
@@ -640,7 +640,7 @@ buy. If <code class="docutils literal"><span class="pre">amount</span></code> is
 <dd><p class="first last">The limit price for the order.</p>
 </dd>
 <dt><strong>stop_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd><p class="first last">The stop price for the order.</p>
+<dd><p class="first last">Not supported.</p>
 </dd>
 <dt><strong>style</strong> <span class="classifier-delimiter">:</span> <span class="classifier">ExecutionStyle, optional</span></dt>
 <dd><p class="first last">The execution style for the order.</p>
@@ -663,13 +663,10 @@ placed.</p>
 <p class="last"><a class="reference internal" href="#catalyst.finance.execution.ExecutionStyle" title="catalyst.finance.execution.ExecutionStyle"><code class="xref py py-class docutils literal"><span class="pre">catalyst.finance.execution.ExecutionStyle</span></code></a>, <a class="reference internal" href="#catalyst.api.order_value" title="catalyst.api.order_value"><code class="xref py py-func docutils literal"><span class="pre">catalyst.api.order_value()</span></code></a>, <a class="reference internal" href="#catalyst.api.order_percent" title="catalyst.api.order_percent"><code class="xref py py-func docutils literal"><span class="pre">catalyst.api.order_percent()</span></code></a></p>
 </div>
 <p class="rubric">Notes</p>
-<p>The <code class="docutils literal"><span class="pre">limit_price</span></code> and <code class="docutils literal"><span class="pre">stop_price</span></code> arguments provide shorthands for
+<p>The <code class="docutils literal"><span class="pre">limit_price</span></code> argument provide shorthands for
 passing common execution styles. Passing <code class="docutils literal"><span class="pre">limit_price=N</span></code> is
-equivalent to <code class="docutils literal"><span class="pre">style=LimitOrder(N)</span></code>. Similarly, passing
-<code class="docutils literal"><span class="pre">stop_price=M</span></code> is equivalent to <code class="docutils literal"><span class="pre">style=StopOrder(M)</span></code>, and passing
-<code class="docutils literal"><span class="pre">limit_price=N</span></code> and <code class="docutils literal"><span class="pre">stop_price=M</span></code> is equivalent to
-<code class="docutils literal"><span class="pre">style=StopLimitOrder(N,</span> <span class="pre">M)</span></code>. It is an error to pass both a <code class="docutils literal"><span class="pre">style</span></code>
-and <code class="docutils literal"><span class="pre">limit_price</span></code> or <code class="docutils literal"><span class="pre">stop_price</span></code>.</p>
+equivalent to <code class="docutils literal"><span class="pre">style=LimitOrder(N)</span></code>. It is an error to pass both
+a <code class="docutils literal"><span class="pre">style</span></code> and <code class="docutils literal"><span class="pre">limit_price</span></code>.</p>
 <p>Currently, orders must be done only with one <code class="docutils literal"><span class="pre">quote_currency</span></code>
 throughout all the algorithm.</p>
 </dd></dl>
@@ -697,7 +694,7 @@ value &lt; 0 :: Sell</p>
 <dd><p class="first last">The limit price for the order.</p>
 </dd>
 <dt><strong>stop_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd><p class="first last">The stop price for the order.</p>
+<dd><p class="first last">Not supported.</p>
 </dd>
 <dt><strong>style</strong> <span class="classifier-delimiter">:</span> <span class="classifier">ExecutionStyle</span></dt>
 <dd><p class="first last">The execution style for the order.</p>
@@ -720,7 +717,7 @@ value &lt; 0 :: Sell</p>
 </div>
 <p class="rubric">Notes</p>
 <p>See <a class="reference internal" href="#catalyst.api.order" title="catalyst.api.order"><code class="xref py py-func docutils literal"><span class="pre">catalyst.api.order()</span></code></a> for more information about
-<code class="docutils literal"><span class="pre">limit_price</span></code>, <code class="docutils literal"><span class="pre">stop_price</span></code>, and <code class="docutils literal"><span class="pre">style</span></code></p>
+<code class="docutils literal"><span class="pre">limit_price</span></code>, and <code class="docutils literal"><span class="pre">style</span></code></p>
 </dd></dl>
 
 <dl class="function">
@@ -744,7 +741,7 @@ This is specified as a decimal, for example: 0.50 means 50%.</p>
 <dd><p class="first last">The limit price for the order.</p>
 </dd>
 <dt><strong>stop_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd><p class="first last">The stop price for the order.</p>
+<dd><p class="first last">Not supported.</p>
 </dd>
 <dt><strong>style</strong> <span class="classifier-delimiter">:</span> <span class="classifier">ExecutionStyle</span></dt>
 <dd><p class="first last">The execution style for the order.</p>
@@ -767,7 +764,7 @@ This is specified as a decimal, for example: 0.50 means 50%.</p>
 </div>
 <p class="rubric">Notes</p>
 <p>See <a class="reference internal" href="#catalyst.api.order" title="catalyst.api.order"><code class="xref py py-func docutils literal"><span class="pre">catalyst.api.order()</span></code></a> for more information about
-<code class="docutils literal"><span class="pre">limit_price</span></code>, <code class="docutils literal"><span class="pre">stop_price</span></code>, and <code class="docutils literal"><span class="pre">style</span></code></p>
+<code class="docutils literal"><span class="pre">limit_price</span></code>, and <code class="docutils literal"><span class="pre">style</span></code></p>
 </dd></dl>
 
 <dl class="function">
@@ -793,7 +790,7 @@ current number of shares.</p>
 <dd><p class="first last">The limit price for the order.</p>
 </dd>
 <dt><strong>stop_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd><p class="first last">The stop price for the order.</p>
+<dd><p class="first last">Not supported.</p>
 </dd>
 <dt><strong>style</strong> <span class="classifier-delimiter">:</span> <span class="classifier">ExecutionStyle</span></dt>
 <dd><p class="first last">The execution style for the order.</p>
@@ -817,7 +814,7 @@ current number of shares.</p>
 <p class="rubric">Notes</p>
 <p><code class="docutils literal"><span class="pre">order_target</span></code> takes into account open orders as well.</p>
 <p>See <a class="reference internal" href="#catalyst.api.order" title="catalyst.api.order"><code class="xref py py-func docutils literal"><span class="pre">catalyst.api.order()</span></code></a> for more information about
-<code class="docutils literal"><span class="pre">limit_price</span></code>, <code class="docutils literal"><span class="pre">stop_price</span></code>, and <code class="docutils literal"><span class="pre">style</span></code></p>
+<code class="docutils literal"><span class="pre">limit_price</span></code>, and <code class="docutils literal"><span class="pre">style</span></code></p>
 </dd></dl>
 
 <dl class="function">
@@ -843,7 +840,7 @@ current value.</p>
 <dd><p class="first last">The limit price for the order.</p>
 </dd>
 <dt><strong>stop_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd><p class="first last">The stop price for the order.</p>
+<dd><p class="first last">Not supported.</p>
 </dd>
 <dt><strong>style</strong> <span class="classifier-delimiter">:</span> <span class="classifier">ExecutionStyle</span></dt>
 <dd><p class="first last">The execution style for the order.</p>
@@ -866,7 +863,7 @@ current value.</p>
 </div>
 <p class="rubric">Notes</p>
 <p>See <a class="reference internal" href="#catalyst.api.order" title="catalyst.api.order"><code class="xref py py-func docutils literal"><span class="pre">catalyst.api.order()</span></code></a> for more information about
-<code class="docutils literal"><span class="pre">limit_price</span></code>, <code class="docutils literal"><span class="pre">stop_price</span></code>, and <code class="docutils literal"><span class="pre">style</span></code></p>
+<code class="docutils literal"><span class="pre">limit_price</span></code> and <code class="docutils literal"><span class="pre">style</span></code></p>
 </dd></dl>
 
 <dl class="function">
@@ -894,7 +891,7 @@ percent and the current percent.</p>
 <dd><p class="first last">The limit price for the order.</p>
 </dd>
 <dt><strong>stop_price</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
-<dd><p class="first last">The stop price for the order.</p>
+<dd><p class="first last">Not supported</p>
 </dd>
 <dt><strong>style</strong> <span class="classifier-delimiter">:</span> <span class="classifier">ExecutionStyle</span></dt>
 <dd><p class="first last">The execution style for the order.</p>
@@ -917,33 +914,13 @@ percent and the current percent.</p>
 </div>
 <p class="rubric">Notes</p>
 <p>See <a class="reference internal" href="#catalyst.api.order" title="catalyst.api.order"><code class="xref py py-func docutils literal"><span class="pre">catalyst.api.order()</span></code></a> for more information about
-<code class="docutils literal"><span class="pre">limit_price</span></code>, <code class="docutils literal"><span class="pre">stop_price</span></code>, and <code class="docutils literal"><span class="pre">style</span></code></p>
+<code class="docutils literal"><span class="pre">limit_price</span></code> and <code class="docutils literal"><span class="pre">style</span></code></p>
 </dd></dl>
 
 <dl class="class">
 <dt id="catalyst.finance.execution.ExecutionStyle">
 <em class="property">class </em><code class="descclassname">catalyst.finance.execution.</code><code class="descname">ExecutionStyle</code><a class="reference internal" href="_modules/catalyst/finance/execution.html#ExecutionStyle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.finance.execution.ExecutionStyle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Abstract base class representing a modification to a standard order.</p>
-<dl class="attribute">
-<dt id="catalyst.finance.execution.ExecutionStyle.exchange">
-<code class="descname">exchange</code><a class="headerlink" href="#catalyst.finance.execution.ExecutionStyle.exchange" title="Permalink to this definition">¶</a></dt>
-<dd><p>The exchange to which this order should be routed.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.finance.execution.ExecutionStyle.get_limit_price">
-<code class="descname">get_limit_price</code><span class="sig-paren">(</span><em>is_buy</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/finance/execution.html#ExecutionStyle.get_limit_price"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.finance.execution.ExecutionStyle.get_limit_price" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the limit price for this order.
-Returns either None or a numerical value &gt;= 0.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="catalyst.finance.execution.ExecutionStyle.get_stop_price">
-<code class="descname">get_stop_price</code><span class="sig-paren">(</span><em>is_buy</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/finance/execution.html#ExecutionStyle.get_stop_price"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.finance.execution.ExecutionStyle.get_stop_price" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the stop price for this order.
-Returns either None or a numerical value &gt;= 0.</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="class">
@@ -957,20 +934,6 @@ Returns either None or a numerical value &gt;= 0.</p>
 <em class="property">class </em><code class="descclassname">catalyst.finance.execution.</code><code class="descname">LimitOrder</code><span class="sig-paren">(</span><em>limit_price</em>, <em>exchange=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/finance/execution.html#LimitOrder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.finance.execution.LimitOrder" title="Permalink to this definition">¶</a></dt>
 <dd><p>Execution style representing an order to be executed at a price equal to or
 better than a specified limit price.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="catalyst.finance.execution.StopOrder">
-<em class="property">class </em><code class="descclassname">catalyst.finance.execution.</code><code class="descname">StopOrder</code><span class="sig-paren">(</span><em>stop_price</em>, <em>exchange=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/finance/execution.html#StopOrder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.finance.execution.StopOrder" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execution style representing an order to be placed once the market price
-reaches a specified stop price.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="catalyst.finance.execution.StopLimitOrder">
-<em class="property">class </em><code class="descclassname">catalyst.finance.execution.</code><code class="descname">StopLimitOrder</code><span class="sig-paren">(</span><em>limit_price</em>, <em>stop_price</em>, <em>exchange=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/finance/execution.html#StopLimitOrder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.finance.execution.StopLimitOrder" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execution style representing a limit order to be placed with a specified
-limit price once the market reaches a specified stop price.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1070,7 +1033,8 @@ orders for this asset.</p>
 <dl class="function">
 <dt id="catalyst.api.get_orderbook">
 <code class="descclassname">catalyst.api.</code><code class="descname">get_orderbook</code><span class="sig-paren">(</span><em>self</em>, <em>asset</em>, <em>order_type='all'</em>, <em>limit=None</em><span class="sig-paren">)</span><a class="headerlink" href="#catalyst.api.get_orderbook" title="Permalink to this definition">¶</a></dt>
-<dd><p>Retrieve the orderbook for the given trading pair.</p>
+<dd><p>Retrieve the orderbook for the given trading pair.
+This function is supported only in live and paper trading modes.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1619,7 +1583,7 @@ know if they are running on the Quantopian platform instead.</p>
 
 <dl class="class">
 <dt id="catalyst.utils.calendars.TradingCalendar">
-<em class="property">class </em><code class="descclassname">catalyst.utils.calendars.</code><code class="descname">TradingCalendar</code><span class="sig-paren">(</span><em>start=Timestamp('1990-01-01 00:00:00+0000'</em>, <em>tz='UTC')</em>, <em>end=Timestamp('2019-09-27 12:23:55.879624+0000'</em>, <em>tz='UTC')</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">catalyst.utils.calendars.</code><code class="descname">TradingCalendar</code><span class="sig-paren">(</span><em>start=Timestamp('1990-01-01 00:00:00+0000'</em>, <em>tz='UTC')</em>, <em>end=Timestamp('2019-10-07 13:10:45.543899+0000'</em>, <em>tz='UTC')</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/catalyst/utils/calendars/trading_calendar.html#TradingCalendar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#catalyst.utils.calendars.TradingCalendar" title="Permalink to this definition">¶</a></dt>
 <dd><p>A TradingCalendar represents the timing information of a single market
 exchange.</p>
 <p>The timing information is made up of two parts: sessions, and opens/closes.</p>

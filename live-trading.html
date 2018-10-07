@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.5.20+11.gb6eafc15
+                0.5.20+13.g30bdc33b
               </div>
             
           
@@ -390,13 +390,15 @@ or by receiving a CTRL+C interrupt) the <code class="docutils literal"><span cla
 </div>
 <div class="section" id="advanced-options">
 <h2>Advanced Options<a class="headerlink" href="#advanced-options" title="Permalink to this headline">¶</a></h2>
-<p>In live and paper mode, in addition to the OHLCV data, the order book information is accessible as well.
-By running the following code, a dictionary representing the order book in depth of 10 for <cite>etc_btc</cite> in Bitfinex will
-be returned:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>context.exchanges<span class="o">[</span><span class="s1">&#39;bitfinex&#39;</span><span class="o">]</span>.get_orderbook<span class="o">(</span>symbol<span class="o">(</span><span class="s1">&#39;etc_btc&#39;</span><span class="o">)</span>, <span class="nv">order_type</span><span class="o">=</span><span class="s1">&#39;all&#39;</span>, <span class="nv">limit</span><span class="o">=</span><span class="m">10</span><span class="o">)</span>
+<p>In live and paper mode, in addition to the OHLCV data, the order book information is accessible as well,
+by running
+<a class="reference external" href="https://enigma.co/catalyst/appendix.html#catalyst.api.get_orderbook">get_orderbook API function</a>.
+For example:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>get_orderbook<span class="o">(</span>symbol<span class="o">(</span><span class="s1">&#39;etc_btc&#39;</span><span class="o">)</span>, <span class="nv">order_type</span><span class="o">=</span><span class="s1">&#39;all&#39;</span>, <span class="nv">limit</span><span class="o">=</span><span class="m">10</span><span class="o">)</span>
 </pre></div>
 </div>
-<p>It is possible to retrieve only the bids or the asks from the order book by
+<p>The following example returns a dictionary representing the order book in depth of 10 for <cite>etc_btc</cite> in Bitfinex.
+It is possible to retrieve only the bids or the asks from the order book by
 passing <code class="docutils literal"><span class="pre">'bids'</span></code> or <code class="docutils literal"><span class="pre">'asks'</span></code> in the <code class="docutils literal"><span class="pre">order_type</span></code> argument
 (by default this parameter receives the <code class="docutils literal"><span class="pre">'all'</span></code> value).</p>
 </div>

@@ -56,7 +56,7 @@
             
             
               <div class="version">
-                0.5.20+11.gb6eafc15
+                0.5.20+13.g30bdc33b
               </div>
             
           
@@ -1589,7 +1589,7 @@
 <span class="sd">        limit_price : float, optional</span>
 <span class="sd">            The limit price for the order.</span>
 <span class="sd">        stop_price : float, optional</span>
-<span class="sd">            The stop price for the order.</span>
+<span class="sd">            Not supported.</span>
 <span class="sd">        style : ExecutionStyle, optional</span>
 <span class="sd">            The execution style for the order.</span>
 
@@ -1601,13 +1601,10 @@
 
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
-<span class="sd">        The ``limit_price`` and ``stop_price`` arguments provide shorthands for</span>
+<span class="sd">        The ``limit_price`` argument provide shorthands for</span>
 <span class="sd">        passing common execution styles. Passing ``limit_price=N`` is</span>
-<span class="sd">        equivalent to ``style=LimitOrder(N)``. Similarly, passing</span>
-<span class="sd">        ``stop_price=M`` is equivalent to ``style=StopOrder(M)``, and passing</span>
-<span class="sd">        ``limit_price=N`` and ``stop_price=M`` is equivalent to</span>
-<span class="sd">        ``style=StopLimitOrder(N, M)``. It is an error to pass both a ``style``</span>
-<span class="sd">        and ``limit_price`` or ``stop_price``.</span>
+<span class="sd">        equivalent to ``style=LimitOrder(N)``. It is an error to pass both</span>
+<span class="sd">        a ``style`` and ``limit_price``.</span>
 
 <span class="sd">        Currently, orders must be done only with one ``quote_currency``</span>
 <span class="sd">        throughout all the algorithm.</span>
@@ -1731,7 +1728,7 @@
 <span class="sd">        limit_price : float, optional</span>
 <span class="sd">            The limit price for the order.</span>
 <span class="sd">        stop_price : float, optional</span>
-<span class="sd">            The stop price for the order.</span>
+<span class="sd">            Not supported.</span>
 <span class="sd">        style : ExecutionStyle</span>
 <span class="sd">            The execution style for the order.</span>
 
@@ -1743,7 +1740,7 @@
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
 <span class="sd">        See :func:`catalyst.api.order` for more information about</span>
-<span class="sd">        ``limit_price``, ``stop_price``, and ``style``</span>
+<span class="sd">        ``limit_price``, and ``style``</span>
 
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
@@ -1977,7 +1974,7 @@
 <span class="sd">        limit_price : float, optional</span>
 <span class="sd">            The limit price for the order.</span>
 <span class="sd">        stop_price : float, optional</span>
-<span class="sd">            The stop price for the order.</span>
+<span class="sd">            Not supported.</span>
 <span class="sd">        style : ExecutionStyle</span>
 <span class="sd">            The execution style for the order.</span>
 
@@ -1989,7 +1986,7 @@
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
 <span class="sd">        See :func:`catalyst.api.order` for more information about</span>
-<span class="sd">        ``limit_price``, ``stop_price``, and ``style``</span>
+<span class="sd">        ``limit_price``, and ``style``</span>
 
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
@@ -2033,7 +2030,7 @@
 <span class="sd">        limit_price : float, optional</span>
 <span class="sd">            The limit price for the order.</span>
 <span class="sd">        stop_price : float, optional</span>
-<span class="sd">            The stop price for the order.</span>
+<span class="sd">            Not supported.</span>
 <span class="sd">        style : ExecutionStyle</span>
 <span class="sd">            The execution style for the order.</span>
 
@@ -2048,7 +2045,7 @@
 <span class="sd">        ``order_target`` takes into account open orders as well.</span>
 
 <span class="sd">        See :func:`catalyst.api.order` for more information about</span>
-<span class="sd">        ``limit_price``, ``stop_price``, and ``style``</span>
+<span class="sd">        ``limit_price``, and ``style``</span>
 
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
@@ -2096,7 +2093,7 @@
 <span class="sd">        limit_price : float, optional</span>
 <span class="sd">            The limit price for the order.</span>
 <span class="sd">        stop_price : float, optional</span>
-<span class="sd">            The stop price for the order.</span>
+<span class="sd">            Not supported.</span>
 <span class="sd">        style : ExecutionStyle</span>
 <span class="sd">            The execution style for the order.</span>
 
@@ -2109,7 +2106,7 @@
 <span class="sd">        -----</span>
 
 <span class="sd">        See :func:`catalyst.api.order` for more information about</span>
-<span class="sd">        ``limit_price``, ``stop_price``, and ``style``</span>
+<span class="sd">        ``limit_price`` and ``style``</span>
 
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
@@ -2149,7 +2146,7 @@
 <span class="sd">        limit_price : float, optional</span>
 <span class="sd">            The limit price for the order.</span>
 <span class="sd">        stop_price : float, optional</span>
-<span class="sd">            The stop price for the order.</span>
+<span class="sd">            Not supported</span>
 <span class="sd">        style : ExecutionStyle</span>
 <span class="sd">            The execution style for the order.</span>
 
@@ -2162,7 +2159,7 @@
 <span class="sd">        -----</span>
 
 <span class="sd">        See :func:`catalyst.api.order` for more information about</span>
-<span class="sd">        ``limit_price``, ``stop_price``, and ``style``</span>
+<span class="sd">        ``limit_price`` and ``style``</span>
 
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
