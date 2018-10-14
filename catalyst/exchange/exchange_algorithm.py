@@ -1170,7 +1170,7 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
         asset: TradingPair
 
         order_type: str
-            The type of orders: bid, ask or all
+            The type of the orders: 'bids' or 'asks' or 'all'
 
         limit: int
 
