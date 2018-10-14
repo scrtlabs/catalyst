@@ -85,6 +85,6 @@ certifi==2018.1.18
 #Catalyst dependencies
 ccxt==1.17.94
 boto3==1.5.27
-redo==1.6
+redo==2.0.1
 web3==4.4.1; python_version > '3.4'
 requests-toolbelt==0.8.0

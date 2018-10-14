@@ -49,7 +49,7 @@ dependencies:
   - python-dateutil==2.6.1
   - python-editor==1.0.3
   - pytz==2017.2
-  - redo==1.6
+  - redo==2.0.1
   - requests==2.18.4
   - requests-file==1.4.2
   - requests-ftp==0.3.1
