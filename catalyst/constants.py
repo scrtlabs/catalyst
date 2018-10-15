@@ -45,6 +45,8 @@ ENIGMA_CONTRACT_ABI = 'https://raw.githubusercontent.com/enigmampc/' \
 SUPPORTED_WALLETS = ['metamask', 'ledger', 'trezor', 'bitbox', 'keystore',
                      'key']
 
+DISABLE_ALPHA_WARNING = bool(os.environ.get('CATALYST_DISABLE_ALPHA_WARNING'))
+
 ALPHA_WARNING_MESSAGE = 'Catalyst is currently in ALPHA. It is going ' \
                         'through rapid development and it is subject to ' \
                         'errors. Please use carefully. We encourage you to ' \
