@@ -43,7 +43,8 @@ from catalyst.exchange.exchange_data_portal import DataPortalExchangeLive, \
     DataPortalExchangeBacktest
 from catalyst.exchange.exchange_asset_finder import ExchangeAssetFinder
 
-from catalyst.constants import LOG_LEVEL, ALPHA_WARNING_MESSAGE, DISABLE_ALPHA_WARNING
+from catalyst.constants import LOG_LEVEL, ALPHA_WARNING_MESSAGE, \
+    DISABLE_ALPHA_WARNING
 
 log = Logger('run_algo', level=LOG_LEVEL)
 
