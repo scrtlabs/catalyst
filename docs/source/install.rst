@@ -13,7 +13,7 @@ What conda does is create a pre-configured environment, and inside that
 environment install Catalyst using ``pip``, Python's package manager. Thus, 
 as an alternative installation method for MacOS and Linux, you can install 
 Catalyst directly with ``pip`` (we recommend in combination with a virtual 
-environemnt). See :ref:`Installing with pip <pip>`.
+environment). See :ref:`Installing with pip <pip>`.
 
 Alternatively you can install Catalyst using ``pipenv`` which is a mix of pip
 and virtualenv. See :ref:`Installing with pipenv <pipenv>`.
@@ -559,7 +559,7 @@ Catalyst is currently in alpha and in under very active development. We release
 new minor versions every few days in response to the thorough battle testing 
 that our user community puts Catalyst in. As a result, you should expect to 
 update Catalyst frequently. Once installed, Catalyst can easily be updated as a 
-``pip`` package regardless of the environemnt used for installation. Make sure 
+``pip`` package regardless of the environment used for installation. Make sure 
 you activate your environment first as you did in your first install, and then 
 execute:
 
