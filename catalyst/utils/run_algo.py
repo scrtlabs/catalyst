@@ -44,7 +44,8 @@ from catalyst.exchange.exchange_data_portal import DataPortalExchangeLive, \
     DataPortalExchangeBacktest
 from catalyst.exchange.exchange_asset_finder import ExchangeAssetFinder
 
-from catalyst.constants import LOG_LEVEL, ALPHA_WARNING_MESSAGE
+from catalyst.constants import LOG_LEVEL, ALPHA_WARNING_MESSAGE, \
+    DISABLE_ALPHA_WARNING
 
 log = Logger('run_algo', level=LOG_LEVEL)
 
@@ -147,9 +148,10 @@ def _run(handle_data,
         else:
             click.echo(algotext)
 
-    log.warn(ALPHA_WARNING_MESSAGE)
     log.info('Catalyst version {}'.format(catalyst.__version__))
-    sleep(3)
+    if not DISABLE_ALPHA_WARNING:
+        log.warn(ALPHA_WARNING_MESSAGE)
+        sleep(3)
 
     if live:
         if simulate_orders:
