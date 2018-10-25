@@ -281,6 +281,9 @@ class PoloniexCurator(object):
 
     def write_ohlcv_file(self, currencyPair):
         '''
+        Deprecated in favor of write_ohlcv_file. This is the original
+        function using quote_currency. Using base_currency now instead
+
         Generates OHLCV data file with 1minute bars from TradeHistory on disk
         '''
         csv_trades = CSV_OUT_FOLDER + 'crypto_trades-' + currencyPair + '.csv'
@@ -445,5 +448,4 @@ if __name__ == '__main__':
     for currencyPair in pc.currency_pairs:
         pc.retrieve_trade_history(currencyPair)
         log.debug('{} up to date.'.format(currencyPair))
-        pc.write_ohlcv_file(currencyPair)
         pc.write_ohlcv_file_base(currencyPair)
