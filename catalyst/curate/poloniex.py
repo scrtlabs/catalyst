@@ -95,20 +95,24 @@ class PoloniexCurator(object):
         try:
             with open(csv_fn, 'ab+') as f:
                 f.seek(0, os.SEEK_END)
-                if(f.tell() > 2):                   # Check file size is not 0
-                    f.seek(0)                       # Go to start to read
-                    last_tradeID, end_file = self._retrieve_tradeID_date(f.readline())
-                    f.seek(-2, os.SEEK_END)         # Jump to the 2nd last byte
-                    while f.read(1) != b"\n":       # Until EOL is found...
-                        f.seek(-2, os.SEEK_CUR)     # ...jump back the read byte plus one more.
-                    first_tradeID, start_file = self._retrieve_tradeID_date(f.readline())
+                if(f.tell() > 2):                 # Check file size is not 0
+                    f.seek(0)                     # Go to start to read
+                    last_tradeID, end_file = self._retrieve_tradeID_date(
+                        f.readline())
+                    f.seek(-2, os.SEEK_END)       # Jump to the 2nd last byte
+                    while f.read(1) != b"\n":     # Until EOL is found...
+                        f.seek(-2, os.SEEK_CUR)   # jump back the read byte +1
+                    first_tradeID, start_file = self._retrieve_tradeID_date(
+                        f.readline())
 
                     if(end_file + 3600 * 6 > DT_END and (first_tradeID == 1
-                        or (currencyPair == 'BTC_HUC' and first_tradeID == 2)
-                        or (currencyPair == 'BTC_RIC' and first_tradeID == 2)
-                        or (currencyPair == 'BTC_XCP' and first_tradeID == 2)
-                        or (currencyPair == 'BTC_NAV' and first_tradeID == 4569)
-                        or (currencyPair == 'BTC_POT' and first_tradeID == 23511))):
+                       or (currencyPair == 'BTC_HUC' and first_tradeID == 2)
+                       or (currencyPair == 'BTC_RIC' and first_tradeID == 2)
+                       or (currencyPair == 'BTC_XCP' and first_tradeID == 2)
+                       or (currencyPair == 'BTC_NAV'
+                           and first_tradeID == 4569)
+                       or (currencyPair == 'BTC_POT'
+                           and first_tradeID == 23511))):
                         return
 
         except Exception as e:
@@ -120,7 +124,7 @@ class PoloniexCurator(object):
         than 1 month, so we make sure that start date is never more than
         1 month apart from end date
         '''
-        if( end - start > 2419200 ): # 60s/min * 60min/hr * 24hr/day * 28days 
+        if(end - start > 2419200):    # 60s/min * 60min/hr * 24hr/day * 28days
             newstart = end - 2419200
         else:
             newstart = start
@@ -131,10 +135,10 @@ class PoloniexCurator(object):
 
         url = '{path}command=returnTradeHistory&currencyPair={pair}' \
               '&start={start}&end={end}'.format(
-                    path = self._api_path,
-                    pair = currencyPair,
-                    start = str(newstart),
-                    end = str(end)
+                    path=self._api_path,
+                    pair=currencyPair,
+                    start=str(newstart),
+                    end=str(end)
                 )
         print url
 
@@ -144,14 +148,14 @@ class PoloniexCurator(object):
             try:
                 response = requests.get(url)
             except Exception as e:
-                log.error('Failed to retrieve trade history data for {}'.format(
-                            currencyPair
-                            ))
+                log.error('Failed to retrieve trade history data '
+                          'for {}'.format(currencyPair))
                 log.exception(e)
                 attempts += 1
             else:
                 try:
-                    if isinstance(response.json(), dict) and response.json()['error']:
+                    if(isinstance(response.json(), dict) and
+                       response.json()['error']):
                         log.error('Failed to to retrieve trade history data '
                                   'for {}: {}'.format(
                                     currencyPair,
@@ -172,9 +176,9 @@ class PoloniexCurator(object):
         If we get to transactionId == 1, and we already have that on
         disk, we got to the end of TradeHistory for this coin.
         '''
-        if('first_tradeID' in locals() 
+        if('first_tradeID' in locals()
                 and response.json()[-1]['tradeID'] == first_tradeID
-                and temp == None):
+                and temp is None):
             return
 
         '''
@@ -195,7 +199,7 @@ class PoloniexCurator(object):
                     temp = os.tmpfile()
                 tempcsv = csv.writer(temp)
                 for item in response.json():
-                    if( item['tradeID'] <= last_tradeID ):
+                    if(item['tradeID'] <= last_tradeID):
                         continue
                     tempcsv.writerow([
                         item['tradeID'],
@@ -204,27 +208,28 @@ class PoloniexCurator(object):
                         item['rate'],
                         item['amount'],
                         item['total'],
-                        item['globalTradeID']        
+                        item['globalTradeID']
                     ])
-                if( response.json()[-1]['tradeID'] > last_tradeID ):
-                    end = pd.to_datetime( response.json()[-1]['date'], 
-                                infer_datetime_format=True).value // 10 ** 9
-                    self.retrieve_trade_history(currencyPair, start, 
-                                                end, temp=temp) 
+                if(response.json()[-1]['tradeID'] > last_tradeID):
+                    end = pd.to_datetime(
+                        response.json()[-1]['date'],
+                        infer_datetime_format=True).value // 10 ** 9
+                    self.retrieve_trade_history(currencyPair, start,
+                                                end, temp=temp)
                 else:
-                    with open(csv_fn,'rb+') as f:
-                        shutil.copyfileobj(f,temp)
+                    with open(csv_fn, 'rb+') as f:
+                        shutil.copyfileobj(f, temp)
                         f.seek(0)
                         temp.seek(0)
-                        shutil.copyfileobj(temp,f)
+                        shutil.copyfileobj(temp, f)
                     temp.close()
                     end = start_file
             else:
                 with open(csv_fn, 'ab') as csvfile:
                     csvwriter = csv.writer(csvfile)
                     for item in response.json():
-                        if( 'first_tradeID' in locals() 
-                                and item['tradeID'] >= first_tradeID ):
+                        if('first_tradeID' in locals()
+                           and item['tradeID'] >= first_tradeID):
                             continue
                         csvwriter.writerow([
                             item['tradeID'],
@@ -235,8 +240,9 @@ class PoloniexCurator(object):
                             item['total'],
                             item['globalTradeID']
                         ])
-                end = pd.to_datetime(response.json()[-1]['date'], 
-                            infer_datetime_format=True).value // 10 ** 9
+                end = pd.to_datetime(
+                    response.json()[-1]['date'],
+                    infer_datetime_format=True).value // 10 ** 9
 
         except Exception as e:
             log.error('Error opening {}'.format(csv_fn))
@@ -255,13 +261,13 @@ class PoloniexCurator(object):
         '''
         df.set_index('date', inplace=True)               # Index by date
         vol = df['total'].to_frame('volume')             # set Vol aside
-        df.drop('total', axis=1, inplace=True)           # Drop volume data 
+        df.drop('total', axis=1, inplace=True)           # Drop volume data
         ohlc = df.resample('T').ohlc()                   # Resample OHLC 1min
-        ohlc.columns = ohlc.columns.map(lambda t: t[1])  # Raname cols by dropping 'rate'
-        closes = ohlc['close'].fillna(method='pad')      # Pad fwd missing 'close'
-        ohlc = ohlc.apply(lambda x: x.fillna(closes))    # Fill N/A with last close
-        vol = vol.resample('T').sum().fillna(0)          # Add volumes by bin
-        ohlcv = pd.concat([ohlc,vol], axis=1)            # Concatenate OHLC+Vol
+        ohlc.columns = ohlc.columns.map(lambda t: t[1])  # Raname col drop rate
+        closes = ohlc['close'].fillna(method='pad')    # Pad fwd missing close
+        ohlc = ohlc.apply(lambda x: x.fillna(closes))  # Fill N/A w/ last close
+        vol = vol.resample('T').sum().fillna(0)        # Add volumes by bin
+        ohlcv = pd.concat([ohlc, vol], axis=1)         # Concatenate OHLC+Vol
         return ohlcv
 
     def generate_ohlcv_base(self, df):
@@ -273,11 +279,11 @@ class PoloniexCurator(object):
         vol = df['amount'].to_frame('volume')            # set Vol aside
         df.drop('amount', axis=1, inplace=True)          # Drop volume data
         ohlc = df.resample('T').ohlc()                   # Resample OHLC 1min
-        ohlc.columns = ohlc.columns.map(lambda t: t[1])  # Raname cols by dropping 'rate'
-        closes = ohlc['close'].fillna(method='pad')      # Pad fwd missing 'close'
-        ohlc = ohlc.apply(lambda x: x.fillna(closes))    # Fill N/A with last close
-        vol = vol.resample('T').sum().fillna(0)          # Add volumes by bin
-        ohlcv = pd.concat([ohlc,vol], axis=1)            # Concatenate OHLC+Vol
+        ohlc.columns = ohlc.columns.map(lambda t: t[1])  # Rename col drop rate
+        closes = ohlc['close'].fillna(method='pad')    # Pad fwd missing close
+        ohlc = ohlc.apply(lambda x: x.fillna(closes))  # Fill N/A w/ last close
+        vol = vol.resample('T').sum().fillna(0)        # Add volumes by bin
+        ohlcv = pd.concat([ohlc, vol], axis=1)         # Concatenate OHLC+Vol
         return ohlcv
 
     def write_ohlcv_file(self, currencyPair):
@@ -287,33 +293,34 @@ class PoloniexCurator(object):
 
         Generates OHLCV data file with 1minute bars from TradeHistory on disk
         '''
-        csv_trades = CSV_OUT_FOLDER_BASE + 'crypto_trades-' + currencyPair + '.csv'
-        csv_1min = CSV_OUT_FOLDER_BASE + 'crypto_1min-' + currencyPair + '.csv'
+        csv_trades = '{}crypto_trades-{}.csv'.format(
+            CSV_OUT_FOLDER_BASE, currencyPair)
+        csv_1min = '{}crypto_1min-{}.csv'.format(
+            CSV_OUT_FOLDER_BASE, currencyPair)
         try:
             last_time = os.path.getmtime(csv_1min)
         except OSError:
             last_time = 0
-        if( last_time > time.time() - 7200 ):
+        if(last_time > time.time() - 7200):
             log.debug(currencyPair+': 1min data file already up to date. '
                       'Delete the file if you want to rebuild it.')
         else:
             df = pd.read_csv(csv_trades,
-                                names=['tradeID',
-                                       'date',
-                                       'type',
-                                       'rate',
-                                       'amount',
-                                       'total',
-                                       'globalTradeID'],
-                                dtype = {'tradeID': int,
-                                         'date': str,
-                                         'type': str,
-                                         'rate': float,
-                                         'amount': float,
-                                         'total': float,
-                                         'globalTradeID': int}
-                                )
-            df.drop(['tradeID','type','amount','globalTradeID'], 
+                             names=['tradeID',
+                                    'date',
+                                    'type',
+                                    'rate',
+                                    'amount',
+                                    'total',
+                                    'globalTradeID'],
+                             dtype={'tradeID': int,
+                                    'date': str,
+                                    'type': str,
+                                    'rate': float,
+                                    'amount': float,
+                                    'total': float,
+                                    'globalTradeID': int})
+            df.drop(['tradeID', 'type', 'amount', 'globalTradeID'],
                     axis=1, inplace=True)
             df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
             ohlcv = self.generate_ohlcv(df)
@@ -332,7 +339,7 @@ class PoloniexCurator(object):
                             item.volume,
                         ])
             except Exception as e:
-                log.error('Error opening {}'.format(csv_fn))
+                log.error('Error opening {}'.format(csv_1min))
                 log.exception(e)
             log.debug('{}: Generated 1min OHLCV data.'.format(currencyPair))
 
@@ -340,33 +347,34 @@ class PoloniexCurator(object):
         '''
         Generates OHLCV data file with 1minute bars from TradeHistory on disk
         '''
-        csv_trades = CSV_OUT_FOLDER_BASE + 'crypto_trades-' + currencyPair + '.csv'
-        csv_1min = CSV_OUT_FOLDER_BASE + 'crypto_1min-' + currencyPair + '.csv'
+        csv_trades = '{}crypto_trades-{}.csv'.format(
+            CSV_OUT_FOLDER_BASE, currencyPair)
+        csv_1min = '{}crypto_1min-{}.csv'.format(
+            CSV_OUT_FOLDER_BASE, currencyPair)
         try:
             last_time = os.path.getmtime(csv_1min)
         except OSError:
             last_time = 0
-        if( last_time > time.time() - 7200 ):
+        if(last_time > time.time() - 7200):
             log.debug(currencyPair+': 1min data file already up to date. '
                       'Delete the file if you want to rebuild it.')
         else:
             df = pd.read_csv(csv_trades,
-                                names=['tradeID',
-                                       'date',
-                                       'type',
-                                       'rate',
-                                       'amount',
-                                       'total',
-                                       'globalTradeID'],
-                                dtype = {'tradeID': int,
-                                         'date': str,
-                                         'type': str,
-                                         'rate': float,
-                                         'amount': float,
-                                         'total': float,
-                                         'globalTradeID': int}
-                                )
-            df.drop(['tradeID','type', 'total', 'globalTradeID'],
+                             names=['tradeID',
+                                    'date',
+                                    'type',
+                                    'rate',
+                                    'amount',
+                                    'total',
+                                    'globalTradeID'],
+                             dtype={'tradeID': int,
+                                    'date': str,
+                                    'type': str,
+                                    'rate': float,
+                                    'amount': float,
+                                    'total': float,
+                                    'globalTradeID': int})
+            df.drop(['tradeID', 'type', 'total', 'globalTradeID'],
                     axis=1, inplace=True)
             df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
             ohlcv = self.generate_ohlcv_base(df)
@@ -385,7 +393,7 @@ class PoloniexCurator(object):
                             item.volume,
                         ])
             except Exception as e:
-                log.error('Error opening {}'.format(csv_fn))
+                log.error('Error opening {}'.format(csv_1min))
                 log.exception(e)
             log.debug('{}: Generated 1min OHLCV data.'.format(currencyPair))
 
@@ -399,11 +407,10 @@ class PoloniexCurator(object):
                                         'high',
                                         'low',
                                         'close',
-                                        'volume']
-                                )
-        df['date'] = pd.to_datetime(df['date'],unit='s')
+                                        'volume'])
+        df['date'] = pd.to_datetime(df['date'], unit='s')
         df.set_index('date', inplace=True)
-        return df[start : end]
+        return df[start:end]
 
     def generate_symbols_json(self, filename=None):
         '''
@@ -418,16 +425,16 @@ class PoloniexCurator(object):
         with open(filename, 'w') as symbols:
             for currencyPair in self.currency_pairs:
                 start = None
-                csv_fn     = '{}crypto_trades-{}.csv'.format(
-                                CSV_OUT_FOLDER_BASE, currencyPair)
-                with open(csv_fn, 'r') as f: 
+                csv_fn = '{}crypto_trades-{}.csv'.format(
+                    CSV_OUT_FOLDER_BASE, currencyPair)
+                with open(csv_fn, 'r') as f:
                     f.seek(0, os.SEEK_END)
-                    if(f.tell() > 2):               # Check file size is not 0
-                        f.seek(-2, os.SEEK_END)     # Jump to 2nd last byte
-                        while f.read(1) != b"\n":   # Until EOL is found...
-                            f.seek(-2, os.SEEK_CUR) # ...jump back the read byte plus one more.
-                        start = pd.to_datetime( f.readline().split(',')[1], 
-                                                infer_datetime_format=True)
+                    if(f.tell() > 2):                # Check file size is not 0
+                        f.seek(-2, os.SEEK_END)      # Jump to 2nd last byte
+                        while f.read(1) != b"\n":    # Until EOL is found...
+                            f.seek(-2, os.SEEK_CUR)  # jump back read byte +1
+                        start = pd.to_datetime(f.readline().split(',')[1],
+                                               infer_datetime_format=True)
 
                 if(start is None):
                     start = time.gmtime()
@@ -437,8 +444,8 @@ class PoloniexCurator(object):
                     symbol=symbol,
                     start_date=start.strftime("%Y-%m-%d")
                 )
-            json.dump(symbol_map, symbols, sort_keys=True, indent=2, 
-                        separators=(',',':'))    
+            json.dump(symbol_map, symbols, sort_keys=True, indent=2,
+                      separators=(',', ':'))
 
 
 if __name__ == '__main__':
