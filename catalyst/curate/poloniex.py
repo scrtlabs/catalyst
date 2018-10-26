@@ -14,9 +14,10 @@ from catalyst.exchange.exchange_utils import get_exchange_symbols_filename
 
 DT_START = int(time.mktime(datetime(2010, 1, 1, 0, 0).timetuple()))
 DT_END = pd.to_datetime('today').value // 10 ** 9
-CSV_OUT_FOLDER = os.environ.get('CSV_OUT_FOLDER', '/efs/exchanges/poloniex/')
+CSV_OUT_FOLDER_QUOTE = os.environ.get(
+    'CSV_OUT_FOLDER', '/efs/exchanges/poloniex_quote/')
 CSV_OUT_FOLDER_BASE = os.environ.get(
-    'CSV_OUT_FOLDER', '/efs/exchanges/poloniex_base/')
+    'CSV_OUT_FOLDER', '/efs/exchanges/poloniex/')
 CONN_RETRIES = 2
 
 logbook.StderrHandler().push_application()
@@ -32,12 +33,12 @@ class PoloniexCurator(object):
     currency_pairs = []
 
     def __init__(self):
-        if not os.path.exists(CSV_OUT_FOLDER):
+        if not os.path.exists(CSV_OUT_FOLDER_BASE):
             try:
-                os.makedirs(CSV_OUT_FOLDER)
+                os.makedirs(CSV_OUT_FOLDER_BASE)
             except Exception as e:
                 log.error('Failed to create data folder: {}'.format(
-                            CSV_OUT_FOLDER))
+                            CSV_OUT_FOLDER_BASE))
                 log.exception(e)
 
     def get_currency_pairs(self):
@@ -85,7 +86,7 @@ class PoloniexCurator(object):
         This function is called recursively to work around the
         limitations imposed by the provider API.
         '''
-        csv_fn = CSV_OUT_FOLDER + 'crypto_trades-' + currencyPair + '.csv'
+        csv_fn = CSV_OUT_FOLDER_BASE + 'crypto_trades-' + currencyPair + '.csv'
 
         '''
         Check what data we already have on disk, reading first and last
@@ -286,8 +287,8 @@ class PoloniexCurator(object):
 
         Generates OHLCV data file with 1minute bars from TradeHistory on disk
         '''
-        csv_trades = CSV_OUT_FOLDER + 'crypto_trades-' + currencyPair + '.csv'
-        csv_1min   = CSV_OUT_FOLDER + 'crypto_1min-' + currencyPair + '.csv'
+        csv_trades = CSV_OUT_FOLDER_BASE + 'crypto_trades-' + currencyPair + '.csv'
+        csv_1min = CSV_OUT_FOLDER_BASE + 'crypto_1min-' + currencyPair + '.csv'
         try:
             last_time = os.path.getmtime(csv_1min)
         except OSError:
@@ -339,7 +340,7 @@ class PoloniexCurator(object):
         '''
         Generates OHLCV data file with 1minute bars from TradeHistory on disk
         '''
-        csv_trades = CSV_OUT_FOLDER + 'crypto_trades-' + currencyPair + '.csv'
+        csv_trades = CSV_OUT_FOLDER_BASE + 'crypto_trades-' + currencyPair + '.csv'
         csv_1min = CSV_OUT_FOLDER_BASE + 'crypto_1min-' + currencyPair + '.csv'
         try:
             last_time = os.path.getmtime(csv_1min)
@@ -392,13 +393,13 @@ class PoloniexCurator(object):
         '''
         Returns a data frame for a given currencyPair from data on disk
         '''
-        csv_fn     = CSV_OUT_FOLDER + 'crypto_1min-' + currencyPair + '.csv'
-        df         = pd.read_csv(csv_fn, names=['date',
-                                                'open',
-                                                'high',
-                                                'low',
-                                                'close',
-                                                'volume']
+        csv_fn = CSV_OUT_FOLDER_BASE + 'crypto_1min-' + currencyPair + '.csv'
+        df = pd.read_csv(csv_fn, names=['date',
+                                        'open',
+                                        'high',
+                                        'low',
+                                        'close',
+                                        'volume']
                                 )
         df['date'] = pd.to_datetime(df['date'],unit='s')
         df.set_index('date', inplace=True)
@@ -418,7 +419,7 @@ class PoloniexCurator(object):
             for currencyPair in self.currency_pairs:
                 start = None
                 csv_fn     = '{}crypto_trades-{}.csv'.format(
-                                CSV_OUT_FOLDER, currencyPair)
+                                CSV_OUT_FOLDER_BASE, currencyPair)
                 with open(csv_fn, 'r') as f: 
                     f.seek(0, os.SEEK_END)
                     if(f.tell() > 2):               # Check file size is not 0
