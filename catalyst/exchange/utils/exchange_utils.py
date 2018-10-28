@@ -14,6 +14,7 @@ from catalyst.constants import DATE_FORMAT, SYMBOLS_URL
 from catalyst.exchange.exchange_errors import ExchangeSymbolsNotFound
 from catalyst.exchange.utils.serialization_utils import ExchangeJSONEncoder, \
     ExchangeJSONDecoder
+from catalyst.utils.memoize import weak_lru_cache
 from catalyst.utils.paths import data_root, ensure_directory, \
     last_modified_time
 
@@ -61,45 +62,42 @@ def get_remote_folder(environ=None):
     return remote_folder
 
 
-def get_exchange_folder(exchange_name, environ=None):
+@weak_lru_cache()
+def get_exchange_folder(exchange_name):
     """
     The root path of an exchange folder.
 
     Parameters
     ----------
     exchange_name: str
-    environ:
 
     Returns
     -------
     str
 
     """
-    if not environ:
-        environ = os.environ
 
-    root = data_root(environ)
+    root = data_root()
     exchange_folder = os.path.join(root, 'exchanges', exchange_name)
     ensure_directory(exchange_folder)
 
     return exchange_folder
 
 
-def is_blacklist(exchange_name, environ=None):
-    exchange_folder = get_exchange_folder(exchange_name, environ)
+def is_blacklist(exchange_name):
+    exchange_folder = get_exchange_folder(exchange_name)
     filename = os.path.join(exchange_folder, 'blacklist.txt')
 
     return os.path.exists(filename)
 
 
-def get_exchange_symbols_filename(exchange_name, is_local=False, environ=None):
+def get_exchange_symbols_filename(exchange_name, is_local=False):
     """
     The absolute path of the exchange's symbol.json file.
 
     Parameters
     ----------
     exchange_name:
-    environ:
 
     Returns
     -------
@@ -107,11 +105,11 @@ def get_exchange_symbols_filename(exchange_name, is_local=False, environ=None):
 
     """
     name = 'symbols.json' if not is_local else 'symbols_local.json'
-    exchange_folder = get_exchange_folder(exchange_name, environ)
+    exchange_folder = get_exchange_folder(exchange_name)
     return os.path.join(exchange_folder, name)
 
 
-def download_exchange_symbols(exchange_name, environ=None):
+def download_exchange_symbols(exchange_name):
     """
     Downloads the exchange's symbols.json from the repository.
 
@@ -131,7 +129,7 @@ def download_exchange_symbols(exchange_name, environ=None):
     return response
 
 
-def get_exchange_symbols(exchange_name, is_local=False, environ=None):
+def get_exchange_symbols(exchange_name, is_local=False):
     """
     The de-serialized content of the exchange's symbols.json.
 
@@ -152,7 +150,7 @@ def get_exchange_symbols(exchange_name, is_local=False, environ=None):
             pd.Timestamp('now', tz='UTC') - last_modified_time(
             filename)).days > 1):
         try:
-            download_exchange_symbols(exchange_name, environ)
+            download_exchange_symbols(exchange_name)
         except Exception:
             pass
 
@@ -171,7 +169,7 @@ def get_exchange_symbols(exchange_name, is_local=False, environ=None):
         )
 
 
-def save_exchange_symbols(exchange_name, assets, is_local=False, environ=None):
+def save_exchange_symbols(exchange_name, assets, is_local=False):
     """
     Save assets into an exchange_symbols file.
 
@@ -191,7 +189,7 @@ def save_exchange_symbols(exchange_name, assets, is_local=False, environ=None):
         asset_dicts[symbol] = assets[symbol].to_dict()
 
     filename = get_exchange_symbols_filename(
-        exchange_name, is_local, environ
+        exchange_name, is_local
     )
     with open(filename, 'wt') as handle:
         json.dump(asset_dicts, handle, indent=4, default=symbols_serial)
@@ -214,21 +212,21 @@ def get_symbols_string(assets):
     return ', '.join([asset.symbol for asset in array])
 
 
-def get_exchange_auth(exchange_name, alias=None, environ=None):
+def get_exchange_auth(exchange_name, alias=None):
     """
     The de-serialized contend of the exchange's auth.json file.
 
     Parameters
     ----------
     exchange_name: str
-    environ:
+    alias:
 
     Returns
     -------
     Object
 
     """
-    exchange_folder = get_exchange_folder(exchange_name, environ)
+    exchange_folder = get_exchange_folder(exchange_name)
     name = 'auth' if alias is None else alias
     filename = os.path.join(exchange_folder, '{}.json'.format(name))
 
@@ -511,21 +509,20 @@ def remove_old_files(algo_name, today, rel_path, environ=None):
     return error
 
 
-def get_exchange_minute_writer_root(exchange_name, environ=None):
+def get_exchange_minute_writer_root(exchange_name):
     """
     The minute writer folder for the exchange.
 
     Parameters
     ----------
     exchange_name: str
-    environ:
 
     Returns
     -------
     BcolzExchangeBarWriter
 
     """
-    exchange_folder = get_exchange_folder(exchange_name, environ)
+    exchange_folder = get_exchange_folder(exchange_name)
 
     minute_data_folder = os.path.join(exchange_folder, 'minute_data')
     ensure_directory(minute_data_folder)
@@ -533,21 +530,20 @@ def get_exchange_minute_writer_root(exchange_name, environ=None):
     return minute_data_folder
 
 
-def get_exchange_bundles_folder(exchange_name, environ=None):
+def get_exchange_bundles_folder(exchange_name):
     """
     The temp folder for bundle downloads by algo name.
 
     Parameters
     ----------
     exchange_name: str
-    environ:
 
     Returns
     -------
     str
 
     """
-    exchange_folder = get_exchange_folder(exchange_name, environ)
+    exchange_folder = get_exchange_folder(exchange_name)
 
     temp_bundles = os.path.join(exchange_folder, 'temp_bundles')
     ensure_directory(temp_bundles)
@@ -555,8 +551,8 @@ def get_exchange_bundles_folder(exchange_name, environ=None):
     return temp_bundles
 
 
-def has_bundle(exchange_name, data_frequency, environ=None):
-    exchange_folder = get_exchange_folder(exchange_name, environ)
+def has_bundle(exchange_name, data_frequency):
+    exchange_folder = get_exchange_folder(exchange_name)
 
     folder_name = '{}_bundle'.format(data_frequency.lower())
     folder = os.path.join(exchange_folder, folder_name)
