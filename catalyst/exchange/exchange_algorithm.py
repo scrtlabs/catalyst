@@ -1163,13 +1163,14 @@ class ExchangeTradingAlgorithmLive(ExchangeTradingAlgorithmBase):
     def get_orderbook(self, asset, order_type='all', limit=None):
         """
         Retrieve the orderbook for the given trading pair.
+        This function is supported only in live and paper trading modes.
 
         Parameters
         ----------
         asset: TradingPair
 
         order_type: str
-            The type of orders: bid, ask or all
+            The type of the orders: 'bids' or 'asks' or 'all'
 
         limit: int
 

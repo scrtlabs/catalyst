@@ -6,8 +6,8 @@ Supported Exchanges
 ^^^^^^^^^^^^^^^^^^^
 
 Since version 0.4, Catalyst integrated with `CCXT <https://github.com/ccxt/ccxt>`_,
-a cryptocurrency trading library with support for more than 90 exchanges. The 
-range of CCXT and Catalyst support for each of those exchanges varies greatly. 
+a cryptocurrency trading library with support for more than 130 exchanges. The
+range of CCXT and Catalyst support for each of those exchanges varies greatly.
 The most supported exchanges are as follows:
 
 The exchanges available for backtesting are fully supported in live mode:
@@ -20,10 +20,10 @@ The exchanges available for backtesting are fully supported in live mode:
 Additionally, we have successfully tested in live mode the following exchanges:
 
 - GDAX, id = ``gdax``
-- Huobi Pro, id = ``huobipro``
-- OKEX, id = ``okex``
 - HitBTC, id = ``hitbtc``
+- Huobi Pro, id = ``huobipro``
 - KuCoin, id = ``kucoin``
+- OKEX, id = ``okex``
 
 As Catalyst is currently in Alpha and is under active development, you are
 encouraged to thoroughly test any exchange in *paper trading* mode before trading
@@ -34,22 +34,22 @@ Paper Trading vs Live Trading modes
 
 Catalyst currently supports three different modes in which you can execute your
 trading algorithm. The first is **backtesting**, which is covered extensively in
-the tutorial, and uses historical data to run your algorithm. There is no 
-interaction with the exchange in backtesting mode, and this is the first mode 
+the tutorial, and uses historical data to run your algorithm. There is no
+interaction with the exchange in backtesting mode, and this is the first mode
 that you should test any new algorithm.
 
 Once you are confident with the simulations that you have obtained with your
 algorithm in backtesting, you may switch to live trading, where you have two
 different modes:
 
-* **Paper Trading**: The simulated algorithm runs in real time, and fetches 
-  pricing data in real time from the exchange, but the orders never reach the 
+* **Paper Trading**: The simulated algorithm runs in real time, and fetches
+  pricing data in real time from the exchange, but the orders never reach the
   exchange, and are instead kept within Catalyst and simulated. No real currency
   is bought or sold. Think of it as a `backtesting happening in real time`.
 
 * **Live Trading**: This is the proper live trading mode in which an algorithm
-  runs in real time, fetching pricing data from live exchanges and placing 
-  orders against the exchange. Real currency is transacted on the exchange 
+  runs in real time, fetching pricing data from live exchanges and placing
+  orders against the exchange. Real currency is transacted on the exchange
   driven by the algorithm.
 
 These three modes are controlled by the following variables:
@@ -94,7 +94,11 @@ Note that the `bitfinex` part in the directory above corresponds to the id of th
 exchange as defined in the "Supported Exchanges" section above.
 Attempting to run an algorithm where the targeted exchange is missing
 its ``auth.json`` file will create the directory structure and create an empty
-auth.json file, but will result in an error.
+``auth.json`` file, but will result in an error.
+
+It is also possible to specify a different authentication file name using
+``auth_aliases`` argument provided to the catalyst client or to the
+`run_algorithm() <https://enigma.co/catalyst/appendix.html#catalyst.run_algorithm>`_ interface.
 
 Currency Symbols
 ^^^^^^^^^^^^^^^^
@@ -108,7 +112,7 @@ Exchanges tend to use their own convention to represent currencies
 Trading pairs are also inconsistent. For example, Bitfinex
 puts the base currency before the quote currency without a
 separator, Bittrex puts the quote currency first and uses a dash
-seperator.
+separator.
 
 Here is the Catalyst convention:
 
@@ -131,8 +135,8 @@ Here are some examples:
 Note that the trading pairs are always referenced in the same manner.
 However, not all trading pairs are available on all exchanges. An
 error will occur if the specified trading pair is not trading
-on the exchange. To check which currency pairs are available on each 
-of the supported exchanges, see 
+on the exchange. To check which currency pairs are available on each
+of the supported exchanges, see
 `Catalyst Market Coverage <https://www.enigma.co/catalyst/status>`_.
 
 Trading an Algorithm
@@ -141,12 +145,12 @@ There is no special convention to follow when writing an
 algorithm for live trading. The same algorithm should work in
 backtest and live execution mode without modification.
 
-What differs are the arguments provided to the catalyst client or
+What differs are the arguments provided to the catalyst client or the
 ``run_algorithm()`` interface. Here is the same example in both interfaces:
 
 .. code-block:: bash
 
-  catalyst live -f my_algo_code -x bitfinex -c btc -n my_algo_name 
+  catalyst live -f my_algo_code -x bitfinex -c btc -n my_algo_name
 
 .. code-block:: python
 
@@ -168,8 +172,8 @@ Here is the breakdown of the new arguments:
   It has to be lower or equal to the amount of quote currency available for
   trading on the exchange. For illustration, order_target_percent(asset, 1)
   will order the capital_base amount specified here of the specified asset.
-- ``exchange_name``: The name of the targeted exchange. See the 
-  `CCXT Supported Exchanges <https://github.com/ccxt/ccxt/wiki/Exchange-Markets>`_ 
+- ``exchange_name``: The name of the targeted exchange. See the
+  `CCXT Supported Exchanges <https://github.com/ccxt/ccxt/wiki/Exchange-Markets>`_
   for the full list.
 - ``algo_namespace``: A arbitrary label assigned to your algorithm for
   data storage purposes.
@@ -177,7 +181,7 @@ Here is the breakdown of the new arguments:
   statistics of your algorithm. Currently, the quote currency of all
   trading pairs of your algorithm must match this value.
 - ``simulate_orders``: Enables the paper trading mode, in which orders are
-  simulated in Catalyst instead of processed on the exchange. It defaults to 
+  simulated in Catalyst instead of processed on the exchange. It defaults to
   ``True``.
 - ``end_date``: When setting the end_date to a time in the **future**,
   it will schedule the live algo to finish gracefully at the specified date.
@@ -190,6 +194,13 @@ In live trading the ``handle_data()`` function is called once every minute.
 
 Here is a complete algorithm for reference:
 `Buy Low and Sell High <https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/buy_low_sell_high.py>`_
+
+The ``catalyst live`` command offers additional parameters.
+You can learn more by running the following from the command line:
+
+.. code-block:: bash
+
+    catalyst live --help
 
 
 Algorithm State
@@ -204,16 +215,6 @@ Cleaning the state can be achieved by running:
 .. code-block:: bash
 
     catalyst clean-algo -n my-algo-namespace
-
-
-
-The `catalyst live` command offers additional parameters.
-You can learn more by running the following from the command line:
-
-.. code-block:: bash
-
-    catalyst live --help
-
 
 
 Commissions
@@ -242,14 +243,16 @@ these modes in the future with live mode).
 Advanced Options
 ^^^^^^^^^^^^^^^^
 
-In live and paper mode, in addition to the OHLCV data, the order book information is accessible as well.
-By running the following code, a dictionary representing the order book in depth of 10 for `etc_btc` in Bitfinex will
-be returned:
+In live and paper mode, in addition to the OHLCV data, the order book information is accessible as well,
+by running
+`get_orderbook API function <https://enigma.co/catalyst/appendix.html#catalyst.api.get_orderbook>`_.
+For example:
 
 .. code-block:: bash
 
-    context.exchanges['bitfinex'].get_orderbook(symbol('etc_btc'), order_type='all', limit=10)
+    get_orderbook(symbol('etc_btc'), order_type='all', limit=10)
 
-
-It is possible to retrieve only the bids or the asks from the order book by passing 'bids' of 'asks' in the order_type
-(by default this parameter recieve the 'all' value).
+The following example returns a dictionary representing the order book in depth of 10 for `etc_btc` in Bitfinex.
+It is possible to retrieve only the bids or the asks from the order book by
+passing ``'bids'`` or ``'asks'`` in the ``order_type`` argument
+(by default this parameter receives the ``'all'`` value).

@@ -134,7 +134,6 @@ def get_remote_status(algo_id):
         raise Exception("the id you entered is invalid! "
                         "please enter a valid id.")
     json_file = {'algo_id': algo_id}
-    log.info("retrieving the status of {} algorithm".format(algo_id))
     response = send_digest_request(
         json_file=json_file, path=STATUS_PATH, method=GET
     )
@@ -142,7 +141,12 @@ def get_remote_status(algo_id):
 
 
 def send_digest_request(json_file, path, method):
-    key, secret = retrieve_remote_auth()
+    try:
+        key, secret = retrieve_remote_auth()
+    except json.JSONDecodeError as e:
+        log.error("your key and secret aren't stored properly\n{}".
+                  format(e.msg))
+        raise
     json_file['key'] = key
     session = requests.Session()
     if method == POST:

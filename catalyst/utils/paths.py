@@ -1,7 +1,7 @@
 """
 Canonical path locations for catalyst data.
 
-Paths are rooted at $ZIPLINE_ROOT if that environment variable is set.
+Paths are rooted at $CATALYST_ROOT if that environment variable is set.
 Otherwise default to expanduser(~/.catalyst)
 """
 from errno import EEXIST
@@ -124,7 +124,7 @@ def catalyst_root(environ=None):
     if environ is None:
         environ = os.environ
 
-    root = environ.get('ZIPLINE_ROOT', None)
+    root = environ.get('CATALYST_ROOT', None)
     if root is None:
         root = os.path.join(expanduser('~'), '.catalyst')
 

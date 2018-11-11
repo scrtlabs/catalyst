@@ -34,6 +34,7 @@ from catalyst.utils.calendars import get_calendar
 from catalyst.utils.factory import create_simulation_parameters
 from catalyst.data.loader import load_crypto_market_data
 import catalyst.utils.paths as pth
+from catalyst.utils.remote import remote_backtest
 
 from catalyst.exchange.exchange_algorithm import (
     ExchangeTradingAlgorithmLive,
@@ -43,7 +44,8 @@ from catalyst.exchange.exchange_data_portal import DataPortalExchangeLive, \
     DataPortalExchangeBacktest
 from catalyst.exchange.exchange_asset_finder import ExchangeAssetFinder
 
-from catalyst.constants import LOG_LEVEL, ALPHA_WARNING_MESSAGE
+from catalyst.constants import LOG_LEVEL, ALPHA_WARNING_MESSAGE, \
+    DISABLE_ALPHA_WARNING
 
 log = Logger('run_algo', level=LOG_LEVEL)
 
@@ -146,9 +148,10 @@ def _run(handle_data,
         else:
             click.echo(algotext)
 
-    log.warn(ALPHA_WARNING_MESSAGE)
     log.info('Catalyst version {}'.format(catalyst.__version__))
-    sleep(3)
+    if not DISABLE_ALPHA_WARNING:
+        log.warn(ALPHA_WARNING_MESSAGE)
+        sleep(3)
 
     if live:
         if simulate_orders:
@@ -435,6 +438,8 @@ def run_algorithm(initialize,
                   strict_extensions=True,
                   environ=os.environ,
                   live=False,
+                  remote=False,
+                  mail=None,
                   exchange_name=None,
                   quote_currency=None,
                   algo_namespace=None,
@@ -502,6 +507,12 @@ def run_algorithm(initialize,
         This defaults to ``os.environ``.
     live : bool, optional
         Should the algorithm be executed in live trading mode.
+    remote : bool, optional
+        Should the algorithm run on a remote server.
+        currently, available only on backtest mode.
+    mail : str, optional- if running with remote=True then, mandatory.
+        to which email address shall the server send the results to.
+
     exchange_name: str
         The name of the exchange to be used in the backtest/live run.
     quote_currency: str
@@ -566,6 +577,42 @@ def run_algorithm(initialize,
             raise ValueError(
                 'cannot specify `bundle_timestamp` without passing `bundle`',
             )
+    if remote:
+        if mail is None or not re.match(r"[^@]+@[^@]+\.[^@]+", mail):
+            raise ValueError("Please specify a 'mail' parameter which "
+                             "is a valid email address, in order to "
+                             "send you back the results")
+        return remote_backtest(
+            handle_data=handle_data,
+            initialize=initialize,
+            before_trading_start=before_trading_start,
+            analyze=None,
+            algofile=None,
+            algotext=None,
+            defines=(),
+            data_frequency=data_frequency,
+            capital_base=capital_base,
+            data=data,
+            bundle=bundle,
+            bundle_timestamp=bundle_timestamp,
+            start=start,
+            end=end,
+            output='--',
+            print_algo=False,
+            local_namespace=False,
+            environ=environ,
+            live=False,
+            exchange=exchange_name,
+            algo_namespace=algo_namespace,
+            quote_currency=quote_currency,
+            live_graph=live_graph,
+            analyze_live=analyze_live,
+            simulate_orders=simulate_orders,
+            auth_aliases=auth_aliases,
+            stats_output=stats_output,
+            mail=mail
+        )
+
     return _run(
         handle_data=handle_data,
         initialize=initialize,

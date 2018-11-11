@@ -51,15 +51,15 @@ Orders
 .. autofunction:: catalyst.api.order_target_percent
 
 .. autoclass:: catalyst.finance.execution.ExecutionStyle
-   :members:
+..   :members:
 
 .. autoclass:: catalyst.finance.execution.MarketOrder
 
 .. autoclass:: catalyst.finance.execution.LimitOrder
 
-.. autoclass:: catalyst.finance.execution.StopOrder
+.. .. autoclass:: catalyst.finance.execution.StopOrder
 
-.. autoclass:: catalyst.finance.execution.StopLimitOrder
+.. .. autoclass:: catalyst.finance.execution.StopLimitOrder
 
 .. autofunction:: catalyst.api.get_order
 

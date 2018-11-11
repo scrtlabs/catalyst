@@ -1432,7 +1432,7 @@ class TradingAlgorithm(object):
         limit_price : float, optional
             The limit price for the order.
         stop_price : float, optional
-            The stop price for the order.
+            Not supported.
         style : ExecutionStyle, optional
             The execution style for the order.
 
@@ -1444,13 +1444,10 @@ class TradingAlgorithm(object):
 
         Notes
         -----
-        The ``limit_price`` and ``stop_price`` arguments provide shorthands for
+        The ``limit_price`` argument provide shorthands for
         passing common execution styles. Passing ``limit_price=N`` is
-        equivalent to ``style=LimitOrder(N)``. Similarly, passing
-        ``stop_price=M`` is equivalent to ``style=StopOrder(M)``, and passing
-        ``limit_price=N`` and ``stop_price=M`` is equivalent to
-        ``style=StopLimitOrder(N, M)``. It is an error to pass both a ``style``
-        and ``limit_price`` or ``stop_price``.
+        equivalent to ``style=LimitOrder(N)``. It is an error to pass both
+        a ``style`` and ``limit_price``.
 
         Currently, orders must be done only with one ``quote_currency``
         throughout all the algorithm.
@@ -1574,7 +1571,7 @@ class TradingAlgorithm(object):
         limit_price : float, optional
             The limit price for the order.
         stop_price : float, optional
-            The stop price for the order.
+            Not supported.
         style : ExecutionStyle
             The execution style for the order.
 
@@ -1586,7 +1583,7 @@ class TradingAlgorithm(object):
         Notes
         -----
         See :func:`catalyst.api.order` for more information about
-        ``limit_price``, ``stop_price``, and ``style``
+        ``limit_price``, and ``style``
 
         See Also
         --------
@@ -1820,7 +1817,7 @@ class TradingAlgorithm(object):
         limit_price : float, optional
             The limit price for the order.
         stop_price : float, optional
-            The stop price for the order.
+            Not supported.
         style : ExecutionStyle
             The execution style for the order.
 
@@ -1832,7 +1829,7 @@ class TradingAlgorithm(object):
         Notes
         -----
         See :func:`catalyst.api.order` for more information about
-        ``limit_price``, ``stop_price``, and ``style``
+        ``limit_price``, and ``style``
 
         See Also
         --------
@@ -1876,7 +1873,7 @@ class TradingAlgorithm(object):
         limit_price : float, optional
             The limit price for the order.
         stop_price : float, optional
-            The stop price for the order.
+            Not supported.
         style : ExecutionStyle
             The execution style for the order.
 
@@ -1891,7 +1888,7 @@ class TradingAlgorithm(object):
         ``order_target`` takes into account open orders as well.
 
         See :func:`catalyst.api.order` for more information about
-        ``limit_price``, ``stop_price``, and ``style``
+        ``limit_price``, and ``style``
 
         See Also
         --------
@@ -1939,7 +1936,7 @@ class TradingAlgorithm(object):
         limit_price : float, optional
             The limit price for the order.
         stop_price : float, optional
-            The stop price for the order.
+            Not supported.
         style : ExecutionStyle
             The execution style for the order.
 
@@ -1952,7 +1949,7 @@ class TradingAlgorithm(object):
         -----
 
         See :func:`catalyst.api.order` for more information about
-        ``limit_price``, ``stop_price``, and ``style``
+        ``limit_price`` and ``style``
 
         See Also
         --------
@@ -1992,7 +1989,7 @@ class TradingAlgorithm(object):
         limit_price : float, optional
             The limit price for the order.
         stop_price : float, optional
-            The stop price for the order.
+            Not supported
         style : ExecutionStyle
             The execution style for the order.
 
@@ -2005,7 +2002,7 @@ class TradingAlgorithm(object):
         -----
 
         See :func:`catalyst.api.order` for more information about
-        ``limit_price``, ``stop_price``, and ``style``
+        ``limit_price`` and ``style``
 
         See Also
         --------
