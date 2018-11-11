@@ -1,6 +1,17 @@
 =============
 Release Notes
 =============
+Version 0.5.21
+^^^^^^^^^^^^^^
+**Release Date**: 2018-11-11
+
+Build
+~~~~~
+- Upgraded the `redo` lib version :issue:`494`
+- Added the ability to disable the alpha warning :issue:`493`
+- Memoized the call to the `get_exchnage_folder()` function :issue:`500`
+- Upgraded the `requests` lib
+
 Version 0.5.20
 ^^^^^^^^^^^^^^
 **Release Date**: 2018-09-13
