@@ -731,7 +731,7 @@ class Marketplace:
 
         while True:
             reg_pub = input(
-                'Doest it include live data? [default: Y]: '
+                'Does it include live data? [default: Y]: '
             ) or 'y'
             if reg_pub.lower() not in ('y', 'n'):
                 print('Please answer Y or N.')
