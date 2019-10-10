@@ -575,7 +575,7 @@ minute-level data when using ``1m``). This is a function we use in the
 
 You will note that the code below is substantially longer than the previous 
 examples. Don't get overwhelmed by it as the logic is fairly simple and easy to 
-follow. Most of the added some complexity has been added to beautify the output, 
+follow. Most of the added complexity has been added to beautify the output, 
 which you can skim through for now. A copy of this algorithm is available in 
 the ``examples`` directory:
 `dual_moving_average.py <https://github.com/enigmampc/catalyst/blob/master/catalyst/examples/dual_moving_average.py>`_.

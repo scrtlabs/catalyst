@@ -59,7 +59,7 @@ main packages needed. To install MiniConda, you can follow these steps:
   For Windows, if you accepted the default installation options, you didn't 
   check an option to add Conda to the PATH, so trying to run ``conda`` from
   a regular ``Command Prompt`` will result in the following error: ``'conda' 
-  is no recognized as an internal or external command, operatble program or 
+  is not recognized as an internal or external command, operable program or 
   batch file``. That's to be expected. You will nee to launch an ``Anaconda 
   Prompt`` that was added at installation time to your list of programs 
   available from the Start menu. 
