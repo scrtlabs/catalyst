@@ -1,0 +1,13 @@
+
+name: testenv
+channels:
+- anaconda
+- defaults
+dependencies:
+- python=3.6
+- pip
+- numpy=1.14
+- scipy=1.0.0
+- libgfortran=3.0
+- certifi=2018.1.18
+# Could replace a lot of the travis pip usage here.

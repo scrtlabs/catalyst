@@ -4,7 +4,6 @@ import sys
 import warnings
 from datetime import timedelta
 from runpy import run_path
-from time import sleep
 
 import click
 import pandas as pd
@@ -149,9 +148,6 @@ def _run(handle_data,
             click.echo(algotext)
 
     log.info('Catalyst version {}'.format(catalyst.__version__))
-    if not DISABLE_ALPHA_WARNING:
-        log.warn(ALPHA_WARNING_MESSAGE)
-        sleep(3)
 
     if live:
         if simulate_orders:
