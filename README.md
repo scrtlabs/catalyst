@@ -1,4 +1,4 @@
-[![Enigma | Catalyst][https://s3.amazonaws.com/enigmaco-docs/catalyst-crypto.png]][https://enigmampc.github.io/catalyst]
+[![Enigma | Catalyst][catalyst-img]][catalyst-url]
 
 # Enigma | Catalyst: A Fork [![Travis CI][travis-master]][travis-url]
 
@@ -45,5 +45,7 @@ This is a fork of *Enigma Catalyst*, which in turn is a fork of Quantopian's Zip
 >
 > Go to our [Documentation Website](https://enigmampc.github.io/catalyst/).
 
+[catalyst-img]: https://s3.amazonaws.com/enigmaco-docs/catalyst-crypto.png
+[catalyst-url]: https://enigmampc.github.io/catalyst
 [travis-master]: https://travis-ci.org/FergusInLondon/catalyst.svg?branch=master
 [travis-url]: https://travis-ci.org/FergusInLondon/catalyst
