@@ -3,17 +3,15 @@
     :align: center
     :alt: Enigma | Catalyst
 
-|version tag|
-|version status|
-|forum|
-|discord|
-|twitter|
-
 =========  ===============           ================
 Service    Master                    Develop
 ---------  ---------------           ----------------
 CI Badge   |travis-master|           |travis-develop|
 =========  ===============           ================
+
+=====================================================================================
+This is a fork of Catalyst: all it does is fix the CI pipeline and make it buildable.
+=====================================================================================
 
 Catalyst is an algorithmic trading library for crypto-assets written in Python.
 It allows trading strategies to be easily expressed and backtested against 
@@ -59,29 +57,11 @@ Overview
 
 Go to our `Documentation Website <https://enigmampc.github.io/catalyst/>`_.
 
+.. |travis-develop| image:: https://travis-ci.org/FergusInLondon/catalyst.svg?branch=develop
+   :target: https://travis-ci.org/FergusInLondon/catalyst
 
-
-
-.. |version tag| image:: https://img.shields.io/pypi/v/enigma-catalyst.svg
-   :target: https://pypi.python.org/pypi/enigma-catalyst
-
-.. |version status| image:: https://img.shields.io/pypi/pyversions/enigma-catalyst.svg
-   :target: https://pypi.python.org/pypi/enigma-catalyst
-   
-.. |forum| image:: https://img.shields.io/badge/forum-join-green.svg
-   :target: https://forum.catalystcrypto.io/
-
-.. |discord| image:: https://img.shields.io/badge/discord-join%20chat-green.svg
-   :target: https://discordapp.com/invite/SJK32GY
-
-.. |twitter| image:: https://img.shields.io/twitter/follow/enigmampc.svg?style=social&label=Follow&style=flat-square
-   :target: https://twitter.com/catalystcrypto
-
-.. |travis-develop| image:: https://travis-ci.com/enigmampc/catalyst.svg?branch=develop
-   :target: https://travis-ci.com/enigmampc/catalyst
-
-.. |travis-master| image:: https://travis-ci.com/enigmampc/catalyst.svg?branch=master
-   :target: https://travis-ci.com/enigmampc/catalyst
+.. |travis-master| image:: https://travis-ci.org/FergusInLondon/catalyst.svg?branch=master
+   :target: https://travis-ci.org/FergusInLondon/catalyst
 
 
 
