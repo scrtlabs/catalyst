@@ -63,12 +63,21 @@ class CCXT(Exchange):
 
             else:
                 exchange_attr = getattr(ccxt, exchange_name)
-
-            self.api = exchange_attr({
+            
+            exchange_config = {
                 'apiKey': key,
                 'secret': secret,
                 'password': password,
-            })
+                'proxies': {}
+            }
+
+            if('HTTP_PROXY' in os.environ):
+                exchange_config['proxies']['HTTP_PROXY'] = os.environ['HTTP_PROXY']
+            
+            if('HTTPS_PROXY' in os.environ):
+                exchange_config['proxies']['HTTPS_PROXY'] = os.environ['HTTPS_PROXY']
+            
+            self.api = exchange_attr(exchange_config)
             self.api.enableRateLimit = True
 
         except Exception:
