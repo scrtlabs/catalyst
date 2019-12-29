@@ -41,7 +41,7 @@ before_install:
 install:
 - conda info -a
 - |
-  if [ ! -d \"$MINICONDA_DIR/envs/testenv\" ]; then
+  if [ ! -d "$MINICONDA_DIR/envs/testenv" ]; then
     conda env create -f etc/testenv.conda.yml
   fi
 - source activate testenv
