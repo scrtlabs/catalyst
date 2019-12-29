@@ -57,11 +57,3 @@ script:
 - cd tests && nosetests
 after_success:
 - coveralls
-notifications:
-  email:
-    on_success: always
-    on_failure: always
-  slack:
-    secure: fHljfb3xrbZ0hif2VX+01caMcUelWJLPWv+P3gclUSQfRwT9yNTUomENNsF4OVN90SKPJx+rZt4Ws4NWnr9CRDyFeddlwlDG4FSm5q94tBk0UQPodG0TKxd/j7bV9Mo0ELRHuHsYf4l55xC4pmfm4wFk9EILvzrnGRfNqCtXwYeuvTIlgwaLSeyWSWxjhD4F7cUyoFlqDzc7emBriYqYfnxDZ9Qr41/BhWo3N/l9rugKyWWJ7dpkPLQOhUHi1iPxV5BtkoKmCMoawS4wXllLR2tnF2vOQZLEwPg7POw8whROA95tH28L6VZAQGoPe5XLyjA/rgvz/75ZgtTCbgl5DZTvuoE17uK0BLGGEAy3J60HiwdrveDNHCOFqGby59OVjOBtm1cXaYhCCkGYwc/rbgczbH3fahR5N7qeNd9d/STdnoFpGtHGIV5YnZVqC1HZAkdAVXi+InsVUkD2xqIJjbqyKCJ0GDkadrb23k3ah+Q7X8AqBR2l4t3UJ0yUNq1qN3ESX4U6IHVmNm5viupZ8DpNwHdLM6VAB3kKjrX3TfAgrVTS5xDRDDPUWFZvke+5EXPbC0HBpODJz0M4DqwqM2vC5gANo9QAOVhvVUr41QnGUDg8lXQKc0GIKCmg6DBZIlLgAl79uMqTxSgeLhPWrPBbpFRXu3OrCckNTDoSxao=
-    on_success: change
-    on_failure: always
