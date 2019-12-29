@@ -15,6 +15,7 @@ cache:
 -env:
   global:
   - MINICONDA_DIR="$HOME/miniconda"
+  - CACHE_DIR="$HOME/.cache/pip/np114"
 
 # Download Technical Analysis Library, ensure miniconda is available.
 before_install:
@@ -41,10 +42,9 @@ install:
 - conda info -a
 - |
   if [ ! -d \"$MINICONDA_DIR/envs/testenv\" ]; then
-    conda create -n testenv --use-local --yes pip python=$TRAVIS_PYTHON_VERSION numpy=1.14 scipy=1.0.0 libgfortran=3.0.0 certifi=2018.1.18
+    conda env create -f etc/testenv.conda.yml
   fi
 - source activate testenv
-- CACHE_DIR="$HOME/.cache/pip/pip_np114"
 - pip install --upgrade pip coverage coveralls --cache-dir=$CACHE_DIR
 - pip install -r etc/requirements.txt --cache-dir=$CACHE_DIR
 - pip install -r etc/requirements_dev.txt --cache-dir=$CACHE_DIR
