@@ -9,7 +9,7 @@ dependencies:
 - ipython=6.4.0
 - jupyter=1.0.0
 - mkl=2018.0.1
-- numpy=1.14.0
+- numpy=1.16.3
 - openssl=1.0.2n
 - matplotlib=2.2.2
 - pip=9.0.1
