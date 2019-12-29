@@ -10,8 +10,8 @@ Logbook==0.12.5
 
 pytz==2016.4
 
-# FF: Upgraded numpy because of errors with version 1.11
-numpy==1.14.0
+# FF: Upgraded numpy because of errors with version 1.14
+numpy==1.16.3
 
 # for pandas-datareader
 requests-file==1.4.3
@@ -83,8 +83,8 @@ tables==3.4.2
 certifi==2018.1.18
 
 #Catalyst dependencies
-ccxt==1.17.94
+ccxt==1.18.838
 boto3==1.5.27
 redo==2.0.1
-web3==4.4.1; python_version > '3.4'
+web3==4.9.2; python_version > '3.4'
 requests-toolbelt==0.8.0

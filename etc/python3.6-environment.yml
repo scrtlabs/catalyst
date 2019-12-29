@@ -9,7 +9,7 @@ dependencies:
 - ipython=6.4.0
 - jupyter=1.0.0
 - mkl=2018.0.1
-- numpy=1.14.0
+- numpy=1.16.3
 - openssl=1.0.2n
 - matplotlib=2.2.2
 - pip=9.0.1
@@ -33,7 +33,7 @@ dependencies:
   - botocore==1.8.41
   - bottleneck==1.2.1
   - cchardet==2.1.1
-  - ccxt==1.17.94
+  - ccxt==1.18.838
   - chardet==3.0.4
   - click==6.7
   - contextlib2==0.5.5
@@ -86,7 +86,7 @@ dependencies:
   - toolz==0.9.0
   - urllib3==1.22
   - virtualenv==15.2.0
-  - web3==4.4.1
+  - web3==4.9.2
   - websockets==5.0
   - wrapt==1.10.11
   - yarl==1.1.0
