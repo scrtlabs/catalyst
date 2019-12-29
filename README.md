@@ -15,13 +15,17 @@ This is a fork of *Enigma Catalyst*, which in turn is a fork of Quantopian's Zip
 - **Merging of Existing Pull Requests**: This has began with small ones, I will slowly pull those over to this fork.
 - **Merging of complete implementations from existing branches**: In a similar vein to the point above, I've created *Draft Pull Requests* for all stagnant branches which were in the base/upstream repository. I need to review them, and amend a few, but some of these appear to be quite interesting, and it would be a shame to see peoples effort go to waste.
 - **Simplifying the Development Process**: At the moment this relies upon Vagrant (from what I can see), despite their being existing Docker based infrastructure. I'd like to remove all of that, including - perhaps controversially - support for Windows; there's no reason Windows support can't be provided via containerisation.
+- **Improve backtesting**: *Catalyst* has a very simple backtesting mechanism, unfortunately it pulls historic market data from infrastructure that isn't maintained anymore. Allowing the usage of local data would make life easier.
 
-**If we make it this far, then I'll create another tag and release a proper changelog*
+**If we make it this far, then I'll create another tag and release a proper changelog**
 
 ### Long-Term Goal
 
 - **Real Time Trading**: Most of the crypto exchanges now support - often multiplexed - websocket connections; and with the volatility of some crypto-assets, and the subsequent market opportunities that they provide, utilising these is paramount. This does lead to a few issues - i.e `ccxt` only providing it as part of a `ccxt pro` package in the future, but it's imperative that we get a higher resolution than one candle stick per minute.
 - **Dead Code Removal**: What's left from the old Quantopian days that can be removed?
+
+
+## Original README and Project Details
 
 > Catalyst is an algorithmic trading library for crypto-assets written in Python. It allows trading strategies to be easily expressed and backtested against historical data (with daily and minute resolution), providing analytics and insights regarding a particular strategy's performance. Catalyst also supports live-trading of crypto-assets starting with four exchanges (Binance, Bitfinex, Bittrex, and Poloniex) with more being added over time. Catalyst empowers users to share and curate data and build profitable, data-driven investment strategies. Please  visit `catalystcrypto.io <https://www.catalystcrypto.io>`_ to learn more about Catalyst.
 >
@@ -42,4 +46,4 @@ This is a fork of *Enigma Catalyst*, which in turn is a fork of Quantopian's Zip
 > Go to our [Documentation Website](https://enigmampc.github.io/catalyst/).
 
 [travis-master]: https://travis-ci.org/FergusInLondon/catalyst.svg?branch=master
-[travis-url]: https;//travis-ci.org/FergusInLondon/catalyst
+[travis-url]: https://travis-ci.org/FergusInLondon/catalyst
