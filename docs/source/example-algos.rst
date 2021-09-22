@@ -149,7 +149,7 @@ Notice the difference in performance between the charts above and those seen on
 `this video tutorial <https://youtu.be/PmwbYHjuyNQ>`_ at
 minute 8:10. The buy and sell orders are triggered at the same exact times, but
 the differences result from a more realistic slippage model 
-implemented after the video was recorded, which executes the orders at slighlty
+implemented after the video was recorded, which executes the orders at slightly
 different prices, but resulting in significant changes in performance of our 
 strategy.
 
