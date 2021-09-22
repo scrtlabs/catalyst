@@ -15,6 +15,13 @@ Service    Master                    Develop
 CI Badge   |travis-master|           |travis-develop|
 =========  ===============           ================
 
+⚠️ DEPRECATION WARNING ⚠️
+=========================
+
+This repo is no longer actively maintained since the end of 2018. If you wish to use this project or get support for it, there are many forks that may be more active. If any of those is still active, please get in touch with them, as we can no longer provide support for it.
+
+----
+
 Catalyst is an algorithmic trading library for crypto-assets written in Python.
 It allows trading strategies to be easily expressed and backtested against 
 historical data (with daily and minute resolution), providing analytics and 
