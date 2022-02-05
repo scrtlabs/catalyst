@@ -23,7 +23,7 @@ dependencies:
   - ccxt==1.17.94
 # The Enigma Data Marketplace requires Python3 because it depends on
 # web3, which requires Python3, as building its dependencies breaks in Python2
-#  - web3==4.0.0b7
+#  - web3==4.9.2
   - requests-toolbelt==0.8.0
   - click==6.7
   - contextlib2==0.5.5
